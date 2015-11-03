@@ -1,0 +1,91 @@
+#include "types.h"
+#include "gdt.h"
+#include "common.h"
+
+//Describes a single GDT entry
+typedef struct
+{
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_mid;
+
+    uint8_t access;
+    uint8_t granularity;
+
+    uint8_t base_high;
+
+} __attribute__((packed)) GDTEntry;
+
+void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
+
+//Describes the pointer to the GDT entry
+typedef struct
+{
+    uint16_t limit; //Size
+    uint64_t base; //Location
+} __attribute__((packed)) GDTPtr;
+
+//GDT Entry region
+GDTEntry gdt_entries[GDT_ENTRY_COUNT];
+GDTPtr gdt_table;
+
+__attribute__((optnone))
+void GDT_Initialize()
+{
+    //Make sure interrupts are disabled
+    __asm__ ("cli");
+
+    memset((void*)&sys_tss, 0, sizeof(tss_struct));
+    sys_tss.ss0 = 0x10;
+    //sys_tss.esp0 = 0x20000000;
+    sys_tss.iomap = sizeof(tss_struct);
+    sys_tss.cs   = 0x0b;
+    sys_tss.ss = sys_tss.ds = sys_tss.es = sys_tss.fs = sys_tss.gs = 0x13;
+
+    gdt_table.limit = (sizeof(GDTEntry) * GDT_ENTRY_COUNT) - 1;
+    gdt_table.base = (uint64_t)&gdt_entries;
+
+
+    GDT_SetEntry(0, 0, 0, 0, 0);
+    GDT_SetEntry(1, 0, 0xFFFFFFFF, 0x9A, 0x20); // Code segment
+    GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x92, 0x00); // Data segment
+    GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFA, 0x20); // User mode code segment
+    GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF2, 0x00); // User mode data segment
+    GDT_SetEntry(5, (uint32_t)&sys_tss, ((uint32_t)&sys_tss) + sizeof(tss_struct), 0xE9, 0x00);
+
+    __asm__ ("lgdt (%0)" :: "r" (&gdt_table));
+
+    __asm__ (
+        "mov $flush, %rax\n\t"
+        "push %rax\n\t"
+        "ret\n\t"
+        "flush:\n\t"
+        "mov $0x10, %ax\n\t"
+        "mov %ax, %ds\n\t"
+        "mov %ax, %es\n\t"
+        "mov %ax, %fs\n\t"
+        "mov %ax, %gs\n\t"
+        "mov %ax, %ss\n\t"
+
+        //Set the TSS
+        //"mov $0x2B, %ax\n\t"
+        //"ltr %ax"
+    );
+
+    //TODO setup a 64bit TSS
+
+    return; //Don't enable interrupts yet
+}
+
+void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)
+{
+    gdt_entries[num].base_low    = (base & 0xFFFF);
+    gdt_entries[num].base_mid = (base >> 16) & 0xFF;
+    gdt_entries[num].base_high   = (base >> 24) & 0xFF;
+
+    gdt_entries[num].limit_low   = (limit & 0xFFFF);
+    gdt_entries[num].granularity = (limit >> 16) & 0x0F;
+
+    gdt_entries[num].granularity |= gran & 0xF0;
+    gdt_entries[num].access     = access;
+}
