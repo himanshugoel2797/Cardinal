@@ -86,7 +86,7 @@ bootstrap_kernel(void *param,
 
     //We aren't supposed to reach here!
 
-    if(coreCount == 1)bootstrap_kernel_panic(0x00);
+    //if(coreCount == 1)bootstrap_kernel_panic(0x00);
 
     uint32_t color = 0x00ff0000, prev_col = 0x00ffff00, swap = 0;
     while(1)

@@ -34,8 +34,8 @@ CPUID_RequestInfo:                      # @CPUID_RequestInfo
 	popq	%rbx
 	popq	%rbp
 	retq
-.Ltmp4:
-	.size	CPUID_RequestInfo, .Ltmp4-CPUID_RequestInfo
+.Lfunc_end0:
+	.size	CPUID_RequestInfo, .Lfunc_end0-CPUID_RequestInfo
 	.cfi_endproc
 
 	.globl	CPUID_FeatureIsAvailable
@@ -45,12 +45,12 @@ CPUID_FeatureIsAvailable:               # @CPUID_FeatureIsAvailable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp5:
+.Ltmp4:
 	.cfi_def_cfa_offset 16
-.Ltmp6:
+.Ltmp5:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp7:
+.Ltmp6:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movl	%edi, -8(%rbp)
@@ -113,8 +113,8 @@ CPUID_FeatureIsAvailable:               # @CPUID_FeatureIsAvailable
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp8:
-	.size	CPUID_FeatureIsAvailable, .Ltmp8-CPUID_FeatureIsAvailable
+.Lfunc_end1:
+	.size	CPUID_FeatureIsAvailable, .Lfunc_end1-CPUID_FeatureIsAvailable
 	.cfi_endproc
 	.section	.rodata,"a",@progbits
 	.align	8
@@ -132,12 +132,12 @@ CPUID_GetValue:                         # @CPUID_GetValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp9:
+.Ltmp7:
 	.cfi_def_cfa_offset 16
-.Ltmp10:
+.Ltmp8:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp11:
+.Ltmp9:
 	.cfi_def_cfa_register %rbp
 	subq	$24, %rsp
 	movl	%edi, -8(%rbp)
@@ -175,8 +175,8 @@ CPUID_GetValue:                         # @CPUID_GetValue
 	addq	$24, %rsp
 	popq	%rbp
 	retq
-.Ltmp12:
-	.size	CPUID_GetValue, .Ltmp12-CPUID_GetValue
+.Lfunc_end2:
+	.size	CPUID_GetValue, .Lfunc_end2-CPUID_GetValue
 	.cfi_endproc
 	.section	.rodata,"a",@progbits
 	.align	8
@@ -199,5 +199,5 @@ CPUID_GetValue:                         # @CPUID_GetValue
 	.local	ecx
 	.comm	ecx,4,4
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

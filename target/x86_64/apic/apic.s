@@ -149,7 +149,7 @@ APIC_LocalInitialize:                   # @APIC_LocalInitialize
 	movl	$128, %ecx
 	movl	%eax, -20(%rbp)
 	movl	-20(%rbp), %eax
-	andl	$4294967040, %eax       # imm = 0xFFFFFF00
+	andl	$-256, %eax
 	movl	%eax, -20(%rbp)
 	movl	-20(%rbp), %esi
 	movl	$128, %edi
@@ -172,13 +172,14 @@ APIC_LocalInitialize:                   # @APIC_LocalInitialize
 	movl	$1, %edi
 	movl	%eax, -144(%rbp)        # 4-byte Spill
 	callq	APIC_SetEnableMode
-	movb	$0, %dl
+	xorl	%eax, %eax
+	movb	%al, %dl
 	movzbl	%dl, %eax
 	addq	$144, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	APIC_LocalInitialize, .Ltmp3-APIC_LocalInitialize
+.Lfunc_end0:
+	.size	APIC_LocalInitialize, .Lfunc_end0-APIC_LocalInitialize
 	.cfi_endproc
 
 	.align	16, 0x90
@@ -187,12 +188,12 @@ APIC_MainHandler:                       # @APIC_MainHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -204,8 +205,8 @@ APIC_MainHandler:                       # @APIC_MainHandler
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp7:
-	.size	APIC_MainHandler, .Ltmp7-APIC_MainHandler
+.Lfunc_end1:
+	.size	APIC_MainHandler, .Lfunc_end1-APIC_MainHandler
 	.cfi_endproc
 
 	.globl	APIC_Read
@@ -215,12 +216,12 @@ APIC_Read:                              # @APIC_Read
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	subq	$4, %rsp
 	movl	%edi, -4(%rbp)
@@ -231,8 +232,8 @@ APIC_Read:                              # @APIC_Read
 	addq	$4, %rsp
 	popq	%rbp
 	retq
-.Ltmp11:
-	.size	APIC_Read, .Ltmp11-APIC_Read
+.Lfunc_end2:
+	.size	APIC_Read, .Lfunc_end2-APIC_Read
 	.cfi_endproc
 
 	.globl	APIC_Write
@@ -242,12 +243,12 @@ APIC_Write:                             # @APIC_Write
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp12:
+.Ltmp9:
 	.cfi_def_cfa_offset 16
-.Ltmp13:
+.Ltmp10:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp14:
+.Ltmp11:
 	.cfi_def_cfa_register %rbp
 	pushq	%rax
 	movl	%edi, -4(%rbp)
@@ -260,8 +261,8 @@ APIC_Write:                             # @APIC_Write
 	addq	$8, %rsp
 	popq	%rbp
 	retq
-.Ltmp15:
-	.size	APIC_Write, .Ltmp15-APIC_Write
+.Lfunc_end3:
+	.size	APIC_Write, .Lfunc_end3-APIC_Write
 	.cfi_endproc
 
 	.globl	APIC_SetEnableMode
@@ -271,12 +272,12 @@ APIC_SetEnableMode:                     # @APIC_SetEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp16:
+.Ltmp12:
 	.cfi_def_cfa_offset 16
-.Ltmp17:
+.Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp18:
+.Ltmp14:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%dil, %al
@@ -287,7 +288,7 @@ APIC_SetEnableMode:                     # @APIC_SetEnableMode
 	movl	%ecx, %edi
 	callq	APIC_Read
 	movl	$240, %ecx
-	movl	$0, %edi
+	xorl	%edi, %edi
 	movl	%eax, -8(%rbp)
 	movl	-8(%rbp), %eax
 	movzbl	-1(%rbp), %edx
@@ -304,8 +305,8 @@ APIC_SetEnableMode:                     # @APIC_SetEnableMode
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp19:
-	.size	APIC_SetEnableMode, .Ltmp19-APIC_SetEnableMode
+.Lfunc_end4:
+	.size	APIC_SetEnableMode, .Lfunc_end4-APIC_SetEnableMode
 	.cfi_endproc
 
 	.globl	APIC_SetEnableInterrupt
@@ -315,12 +316,12 @@ APIC_SetEnableInterrupt:                # @APIC_SetEnableInterrupt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp20:
+.Ltmp15:
 	.cfi_def_cfa_offset 16
-.Ltmp21:
+.Ltmp16:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp22:
+.Ltmp17:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	%edi, -4(%rbp)
@@ -335,11 +336,11 @@ APIC_SetEnableInterrupt:                # @APIC_SetEnableInterrupt
 .LBB5_3:
 	movl	-4(%rbp), %edi
 	callq	APIC_Read
-	movl	$0, %edi
+	xorl	%edi, %edi
 	movl	%eax, -12(%rbp)
 	movl	-12(%rbp), %eax
 	movl	-8(%rbp), %ecx
-	xorl	$4294967295, %ecx       # imm = 0xFFFFFFFF
+	xorl	$-1, %ecx
 	andl	$1, %ecx
 	subl	%ecx, %edi
 	xorl	-12(%rbp), %edi
@@ -353,8 +354,8 @@ APIC_SetEnableInterrupt:                # @APIC_SetEnableInterrupt
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp23:
-	.size	APIC_SetEnableInterrupt, .Ltmp23-APIC_SetEnableInterrupt
+.Lfunc_end5:
+	.size	APIC_SetEnableInterrupt, .Lfunc_end5-APIC_SetEnableInterrupt
 	.cfi_endproc
 
 	.globl	APIC_SetVector
@@ -364,12 +365,12 @@ APIC_SetVector:                         # @APIC_SetVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp24:
+.Ltmp18:
 	.cfi_def_cfa_offset 16
-.Ltmp25:
+.Ltmp19:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp26:
+.Ltmp20:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%sil, %al
@@ -387,9 +388,8 @@ APIC_SetVector:                         # @APIC_SetVector
 	callq	APIC_Read
 	movl	%eax, -12(%rbp)
 	movzbl	-5(%rbp), %eax
-	movl	-12(%rbp), %edi
-	orl	%eax, %edi
-	movl	%edi, -12(%rbp)
+	orl	-12(%rbp), %eax
+	movl	%eax, -12(%rbp)
 	movl	-4(%rbp), %edi
 	movl	-12(%rbp), %esi
 	callq	APIC_Write
@@ -397,8 +397,8 @@ APIC_SetVector:                         # @APIC_SetVector
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp27:
-	.size	APIC_SetVector, .Ltmp27-APIC_SetVector
+.Lfunc_end6:
+	.size	APIC_SetVector, .Lfunc_end6-APIC_SetVector
 	.cfi_endproc
 
 	.globl	APIC_SetDeliveryMode
@@ -408,12 +408,12 @@ APIC_SetDeliveryMode:                   # @APIC_SetDeliveryMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp28:
+.Ltmp21:
 	.cfi_def_cfa_offset 16
-.Ltmp29:
+.Ltmp22:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp30:
+.Ltmp23:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%sil, %al
@@ -433,9 +433,8 @@ APIC_SetDeliveryMode:                   # @APIC_SetDeliveryMode
 	movzbl	-5(%rbp), %eax
 	andl	$7, %eax
 	shll	$8, %eax
-	movl	-12(%rbp), %edi
-	orl	%eax, %edi
-	movl	%edi, -12(%rbp)
+	orl	-12(%rbp), %eax
+	movl	%eax, -12(%rbp)
 	movl	-4(%rbp), %edi
 	movl	-12(%rbp), %esi
 	callq	APIC_Write
@@ -443,8 +442,8 @@ APIC_SetDeliveryMode:                   # @APIC_SetDeliveryMode
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp31:
-	.size	APIC_SetDeliveryMode, .Ltmp31-APIC_SetDeliveryMode
+.Lfunc_end7:
+	.size	APIC_SetDeliveryMode, .Lfunc_end7-APIC_SetDeliveryMode
 	.cfi_endproc
 
 	.globl	APIC_SetTriggerMode
@@ -454,12 +453,12 @@ APIC_SetTriggerMode:                    # @APIC_SetTriggerMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp32:
+.Ltmp24:
 	.cfi_def_cfa_offset 16
-.Ltmp33:
+.Ltmp25:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp34:
+.Ltmp26:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%sil, %al
@@ -479,9 +478,8 @@ APIC_SetTriggerMode:                    # @APIC_SetTriggerMode
 	movzbl	-5(%rbp), %eax
 	andl	$1, %eax
 	shll	$15, %eax
-	movl	-12(%rbp), %edi
-	orl	%eax, %edi
-	movl	%edi, -12(%rbp)
+	orl	-12(%rbp), %eax
+	movl	%eax, -12(%rbp)
 	movl	-4(%rbp), %edi
 	movl	-12(%rbp), %esi
 	callq	APIC_Write
@@ -489,8 +487,8 @@ APIC_SetTriggerMode:                    # @APIC_SetTriggerMode
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp35:
-	.size	APIC_SetTriggerMode, .Ltmp35-APIC_SetTriggerMode
+.Lfunc_end8:
+	.size	APIC_SetTriggerMode, .Lfunc_end8-APIC_SetTriggerMode
 	.cfi_endproc
 
 	.globl	APIC_SetPolarity
@@ -500,12 +498,12 @@ APIC_SetPolarity:                       # @APIC_SetPolarity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp36:
+.Ltmp27:
 	.cfi_def_cfa_offset 16
-.Ltmp37:
+.Ltmp28:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp38:
+.Ltmp29:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%sil, %al
@@ -525,9 +523,8 @@ APIC_SetPolarity:                       # @APIC_SetPolarity
 	movzbl	-5(%rbp), %eax
 	andl	$1, %eax
 	shll	$13, %eax
-	movl	-12(%rbp), %edi
-	orl	%eax, %edi
-	movl	%edi, -12(%rbp)
+	orl	-12(%rbp), %eax
+	movl	%eax, -12(%rbp)
 	movl	-4(%rbp), %edi
 	movl	-12(%rbp), %esi
 	callq	APIC_Write
@@ -535,8 +532,8 @@ APIC_SetPolarity:                       # @APIC_SetPolarity
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp39:
-	.size	APIC_SetPolarity, .Ltmp39-APIC_SetPolarity
+.Lfunc_end9:
+	.size	APIC_SetPolarity, .Lfunc_end9-APIC_SetPolarity
 	.cfi_endproc
 
 	.globl	APIC_SetTimerMode
@@ -546,12 +543,12 @@ APIC_SetTimerMode:                      # @APIC_SetTimerMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp40:
+.Ltmp30:
 	.cfi_def_cfa_offset 16
-.Ltmp41:
+.Ltmp31:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp42:
+.Ltmp32:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%dil, %al
@@ -566,9 +563,8 @@ APIC_SetTimerMode:                      # @APIC_SetTimerMode
 	movzbl	-1(%rbp), %eax
 	andl	$3, %eax
 	shll	$17, %eax
-	movl	-8(%rbp), %edi
-	orl	%eax, %edi
-	movl	%edi, -8(%rbp)
+	orl	-8(%rbp), %eax
+	movl	%eax, -8(%rbp)
 	movl	-8(%rbp), %esi
 	movl	$800, %edi              # imm = 0x320
 	movl	%ecx, -16(%rbp)         # 4-byte Spill
@@ -576,8 +572,8 @@ APIC_SetTimerMode:                      # @APIC_SetTimerMode
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp43:
-	.size	APIC_SetTimerMode, .Ltmp43-APIC_SetTimerMode
+.Lfunc_end10:
+	.size	APIC_SetTimerMode, .Lfunc_end10-APIC_SetTimerMode
 	.cfi_endproc
 
 	.globl	APIC_SetTimerDivisor
@@ -587,12 +583,12 @@ APIC_SetTimerDivisor:                   # @APIC_SetTimerDivisor
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp44:
+.Ltmp33:
 	.cfi_def_cfa_offset 16
-.Ltmp45:
+.Ltmp34:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp46:
+.Ltmp35:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%dil, %al
@@ -651,8 +647,8 @@ APIC_SetTimerDivisor:                   # @APIC_SetTimerDivisor
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp47:
-	.size	APIC_SetTimerDivisor, .Ltmp47-APIC_SetTimerDivisor
+.Lfunc_end11:
+	.size	APIC_SetTimerDivisor, .Lfunc_end11-APIC_SetTimerDivisor
 	.cfi_endproc
 
 	.globl	APIC_SetTimerValue
@@ -662,12 +658,12 @@ APIC_SetTimerValue:                     # @APIC_SetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp48:
+.Ltmp36:
 	.cfi_def_cfa_offset 16
-.Ltmp49:
+.Ltmp37:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp50:
+.Ltmp38:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	$896, %eax              # imm = 0x380
@@ -679,8 +675,8 @@ APIC_SetTimerValue:                     # @APIC_SetTimerValue
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp51:
-	.size	APIC_SetTimerValue, .Ltmp51-APIC_SetTimerValue
+.Lfunc_end12:
+	.size	APIC_SetTimerValue, .Lfunc_end12-APIC_SetTimerValue
 	.cfi_endproc
 
 	.globl	APIC_GetTimerValue
@@ -690,12 +686,12 @@ APIC_GetTimerValue:                     # @APIC_GetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp52:
+.Ltmp39:
 	.cfi_def_cfa_offset 16
-.Ltmp53:
+.Ltmp40:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp54:
+.Ltmp41:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	$896, %eax              # imm = 0x380
@@ -705,8 +701,8 @@ APIC_GetTimerValue:                     # @APIC_GetTimerValue
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp55:
-	.size	APIC_GetTimerValue, .Ltmp55-APIC_GetTimerValue
+.Lfunc_end13:
+	.size	APIC_GetTimerValue, .Lfunc_end13-APIC_GetTimerValue
 	.cfi_endproc
 
 	.globl	APIC_GetID
@@ -716,12 +712,12 @@ APIC_GetID:                             # @APIC_GetID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp56:
+.Ltmp42:
 	.cfi_def_cfa_offset 16
-.Ltmp57:
+.Ltmp43:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp58:
+.Ltmp44:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	$32, %eax
@@ -733,8 +729,8 @@ APIC_GetID:                             # @APIC_GetID
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp59:
-	.size	APIC_GetID, .Ltmp59-APIC_GetID
+.Lfunc_end14:
+	.size	APIC_GetID, .Lfunc_end14-APIC_GetID
 	.cfi_endproc
 
 	.globl	APIC_SendEOI
@@ -744,12 +740,12 @@ APIC_SendEOI:                           # @APIC_SendEOI
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp60:
+.Ltmp45:
 	.cfi_def_cfa_offset 16
-.Ltmp61:
+.Ltmp46:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp62:
+.Ltmp47:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movb	%dil, %al
@@ -763,48 +759,45 @@ APIC_SendEOI:                           # @APIC_SendEOI
 	movl	%eax, -8(%rbp)
 	movl	-8(%rbp), %edi
 	callq	APIC_Read
-	movl	$32, %edx
-	movl	$1, %edi
+	movl	$32, %edi
+	movl	$1, %ecx
 	movl	%eax, -12(%rbp)
 	movl	-12(%rbp), %eax
-	movzbl	-1(%rbp), %ecx
+	movzbl	-1(%rbp), %esi
 	movl	%eax, -16(%rbp)         # 4-byte Spill
-	movl	%ecx, %eax
-	movl	%edx, -20(%rbp)         # 4-byte Spill
+	movl	%esi, %eax
 	cltd
-	movl	-20(%rbp), %ecx         # 4-byte Reload
-	idivl	%ecx
+	idivl	%edi
+	movl	%ecx, -20(%rbp)         # 4-byte Spill
 	movl	%edx, %ecx
                                         # kill: CL<def> ECX<kill>
-	shll	%cl, %edi
-	movl	-16(%rbp), %eax         # 4-byte Reload
-	andl	%edi, %eax
+	movl	-20(%rbp), %edx         # 4-byte Reload
+	shll	%cl, %edx
+	movl	-16(%rbp), %esi         # 4-byte Reload
+	andl	%edx, %esi
 	movzbl	-1(%rbp), %edx
-	movl	%eax, -24(%rbp)         # 4-byte Spill
 	movl	%edx, %eax
 	cltd
-	movl	-20(%rbp), %edi         # 4-byte Reload
 	idivl	%edi
 	movl	%edx, %ecx
                                         # kill: CL<def> ECX<kill>
-	movl	-24(%rbp), %eax         # 4-byte Reload
-	shrl	%cl, %eax
-	cmpl	$0, %eax
+	shrl	%cl, %esi
+	cmpl	$0, %esi
 	je	.LBB15_2
 # BB#1:
 	movl	$176, %eax
 	movl	$3735928559, %ecx       # imm = 0xDEADBEEF
 	movl	$176, %edi
 	movl	$-559038737, %esi       # imm = 0xFFFFFFFFDEADBEEF
-	movl	%eax, -28(%rbp)         # 4-byte Spill
-	movl	%ecx, -32(%rbp)         # 4-byte Spill
+	movl	%eax, -24(%rbp)         # 4-byte Spill
+	movl	%ecx, -28(%rbp)         # 4-byte Spill
 	callq	APIC_Write
 .LBB15_2:
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp63:
-	.size	APIC_SendEOI, .Ltmp63-APIC_SendEOI
+.Lfunc_end15:
+	.size	APIC_SendEOI, .Lfunc_end15-APIC_SendEOI
 	.cfi_endproc
 
 	.globl	APIC_SendIPI
@@ -814,12 +807,12 @@ APIC_SendIPI:                           # @APIC_SendIPI
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp64:
+.Ltmp48:
 	.cfi_def_cfa_offset 16
-.Ltmp65:
+.Ltmp49:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp66:
+.Ltmp50:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movb	%dl, %al
@@ -850,8 +843,8 @@ APIC_SendIPI:                           # @APIC_SendIPI
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp67:
-	.size	APIC_SendIPI, .Ltmp67-APIC_SendIPI
+.Lfunc_end16:
+	.size	APIC_SendIPI, .Lfunc_end16-APIC_SendIPI
 	.cfi_endproc
 
 	.type	apic_base_addr,@object  # @apic_base_addr
@@ -863,5 +856,5 @@ apic_base_addr:
 	.size	apic_base_addr, 8
 
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

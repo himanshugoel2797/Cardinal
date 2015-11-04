@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define PAGE_SIZE KB(4)
+#define PAGE_SIZE KiB(4)
 #define MAX_ALLOCS_PERENTRY ((PAGE_SIZE / sizeof(PhysAllocInfoEntry)) - 1)
 
 #define KB4_DIVISOR 5
@@ -35,12 +35,26 @@ uint64_t freePageCount;
 uint64_t totalPageCount;
 uint64_t lastNonFullPage;
 
-void MemMan_Initialize();
-void *MemMan_Alloc(uint64_t size);
-void MemMan_Free(void *ptr, uint64_t size);
+void
+MemMan_Initialize(void);
 
-uint64_t MemMan_CalculateBitmapIndex(uint64_t addr, size_t blockSize);
-void MemMan_MarkUsed(uint64_t addr, uint64_t size);
-void MemMan_MarkKB4Used(uint64_t addr, uint64_t size);
+void
+*MemMan_Alloc(uint64_t size);
+
+void
+MemMan_Free(void *ptr,
+	    uint64_t size);
+
+static uint64_t
+MemMan_CalculateBitmapIndex(uint64_t addr,
+			    size_t blockSize);
+
+void
+MemMan_MarkUsed(uint64_t addr,
+		uint64_t size);
+
+void
+MemMan_MarkKB4Used(uint64_t addr,
+		   uint64_t size);
 
 #endif /* end of include guard: _PRIV_PHYS_MEM_MANAGER_H_ */

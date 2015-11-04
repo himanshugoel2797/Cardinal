@@ -62,8 +62,8 @@ IOAPIC_Initialize:                      # @IOAPIC_Initialize
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	IOAPIC_Initialize, .Ltmp3-IOAPIC_Initialize
+.Lfunc_end0:
+	.size	IOAPIC_Initialize, .Lfunc_end0-IOAPIC_Initialize
 	.cfi_endproc
 
 	.globl	IOAPIC_Read
@@ -73,12 +73,12 @@ IOAPIC_Read:                            # @IOAPIC_Read
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -91,8 +91,8 @@ IOAPIC_Read:                            # @IOAPIC_Read
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp7:
-	.size	IOAPIC_Read, .Ltmp7-IOAPIC_Read
+.Lfunc_end1:
+	.size	IOAPIC_Read, .Lfunc_end1-IOAPIC_Read
 	.cfi_endproc
 
 	.globl	IOAPIC_Write
@@ -102,12 +102,12 @@ IOAPIC_Write:                           # @IOAPIC_Write
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -122,8 +122,8 @@ IOAPIC_Write:                           # @IOAPIC_Write
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp11:
-	.size	IOAPIC_Write, .Ltmp11-IOAPIC_Write
+.Lfunc_end2:
+	.size	IOAPIC_Write, .Lfunc_end2-IOAPIC_Write
 	.cfi_endproc
 
 	.globl	IOAPIC_GetVector
@@ -133,12 +133,12 @@ IOAPIC_GetVector:                       # @IOAPIC_GetVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp12:
+.Ltmp9:
 	.cfi_def_cfa_offset 16
-.Ltmp13:
+.Ltmp10:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp14:
+.Ltmp11:
 	.cfi_def_cfa_register %rbp
 	subq	$48, %rsp
 	movb	%dil, %al
@@ -220,8 +220,8 @@ IOAPIC_GetVector:                       # @IOAPIC_GetVector
 	addq	$48, %rsp
 	popq	%rbp
 	retq
-.Ltmp15:
-	.size	IOAPIC_GetVector, .Ltmp15-IOAPIC_GetVector
+.Lfunc_end3:
+	.size	IOAPIC_GetVector, .Lfunc_end3-IOAPIC_GetVector
 	.cfi_endproc
 
 	.globl	IOAPIC_MapIRQ
@@ -231,19 +231,19 @@ IOAPIC_MapIRQ:                          # @IOAPIC_MapIRQ
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp16:
+.Ltmp12:
 	.cfi_def_cfa_offset 16
-.Ltmp17:
+.Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp18:
+.Ltmp14:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
 	subq	$64, %rsp
-.Ltmp19:
+.Ltmp15:
 	.cfi_offset %rbx, -32
-.Ltmp20:
+.Ltmp16:
 	.cfi_offset %r14, -24
 	movb	%r9b, %al
 	movb	%r8b, %r10b
@@ -349,42 +349,38 @@ IOAPIC_MapIRQ:                          # @IOAPIC_MapIRQ
 	callq	IOAPIC_Read
 	movl	%eax, -68(%rbp)
 	movl	-68(%rbp), %eax
-	andl	$4294959103, %eax       # imm = 0xFFFFDFFF
+	andl	$-8193, %eax            # imm = 0xFFFFFFFFFFFFDFFF
 	movl	%eax, -68(%rbp)
 	movzbl	-34(%rbp), %eax
 	andl	$1, %eax
 	shll	$13, %eax
-	movl	-68(%rbp), %edx
-	orl	%eax, %edx
-	movl	%edx, -68(%rbp)
+	orl	-68(%rbp), %eax
+	movl	%eax, -68(%rbp)
 	movl	-68(%rbp), %eax
-	andl	$4294934527, %eax       # imm = 0xFFFF7FFF
+	andl	$-32769, %eax           # imm = 0xFFFFFFFFFFFF7FFF
 	movl	%eax, -68(%rbp)
 	movzbl	-33(%rbp), %eax
 	andl	$1, %eax
 	shll	$15, %eax
-	movl	-68(%rbp), %edx
-	orl	%eax, %edx
-	movl	%edx, -68(%rbp)
-	movl	-68(%rbp), %eax
-	andl	$4294965247, %eax       # imm = 0xFFFFF7FF
+	orl	-68(%rbp), %eax
 	movl	%eax, -68(%rbp)
 	movl	-68(%rbp), %eax
-	andl	$4294965503, %eax       # imm = 0xFFFFF8FF
+	andl	$-2049, %eax            # imm = 0xFFFFFFFFFFFFF7FF
 	movl	%eax, -68(%rbp)
 	movl	-68(%rbp), %eax
-	andl	$4294967040, %eax       # imm = 0xFFFFFF00
+	andl	$-1793, %eax            # imm = 0xFFFFFFFFFFFFF8FF
+	movl	%eax, -68(%rbp)
+	movl	-68(%rbp), %eax
+	andl	$-256, %eax
 	movl	%eax, -68(%rbp)
 	movzbl	-18(%rbp), %eax
-	movl	-68(%rbp), %edx
-	orl	%eax, %edx
-	movl	%edx, -68(%rbp)
+	orl	-68(%rbp), %eax
+	movl	%eax, -68(%rbp)
 	movzbl	-35(%rbp), %eax
 	andl	$7, %eax
 	shll	$8, %eax
-	movl	-68(%rbp), %edx
-	orl	%eax, %edx
-	movl	%edx, -68(%rbp)
+	orl	-68(%rbp), %eax
+	movl	%eax, -68(%rbp)
 	movq	-48(%rbp), %rdi
 	movl	-56(%rbp), %esi
 	movl	-68(%rbp), %edx
@@ -395,8 +391,8 @@ IOAPIC_MapIRQ:                          # @IOAPIC_MapIRQ
 	popq	%r14
 	popq	%rbp
 	retq
-.Ltmp21:
-	.size	IOAPIC_MapIRQ, .Ltmp21-IOAPIC_MapIRQ
+.Lfunc_end4:
+	.size	IOAPIC_MapIRQ, .Lfunc_end4-IOAPIC_MapIRQ
 	.cfi_endproc
 
 	.globl	IOAPIC_SetEnableMode
@@ -406,12 +402,12 @@ IOAPIC_SetEnableMode:                   # @IOAPIC_SetEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp22:
+.Ltmp17:
 	.cfi_def_cfa_offset 16
-.Ltmp23:
+.Ltmp18:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp24:
+.Ltmp19:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movb	%sil, %al
@@ -441,11 +437,11 @@ IOAPIC_SetEnableMode:                   # @IOAPIC_SetEnableMode
 	movq	-16(%rbp), %rdi
 	movl	-8(%rbp), %esi
 	callq	IOAPIC_Read
-	movl	$0, %esi
+	xorl	%esi, %esi
 	movl	%eax, -20(%rbp)
 	movl	-20(%rbp), %eax
 	movzbl	-2(%rbp), %edx
-	xorl	$4294967295, %edx       # imm = 0xFFFFFFFF
+	xorl	$-1, %edx
 	andl	$1, %edx
 	subl	%edx, %esi
 	xorl	-20(%rbp), %esi
@@ -460,8 +456,8 @@ IOAPIC_SetEnableMode:                   # @IOAPIC_SetEnableMode
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp25:
-	.size	IOAPIC_SetEnableMode, .Ltmp25-IOAPIC_SetEnableMode
+.Lfunc_end5:
+	.size	IOAPIC_SetEnableMode, .Lfunc_end5-IOAPIC_SetEnableMode
 	.cfi_endproc
 
 	.type	curIOAPIC_index,@object # @curIOAPIC_index
@@ -477,5 +473,5 @@ curIOAPIC_index:
 	.type	ioapic_interruptMap,@object # @ioapic_interruptMap
 	.comm	ioapic_interruptMap,2048,16
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

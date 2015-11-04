@@ -16,15 +16,16 @@ bootstrap_malloc:                       # @bootstrap_malloc
 	.cfi_def_cfa_register %rbp
 	subq	$24, %rsp
 	movq	%rdi, -16(%rbp)
-	movq	%rdi, %rax
-	andq	$3, %rax
-	addq	%rax, %rdi
+	movl	%edi, %eax
+	andl	$3, %eax
+	movl	%eax, %ecx
+	addq	%rcx, %rdi
 	movq	%rdi, -16(%rbp)
-	movl	pos, %ecx
-	movl	%ecx, %ecx
-	movl	%ecx, %eax
-	addq	-16(%rbp), %rax
-	cmpq	$16777216, %rax         # imm = 0x1000000
+	movl	pos, %eax
+	movl	%eax, %eax
+	movl	%eax, %ecx
+	addq	-16(%rbp), %rcx
+	cmpq	$16777216, %rcx         # imm = 0x1000000
 	jbe	.LBB0_2
 # BB#1:
 	movq	$0, -8(%rbp)
@@ -45,8 +46,8 @@ bootstrap_malloc:                       # @bootstrap_malloc
 	addq	$24, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	bootstrap_malloc, .Ltmp3-bootstrap_malloc
+.Lfunc_end0:
+	.size	bootstrap_malloc, .Lfunc_end0-bootstrap_malloc
 	.cfi_endproc
 
 	.type	pos,@object             # @pos
@@ -56,5 +57,5 @@ bootstrap_malloc:                       # @bootstrap_malloc
 	.local	mem_pool
 	.comm	mem_pool,16777216,16
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

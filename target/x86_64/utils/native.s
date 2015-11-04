@@ -27,8 +27,8 @@ outb:                                   # @outb
 	addq	$4, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	outb, .Ltmp3-outb
+.Lfunc_end0:
+	.size	outb, .Lfunc_end0-outb
 	.cfi_endproc
 
 	.globl	inb
@@ -38,12 +38,12 @@ inb:                                    # @inb
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$4, %rsp
 	movw	%di, %ax
@@ -57,8 +57,8 @@ inb:                                    # @inb
 	addq	$4, %rsp
 	popq	%rbp
 	retq
-.Ltmp7:
-	.size	inb, .Ltmp7-inb
+.Lfunc_end1:
+	.size	inb, .Lfunc_end1-inb
 	.cfi_endproc
 
 	.globl	outw
@@ -68,12 +68,12 @@ outw:                                   # @outw
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	subq	$4, %rsp
 	movw	%si, %ax
@@ -88,8 +88,8 @@ outw:                                   # @outw
 	addq	$4, %rsp
 	popq	%rbp
 	retq
-.Ltmp11:
-	.size	outw, .Ltmp11-outw
+.Lfunc_end2:
+	.size	outw, .Lfunc_end2-outw
 	.cfi_endproc
 
 	.globl	inw
@@ -99,12 +99,12 @@ inw:                                    # @inw
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp12:
+.Ltmp9:
 	.cfi_def_cfa_offset 16
-.Ltmp13:
+.Ltmp10:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp14:
+.Ltmp11:
 	.cfi_def_cfa_register %rbp
 	subq	$4, %rsp
 	movw	%di, %ax
@@ -118,8 +118,8 @@ inw:                                    # @inw
 	addq	$4, %rsp
 	popq	%rbp
 	retq
-.Ltmp15:
-	.size	inw, .Ltmp15-inw
+.Lfunc_end3:
+	.size	inw, .Lfunc_end3-inw
 	.cfi_endproc
 
 	.globl	outl
@@ -129,12 +129,12 @@ outl:                                   # @outl
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp16:
+.Ltmp12:
 	.cfi_def_cfa_offset 16
-.Ltmp17:
+.Ltmp13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp18:
+.Ltmp14:
 	.cfi_def_cfa_register %rbp
 	pushq	%rax
 	movw	%di, %ax
@@ -148,8 +148,8 @@ outl:                                   # @outl
 	addq	$8, %rsp
 	popq	%rbp
 	retq
-.Ltmp19:
-	.size	outl, .Ltmp19-outl
+.Lfunc_end4:
+	.size	outl, .Lfunc_end4-outl
 	.cfi_endproc
 
 	.globl	inl
@@ -159,12 +159,12 @@ inl:                                    # @inl
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp20:
+.Ltmp15:
 	.cfi_def_cfa_offset 16
-.Ltmp21:
+.Ltmp16:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp22:
+.Ltmp17:
 	.cfi_def_cfa_register %rbp
 	pushq	%rax
 	movw	%di, %ax
@@ -178,8 +178,8 @@ inl:                                    # @inl
 	addq	$8, %rsp
 	popq	%rbp
 	retq
-.Ltmp23:
-	.size	inl, .Ltmp23-inl
+.Lfunc_end5:
+	.size	inl, .Lfunc_end5-inl
 	.cfi_endproc
 
 	.globl	wrmsr
@@ -189,12 +189,12 @@ wrmsr:                                  # @wrmsr
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp24:
+.Ltmp18:
 	.cfi_def_cfa_offset 16
-.Ltmp25:
+.Ltmp19:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp26:
+.Ltmp20:
 	.cfi_def_cfa_register %rbp
 	subq	$24, %rsp
 	movl	%edi, -4(%rbp)
@@ -215,8 +215,8 @@ wrmsr:                                  # @wrmsr
 	addq	$24, %rsp
 	popq	%rbp
 	retq
-.Ltmp27:
-	.size	wrmsr, .Ltmp27-wrmsr
+.Lfunc_end6:
+	.size	wrmsr, .Lfunc_end6-wrmsr
 	.cfi_endproc
 
 	.globl	rdmsr
@@ -226,12 +226,12 @@ rdmsr:                                  # @rdmsr
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp28:
+.Ltmp21:
 	.cfi_def_cfa_offset 16
-.Ltmp29:
+.Ltmp22:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp30:
+.Ltmp23:
 	.cfi_def_cfa_register %rbp
 	subq	$12, %rsp
 	movl	%edi, -4(%rbp)
@@ -253,10 +253,10 @@ rdmsr:                                  # @rdmsr
 	addq	$12, %rsp
 	popq	%rbp
 	retq
-.Ltmp31:
-	.size	rdmsr, .Ltmp31-rdmsr
+.Lfunc_end7:
+	.size	rdmsr, .Lfunc_end7-rdmsr
 	.cfi_endproc
 
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

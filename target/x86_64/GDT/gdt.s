@@ -21,7 +21,7 @@ GDT_Initialize:                         # @GDT_Initialize
 	.cfi_offset %rbx, -32
 .Ltmp4:
 	.cfi_offset %r14, -24
-	movl	$0, %eax
+	xorl	%eax, %eax
 	#APP
 	cli
 	#NO_APP
@@ -50,7 +50,7 @@ GDT_Initialize:                         # @GDT_Initialize
 	movq	%rax, -32(%rbp)         # 8-byte Spill
 	callq	GDT_SetEntry
 	movl	$1, %ecx
-	movl	$0, %edx
+	xorl	%edx, %edx
 	movl	$4294967295, %esi       # imm = 0xFFFFFFFF
 	movl	$154, %edi
 	movl	$32, %r8d
@@ -71,7 +71,7 @@ GDT_Initialize:                         # @GDT_Initialize
 	movl	%r14d, %r8d
 	callq	GDT_SetEntry
 	movl	$2, %ecx
-	movl	$0, %edx
+	xorl	%edx, %edx
 	movl	$4294967295, %esi       # imm = 0xFFFFFFFF
 	movl	$146, %edi
 	movl	$2, %r8d
@@ -89,7 +89,7 @@ GDT_Initialize:                         # @GDT_Initialize
 	movl	%r11d, %r8d
 	callq	GDT_SetEntry
 	movl	$3, %ecx
-	movl	$0, %edx
+	xorl	%edx, %edx
 	movl	$4294967295, %esi       # imm = 0xFFFFFFFF
 	movl	$250, %edi
 	movl	$32, %r8d
@@ -110,7 +110,7 @@ GDT_Initialize:                         # @GDT_Initialize
 	movl	%r14d, %r8d
 	callq	GDT_SetEntry
 	movl	$4, %ecx
-	movl	$0, %edx
+	xorl	%edx, %edx
 	movl	$4294967295, %esi       # imm = 0xFFFFFFFF
 	movl	$242, %edi
 	movl	$4, %r8d
@@ -130,8 +130,8 @@ GDT_Initialize:                         # @GDT_Initialize
 	movl	$5, %ecx
 	movq	$sys_tss, %rax
 	movl	%eax, %edx
-	movq	$sys_tss+160, %rax
-	movl	%eax, %esi
+	movl	%edx, %esi
+	addl	$160, %esi
 	movl	$5, %edi
 	movl	$233, %r8d
 	xorl	%r9d, %r9d
@@ -164,8 +164,8 @@ flush:
 	popq	%r14
 	popq	%rbp
 	retq
-.Ltmp5:
-	.size	GDT_Initialize, .Ltmp5-GDT_Initialize
+.Lfunc_end0:
+	.size	GDT_Initialize, .Lfunc_end0-GDT_Initialize
 	.cfi_endproc
 
 	.globl	GDT_SetEntry
@@ -175,12 +175,12 @@ GDT_SetEntry:                           # @GDT_SetEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_offset 16
-.Ltmp7:
+.Ltmp6:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp8:
+.Ltmp7:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%r8b, %al
@@ -221,8 +221,8 @@ GDT_SetEntry:                           # @GDT_SetEntry
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp9:
-	.size	GDT_SetEntry, .Ltmp9-GDT_SetEntry
+.Lfunc_end1:
+	.size	GDT_SetEntry, .Lfunc_end1-GDT_SetEntry
 	.cfi_endproc
 
 	.type	sys_tss,@object         # @sys_tss
@@ -232,5 +232,5 @@ GDT_SetEntry:                           # @GDT_SetEntry
 	.type	gdt_entries,@object     # @gdt_entries
 	.comm	gdt_entries,48,16
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

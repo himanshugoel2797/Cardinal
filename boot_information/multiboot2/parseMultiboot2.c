@@ -9,6 +9,7 @@ static CardinalBootInfo bootInfo;
 typedef struct multiboot_tag_framebuffer multiboot_tag_framebuffer;
 typedef struct multiboot_tag_mmap multiboot_tag_mmap;
 typedef struct multiboot_tag_new_acpi multiboot_tag_new_acpi;
+typedef struct multiboot_tag_elf_sections multiboot_tag_elf_sections;
 
 void
 ParseAndSaveBootInformation(void *boot_info)
@@ -52,7 +53,7 @@ ParseAndSaveBootInformation(void *boot_info)
                     bootInfo.elf_shdr_type = elf->type;
                     bootInfo.elf_shdr_size = elf->size;
                     bootInfo.elf_shdr_num = elf->num;
-                    bootInfo.elf_shdr_entize = elf->entsize;
+                    bootInfo.elf_shdr_entsize = elf->entsize;
                     bootInfo.elf_shdr_shndx = elf->shndx;
                     bootInfo.elf_shdr_addr = (uint64_t)elf->sections;
 

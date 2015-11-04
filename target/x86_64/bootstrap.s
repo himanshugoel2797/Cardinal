@@ -22,15 +22,15 @@ bootstrap_render:                       # @bootstrap_render
 .LBB0_1:                                # =>This Inner Loop Header: Depth=1
 	movl	-20(%rbp), %eax
 	movq	-16(%rbp), %rcx
-	movl	32(%rcx), %edx
+	movl	64(%rcx), %edx
 	movq	-16(%rbp), %rcx
-	imull	24(%rcx), %edx
+	imull	56(%rcx), %edx
 	cmpl	%edx, %eax
 	jae	.LBB0_4
 # BB#2:                                 #   in Loop: Header=BB0_1 Depth=1
 	movl	-4(%rbp), %eax
 	movq	-16(%rbp), %rcx
-	movq	16(%rcx), %rcx
+	movq	48(%rcx), %rcx
 	movl	-20(%rbp), %edx
 	movl	%edx, %esi
 	addq	%rsi, %rcx
@@ -44,8 +44,8 @@ bootstrap_render:                       # @bootstrap_render
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	bootstrap_render, .Ltmp3-bootstrap_render
+.Lfunc_end0:
+	.size	bootstrap_render, .Lfunc_end0-bootstrap_render
 	.cfi_endproc
 
 	.globl	bootstrap_kernel_panic
@@ -55,12 +55,12 @@ bootstrap_kernel_panic:                 # @bootstrap_kernel_panic
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%dil, %al
@@ -73,8 +73,8 @@ bootstrap_kernel_panic:                 # @bootstrap_kernel_panic
 	movl	%eax, %edi
 	callq	bootstrap_render
 	jmp	.LBB1_1
-.Ltmp7:
-	.size	bootstrap_kernel_panic, .Ltmp7-bootstrap_kernel_panic
+.Lfunc_end1:
+	.size	bootstrap_kernel_panic, .Lfunc_end1-bootstrap_kernel_panic
 	.cfi_endproc
 
 	.section	.entry_point,"ax",@progbits
@@ -85,12 +85,12 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	subq	$80, %rsp
 	movq	%rdi, -8(%rbp)
@@ -109,10 +109,9 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	callq	GetBootInfo
 	movq	%rax, -32(%rbp)
 	movq	-32(%rbp), %rax
-	movq	16(%rax), %rsi
-	movabsq	$-8589934592, %rdi      # imm = 0xFFFFFFFE00000000
-	addq	%rdi, %rsi
-	movq	%rsi, 16(%rax)
+	movabsq	$-8589934592, %rsi      # imm = 0xFFFFFFFE00000000
+	addq	48(%rax), %rsi
+	movq	%rsi, 48(%rax)
 	cmpq	$920085129, -16(%rbp)   # imm = 0x36D76289
 	je	.LBB2_2
 # BB#1:
@@ -127,7 +126,7 @@ bootstrap_kernel:                       # @bootstrap_kernel
                                         #     Child Loop BB2_5 Depth 2
 	movl	-36(%rbp), %eax
 	movq	-32(%rbp), %rcx
-	cmpl	32(%rcx), %eax
+	cmpl	64(%rcx), %eax
 	jae	.LBB2_10
 # BB#4:                                 #   in Loop: Header=BB2_3 Depth=1
 	movl	$0, -40(%rbp)
@@ -135,7 +134,7 @@ bootstrap_kernel:                       # @bootstrap_kernel
                                         # =>  This Inner Loop Header: Depth=2
 	movl	-40(%rbp), %eax
 	movq	-32(%rbp), %rcx
-	cmpl	24(%rcx), %eax
+	cmpl	56(%rcx), %eax
 	jae	.LBB2_8
 # BB#6:                                 #   in Loop: Header=BB2_5 Depth=2
 	movl	-36(%rbp), %eax
@@ -145,7 +144,7 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	sete	%cl
 	andb	$1, %cl
 	movzbl	%cl, %eax
-	imull	 $16763904, %eax        # imm = 0xFFCC00
+	imull	$16763904, %eax, %eax   # imm = 0xFFCC00
 	movl	-40(%rbp), %edx
 	andl	$63, %edx
 	shrl	$4, %edx
@@ -153,16 +152,16 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	sete	%cl
 	andb	$1, %cl
 	movzbl	%cl, %edx
-	imull	 $16763904, %edx        # imm = 0xFFCC00
+	imull	$16763904, %edx, %edx   # imm = 0xFFCC00
 	orl	%edx, %eax
 	movq	-32(%rbp), %rsi
-	movq	16(%rsi), %rsi
+	movq	48(%rsi), %rsi
 	movl	-40(%rbp), %edx
 	movl	%edx, %edi
 	addq	%rdi, %rsi
 	movl	-36(%rbp), %edx
 	movq	-32(%rbp), %rdi
-	imull	24(%rdi), %edx
+	imull	56(%rdi), %edx
 	movl	%edx, %edx
 	movl	%edx, %edi
 	addq	%rdi, %rsi
@@ -193,50 +192,41 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	callq	APIC_Initialize
 	movl	%eax, -68(%rbp)         # 4-byte Spill
 	callq	kernel_main
-	movl	coreCount, %eax
-	cmpl	$1, %eax
-	jne	.LBB2_13
-# BB#12:
-	movl	$0, %eax
-	xorl	%edi, %edi
-	movl	%eax, -72(%rbp)         # 4-byte Spill
-	callq	bootstrap_kernel_panic
-.LBB2_13:
 	movl	$16711680, -44(%rbp)    # imm = 0xFF0000
 	movl	$16776960, -48(%rbp)    # imm = 0xFFFF00
 	movl	$0, -52(%rbp)
-.LBB2_14:                               # =>This Loop Header: Depth=1
-                                        #     Child Loop BB2_15 Depth 2
+.LBB2_12:                               # =>This Loop Header: Depth=1
+                                        #     Child Loop BB2_13 Depth 2
 	movl	$0, -56(%rbp)
-.LBB2_15:                               #   Parent Loop BB2_14 Depth=1
+.LBB2_13:                               #   Parent Loop BB2_12 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	movl	-56(%rbp), %eax
 	movq	-32(%rbp), %rcx
-	movl	32(%rcx), %edx
+	movl	64(%rcx), %edx
 	movq	-32(%rbp), %rcx
-	imull	24(%rcx), %edx
+	imull	56(%rcx), %edx
 	cmpl	%edx, %eax
-	jae	.LBB2_18
-# BB#16:                                #   in Loop: Header=BB2_15 Depth=2
+	jae	.LBB2_16
+# BB#14:                                #   in Loop: Header=BB2_13 Depth=2
 	movl	-44(%rbp), %eax
 	movq	-32(%rbp), %rcx
-	movq	16(%rcx), %rcx
+	movq	48(%rcx), %rcx
 	movl	-56(%rbp), %edx
 	movl	%edx, %esi
 	addq	%rsi, %rcx
 	movl	%eax, (%rcx)
-# BB#17:                                #   in Loop: Header=BB2_15 Depth=2
+# BB#15:                                #   in Loop: Header=BB2_13 Depth=2
 	movl	-56(%rbp), %eax
 	addl	$4, %eax
 	movl	%eax, -56(%rbp)
-	jmp	.LBB2_15
-.LBB2_18:                               #   in Loop: Header=BB2_14 Depth=1
+	jmp	.LBB2_13
+.LBB2_16:                               #   in Loop: Header=BB2_12 Depth=1
 	movl	-52(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -52(%rbp)
 	cmpl	$128, -52(%rbp)
-	jne	.LBB2_20
-# BB#19:                                #   in Loop: Header=BB2_14 Depth=1
+	jne	.LBB2_18
+# BB#17:                                #   in Loop: Header=BB2_12 Depth=1
 	movl	-44(%rbp), %eax
 	movl	%eax, -52(%rbp)
 	movl	-48(%rbp), %eax
@@ -244,10 +234,10 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movl	-52(%rbp), %eax
 	movl	%eax, -48(%rbp)
 	movl	$0, -52(%rbp)
-.LBB2_20:                               #   in Loop: Header=BB2_14 Depth=1
-	jmp	.LBB2_14
-.Ltmp11:
-	.size	bootstrap_kernel, .Ltmp11-bootstrap_kernel
+.LBB2_18:                               #   in Loop: Header=BB2_12 Depth=1
+	jmp	.LBB2_12
+.Lfunc_end2:
+	.size	bootstrap_kernel, .Lfunc_end2-bootstrap_kernel
 	.cfi_endproc
 
 	.section	.tramp_handler,"ax",@progbits
@@ -258,12 +248,12 @@ smp_bootstrap:                          # @smp_bootstrap
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp12:
+.Ltmp9:
 	.cfi_def_cfa_offset 16
-.Ltmp13:
+.Ltmp10:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp14:
+.Ltmp11:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	coreCount, %eax
@@ -272,7 +262,8 @@ smp_bootstrap:                          # @smp_bootstrap
 	#APP
 	hlt
 	#NO_APP
-	movabsq	$16384, %rcx            # imm = 0x4000
+	movl	$16384, %eax            # imm = 0x4000
+	movl	%eax, %ecx
 	movl	$16384, %eax            # imm = 0x4000
 	movl	%eax, %edi
 	movq	%rcx, -16(%rbp)         # 8-byte Spill
@@ -293,8 +284,8 @@ smp_bootstrap:                          # @smp_bootstrap
 	callq	FPU_Initialize
 .LBB3_1:                                # =>This Inner Loop Header: Depth=1
 	jmp	.LBB3_1
-.Ltmp15:
-	.size	smp_bootstrap, .Ltmp15-smp_bootstrap
+.Lfunc_end3:
+	.size	smp_bootstrap, .Lfunc_end3-smp_bootstrap
 	.cfi_endproc
 
 	.type	coreCount,@object       # @coreCount
@@ -308,5 +299,5 @@ coreCount:
 	.type	sys_tss,@object         # @sys_tss
 	.comm	sys_tss,160,1
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

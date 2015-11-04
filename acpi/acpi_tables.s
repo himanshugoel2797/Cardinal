@@ -17,7 +17,7 @@ ACPITables_Initialize:                  # @ACPITables_Initialize
 	subq	$32, %rsp
 	movq	$0, rsdp
 	callq	GetBootInfo
-	movq	8(%rax), %rax
+	movq	40(%rax), %rax
 	movq	%rax, -16(%rbp)
 	movzbl	(%rax), %ecx
 	movb	.L.str, %dl
@@ -47,9 +47,8 @@ ACPITables_Initialize:                  # @ACPITables_Initialize
 # BB#4:                                 #   in Loop: Header=BB0_3 Depth=1
 	movq	-32(%rbp), %rax
 	movzbl	(%rax), %ecx
-	movl	-20(%rbp), %edx
-	addl	%ecx, %edx
-	movl	%edx, -20(%rbp)
+	addl	-20(%rbp), %ecx
+	movl	%ecx, -20(%rbp)
 # BB#5:                                 #   in Loop: Header=BB0_3 Depth=1
 	movq	-32(%rbp), %rax
 	addq	$1, %rax
@@ -78,8 +77,8 @@ ACPITables_Initialize:                  # @ACPITables_Initialize
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	ACPITables_Initialize, .Ltmp3-ACPITables_Initialize
+.Lfunc_end0:
+	.size	ACPITables_Initialize, .Lfunc_end0-ACPITables_Initialize
 	.cfi_endproc
 
 	.globl	ACPITables_ValidateChecksum
@@ -89,12 +88,12 @@ ACPITables_ValidateChecksum:            # @ACPITables_ValidateChecksum
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -130,8 +129,8 @@ ACPITables_ValidateChecksum:            # @ACPITables_ValidateChecksum
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp7:
-	.size	ACPITables_ValidateChecksum, .Ltmp7-ACPITables_ValidateChecksum
+.Lfunc_end1:
+	.size	ACPITables_ValidateChecksum, .Lfunc_end1-ACPITables_ValidateChecksum
 	.cfi_endproc
 
 	.globl	ACPITables_FindTable
@@ -141,12 +140,12 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	subq	$112, %rsp
 	movq	%rdi, -16(%rbp)
@@ -174,7 +173,7 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	cmpb	$0, %al
 	jne	.LBB2_5
 # BB#4:
-	movabsq	$-1, %rax
+	movq	$-1, %rax
 	movq	%rax, -8(%rbp)
 	jmp	.LBB2_28
 .LBB2_5:
@@ -197,7 +196,8 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	movl	36(%rcx,%rax,4), %edx
 	movl	%edx, %edi
 	callq	GetVirtualAddress
-	movabsq	$4, %rcx
+	movl	$4, %edx
+	movl	%edx, %ecx
 	movq	%rax, -56(%rbp)
 	movq	-56(%rbp), %rdi
 	movq	-16(%rbp), %rsi
@@ -245,7 +245,7 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	cmpb	$0, %al
 	jne	.LBB2_17
 # BB#16:
-	movabsq	$-1, %rax
+	movq	$-1, %rax
 	movq	%rax, -8(%rbp)
 	jmp	.LBB2_28
 .LBB2_17:
@@ -267,7 +267,8 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	movq	-64(%rbp), %rcx
 	movq	40(%rcx,%rax,8), %rdi
 	callq	GetVirtualAddress
-	movabsq	$4, %rcx
+	movl	$4, %edx
+	movl	%edx, %ecx
 	movq	%rax, -88(%rbp)
 	movq	-88(%rbp), %rdi
 	movq	-16(%rbp), %rsi
@@ -311,8 +312,8 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	addq	$112, %rsp
 	popq	%rbp
 	retq
-.Ltmp11:
-	.size	ACPITables_FindTable, .Ltmp11-ACPITables_FindTable
+.Lfunc_end2:
+	.size	ACPITables_FindTable, .Lfunc_end2-ACPITables_FindTable
 	.cfi_endproc
 
 	.type	rsdp,@object            # @rsdp
@@ -325,5 +326,5 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	.size	.L.str, 9
 
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

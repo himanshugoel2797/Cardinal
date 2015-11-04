@@ -16,7 +16,7 @@ FPU_Initialize:                         # @FPU_Initialize
 	.cfi_def_cfa_register %rbp
 	subq	$48, %rsp
 	movl	$1, %eax
-	movl	$0, %ecx
+	xorl	%ecx, %ecx
 	movl	$1, %edi
 	xorl	%esi, %esi
 	movl	%eax, -8(%rbp)          # 4-byte Spill
@@ -73,7 +73,7 @@ FPU_Initialize:                         # @FPU_Initialize
 	#NO_APP
 	movl	%eax, -4(%rbp)
 	movl	-4(%rbp), %eax
-	andl	$4294967291, %eax       # imm = 0xFFFFFFFB
+	andl	$-5, %eax
 	movl	%eax, -4(%rbp)
 	movl	-4(%rbp), %eax
 	orl	$32, %eax
@@ -108,10 +108,10 @@ FPU_Initialize:                         # @FPU_Initialize
 	addq	$48, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	FPU_Initialize, .Ltmp3-FPU_Initialize
+.Lfunc_end0:
+	.size	FPU_Initialize, .Lfunc_end0-FPU_Initialize
 	.cfi_endproc
 
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

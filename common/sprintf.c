@@ -167,7 +167,8 @@ int vsnprintf ( char * str, const char * format, va_list vl )
                                 case 'd':
                                 case 'i':
                                 {
-                                    int len = itoa(va_arg(vl, int32_t), str++, 10) - str;
+                                    int len = itoa(va_arg(vl, int32_t), str, 10) - str;
+				    len++;
                                     str += len;
                                     while(len < padding_size)
                                         {

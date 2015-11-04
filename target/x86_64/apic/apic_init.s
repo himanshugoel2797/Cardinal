@@ -16,7 +16,7 @@ APIC_Initialize:                        # @APIC_Initialize
 	.cfi_def_cfa_register %rbp
 	subq	$160, %rsp
 	movl	$1, %eax
-	movl	$0, %ecx
+	xorl	%ecx, %ecx
 	movl	$1, %edi
 	xorl	%esi, %esi
 	movl	%eax, -92(%rbp)         # 4-byte Spill
@@ -165,7 +165,7 @@ APIC_Initialize:                        # @APIC_Initialize
 	movb	%cl, -134(%rbp)         # 1-byte Spill
 	movb	%dl, -135(%rbp)         # 1-byte Spill
 	callq	APIC_GetID
-	movl	$0, %esi
+	xorl	%esi, %esi
 	movzbl	%al, %edi
 	movl	%edi, %edx
 	movb	-134(%rbp), %al         # 1-byte Reload
@@ -217,7 +217,7 @@ APIC_Initialize:                        # @APIC_Initialize
 	movb	%dl, -141(%rbp)         # 1-byte Spill
 	movb	%sil, -142(%rbp)        # 1-byte Spill
 	callq	APIC_GetID
-	movl	$0, %ecx
+	xorl	%ecx, %ecx
 	movzbl	%al, %edi
 	movl	%edi, %edx
 	movl	-88(%rbp), %edi
@@ -247,7 +247,7 @@ APIC_Initialize:                        # @APIC_Initialize
 	movb	%dl, -149(%rbp)         # 1-byte Spill
 	movb	%sil, -150(%rbp)        # 1-byte Spill
 	callq	APIC_GetID
-	movl	$0, %ecx
+	xorl	%ecx, %ecx
 	movzbl	%al, %edi
 	movl	%edi, %edx
 	movl	-88(%rbp), %edi
@@ -281,9 +281,8 @@ APIC_Initialize:                        # @APIC_Initialize
 .LBB0_32:                               #   in Loop: Header=BB0_8 Depth=3
 	movq	-40(%rbp), %rax
 	movzbl	1(%rax), %ecx
-	movl	-32(%rbp), %edx
-	addl	%ecx, %edx
-	movl	%edx, -32(%rbp)
+	addl	-32(%rbp), %ecx
+	movl	%ecx, -32(%rbp)
 	movq	-40(%rbp), %rax
 	movzbl	1(%rax), %ecx
 	cmpl	$0, %ecx
@@ -323,8 +322,8 @@ APIC_Initialize:                        # @APIC_Initialize
 	addq	$160, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	APIC_Initialize, .Ltmp3-APIC_Initialize
+.Lfunc_end0:
+	.size	APIC_Initialize, .Lfunc_end0-APIC_Initialize
 	.cfi_endproc
 	.section	.rodata,"a",@progbits
 	.align	8
@@ -344,5 +343,5 @@ APIC_Initialize:                        # @APIC_Initialize
 	.size	.L.str, 5
 
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits

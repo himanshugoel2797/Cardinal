@@ -92,8 +92,8 @@ IDT_Initialize:                         # @IDT_Initialize
 	addq	$32, %rsp
 	popq	%rbp
 	retq
-.Ltmp3:
-	.size	IDT_Initialize, .Ltmp3-IDT_Initialize
+.Lfunc_end0:
+	.size	IDT_Initialize, .Lfunc_end0-IDT_Initialize
 	.cfi_endproc
 
 	.globl	IDT_SetEntry
@@ -103,12 +103,12 @@ IDT_SetEntry:                           # @IDT_SetEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp4:
+.Ltmp3:
 	.cfi_def_cfa_offset 16
-.Ltmp5:
+.Ltmp4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp6:
+.Ltmp5:
 	.cfi_def_cfa_register %rbp
 	subq	$24, %rsp
 	movb	%cl, %al
@@ -152,8 +152,8 @@ IDT_SetEntry:                           # @IDT_SetEntry
 	addq	$24, %rsp
 	popq	%rbp
 	retq
-.Ltmp7:
-	.size	IDT_SetEntry, .Ltmp7-IDT_SetEntry
+.Lfunc_end1:
+	.size	IDT_SetEntry, .Lfunc_end1-IDT_SetEntry
 	.cfi_endproc
 
 	.globl	IDT_FillSWInterruptHandler
@@ -163,16 +163,16 @@ IDT_FillSWInterruptHandler:             # @IDT_FillSWInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp8:
+.Ltmp6:
 	.cfi_def_cfa_offset 16
-.Ltmp9:
+.Ltmp7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp10:
+.Ltmp8:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	subq	$16, %rsp
-.Ltmp11:
+.Ltmp9:
 	.cfi_offset %rbx, -24
 	movb	%dl, %al
 	movb	%sil, %cl
@@ -317,8 +317,8 @@ IDT_FillSWInterruptHandler:             # @IDT_FillSWInterruptHandler
 	popq	%rbx
 	popq	%rbp
 	retq
-.Ltmp12:
-	.size	IDT_FillSWInterruptHandler, .Ltmp12-IDT_FillSWInterruptHandler
+.Lfunc_end2:
+	.size	IDT_FillSWInterruptHandler, .Lfunc_end2-IDT_FillSWInterruptHandler
 	.cfi_endproc
 
 	.globl	IDT_DefaultHandler
@@ -363,9 +363,8 @@ IDT_DefaultHandler:                     # @IDT_DefaultHandler
 	iretq
 
 	#NO_APP
-	retq
-.Ltmp13:
-	.size	IDT_DefaultHandler, .Ltmp13-IDT_DefaultHandler
+.Lfunc_end3:
+	.size	IDT_DefaultHandler, .Lfunc_end3-IDT_DefaultHandler
 	.cfi_endproc
 
 	.globl	IDT_MainHandler
@@ -375,12 +374,12 @@ IDT_MainHandler:                        # @IDT_MainHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp14:
+.Ltmp10:
 	.cfi_def_cfa_offset 16
-.Ltmp15:
+.Ltmp11:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp16:
+.Ltmp12:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -404,8 +403,8 @@ IDT_MainHandler:                        # @IDT_MainHandler
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp17:
-	.size	IDT_MainHandler, .Ltmp17-IDT_MainHandler
+.Lfunc_end4:
+	.size	IDT_MainHandler, .Lfunc_end4-IDT_MainHandler
 	.cfi_endproc
 
 	.globl	IDT_RegisterHandler
@@ -415,12 +414,12 @@ IDT_RegisterHandler:                    # @IDT_RegisterHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp18:
+.Ltmp13:
 	.cfi_def_cfa_offset 16
-.Ltmp19:
+.Ltmp14:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp20:
+.Ltmp15:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movb	%dil, %al
@@ -433,8 +432,8 @@ IDT_RegisterHandler:                    # @IDT_RegisterHandler
 	addq	$16, %rsp
 	popq	%rbp
 	retq
-.Ltmp21:
-	.size	IDT_RegisterHandler, .Ltmp21-IDT_RegisterHandler
+.Lfunc_end5:
+	.size	IDT_RegisterHandler, .Lfunc_end5-IDT_RegisterHandler
 	.cfi_endproc
 
 	.type	idt_table,@object       # @idt_table
@@ -450,5 +449,5 @@ IDT_RegisterHandler:                    # @IDT_RegisterHandler
 	.local	idt_handlers
 	.comm	idt_handlers,8192,16
 
-	.ident	"clang version 3.5.0 (tags/RELEASE_350/final)"
+	.ident	"clang version 3.7.0 (tags/RELEASE_370/final)"
 	.section	".note.GNU-stack","",@progbits
