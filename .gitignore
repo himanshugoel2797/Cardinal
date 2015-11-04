@@ -19,7 +19,9 @@
 *.so
 *.so.*
 *.dylib
-
+*.iso
+flash.img
+build/*
 # Executables
 *.exe
 *.out
