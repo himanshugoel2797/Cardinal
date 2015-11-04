@@ -22,8 +22,8 @@ typedef uint8_t bool;
 #define DISABLED 0
 
 
-#define KiB(x) (x * 1024)
-#define MiB(x) (KiB(1) * 1024 * x)
-#define GiB(x) (uint64_t)(MiB(1) * 1024 * x)
+#define KiB(x) (x * 1024ull)
+#define MiB(x) (KiB(1) * 1024ull * x)
+#define GiB(x) (uint64_t)(MiB(1) * 1024ull * x)
 
 #endif /* end of include guard: _OS_TYPES_H_ */

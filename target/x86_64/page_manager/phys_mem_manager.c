@@ -16,7 +16,7 @@ pmem_Initialize(void)
     // Determine which parts of memory are already in use by the kernel by reading
     // the symbol table
     CardinalBootInfo *info = GetBootInfo();
-    memory_size = KiB(info->mem_size);
+    memory_size = info->mem_size;
 
     // Determine the total number of pages
     freePageCount = totalPageCount = page_count = memory_size / (uint64_t)PAGE_SIZE;

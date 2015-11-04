@@ -3,6 +3,8 @@
 #include "GDT/gdt.h"
 #include "IDT/idt.h"
 #include "fpu.h"
+#include "rtc/rtc.h"
+#include "page_manager/phys_mem_manager.h"
 #include "boot_information/boot_information.h"
 #include "bootinfo.h"
 #include "x86_64_common.h"
@@ -75,6 +77,9 @@ bootstrap_kernel(void *param,
     ACPITables_Initialize();	//Initialize the ACPI table data
 
     APIC_Initialize();
+    pmem_Initialize ();
+    RTC_Initialize ();
+
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)
     //Initialize FPU, setup threading code, provide interfaces to OS
