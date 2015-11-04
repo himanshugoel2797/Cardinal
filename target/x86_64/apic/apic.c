@@ -186,7 +186,7 @@ APIC_SendEOI(uint8_t int_num)
     uint32_t val = APIC_Read(isr_msr);
     if( CHECK_BIT(val, (int_num % 32)) )
         {
-            APIC_Write(APIC_EOI, 0xDEADBEEF);
+            APIC_Write(APIC_EOI, 0);
         }
 }
 

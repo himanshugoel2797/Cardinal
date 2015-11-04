@@ -786,9 +786,9 @@ APIC_SendEOI:                           # @APIC_SendEOI
 	je	.LBB15_2
 # BB#1:
 	movl	$176, %eax
-	movl	$3735928559, %ecx       # imm = 0xDEADBEEF
+	xorl	%ecx, %ecx
 	movl	$176, %edi
-	movl	$-559038737, %esi       # imm = 0xFFFFFFFFDEADBEEF
+	xorl	%esi, %esi
 	movl	%eax, -24(%rbp)         # 4-byte Spill
 	movl	%ecx, -28(%rbp)         # 4-byte Spill
 	callq	APIC_Write
