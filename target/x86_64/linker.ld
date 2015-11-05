@@ -26,6 +26,7 @@ SECTIONS
 	}
 
 	. = KERNEL_VADDR + 2M;
+  	_region_kernel_start_ = .;
 	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VADDR)
 	{
 		*(.entry_point)

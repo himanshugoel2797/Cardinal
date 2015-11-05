@@ -4,6 +4,7 @@
 #include "IDT/idt.h"
 #include "fpu.h"
 #include "rtc/rtc.h"
+#include "virt_mem_manager/virt_mem_manager.h"
 #include "page_manager/phys_mem_manager.h"
 #include "boot_information/boot_information.h"
 #include "bootinfo.h"
@@ -77,7 +78,8 @@ bootstrap_kernel(void *param,
     ACPITables_Initialize();	//Initialize the ACPI table data
 
     APIC_Initialize();
-    pmem_Initialize ();
+    MemMan_Initialize ();
+    VirtMemMan_Initialize ();
     RTC_Initialize ();
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel

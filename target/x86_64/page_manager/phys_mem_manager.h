@@ -3,17 +3,19 @@
 
 #include "types.h"
 
-uint32_t 
-pmem_Initialize(void);
+#define PAGE_SIZE (uint64_t)KiB(4)
 
-uint64_t 
-physMemMan_Alloc(void);
+uint32_t
+MemMan_Initialize(void);
 
-void 
-physMemMan_Free(uint64_t ptr);
+uint64_t
+MemMan_Alloc(void);
 
-void 
-physMemMan_MarkUsed(uint64_t addr, 
-                    uint64_t size);
+void
+MemMan_Free(uint64_t ptr);
+
+void
+MemMan_MarkUsed(uint64_t addr,
+		uint64_t size);
 
 #endif /* end of include guard: _PHYS_MEM_MANAGER_H_ */

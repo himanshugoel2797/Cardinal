@@ -6,4 +6,7 @@
 void*
 GetVirtualAddress(void *physicalAddress);
 
+void*
+GetPhysicalAddress(void *virtualAddress);
+
 #endif
