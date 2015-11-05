@@ -29,4 +29,57 @@ typedef enum
 void
 VirtMemMan_Initialize(void);
 
+PML_Instance
+VirtMemMan_CreateInstance(void);
+
+PML_Instance
+VirtMemMan_SetCurrent(PML_Instance instance);
+
+PML_Instance
+VirtMemMan_GetCurrent(void);
+
+void
+VirtMemMan_MapHPage(PML_Instance       inst,
+                    uint64_t           virt_addr,
+                    uint64_t           phys_addr,
+                    bool               present,
+                    MEM_TYPES          cache,
+                    MEM_ACCESS_PERMS   access_perm,
+                    MEM_SECURITY_PERMS sec_perms);
+
+void
+VirtMemMan_MapLPage(PML_Instance       inst,
+                    uint64_t           virt_addr,
+                    uint64_t           phys_addr,
+                    bool               present,
+                    MEM_TYPES          cache,
+                    MEM_ACCESS_PERMS   access_perm,
+                    MEM_SECURITY_PERMS sec_perms);
+
+void
+VirtMemMan_MapSPage(PML_Instance       inst,
+                    uint64_t           virt_addr,
+                    uint64_t           phys_addr,
+                    bool               present,
+                    MEM_TYPES          cache,
+                    MEM_ACCESS_PERMS   access_perm,
+                    MEM_SECURITY_PERMS sec_perms);
+
+void
+VirtMemMan_Map(PML_Instance       inst,
+               uint64_t           virt_addr,
+               uint64_t           phys_addr,
+               uint64_t           size,
+               bool               present,
+               MEM_TYPES          cache,
+               MEM_ACCESS_PERMS   access_perm,
+               MEM_SECURITY_PERMS sec_perms);
+
+void*
+VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
+                              void         *addr);
+
+//TODO setup a page fault handler manager, allow certain handlers to be registered to be called
+//on page faults within their subscribed ranges, allows setting up things like copy on write, hdd mapping, virtual memory
+
 #endif
