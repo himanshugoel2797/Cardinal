@@ -307,7 +307,7 @@ VirtMemMan_MapSPage(PML_Instance       inst,
   __asm__ volatile("invlpg (%%rax)" :: "a"(virt_addr));
 }
 
-/*void
+void
 VirtMemMan_Map(PML_Instance       inst,
                uint64_t           virt_addr,
                uint64_t           phys_addr,
@@ -319,10 +319,72 @@ VirtMemMan_Map(PML_Instance       inst,
 {
   //Determine the generally best mapping for the given size
 
-  //Simple cases: both addresses are aligned to the page boundary, size is a page size
-  //Complicated cases: addresses aren't aligned
-  //		       size isn't aligned
-}*/
+  while(size > 0)
+    {
+      if(size == KiB(4))VirtMemMan_MapSPage(inst,
+					    virt_addr,
+					    phys_addr,
+					    present,
+					    cache,
+					    access_perm,
+					    sec_perms);
+      else if(size == MiB(2))VirtMemMan_MapLPage(inst,
+						 virt_addr,
+						 phys_addr,
+						 present,
+						 cache,
+						 access_perm,
+						 sec_perms);
+      else if(size == GiB(1))VirtMemMan_MapHPage(inst,
+						 virt_addr,
+						 phys_addr,
+						 present,
+						 cache,
+						 access_perm,
+						 sec_perms);
+      else if(size >= GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0)
+	{
+ 	size -= GiB(1);
+ 	VirtMemMan_Map(inst,
+			virt_addr,
+			phys_addr,
+			GiB(1),
+			present,
+			cache,
+			access_perm,
+			sec_perms);
+ 	virt_addr += GiB(1);
+ 	phys_addr += GiB(1);
+    }else if(size >= MiB(2) && virt_addr % MiB(2) == 0 && phys_addr % MiB(2) == 0)
+    {
+      size -= MiB(2);
+      VirtMemMan_Map(inst,
+		     virt_addr,
+		     phys_addr,
+		     MiB(2),
+		     present,
+		     cache,
+		     access_perm,
+		     sec_perms);
+      virt_addr += MiB(2);
+      phys_addr += MiB(2);
+    }else if(size >= KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0)
+    {
+      size -= KiB(4);
+      VirtMemMan_Map(inst,
+		     virt_addr,
+		     phys_addr,
+		     KiB(4),
+		     present,
+		     cache,
+		     access_perm,
+		     sec_perms);
+      virt_addr += KiB(4);
+      phys_addr += KiB(4);
+    }
+      else break;	//Can't determine a mapping, just stop
+  }
+}
 
 void*
 VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
@@ -365,4 +427,85 @@ VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
     }
 
   return NULL;
+}
+
+void*
+VirtMemMan_FindFreeAddress(PML_Instance       inst,
+                           uint64_t           size,
+                           MEM_SECURITY_PERMS sec_perms)
+{
+  if(size % KiB(4) != 0)
+    size = (size/KiB(4) + 1) * KiB(4);	//Align the size to higher 4KiB
+
+  uint64_t needed_score = size;
+  uint64_t cur_score = 0;
+
+  uint64_t prev_val = 0;
+
+  uint64_t addr = 0;
+#define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
+
+  int pml_base = 0;
+  if(sec_perms == MEM_KERNEL)
+    {
+      pml_base = 128;
+    }
+
+  for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && cur_score < needed_score; ++pml_i)
+    {
+      if((inst[pml_i] & 1) == 0 && needed_score >= GiB(256) && needed_score <= GiB(512))
+	{
+	  BUILD_ADDR(pml_i, 0, 0, 0);
+	  prev_val = pml_i;
+	  cur_score += GiB(256);
+	}
+      else if((inst[pml_i] & 1) == 1)
+	{
+	  uint64_t *pdpt = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(inst[pml_i]));
+
+	  if(cur_score > 0 && pml_i != 0 && (pml_i - 1) != prev_val)cur_score = 0;
+
+	  for(uint64_t pdpt_i = 0; pdpt_i < 512 && cur_score < needed_score; ++pdpt_i)
+	    {
+	      if(((pdpt[pdpt_i] & 1) == 0) && (needed_score - cur_score) >= GiB(1))
+		{
+		  BUILD_ADDR(pml_i, pdpt_i, 0, 0);
+		  cur_score += GiB(1);
+		  prev_val = pdpt_i;
+		}else if((pdpt[pdpt_i] & 1) == 1 && (needed_score - cur_score) < GiB(1))
+		{
+		  uint64_t *pd = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(pdpt[pdpt_i]));
+		  if(cur_score > 0 && pdpt_i != 0 && (pdpt_i - 1) != prev_val)cur_score = 0;
+
+		  for(uint64_t pd_i = 0; pd_i < 512 && cur_score < needed_score; ++pd_i)
+		    {
+		      if(((pd[pd_i] & 1) == 0) && (needed_score - cur_score) >= MiB(2))
+			{
+			  BUILD_ADDR(pml_i, pdpt_i, pd_i, 0);
+			  cur_score += MiB(2);
+			  prev_val = pd_i;
+			}else if((pd[pd_i] & 1) == 1 && (needed_score - cur_score) < MiB(2))
+			{
+			  uint64_t *pt = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(pd[pd_i]));
+		  	  if(cur_score > 0 && pd_i != 0 && (pd_i - 1) != prev_val)cur_score = 0;
+
+			  for(uint64_t pt_i = 0; pt_i < 512 && cur_score < needed_score; ++pt_i)
+			    {
+			      if(pt_i != 0 && prev_val != (pt_i - 1))cur_score = 0;
+			      if((pt[pt_i] & 1) == 0 && (needed_score - cur_score) >= KiB(4))
+				{
+				  BUILD_ADDR(pml_i, pdpt_i, pd_i, pt_i);
+				  cur_score += KiB(4);
+				  prev_val = pt_i;
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+#undef BUILD_ADDR
+ return (void*)addr;
 }
