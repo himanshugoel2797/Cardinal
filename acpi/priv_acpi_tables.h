@@ -71,8 +71,8 @@ typedef struct
     uint64_t address;
 } GenericAddressStructure;
 
-#define XSDT_GET_POINTER_COUNT(h) ((h.Length - sizeof(h)) / 8)
-#define RSDT_GET_POINTER_COUNT(h) ((h.Length - sizeof(h)) / 4)
+#define XSDT_GET_POINTER_COUNT(h) ((h.Length - sizeof(h)) / sizeof(uint64_t))
+#define RSDT_GET_POINTER_COUNT(h) ((h.Length - sizeof(h)) / sizeof(uint32_t))
 
 bool
 ACPITables_ValidateChecksum(ACPISDTHeader *header);

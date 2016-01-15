@@ -151,14 +151,14 @@ void IDT_DefaultHandler()
         "popq %rcx\n\t"
         "popq %rbx\n\t"
         "popq %rax\n\t"
-        "add $24, %rsp\n\t"
+        "add $16, %rsp\n\t"
         "iretq\n\t"
     );
 }
 
 void IDT_MainHandler(Registers *regs)
 {
-    __asm__ volatile("hlt" :: "a"(regs->int_no));
+    //__asm__ volatile("hlt" :: "a"(regs->err_code));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
 }
 

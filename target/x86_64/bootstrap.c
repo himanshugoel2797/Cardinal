@@ -31,6 +31,12 @@ bootstrap_render(uint32_t color)
 }
 
 void
+bootstrap_pagefault_handler(Registers *regs)
+{
+	bootstrap_render (0xaaffaaff + regs->int_no);
+}
+
+void
 bootstrap_kernel_panic(uint8_t severity)
 {
     while(1)
@@ -54,7 +60,7 @@ bootstrap_kernel(void *param,
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
 
-    info->framebuffer_addr += 0xfffffffe00000000;	//Virtualize bootinfo addresses
+    info->framebuffer_addr = (uint64_t)GetVirtualAddress((void*)info->framebuffer_addr);	//Virtualize bootinfo addresses
 
     if(magic != MULTIBOOT_MAGIC)
         {
@@ -73,14 +79,19 @@ bootstrap_kernel(void *param,
 
     GDT_Initialize();	//Setup the GDT
     IDT_Initialize();	//Setup the IDT
+    IDT_RegisterHandler(14, bootstrap_pagefault_handler);
     FPU_Initialize();	//Setup the FPU
-
     ACPITables_Initialize();	//Initialize the ACPI table data
 
+
     APIC_Initialize();
+    bootstrap_render (0xffff);
     MemMan_Initialize ();
+    bootstrap_render (0xffff0000);
     VirtMemMan_Initialize ();
+    bootstrap_render (0xff00);
     RTC_Initialize ();
+    bootstrap_render (0xff0f);
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)

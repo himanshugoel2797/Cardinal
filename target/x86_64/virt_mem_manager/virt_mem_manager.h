@@ -80,6 +80,9 @@ VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
                               void         *addr);
 
 void*
+VirtMemMan_GetVirtualAddress(void *addr);
+
+void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,
                            MEM_SECURITY_PERMS sec_perms);

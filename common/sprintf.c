@@ -2,7 +2,7 @@
 
 char* itoa(int64_t val, char *ostr, int base)
 {
-    char str[512];
+    char str[256];
     char *opts = "0123456789ABCDEF";
     if(base == 16)
         {
@@ -52,8 +52,10 @@ char* itoa(int64_t val, char *ostr, int base)
 
 char* utoa(uint64_t val, char *ostr, int base)
 {
-    char str[512];
+    char str[256];
     char *opts = "0123456789ABCDEF";
+
+  if(base == 0)base = 16;
     if(base == 16)
         {
             for(int i = 0; i < 8; i++)
@@ -95,6 +97,7 @@ char* utoa(uint64_t val, char *ostr, int base)
 int vsnprintf ( char * str, const char * format, va_list vl )
 {
     int n = 0;
+
 
     //Parse the format string
     for(size_t i = 0; i < strlen(format); i++)

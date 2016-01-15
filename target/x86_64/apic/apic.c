@@ -43,7 +43,6 @@ APIC_LocalInitialize(void)
         IDT_RegisterHandler(i, APIC_MainHandler);
     }
 
-
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
     apic_base_addr = (uint32_t*)GetVirtualAddress((void*)(apic_base_msr & 0xfffff000));
 

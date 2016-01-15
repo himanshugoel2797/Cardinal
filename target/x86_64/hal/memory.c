@@ -4,7 +4,7 @@
 void*
 GetVirtualAddress(void *physicalAddress)
 {
-    return (void*)((uint64_t)physicalAddress + 0xfffffffe00000000ull);
+    return VirtMemMan_GetVirtualAddress(physicalAddress);
 }
 
 void*

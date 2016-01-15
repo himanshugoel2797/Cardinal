@@ -84,7 +84,40 @@ VirtMemMan_Initialize(void)
 			    MEM_READ | MEM_WRITE | MEM_EXEC,
 			    MEM_KERNEL);
 
-	//Setup Lower 4GiB Identity Map
+	//Setup Upper 4GiB map
+	VirtMemMan_MapHPage(pml,
+			    0xFFFFFFFDC0000000,
+			    0x1C0000000,
+			    TRUE,
+			    MEM_TYPE_WB,
+			    MEM_READ | MEM_WRITE | MEM_EXEC,
+			    MEM_KERNEL);
+
+	VirtMemMan_MapHPage(pml,
+			    0xFFFFFFFD80000000,
+			    0x180000000,
+			    TRUE,
+			    MEM_TYPE_WB,
+			    MEM_READ | MEM_WRITE | MEM_EXEC,
+			    MEM_KERNEL);
+
+	VirtMemMan_MapHPage(pml,
+			    0xFFFFFFFD40000000,
+			    0x140000000,
+			    TRUE,
+			    MEM_TYPE_WB,
+			    MEM_READ | MEM_WRITE | MEM_EXEC,
+			    MEM_KERNEL);
+
+	VirtMemMan_MapHPage(pml,
+			    0xFFFFFFFD00000000,
+			    0x100000000,
+			    TRUE,
+			    MEM_TYPE_WB,
+			    MEM_READ | MEM_WRITE | MEM_EXEC,
+			    MEM_KERNEL);
+
+	//Setup lower 4GiB map
 	VirtMemMan_MapHPage(pml,
 			    0xFFFFFFFEC0000000,
 			    0xC0000000,
@@ -427,6 +460,12 @@ VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
     }
 
   return NULL;
+}
+
+void*
+VirtMemMan_GetVirtualAddress(void *addr)
+{
+  return (void*)((uint64_t)addr + 0xfffffffc00000000ull + (((uint64_t)addr < 0x100000000)?0x200000000:0));
 }
 
 void*
