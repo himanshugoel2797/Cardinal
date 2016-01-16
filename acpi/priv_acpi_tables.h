@@ -27,11 +27,11 @@ typedef struct
     uint64_t XsdtAddress;
     uint8_t ExtendedChecksum;
     uint8_t reserved[3];
-} RSDPDescriptor20;
+} __attribute__((packed)) RSDPDescriptor20;
 
 #define RSDP_EXPECTED_SIG "RSD PTR "
 #define ACPI_VERSION_1 0
-#define ACPI_VERSION_2 1
+#define ACPI_VERSION_2 2
 
 //! ACPI Section Descriptor Table header
 typedef struct
@@ -45,21 +45,21 @@ typedef struct
     uint32_t OEMRevision;
     uint32_t CreatorID;
     uint32_t CreatorRevision;
-} ACPISDTHeader;
+} __attribute__((packed)) ACPISDTHeader;
 
 //! XSDT Table
 typedef struct
 {
     ACPISDTHeader h;
     uint64_t PointerToOtherSDT[1];
-} XSDT;
+} __attribute__((packed)) XSDT;
 
 //! RSDT Table
 typedef struct
 {
     ACPISDTHeader h;
     uint32_t PointerToOtherSDT[1];
-} RSDT;
+} __attribute__((packed)) RSDT;
 
 //! Generic ACPI Address structure
 typedef struct

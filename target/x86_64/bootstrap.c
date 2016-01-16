@@ -82,7 +82,6 @@ bootstrap_kernel(void *param,
     FPU_Initialize();	//Setup the FPU
     ACPITables_Initialize();	//Initialize the ACPI table data
 
-
     APIC_Initialize();
     bootstrap_render (0xffff);
     MemMan_Initialize ();

@@ -24,7 +24,7 @@ ACPITables_Initialize(void)
                     rsdp = (RSDPDescriptor20*) rsdp_sig;
                     uint32_t checksum = 0;
 
-                    for (uint8_t *tmp = rsdp_sig; tmp < rsdp_sig + (rsdp->firstPart.Revision == ACPI_VERSION_1 ? sizeof(RSDPDescriptor):rsdp->Length); tmp++)
+                    for (uint8_t *tmp = rsdp_sig; tmp < rsdp_sig + sizeof(RSDPDescriptor); tmp++)
                         {
                             checksum += *tmp;
                         }
@@ -57,7 +57,33 @@ ACPITables_FindTable(const char *table_name,
 {
     if (rsdp == NULL) return NULL;
 
-    if (rsdp->firstPart.Revision == ACPI_VERSION_1)
+
+  if(rsdp->firstPart.Revision == ACPI_VERSION_2 && rsdp->XsdtAddress)
+        {
+            XSDT *xsdt = (XSDT*)GetVirtualAddress((void*)rsdp->XsdtAddress);
+            if (!ACPITables_ValidateChecksum((ACPISDTHeader*)xsdt)) return (void*)-1;
+
+            int entries = XSDT_GET_POINTER_COUNT((xsdt->h));
+            int cur_index = 0;
+
+            for (int i = 0; i < entries; i++)
+                {
+		  if(xsdt->PointerToOtherSDT[i] == 0)continue;
+                    ACPISDTHeader *h = (ACPISDTHeader *)GetVirtualAddress((void*)xsdt->PointerToOtherSDT[i]);
+		   bootstrap_render(entries);
+		   //debug_gfx_writeLine("A");
+                    if (!strncmp(h->Signature, table_name, 4) && ACPITables_ValidateChecksum(h))
+                        {
+			  bootstrap_render (0xffffffff);
+                            if (cur_index == index)
+                                return (void *) h;
+
+                            cur_index++;
+                        }
+		  bootstrap_render(-1);
+                }
+        }
+    else if (rsdp->firstPart.Revision == ACPI_VERSION_1 || !rsdp->XsdtAddress)
         {
             RSDT *rsdt = (RSDT*)GetVirtualAddress((void*)(uint64_t)rsdp->firstPart.RsdtAddress);
             if (!ACPITables_ValidateChecksum((ACPISDTHeader*)rsdt)) return NULL;
@@ -76,30 +102,7 @@ ACPITables_FindTable(const char *table_name,
 
                             cur_index++;
                         }
-                }
-        }
-    else
-        {
-            XSDT *xsdt = (XSDT*)GetVirtualAddress((void*)rsdp->XsdtAddress);
-            if (!ACPITables_ValidateChecksum((ACPISDTHeader*)xsdt)) return (void*)-1;
-
-            int entries = XSDT_GET_POINTER_COUNT((xsdt->h));
-            int cur_index = 0;
-
-            for (int i = 0; i < entries; i++)
-                {
-                    ACPISDTHeader *h = (ACPISDTHeader *)GetVirtualAddress((void*)xsdt->PointerToOtherSDT[i]);
-		   bootstrap_render(0xffff + i);
-		   //debug_gfx_writeLine("A");
-                    if (!strncmp(h->Signature, table_name, 4))
-                        {
-			  bootstrap_render (0xffffffff);
-                            if (cur_index == index)
-                                return (void *) h;
-
-                            cur_index++;
-                        }
-		  bootstrap_render(0);
+		  bootstrap_render(-1);
                 }
         }
 

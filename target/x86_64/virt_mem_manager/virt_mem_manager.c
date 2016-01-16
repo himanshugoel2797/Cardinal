@@ -4,6 +4,7 @@
 #include "utils/native.h"
 #include "common/common.h"
 #include "virt_mem_manager.h"
+#include "CPUID/cpuid.h"
 
 #define PAT_MSR 0x277
 
@@ -27,13 +28,13 @@
 
 static uint64_t* kernel_pdpt;
 static PML_Instance curPML = (uint64_t*)0x1000;	//This is where the initial PML was placed;
-//static bool hugePageSupport = FALSE;
+static bool hugePageSupport = FALSE;
 
 void
 VirtMemMan_Initialize(void)
 {
-
-
+	CPUID_RequestInfo(0x80000001, 0);
+	hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
 
   	//Setup the PAT stuff
 	uint64_t pat = 0;
@@ -250,6 +251,21 @@ VirtMemMan_MapHPage(PML_Instance       inst,
                     MEM_SECURITY_PERMS sec_perms)
 {
   phys_addr = phys_addr/GiB(1) * GiB(1);	//Align the physical address
+
+  if(!hugePageSupport)
+    {
+      for(uint64_t i = 0; i < GiB(1)/MiB(2); i++)
+	{
+      VirtMemMan_MapLPage(inst,
+			  virt_addr + i * MiB(2),
+			  phys_addr + i * MiB(2),
+			  present,
+			  cache,
+			  access_perm,
+			  sec_perms);
+      }
+    }
+
 
   uint32_t pml_off = (virt_addr >> 39) & 0x1FF;
   uint32_t pdpt_off = (virt_addr >> 30) & 0x1FF;

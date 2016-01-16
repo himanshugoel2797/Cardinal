@@ -33,10 +33,10 @@ APIC_Initialize(void)
 
     if(madt != NULL)
         {
+
 	  bootstrap_render(0xff00ff1f);
             while(madt != NULL)
                 {
-
                     uint32_t len = madt->h.Length - 8 - sizeof(ACPISDTHeader);
                     int passNum = 0;
 
