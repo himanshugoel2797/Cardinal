@@ -62,15 +62,15 @@ APIC_Initialize(void)
 
                                         if(lapic->apic_id != APIC_GetID())
                                             {
-                                                //int prevCoreCount = coreCount;
-                                                //APIC_SendIPI(lapic->apic_id, 0, 5);
-                                                //for(int a = 0; a < 0xffff; a++);
-                                                //coreCount++;
-                                                //APIC_SendIPI(lapic->apic_id, 0x0f, 6);
-                                                //while(coreCount == prevCoreCount)
-                                                //{
-                                                //    bootstrap_render(0x00ffffff);
-                                                //}
+                                                int prevCoreCount = coreCount;
+                                                APIC_SendIPI(lapic->apic_id, 0, 5);
+                                                for(int a = 0; a < 0xffff; a++);
+                                                coreCount++;
+                                                APIC_SendIPI(lapic->apic_id, 0x0f, 6);
+                                                while(coreCount == prevCoreCount)
+                                                {
+                                                    bootstrap_render(0x00ffffff);
+                                                }
                                             }
                                         //We don't need to do anything with these yet
                                         //COM_WriteStr("\r\nLAPIC\r\n");

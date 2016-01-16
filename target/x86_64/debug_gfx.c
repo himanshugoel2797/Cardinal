@@ -9,7 +9,6 @@ static int xPos = 0, yPos = 0;
 void
 debug_gfx_writeLine(const char *fmt, ...)
 {
-  __asm__ volatile("hlt");
   char str[256];
   memset(str, 0, 256);
 

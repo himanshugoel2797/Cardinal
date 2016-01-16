@@ -27,10 +27,14 @@
 
 static uint64_t* kernel_pdpt;
 static PML_Instance curPML = (uint64_t*)0x1000;	//This is where the initial PML was placed;
+//static bool hugePageSupport = FALSE;
 
 void
 VirtMemMan_Initialize(void)
 {
+
+
+
   	//Setup the PAT stuff
 	uint64_t pat = 0;
     	pat |= 0x6;                   //PAT0 WB

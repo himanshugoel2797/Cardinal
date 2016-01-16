@@ -76,7 +76,6 @@ bootstrap_kernel(void *param,
                 }
         }
 
-
     GDT_Initialize();	//Setup the GDT
     IDT_Initialize();	//Setup the IDT
     IDT_RegisterHandler(14, bootstrap_pagefault_handler);

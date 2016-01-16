@@ -50,8 +50,8 @@ multiboot_start:
 .word 5
 .word 0
 .long 20
-.long 1920
-.long 1080
+.long 1024
+.long 768
 .long 32
 
 .align 8
@@ -119,6 +119,18 @@ multiboot_end:
                                rep stosl
                                mov $4096, %ecx
                                rep stosl
+                               mov $4096, %ecx
+                               rep stosl
+                               mov $4096, %ecx
+                               rep stosl
+                               mov $4096, %ecx
+                               rep stosl
+                               mov $4096, %ecx
+                               rep stosl
+                               mov $4096, %ecx
+                               rep stosl
+                               mov $4096, %ecx
+                               rep stosl
                                mov %cr3, %edi
                                movl $0x2003, (%edi)
                                movl $0x5003, 0xFF8(%edi)
@@ -128,20 +140,42 @@ multiboot_end:
                                movl $0x4003, (%edi)
                                add $0x1000, %edi
 
+#This needs to be converted to use 4MB pages instead to support older systems
 #Map first 4GB RAM to the top of memory
                                movl $0x0, 0x1FE0(%edi)
                                movl $0x0, 0x1FE8(%edi)
                                movl $0x0, 0x1FF0(%edi)
                                movl $0x0, 0x1FF8(%edi)
-                               movl $0x108B, 0x1FC0(%edi)
-                               movl $0x4000108B, 0x1FC8(%edi)
-                               movl $0x8000108B, 0x1FD0(%edi)
-                               movl $0xC000108B, 0x1FD8(%edi)
 
-                               movl $0x8000108B, 0x1FE0(%edi)
-                               movl $0xC000108B, 0x1FE8(%edi)
-                               movl $0x108B, 0x1FF0(%edi)
-                               movl $0x4000108B, 0x1FF8(%edi)
+                               #Map the bottom of the memory space
+                               movl $0x6003, 0x1FC0(%edi)
+                               movl $0x7003, 0x1FC8(%edi)
+                               movl $0x8003, 0x1FD0(%edi)
+                               movl $0x9003, 0x1FD8(%edi)
+                               movl $0x8003, 0x1FE0(%edi)
+                               movl $0x9003, 0x1FE8(%edi)
+                               movl $0x6003, 0x1FF0(%edi)
+                               movl $0x7003, 0x1FF8(%edi)
+
+                               #movl $0x108B, 0x1FC0(%edi)
+                               #movl $0x4000108B, 0x1FC8(%edi)
+                               #movl $0x8000108B, 0x1FD0(%edi)
+                               #movl $0xC000108B, 0x1FD8(%edi)
+
+                               #movl $0x8000108B, 0x1FE0(%edi)
+                               #movl $0xC000108B, 0x1FE8(%edi)
+                               #movl $0x108B, 0x1FF0(%edi)
+                               #movl $0x4000108B, 0x1FF8(%edi)
+
+                               mov $0x6000, %edi
+                               mov $0x108B, %ebx
+                               mov $2048, %ecx
+
+                               .SetGBEntry:
+                               movl %ebx, (%edi)
+                               add $0x200000, %ebx
+                               add $8, %edi
+                               loop .SetGBEntry
 
                                mov $0x4000, %edi
                                mov $0x3, %ebx

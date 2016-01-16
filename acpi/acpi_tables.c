@@ -68,7 +68,7 @@ ACPITables_FindTable(const char *table_name,
             for (int i = 0; i < entries; i++)
                 {
                     ACPISDTHeader *h = (ACPISDTHeader*)GetVirtualAddress((void*)(uint64_t)rsdt->PointerToOtherSDT[i]);
-		    debug_gfx_writeLine("%x%x", (uint32_t)((uint64_t)h >> 32), (uint32_t)h);
+		    //debug_gfx_writeLine("%x%x", (uint32_t)((uint64_t)h >> 32), (uint32_t)h);
                     if (!strncmp(h->Signature, table_name, 4) && ACPITables_ValidateChecksum(h))
                         {
                             if (cur_index == index)
@@ -90,7 +90,7 @@ ACPITables_FindTable(const char *table_name,
                 {
                     ACPISDTHeader *h = (ACPISDTHeader *)GetVirtualAddress((void*)xsdt->PointerToOtherSDT[i]);
 		   bootstrap_render(0xffff + i);
-		  debug_gfx_writeLine("A");
+		   //debug_gfx_writeLine("A");
                     if (!strncmp(h->Signature, table_name, 4))
                         {
 			  bootstrap_render (0xffffffff);
