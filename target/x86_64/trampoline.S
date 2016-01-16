@@ -1,6 +1,6 @@
-.section .trampoline_code, "ax", @progbits
+.section .trampoline_data, "ax", @progbits
 .code32
-                               gdt64:
+                               gdt64d:
                                .nulld:
                                .word 0
                                .word 0
@@ -22,9 +22,10 @@
                                .byte 0b10010010
                                .byte 0b00000000
                                .byte 0
-                               .GDTPTR:
+                               .GDTPTRd:
                                .word 23
-                               .long gdt64
+                               .long gdt64d
+.section .trampoline_code, "ax", @progbits
 .code16
 _trampoline:
 cli
@@ -43,7 +44,7 @@ wrmsr
 mov %cr0, %ebx
 or $0x80000001, %ebx
 mov %ebx, %cr0
-lgdt (.GDTPTR)
+lgdt (.GDTPTRd)
 jmp $0x8, $.tJmp
 .tJmp:
 .code64
@@ -55,7 +56,7 @@ mov %ax, %gs
 mov %ax, %ss
 mov $0xfffffffe00000000, %rsp
 add $tramp_stack_top, %rsp
-mov $0xffffffff80000000, %rax
+xor %rax, %rax
 add $smp_bootstrap, %rax
 push %rax
 retq

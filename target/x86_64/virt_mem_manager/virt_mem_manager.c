@@ -157,6 +157,7 @@ VirtMemMan_Initialize(void)
 
 	VirtMemMan_SetCurrent(pml);
 
+
   	//Enable the NX bit
 	wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 }
@@ -181,7 +182,7 @@ VirtMemMan_SetCurrent(PML_Instance instance)
 {
   PML_Instance tmp = curPML;
   curPML = instance;
-  __asm__ volatile("mov %%rax, %%cr3" :: "a"(GetPhysicalAddress(instance)));
+  __asm__ volatile("mov %%rax, %%cr3\n\thlt" :: "a"(GetPhysicalAddress(instance)));
   return tmp;
 }
 

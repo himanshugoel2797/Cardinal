@@ -21,15 +21,15 @@ SECTIONS
 	.trampoline_code ALIGN(4K) : AT(ADDR(.trampoline_code))
 	{
 		*(.trampoline_code)
+	  	*(.trampoline_data)
 		*(.trampoline_stack)
-		*(.tramp_handler)
 	}
-
 	. = KERNEL_VADDR + 2M;
   	_region_kernel_start_ = .;
 	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VADDR)
 	{
 		*(.entry_point)
+		*(.tramp_handler)
 		*(.text)
 	}
 
