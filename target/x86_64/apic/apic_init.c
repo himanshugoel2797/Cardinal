@@ -7,6 +7,7 @@
 #include "memory.h"
 #include "drivers.h"
 #include "CPUID/cpuid.h"
+#include "smp/smp.h"
 #include "managers.h"
 
 static APIC_SMPThreads *smp_threads;
@@ -23,18 +24,15 @@ APIC_Initialize(void)
     smp_threads = NULL;
 
     //Initialize the local APIC
+    APIC_LockPIC();
     APIC_LocalInitialize();
 
 
     //Ask ACPI for the MADT table
     MADT *madt = ACPITables_FindTable(MADT_SIG, 0);
     int q = 1;
-    bootstrap_render((uint32_t)madt);
-
     if(madt != NULL)
         {
-
-	  bootstrap_render(0xff00ff1f);
             while(madt != NULL)
                 {
                     uint32_t len = madt->h.Length - 8 - sizeof(ACPISDTHeader);
@@ -51,7 +49,6 @@ APIC_Initialize(void)
                                     {
                                         if(passNum != 0) break;
                                         MADT_EntryLAPIC *lapic = (MADT_EntryLAPIC*)hdr;
-					bootstrap_render (0x0000ff0f);
                                         APIC_SMPThreads *thread = bootstrap_malloc(sizeof(APIC_SMPThreads));
                                         thread->apic_id = lapic->apic_id;
                                         thread->proc_id = lapic->processor_id;
@@ -62,15 +59,10 @@ APIC_Initialize(void)
 
                                         if(lapic->apic_id != APIC_GetID())
                                             {
-                                                int prevCoreCount = coreCount;
                                                 APIC_SendIPI(lapic->apic_id, 0, 5);
                                                 for(int a = 0; a < 0xffff; a++);
-                                                coreCount++;
                                                 APIC_SendIPI(lapic->apic_id, 0x0f, 6);
-                                                while(coreCount == prevCoreCount)
-                                                {
-                                                    bootstrap_render(0x00ffffff);
-                                                }
+                                                SMP_WaitForCoreCountIncrement();
                                             }
                                         //We don't need to do anything with these yet
                                         //COM_WriteStr("\r\nLAPIC\r\n");
@@ -84,14 +76,13 @@ APIC_Initialize(void)
                                     {
                                         if(passNum != 0) break;
                                         MADT_EntryIOAPIC *ioapic = (MADT_EntryIOAPIC*)hdr;
-				      bootstrap_render(0xff00ff00);
                                         //COM_WriteStr("\r\nIOAPIC\r\n");
                                         //COM_WriteStr("\tLen: %d\r\n", ioapic->h.entry_size);
                                         //COM_WriteStr("\tID: %x\r\n", ioapic->io_apic_id);
                                         //COM_WriteStr("\tBase Address: %x\r\n", ioapic->io_apic_base_addr);
                                         //COM_WriteStr("\tGlobal Interrupt Base: %x\r\n", ioapic->global_sys_int_base);
 
-                                        IOAPIC_Initialize((uint64_t)GetVirtualAddress((void*)(uint64_t)ioapic->io_apic_base_addr), ioapic->global_sys_int_base);
+                                        IOAPIC_Initialize((uint64_t)GetVirtualAddress(CachingModeUncachable,(void*)(uint64_t)ioapic->io_apic_base_addr), ioapic->global_sys_int_base);
 
                                         for(int j = 0; j < 16; j++)
                                             {
@@ -107,27 +98,26 @@ APIC_Initialize(void)
                                         int polarity = isaovr->flags & 3;
                                         int triggerMode = (isaovr->flags >> 2) & 3;
 
-				      bootstrap_render (0x00ff00ff);
 
                                         if(isaovr->irq_src == 0)
                                             {
 
                                                 IOAPIC_MapIRQ(isaovr->global_sys_int,
-							      isaovr->irq_src + 32,
-							      APIC_GetID(),
-							      triggerMode >> 1,
-							      polarity >> 1,
-							      APIC_DELIVERY_MODE_FIXED);
+                                                              isaovr->irq_src + 32,
+                                                              APIC_GetID(),
+                                                              triggerMode >> 1,
+                                                              polarity >> 1,
+                                                              APIC_DELIVERY_MODE_FIXED);
                                             }
                                         else
                                             {
 
                                                 IOAPIC_MapIRQ(isaovr->global_sys_int,
-							      isaovr->irq_src,
-							      APIC_GetID(),
-							      triggerMode >> 1,
-							      polarity >> 1,
-							      APIC_DELIVERY_MODE_FIXED);
+                                                              isaovr->irq_src,
+                                                              APIC_GetID(),
+                                                              triggerMode >> 1,
+                                                              polarity >> 1,
+                                                              APIC_DELIVERY_MODE_FIXED);
                                             }
 
                                         //COM_WriteStr("\r\nISAOVR\r\n");
@@ -159,7 +149,7 @@ APIC_Initialize(void)
     else
         {
             //COM_WriteStr("MADT not found!\r\n");
-	    bootstrap_kernel_panic(0xff);
+            bootstrap_kernel_panic(0xff);
             return -1;
         }
 

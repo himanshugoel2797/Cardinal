@@ -2,6 +2,7 @@
 #define _VIRT_MEM_MAN_X86_64_H_
 
 #include "types.h"
+#include "memory.h"
 
 typedef uint64_t* PML_Instance;
 
@@ -80,7 +81,8 @@ VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
                               void         *addr);
 
 void*
-VirtMemMan_GetVirtualAddress(void *addr);
+VirtMemMan_GetVirtualAddress(CachingMode c,
+                             void 	 *addr);
 
 void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,

@@ -16,6 +16,6 @@ MemMan_Free(uint64_t ptr);
 
 void
 MemMan_MarkUsed(uint64_t addr,
-		uint64_t size);
+                uint64_t size);
 
 #endif /* end of include guard: _PHYS_MEM_MANAGER_H_ */

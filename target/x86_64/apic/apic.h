@@ -34,6 +34,9 @@
 #define APIC_POLARITY_HIGH 0
 #define APIC_POLARITY_LOW  1
 
+void
+APIC_LockPIC(void);
+
 uint8_t
 APIC_LocalInitialize(void);
 

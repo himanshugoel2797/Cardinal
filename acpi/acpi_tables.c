@@ -3,9 +3,6 @@
 #include "boot_information/boot_information.h"
 #include "common.h"
 #include "memory.h"
-#include "target/x86_64/x86_64_common.h"
-#include "target/x86_64/debug_gfx.h"
-
 
 static RSDPDescriptor20 *rsdp;
 
@@ -58,9 +55,9 @@ ACPITables_FindTable(const char *table_name,
     if (rsdp == NULL) return NULL;
 
 
-  if(rsdp->firstPart.Revision == ACPI_VERSION_2 && rsdp->XsdtAddress)
+    if(rsdp->firstPart.Revision == ACPI_VERSION_2 && rsdp->XsdtAddress)
         {
-            XSDT *xsdt = (XSDT*)GetVirtualAddress((void*)rsdp->XsdtAddress);
+            XSDT *xsdt = (XSDT*)GetVirtualAddress(CachingModeWriteBack, (void*)rsdp->XsdtAddress);
             if (!ACPITables_ValidateChecksum((ACPISDTHeader*)xsdt)) return (void*)-1;
 
             int entries = XSDT_GET_POINTER_COUNT((xsdt->h));
@@ -68,24 +65,20 @@ ACPITables_FindTable(const char *table_name,
 
             for (int i = 0; i < entries; i++)
                 {
-		  if(xsdt->PointerToOtherSDT[i] == 0)continue;
-                    ACPISDTHeader *h = (ACPISDTHeader *)GetVirtualAddress((void*)xsdt->PointerToOtherSDT[i]);
-		   bootstrap_render(entries);
-		   //debug_gfx_writeLine("A");
+                    if(xsdt->PointerToOtherSDT[i] == 0)continue;
+                    ACPISDTHeader *h = (ACPISDTHeader *)GetVirtualAddress(CachingModeWriteBack, (void*)xsdt->PointerToOtherSDT[i]);
                     if (!strncmp(h->Signature, table_name, 4) && ACPITables_ValidateChecksum(h))
                         {
-			  bootstrap_render (0xffffffff);
                             if (cur_index == index)
                                 return (void *) h;
 
                             cur_index++;
                         }
-		  bootstrap_render(-1);
                 }
         }
     else if (rsdp->firstPart.Revision == ACPI_VERSION_1 || !rsdp->XsdtAddress)
         {
-            RSDT *rsdt = (RSDT*)GetVirtualAddress((void*)(uint64_t)rsdp->firstPart.RsdtAddress);
+            RSDT *rsdt = (RSDT*)GetVirtualAddress(CachingModeWriteBack, (void*)(uint64_t)rsdp->firstPart.RsdtAddress);
             if (!ACPITables_ValidateChecksum((ACPISDTHeader*)rsdt)) return NULL;
 
             int entries = RSDT_GET_POINTER_COUNT((rsdt->h));
@@ -93,8 +86,7 @@ ACPITables_FindTable(const char *table_name,
 
             for (int i = 0; i < entries; i++)
                 {
-                    ACPISDTHeader *h = (ACPISDTHeader*)GetVirtualAddress((void*)(uint64_t)rsdt->PointerToOtherSDT[i]);
-		    //debug_gfx_writeLine("%x%x", (uint32_t)((uint64_t)h >> 32), (uint32_t)h);
+                    ACPISDTHeader *h = (ACPISDTHeader*)GetVirtualAddress(CachingModeWriteBack, (void*)(uint64_t)rsdt->PointerToOtherSDT[i]);
                     if (!strncmp(h->Signature, table_name, 4) && ACPITables_ValidateChecksum(h))
                         {
                             if (cur_index == index)
@@ -102,7 +94,6 @@ ACPITables_FindTable(const char *table_name,
 
                             cur_index++;
                         }
-		  bootstrap_render(-1);
                 }
         }
 

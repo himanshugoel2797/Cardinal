@@ -16,8 +16,8 @@ uint32_t *apic_base_addr = 0;
 #define ICW1_ICW4 0x01    /* ICW4 (not) needed */
 #define ICW1_INIT 0x10    /* Initialization - required! */
 
-uint8_t
-APIC_LocalInitialize(void)
+void
+APIC_LockPIC(void)
 {
     char a1 = inb(0x21);
     char a2 = inb(0xA1);
@@ -38,13 +38,18 @@ APIC_LocalInitialize(void)
     outb(0x21, 0xFF);
     outb(0xA1, 0xFF);    //disable all interrupts from the PIC
 
+}
+
+uint8_t
+APIC_LocalInitialize(void)
+{
     for(int i = 32; i < 256; i++)
-    {
-        IDT_RegisterHandler(i, APIC_MainHandler);
-    }
+        {
+            IDT_RegisterHandler(i, APIC_MainHandler);
+        }
 
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
-    apic_base_addr = (uint32_t*)GetVirtualAddress((void*)(apic_base_msr & 0xfffff000));
+    apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
 
     apic_base_msr |= (1 << 11); //Enable the apic
     wrmsr(IA32_APIC_BASE, apic_base_msr);
@@ -204,5 +209,5 @@ APIC_SendIPI(uint32_t dest,
 static void
 APIC_MainHandler(Registers *regs)
 {
-    APIC_SendEOI(regs->int_no);   
+    APIC_SendEOI(regs->int_no);
 }

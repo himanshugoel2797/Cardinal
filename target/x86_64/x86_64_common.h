@@ -13,5 +13,4 @@ bootstrap_kernel_panic(uint8_t severity);
 void
 smp_bootstrap(void);
 
-extern int coreCount;
 #endif

@@ -8,48 +8,48 @@ static InterruptHandler intHandlers[256] = {0};
 uint32_t
 RequestInterruptVectorBlock(uint32_t vectorCount)
 {
-  uint32_t score = 0;
-  int i = 0;
-	for(; i < 256; i++)
-    {
-      if(i > 0 && intHandlers[i - 1] != NULL)score = 0;
-      if(intHandlers[i] == NULL)score++;
-      if(score == vectorCount)break;
-    }
+    uint32_t score = 0;
+    int i = 0;
+    for(; i < 256; i++)
+        {
+            if(i > 0 && intHandlers[i - 1] != NULL)score = 0;
+            if(intHandlers[i] == NULL)score++;
+            if(score == vectorCount)break;
+        }
 
-  if(i + vectorCount >= 256)return -1;
-  else return i;
+    if(i + vectorCount >= 256)return -1;
+    else return i;
 }
 
 
 void
 ShadowInterruptHandler(Registers *regs)
 {
-	if(intHandlers[regs->int_no] != NULL)intHandlers[regs->int_no](regs->int_no,
-								       regs->err_code);
+    if(intHandlers[regs->int_no] != NULL)intHandlers[regs->int_no](regs->int_no,
+                regs->err_code);
 }
 
 uint32_t
 RegisterInterruptHandler(uint32_t int_no,
                          InterruptHandler handler)
 {
-  	if(int_no >= 256 || int_no <= 31)return -1;
-  	IDT_RegisterHandler(int_no, ShadowInterruptHandler);
-	intHandlers[int_no] = handler;
-  return 0;
+    if(int_no >= 256 || int_no <= 31)return -1;
+    IDT_RegisterHandler(int_no, ShadowInterruptHandler);
+    intHandlers[int_no] = handler;
+    return 0;
 }
 
 void
 RemoveInterruptHandler(uint32_t id)
 {
-	if(id < 256 && id > 31)
-    {
-      intHandlers[id] = NULL;
-    }
+    if(id < 256 && id > 31)
+        {
+            intHandlers[id] = NULL;
+        }
 }
 
 void
 SetInterruptEnableMode(uint32_t vector, bool enableMode)
 {
-	IOAPIC_SetEnableMode((uint8_t)vector, enableMode);
+    IOAPIC_SetEnableMode((uint8_t)vector, enableMode);
 }

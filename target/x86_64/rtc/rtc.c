@@ -21,15 +21,15 @@ RTC_Initialize(void)
 
 void
 RTC_SelectRegister(uint8_t nmi_disabled,
-		   uint8_t cmos_reg)
+                   uint8_t cmos_reg)
 {
     outb(RTC_REG_SELECT_PORT, (nmi_disabled << 7) | cmos_reg);
 }
 
 void
 RTC_SetRegister(uint8_t regVal,
-		uint8_t nmi_disabled,
-		uint8_t cmos_reg)
+                uint8_t nmi_disabled,
+                uint8_t cmos_reg)
 {
     RTC_SelectRegister(nmi_disabled, cmos_reg);
     outb(RTC_REG_SET_PORT, regVal);
@@ -37,7 +37,7 @@ RTC_SetRegister(uint8_t regVal,
 
 uint8_t
 RTC_GetRegister(uint8_t nmi_disabled,
-		uint8_t cmos_reg)
+                uint8_t cmos_reg)
 {
     RTC_SelectRegister(nmi_disabled, cmos_reg);
     return inb(RTC_REG_SET_PORT);
