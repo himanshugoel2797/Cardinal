@@ -136,7 +136,7 @@ void
 smp_bootstrap(void)
 {
     coreCount++;
-    __asm__ volatile("hlt");
+    //__asm__ volatile("hlt");
 
     //Allocate a new stack for this thread and put it into the scheduler's queue
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
