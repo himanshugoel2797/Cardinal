@@ -33,8 +33,12 @@ bootstrap_render(uint32_t color)
 void
 bootstrap_pagefault_handler(Registers *regs)
 {
+  	//while(1)
+	//  ;
+
+  	__asm__ volatile("hlt" :: "a"(regs->rip),"c"(regs->rcx), "d"(regs->rdx));
   	regs->int_no = -regs->int_no;
-	bootstrap_render (0xffffffff);
+	//bootstrap_render (0xffffffff);
   	regs->int_no = -regs->int_no;
 }
 
@@ -92,6 +96,7 @@ bootstrap_kernel(void *param,
     bootstrap_render (0xff00);
     RTC_Initialize ();
     bootstrap_render (0xff0f);
+
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)

@@ -37,9 +37,9 @@ MemMan_Initialize(void)
     memset(KB4_Blocks_Bitmap, 0, KB4_Blocks_Count * sizeof(uint32_t));
 
   	MemMan_MarkUsed((uint64_t)&_region_kernel_start_ - (uint64_t)&KERNEL_VADDR,
-			(uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_);
+			(uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
 
-  	MemMan_MarkUsed(0, MiB(1));
+  	MemMan_MarkUsed(0, MiB(2));
 
 
     return 0;

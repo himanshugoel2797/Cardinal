@@ -65,5 +65,5 @@ hlt
 
 .section .trampoline_stack
 tramp_stack_bottom:
-.skip 512
+.skip 4096
 tramp_stack_top:

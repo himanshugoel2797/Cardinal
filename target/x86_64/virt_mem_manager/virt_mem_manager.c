@@ -34,7 +34,7 @@ void
 VirtMemMan_Initialize(void)
 {
 	CPUID_RequestInfo(0x80000001, 0);
-	hugePageSupport = FALSE;//CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
+	hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
 
   	//Setup the PAT stuff
 	uint64_t pat = 0;
@@ -155,10 +155,6 @@ VirtMemMan_Initialize(void)
 			    MEM_KERNEL);
 
 	wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
-
-  	//while(1)
-	//  ;
-
 	VirtMemMan_SetCurrent(pml);
 
 
@@ -185,7 +181,7 @@ VirtMemMan_SetCurrent(PML_Instance instance)
 {
   PML_Instance tmp = curPML;
   curPML = instance;
-  __asm__ volatile("mov %%rax, %%cr3\n\thlt" :: "a"(GetPhysicalAddress(instance)));
+  __asm__ volatile("mov %%rax, %%cr3" :: "a"(GetPhysicalAddress(instance)));
   return tmp;
 }
 
@@ -312,6 +308,7 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
   uint64_t *pdpt = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(inst[pml_off]));
   uint64_t *pd = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(pdpt[pdpt_off]));
+
 
   pd[pd_off] = phys_addr;
   if(present)MARK_PRESENT(pd[pd_off]);
