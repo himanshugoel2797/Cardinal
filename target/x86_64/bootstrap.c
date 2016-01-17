@@ -33,7 +33,9 @@ bootstrap_render(uint32_t color)
 void
 bootstrap_pagefault_handler(Registers *regs)
 {
-	bootstrap_render (0xaaffaaff + regs->int_no);
+  	regs->int_no = -regs->int_no;
+	bootstrap_render (0xffffffff);
+  	regs->int_no = -regs->int_no;
 }
 
 void

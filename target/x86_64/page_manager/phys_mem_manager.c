@@ -75,7 +75,7 @@ MemMan_MarkUsed(uint64_t addr,
 uint64_t
 MemMan_Alloc(void)
 {
-  if(freePageCount == 0)return 0;
+  if(freePageCount == 0)return -1;
 
   while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
     lastNonFullPage = (lastNonFullPage + 1) % page_count;
@@ -93,7 +93,7 @@ MemMan_Alloc(void)
 	}
     }
 
-  return 0;
+  return -1;
 }
 
 void

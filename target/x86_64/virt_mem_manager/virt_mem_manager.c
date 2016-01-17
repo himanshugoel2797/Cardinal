@@ -34,7 +34,7 @@ void
 VirtMemMan_Initialize(void)
 {
 	CPUID_RequestInfo(0x80000001, 0);
-	hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
+	hugePageSupport = FALSE;//CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
 
   	//Setup the PAT stuff
 	uint64_t pat = 0;
@@ -51,10 +51,9 @@ VirtMemMan_Initialize(void)
   	memset ((void*)pml, 0, KiB(4));
 
   	void* pdpt_0 = (void*)MemMan_Alloc ();
-  	pdpt_0 = GetVirtualAddress (pdpt_0);
 
-  	kernel_pdpt = (uint64_t*)pdpt_0;
-  	pml[511] = (uint64_t)GetPhysicalAddress(pdpt_0) | 3;	//Keep the top 512GiB of memory mapped into all address spaces
+  	kernel_pdpt = (uint64_t*)GetVirtualAddress(pdpt_0);
+  	pml[511] = (uint64_t)pdpt_0 | 3;	//Keep the top 512GiB of memory mapped into all address spaces
 
   	//Setup kernel code map
 	VirtMemMan_MapHPage(pml,
@@ -155,11 +154,15 @@ VirtMemMan_Initialize(void)
 			    MEM_READ | MEM_WRITE | MEM_EXEC,
 			    MEM_KERNEL);
 
+	wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
+
+  	//while(1)
+	//  ;
+
 	VirtMemMan_SetCurrent(pml);
 
 
   	//Enable the NX bit
-	wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 }
 
 PML_Instance
@@ -255,7 +258,7 @@ VirtMemMan_MapHPage(PML_Instance       inst,
 
   if(!hugePageSupport)
     {
-      for(uint64_t i = 0; i < GiB(1)/MiB(2); i++)
+      for(uint64_t i = 0; i < 512; i++)
 	{
       VirtMemMan_MapLPage(inst,
 			  virt_addr + i * MiB(2),
@@ -265,6 +268,7 @@ VirtMemMan_MapHPage(PML_Instance       inst,
 			  access_perm,
 			  sec_perms);
       }
+      return;
     }
 
 
@@ -304,7 +308,7 @@ VirtMemMan_MapLPage(PML_Instance       inst,
   uint32_t pdpt_off = (virt_addr >> 30) & 0x1FF;
   uint32_t pd_off = (virt_addr >> 21) & 0x1FF;
 
-  VirtMemMan_SetupPDEntry(inst, pml_off, pd_off);
+  VirtMemMan_SetupPDEntry(inst, pml_off, pdpt_off);
 
   uint64_t *pdpt = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(inst[pml_off]));
   uint64_t *pd = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(pdpt[pdpt_off]));
@@ -341,7 +345,7 @@ VirtMemMan_MapSPage(PML_Instance       inst,
   uint32_t pd_off = (virt_addr >> 21) & 0x1FF;
   uint32_t pt_off = (virt_addr >> 12) & 0x1FF;
 
-  VirtMemMan_SetupPTEntry(inst, pml_off, pd_off, pt_off);
+  VirtMemMan_SetupPTEntry(inst, pml_off, pdpt_off, pd_off);
 
   uint64_t *pdpt = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(inst[pml_off]));
   uint64_t *pd = (uint64_t*)GetVirtualAddress((void*)GET_ADDR(pdpt[pdpt_off]));
