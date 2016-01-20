@@ -66,6 +66,10 @@ GetVirtualAddress(CachingMode 	c,
 void*
 GetPhysicalAddress(void *virtualAddress);
 
+void*
+GetPhysicalAddressUID(UID 	src,
+                      void 	*virtualAddress);
+
 MemoryAllocationErrors
 CreateVirtualMemoryInstance(UID *inst);
 
@@ -74,6 +78,12 @@ SetActiveVirtualMemoryInstance(UID inst);
 
 UID
 GetActiveVirtualMemoryInstance(void);
+
+MemoryAllocationErrors
+ForkTable(UID src,
+          MemoryAllocationsMap *srcAllocBase,
+          UID *dst,
+          MemoryAllocationsMap **dstAllocBase);
 
 MemoryAllocationErrors
 MapPage(UID 			pageTable,
@@ -87,7 +97,6 @@ MapPage(UID 			pageTable,
 
 MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
-          MemoryAllocationsMap *allocationMap,
           uint64_t 		virtualAddress,
           size_t 		size);
 

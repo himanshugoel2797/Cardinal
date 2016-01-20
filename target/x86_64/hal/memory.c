@@ -1,6 +1,7 @@
 #include "memory.h"
 #include "virt_mem_manager/virt_mem_manager.h"
 #include "page_manager/phys_mem_manager.h"
+#include "kmalloc/kmalloc.h"
 
 void*
 GetVirtualAddress(CachingMode c,
@@ -12,7 +13,15 @@ GetVirtualAddress(CachingMode c,
 void*
 GetPhysicalAddress(void *virtualAddress)
 {
-    return VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), virtualAddress);
+    return GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
+                                 virtualAddress);
+}
+
+void*
+GetPhysicalAddressUID(UID 	src,
+                      void 	*virtualAddress)
+{
+    return VirtMemMan_GetPhysicalAddress((PML_Instance)src, virtualAddress);
 }
 
 MemoryAllocationErrors
@@ -89,7 +98,6 @@ MapPage(UID 			pageTable,
 
 MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
-          MemoryAllocationsMap* UNUSED(allocationMap),
           uint64_t 		virtualAddress,
           size_t 		size)
 {
@@ -127,6 +135,43 @@ FindFreeVirtualAddress(UID 			pageTable,
     if(addr != NULL)*virtualAddress = (uint64_t)addr;
 
     return MemoryAllocationErrors_None;
+}
+
+MemoryAllocationErrors
+ForkTable(UID src,
+          MemoryAllocationsMap *srcAllocBase,
+          UID *dst,
+          MemoryAllocationsMap **dstAllocBase)
+{
+    if(dst == NULL)return MemoryAllocationErrors_Unknown;
+    if(dstAllocBase == NULL)return MemoryAllocationErrors_Unknown;
+    if(srcAllocBase == NULL)return MemoryAllocationErrors_Unknown;
+
+    MemoryAllocationsMap *b = kmalloc(sizeof(MemoryAllocationsMap));
+    MemoryAllocationsMap *c = srcAllocBase;
+
+    CreateVirtualMemoryInstance(dst);
+
+    do
+        {
+            MapPage(*dst,
+                    b,
+                    GetPhysicalAddressUID(src, c->VirtualAddress),
+                    c->VirtualAddress,
+                    c->Length,
+                    c->CacheMode,
+                    c->AllocationType | MemoryAllocationType_Fork,
+                    c->Flags
+                   );
+
+            if(c->next != NULL)
+                {
+                    b->next = kmalloc(sizeof(MemoryAllocationsMap));
+                    b = b->next;
+                }
+        }
+    while(c->next != NULL);
+
 }
 
 uint64_t
