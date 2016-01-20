@@ -79,6 +79,7 @@ bootstrap_kernel(void *param,
 
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
+
     RTC_Initialize ();
 
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
@@ -137,6 +138,7 @@ smp_bootstrap(void)
 
     VirtMemMan_SetCurrent(VirtMemMan_GetCurrent());
     APIC_LocalInitialize();
+    //AllocateTLS(APIC_GetID());
 
     SMP_UnlockTrampoline();
 

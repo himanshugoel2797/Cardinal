@@ -8,6 +8,8 @@
 #endif
 #define PAGE_SIZE KiB(4)
 
+#define THREAD_LOCAL_STORAGE_SIZE KiB(4)
+
 typedef enum
 {
     CachingModeWriteBack = 0,
@@ -17,12 +19,12 @@ typedef enum
 
 typedef enum
 {
-    MemoryAllocationType_Heap,
-    MemoryAllocationType_Stack,
-    MemoryAllocationType_MMap,
-    MemoryAllocationType_Fork,
-    MemoryAllocationType_Paged,
-    MemoryAllocationType_Shared
+    MemoryAllocationType_Heap = 0,
+    MemoryAllocationType_Stack = (1 << 0),
+    MemoryAllocationType_MMap = (1 << 1),
+    MemoryAllocationType_Fork = (1 << 2),
+    MemoryAllocationType_Paged = (1 << 3),
+    MemoryAllocationType_Shared = (1 << 4)
 } MemoryAllocationType;
 
 typedef enum
@@ -116,5 +118,11 @@ AllocatePhysicalPageCont(int pageCount);
 void
 FreePhysicalPageCont(uint64_t ptr,
                      int pageCount);
+
+void
+AllocateTLS(int coreID);
+
+void*
+GetTLS(int coreID);
 
 #endif

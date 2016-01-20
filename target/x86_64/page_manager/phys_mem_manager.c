@@ -29,7 +29,8 @@ MemMan_Initialize(void)
 
     // Determine the total number of pages
     freePageCount = page_count = memory_size / PAGE_SIZE;
-    lastNonFullPage = (page_count / 32) - 1;
+    if(page_count <= GiB(2)/PAGE_SIZE)lastNonFullPage = (page_count / 32)/2 - 1;
+    else lastNonFullPage = GiB(2)/(PAGE_SIZE * 32) - 1;
 
     KB4_Blocks_Count = memory_size / (PAGE_SIZE * 32);
     KB4_Blocks_Bitmap = bootstrap_malloc(KB4_Blocks_Count * sizeof(uint32_t));
@@ -93,7 +94,7 @@ MemMan_Alloc(void)
     if(freePageCount == 0)return 0;
 
     while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
-        lastNonFullPage = (lastNonFullPage - 1) % page_count;
+        lastNonFullPage = (lastNonFullPage + 1) % page_count;
 
     uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
     for(int i = 0; i < 32; i++)
@@ -128,9 +129,6 @@ MemMan_Alloc4KiBPageCont(int pageCount)
 {
     if(freePageCount == 0)return 0;
 
-    while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
-        lastNonFullPage = (lastNonFullPage - 1) % page_count;
-
     int score = 0;
     uint64_t addr = 0;
     int b_j = 0;
@@ -138,7 +136,7 @@ MemMan_Alloc4KiBPageCont(int pageCount)
 
     for(uint32_t j = 0; j < KB4_Blocks_Count; j++)
         {
-            uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
+            uint32_t block = ~KB4_Blocks_Bitmap[j];
             for(int i = 0; i < 32; i++)
                 {
                     if(score == pageCount)break;

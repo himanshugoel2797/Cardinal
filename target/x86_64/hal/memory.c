@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "common/common.h"
 #include "virt_mem_manager/virt_mem_manager.h"
 #include "page_manager/phys_mem_manager.h"
 #include "kmalloc/kmalloc.h"
@@ -84,6 +85,11 @@ MapPage(UID 			pageTable,
             allocationMap->ReferenceCount = 0;
         }
 
+    if(flags & MemoryAllocationType_Fork)
+        {
+            access = access & ~MEM_WRITE;	//Forked pages are copy on write
+        }
+
     VirtMemMan_Map((PML_Instance)pageTable,
                    virtualAddress,
                    physicalAddress,
@@ -148,6 +154,8 @@ ForkTable(UID src,
     if(srcAllocBase == NULL)return MemoryAllocationErrors_Unknown;
 
     MemoryAllocationsMap *b = kmalloc(sizeof(MemoryAllocationsMap));
+    *dstAllocBase = b;
+
     MemoryAllocationsMap *c = srcAllocBase;
 
     CreateVirtualMemoryInstance(dst);
@@ -156,7 +164,7 @@ ForkTable(UID src,
         {
             MapPage(*dst,
                     b,
-                    GetPhysicalAddressUID(src, c->VirtualAddress),
+                    (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
                     c->VirtualAddress,
                     c->Length,
                     c->CacheMode,
@@ -172,6 +180,7 @@ ForkTable(UID src,
         }
     while(c->next != NULL);
 
+    return MemoryAllocationErrors_None;
 }
 
 uint64_t
@@ -197,4 +206,27 @@ FreePhysicalPageCont(uint64_t ptr,
                      int pageCount)
 {
     MemMan_FreeCont(ptr, pageCount);
+}
+
+static int coreCount = 0;
+static int coreIDMap[MAX_CORES];
+static void* coreTLSMap[MAX_CORES];
+
+void
+AllocateTLS(int coreID)
+{
+  coreIDMap[coreCount] = coreID;
+  coreTLSMap[coreCount] = GetVirtualAddress(CachingModeWriteBack,
+					    (void*)AllocatePhysicalPageCont(THREAD_LOCAL_STORAGE_SIZE/PAGE_SIZE));
+
+  coreCount++;
+}
+
+void*
+GetTLS(int coreID)
+{
+  int i = 0;
+  for(; i < coreCount && coreIDMap[i] != coreID; i++);
+
+  return coreTLSMap[i];
 }

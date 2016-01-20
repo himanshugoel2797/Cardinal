@@ -4,6 +4,8 @@
 #include "types.h"
 #include <stdarg.h>
 
+#define MAX_CORES 32
+
 #define SET_BIT(x, index) (x | (1 << index))
 #define CLEAR_BIT(x, index) (x & ~(1 << index))
 #define TOGGLE_BIT(x, index) (x ^ (1 << index))

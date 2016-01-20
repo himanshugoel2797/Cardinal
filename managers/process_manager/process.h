@@ -33,14 +33,15 @@ typedef enum
 
 typedef struct ProcessInformation
 {
-    UID 				ID;
-    char 				Name[MAX_PROCESS_NAME_LEN];
+    UID 			ID;
+    char 			Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus 		Status;
     ProcessPriority 		Priority;
     ProcessPermissions 		Permissions;
-    UID 				PageTable;
-    MemoryAllocationsMap 		*AllocationMap;
-    struct ProcessInformation 	**children;
+    UID 			PageTable;
+    MemoryAllocationsMap 	*AllocationMap;
+    struct ProcessInformation 	*children;
+    struct ProcessInformation	*next;
 } ProcessInformation;
 
 typedef enum

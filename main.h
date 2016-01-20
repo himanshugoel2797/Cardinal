@@ -4,4 +4,7 @@
 void
 kernel_main(void);
 
+void
+smp_core_main(int coreID);
+
 #endif
