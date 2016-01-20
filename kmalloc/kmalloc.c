@@ -1,12 +1,11 @@
 #include "kmalloc.h"
-#include "managers.h"
-#include "utils/common.h"
-#include "utils/native.h"
+#include "common/common.h"
+#include "memory.h"
 
 typedef struct kmalloc_info
 {
-    uint32_t pointer;
-    uint32_t size;
+    uint64_t pointer;
+    size_t size;
     struct kmalloc_info *next;
 } kmalloc_info;
 
@@ -35,27 +34,41 @@ kmalloc_info *allocation_info = NULL, *next_free_block = NULL;
 //Allocate a 256MB pool for the kernel and map it to a free address space
 void kmalloc_init()
 {
-#define STORE_SIZE MB(128)
+#define STORE_SIZE MiB(128)
 
     //Allocate blocks of 4KB and map them to a continuous address space of 256MB
-    uint32_t virtBaseAddr_base = virtMemMan_FindEmptyAddress(STORE_SIZE, MEM_KERNEL);
+    uint64_t virtBaseAddr_base = 0;
+    FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
+                           &virtBaseAddr_base,
+                           STORE_SIZE,
+                           MemoryAllocationType_Heap,
+                           MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+
     size_t size = STORE_SIZE;
     while(size > 0)
         {
-            uint64_t physBaseAddr_base = physMemMan_Alloc();
-            virtMemMan_Map(virtBaseAddr_base, physBaseAddr_base, KB(4), MEM_TYPE_WB, MEM_READ | MEM_WRITE, MEM_KERNEL);
-            virtBaseAddr_base += KB(4);
-            size -= KB(4);
+            uint64_t physBaseAddr_base = AllocatePhysicalPage();
+            MapPage(GetActiveVirtualMemoryInstance(),
+                    NULL,
+                    physBaseAddr_base,
+                    virtBaseAddr_base,
+                    KiB(4),
+                    CachingModeWriteBack,
+                    MemoryAllocationType_Heap,
+                    MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+
+            virtBaseAddr_base += KiB(4);
+            size -= KiB(4);
         }
     virtBaseAddr_base -= STORE_SIZE;
 
-    next_free_block = allocation_info = virtBaseAddr_base;
-    k_pages_base_addr = virtBaseAddr_base + MB(1);
-    max_allocs = MB(1)/sizeof(kmalloc_info);
-    free_space = STORE_SIZE - MB(1);
+    next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
+    k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));
+    max_allocs = MiB(1)/sizeof(kmalloc_info);
+    free_space = STORE_SIZE - MiB(1);
 
-    memset(allocation_info, 0, MB(1));
-    allocation_info->pointer = k_pages_base_addr;
+    memset(allocation_info, 0, MiB(1));
+    allocation_info->pointer = (uint64_t)k_pages_base_addr;
     allocation_info->size = free_space;
     allocation_info->next = NULL;
     MARK_FREE(allocation_info);
@@ -65,7 +78,6 @@ void kmalloc_init()
 
 void kcompact()
 {
-    Interrupts_Lock();
     kmalloc_info *a_info = allocation_info;
 
     while(a_info->next != NULL)
@@ -86,7 +98,6 @@ void kcompact()
                     a_info = a_info->next;
                 }
         }
-    Interrupts_Unlock();
 }
 
 bool retry = FALSE;
@@ -110,18 +121,17 @@ void *kmalloc(size_t size)
                 {
                     retry = TRUE;
                     //kcompact();
-                    uint32_t res = kmalloc(size);
+                    uint64_t res = (uint64_t)kmalloc(size);
                     retry = FALSE;
-                    return res;
+                    return (void*)res;
                 }
             return (void*)NULL;
         }
 
 
     //Allocate this block, mark this one as used, append a new block object at the end that contains the remaining free space
-    uint32_t addr = GET_ADDR(a_info);
+    uint64_t addr = GET_ADDR(a_info);
     size_t freeSize = a_info->size - size;
-    COM_WriteStr("Addr: %x, Size: %d K\r\n", addr, size);
 
     //We need to allocate a new info block only if there is free space
     if(freeSize != 0)
@@ -138,7 +148,7 @@ void *kmalloc(size_t size)
     MARK_USED(a_info);
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
-    return addr;
+    return (void*)addr;
 }
 
 void kfree(void *addr)
@@ -147,7 +157,7 @@ void kfree(void *addr)
     kmalloc_info *a_info = allocation_info;
     while(a_info->next != NULL)
         {
-            if(IS_USED(a_info) && a_info->pointer == (uint32_t)addr)
+            if(IS_USED(a_info) && a_info->pointer == (uint64_t)addr)
                 {
                     break;
                 }

@@ -1,5 +1,6 @@
 #include "memory.h"
 #include "virt_mem_manager/virt_mem_manager.h"
+#include "page_manager/phys_mem_manager.h"
 
 void*
 GetVirtualAddress(CachingMode c,
@@ -88,10 +89,21 @@ MapPage(UID 			pageTable,
 
 MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
-          MemoryAllocationsMap *allocationMap,
-          uint64_t 		virtualAddress)
+          MemoryAllocationsMap* UNUSED(allocationMap),
+          uint64_t 		virtualAddress,
+          size_t 		size)
 {
+    VirtMemMan_Map((PML_Instance)pageTable,
+                   virtualAddress,
+                   0,
+                   size,
+                   FALSE,
+                   MEM_TYPE_UC,
+                   0,
+                   MEM_KERNEL
+                  );
 
+    return MemoryAllocationErrors_None;
 }
 
 MemoryAllocationErrors
@@ -115,4 +127,16 @@ FindFreeVirtualAddress(UID 			pageTable,
     if(addr != NULL)*virtualAddress = (uint64_t)addr;
 
     return MemoryAllocationErrors_None;
+}
+
+uint64_t
+AllocatePhysicalPage(void)
+{
+    return MemMan_Alloc();
+}
+
+void
+FreePhysicalPage(uint64_t ptr)
+{
+    MemMan_Free(ptr);
 }
