@@ -140,3 +140,16 @@ FreePhysicalPage(uint64_t ptr)
 {
     MemMan_Free(ptr);
 }
+
+uint64_t
+AllocatePhysicalPageCont(int pageCount)
+{
+    return MemMan_Alloc4KiBPageCont(pageCount);
+}
+
+void
+FreePhysicalPageCont(uint64_t ptr,
+                     int pageCount)
+{
+    MemMan_FreeCont(ptr, pageCount);
+}

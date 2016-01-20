@@ -29,7 +29,7 @@ MemMan_Initialize(void)
 
     // Determine the total number of pages
     freePageCount = page_count = memory_size / PAGE_SIZE;
-    lastNonFullPage = 0;
+    lastNonFullPage = (page_count / 32) - 1;
 
     KB4_Blocks_Count = memory_size / (PAGE_SIZE * 32);
     KB4_Blocks_Bitmap = bootstrap_malloc(KB4_Blocks_Count * sizeof(uint32_t));
@@ -72,13 +72,28 @@ MemMan_MarkUsed(uint64_t addr,
         }
 }
 
+void
+MemMan_MarkFree(uint64_t addr,
+                uint64_t size)
+{
+    if(size == 0)return;
+
+    addr = addr/PAGE_SIZE * PAGE_SIZE;
+
+    for(uint64_t i = 0; i < size/PAGE_SIZE; i++)
+        {
+            MemMan_SetPageFree(addr);
+            addr += PAGE_SIZE;
+        }
+}
+
 uint64_t
 MemMan_Alloc(void)
 {
-    if(freePageCount == 0)return -1;
+    if(freePageCount == 0)return 0;
 
     while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
-        lastNonFullPage = (lastNonFullPage + 1) % page_count;
+        lastNonFullPage = (lastNonFullPage - 1) % page_count;
 
     uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
     for(int i = 0; i < 32; i++)
@@ -93,7 +108,62 @@ MemMan_Alloc(void)
                 }
         }
 
-    return -1;
+    return 0;
+}
+
+uint64_t
+MemMan_Alloc2MiBPage(void)
+{
+    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4));
+}
+
+uint64_t
+MemMan_Alloc2MiBPageCont(int pageCount)
+{
+    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4) * pageCount);
+}
+
+uint64_t
+MemMan_Alloc4KiBPageCont(int pageCount)
+{
+    if(freePageCount == 0)return 0;
+
+    while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
+        lastNonFullPage = (lastNonFullPage - 1) % page_count;
+
+    int score = 0;
+    uint64_t addr = 0;
+    int b_j = 0;
+
+
+    for(uint32_t j = 0; j < KB4_Blocks_Count; j++)
+        {
+            uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
+            for(int i = 0; i < 32; i++)
+                {
+                    if(score == pageCount)break;
+                    if((block >> i) & 1)
+                        {
+                            if(score == 0)
+                                {
+                                    b_j = j;
+                                    addr = j * block_size + i * PAGE_SIZE;
+                                }
+                            score++;
+                        }
+                    else
+                        {
+                            score = 0;
+                        }
+                }
+        }
+
+    if(score != pageCount)return 0;
+    else
+        {
+            MemMan_MarkUsed(addr, pageCount * KiB(4));
+            return addr;
+        }
 }
 
 void
@@ -104,4 +174,11 @@ MemMan_Free(uint64_t ptr)
     MemMan_SetPageFree(ptr);
     freePageCount++;
     lastNonFullPage = ptr/block_size;
+}
+
+void
+MemMan_FreeCont(uint64_t ptr,
+                int pageCount)
+{
+    MemMan_MarkFree(ptr, pageCount * KiB(4));
 }

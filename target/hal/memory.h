@@ -3,6 +3,11 @@
 
 #include "types.h"
 
+#ifdef PAGE_SIZE
+#undef PAGE_SIZE
+#endif
+#define PAGE_SIZE KiB(4)
+
 typedef enum
 {
     CachingModeWriteBack = 0,
@@ -95,5 +100,12 @@ FindFreeVirtualAddress(UID 			pageTable,
 
 uint64_t
 AllocatePhysicalPage(void);
+
+uint64_t
+AllocatePhysicalPageCont(int pageCount);
+
+void
+FreePhysicalPageCont(uint64_t ptr,
+                     int pageCount);
 
 #endif
