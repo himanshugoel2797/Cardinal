@@ -83,8 +83,9 @@ UnmapPage(UID 			pageTable,
 
 MemoryAllocationErrors
 FindFreeVirtualAddress(UID 			pageTable,
+		       uint64_t			*virtualAddress,
 		       size_t 			size,
-		       MemoryAllocationType 	allocType,
+		       MemoryAllocationType 	UNUSED(allocType),
 		       MemoryAllocationFlags 	flags);
 
 #endif

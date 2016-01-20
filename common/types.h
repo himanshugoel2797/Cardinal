@@ -27,4 +27,6 @@ typedef uint8_t bool;
 #define MiB(x) (KiB(1) * 1024ull * x)
 #define GiB(x) (uint64_t)(MiB(1) * 1024ull * x)
 
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+
 #endif /* end of include guard: _OS_TYPES_H_ */
