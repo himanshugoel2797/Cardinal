@@ -4,6 +4,12 @@
 #include "types.h"
 
 //! Defines the boot information format for Cardinal
+typedef struct{
+  uint64_t addr;
+  uint64_t len;
+  uint8_t type;
+} CardinalMemMap;
+
 typedef struct
 {
     uint64_t mem_size;
@@ -12,9 +18,10 @@ typedef struct
     uint32_t elf_shdr_num;
     uint32_t elf_shdr_entsize;
     uint32_t elf_shdr_shndx;
+    uint32_t cardinalMemMap_len;
     uint64_t elf_shdr_addr;
     uint64_t rsdp_addr;
-
+    CardinalMemMap *cardinalMemMap;
     uint64_t framebuffer_addr;
     uint32_t framebuffer_pitch;
     uint32_t framebuffer_width;

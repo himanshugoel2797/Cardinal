@@ -85,8 +85,8 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
 
-
     APIC_Initialize();
+
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
     //Initialize FPU - Done, setup threading code, provide interfaces to OS

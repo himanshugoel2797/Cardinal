@@ -55,7 +55,7 @@ ACPITables_FindTable(const char *table_name,
     if (rsdp == NULL) return NULL;
 
 
-    if(rsdp->firstPart.Revision == ACPI_VERSION_2 && rsdp->XsdtAddress)
+    if(rsdp->firstPart.Revision != ACPI_VERSION_1 && rsdp->XsdtAddress)
         {
             XSDT *xsdt = (XSDT*)GetVirtualAddress(CachingModeWriteBack, (void*)rsdp->XsdtAddress);
             if (!ACPITables_ValidateChecksum((ACPISDTHeader*)xsdt)) return (void*)-1;
@@ -76,7 +76,7 @@ ACPITables_FindTable(const char *table_name,
                         }
                 }
         }
-    else if (rsdp->firstPart.Revision == ACPI_VERSION_1 || !rsdp->XsdtAddress)
+    else if ((rsdp->firstPart.Revision == ACPI_VERSION_1) | (!rsdp->XsdtAddress))
         {
             RSDT *rsdt = (RSDT*)GetVirtualAddress(CachingModeWriteBack, (void*)(uint64_t)rsdp->firstPart.RsdtAddress);
             if (!ACPITables_ValidateChecksum((ACPISDTHeader*)rsdt)) return NULL;

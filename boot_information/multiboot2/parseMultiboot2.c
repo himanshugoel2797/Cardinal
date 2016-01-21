@@ -1,4 +1,5 @@
 #ifdef MULTIBOOT2
+#include "managers/managers.h"
 #include "boot_information/boot_information.h"
 #include "bootinfo.h"
 #include "multiboot2.h"
@@ -29,12 +30,21 @@ ParseAndSaveBootInformation(void *boot_info)
                 case MULTIBOOT_TAG_TYPE_MMAP:
                 {
                     multiboot_tag_mmap *mmap = (multiboot_tag_mmap*)&hdr_8[i];
+		    int entryCount = (mmap->size - 16)/mmap->entry_size;
+		    CardinalMemMap *map = bootstrap_malloc(sizeof(CardinalMemMap) * entryCount);
+
                     for(uint32_t j = 0; j < (mmap->size - 16); j+= mmap->entry_size)
                         {
                             multiboot_memory_map_t *mmap_e = (multiboot_memory_map_t*)((uint8_t*)mmap->entries + j);
-                            if(mmap_e->type == MULTIBOOT_MEMORY_AVAILABLE)
                                 bootInfo.mem_size += mmap_e->len;
+
+			    map[j/mmap->entry_size].addr = mmap_e->addr;
+			    map[j/mmap->entry_size].len = mmap_e->len;
+			    map[j/mmap->entry_size].type = mmap_e->type;
                         }
+
+		  bootInfo.cardinalMemMap = map;
+		  bootInfo.cardinalMemMap_len = sizeof(CardinalMemMap) * entryCount;
                 }
                 break;
                 case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:

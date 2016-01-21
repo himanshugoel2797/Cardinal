@@ -26,8 +26,6 @@ APIC_Initialize(void)
     //Initialize the local APIC
     APIC_LockPIC();
     APIC_LocalInitialize();
-
-
     //Ask ACPI for the MADT table
     MADT *madt = ACPITables_FindTable(MADT_SIG, 0);
     int q = 1;
