@@ -44,7 +44,7 @@ MemMan_Initialize(void)
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_ - (uint64_t)&KERNEL_VADDR,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
 
-    /*for(uint32_t j = 0; j < info->cardinalMemMap_len/sizeof(CardinalMemMap); j++)
+    for(uint32_t j = 0; j < info->cardinalMemMap_len/sizeof(CardinalMemMap); j++)
     {
       uint64_t addr = info->cardinalMemMap[j].addr;
       addr = addr/PAGE_SIZE * PAGE_SIZE;
@@ -53,7 +53,7 @@ MemMan_Initialize(void)
       if(len % PAGE_SIZE != 0)len = (len/PAGE_SIZE + 1) * PAGE_SIZE;
 
       if(info->cardinalMemMap[j].type != 1)MemMan_MarkUsed(addr, len);
-    }*/
+    }
 
     MemMan_MarkUsed(0, MiB(2));
 
