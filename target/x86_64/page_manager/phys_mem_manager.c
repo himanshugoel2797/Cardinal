@@ -6,18 +6,31 @@
 #include "elf.h"
 #include "common/common.h"
 
+#define BLOCK_SIZE MiB(256)
+
+typedef struct BlockTree{
+  uint64_t addr;
+  int page_count;
+  struct BlockTree *prev;
+  struct BlockTree *next;
+}BlockTree;
+
+/*
+ * Allocations remove space from the free tree
+ * Prioritize and try not to allocate from pci and isa dma pools
+ * On allocations, free space is allocated from smaller blocks first
+ */
+
 static uint64_t memory_size,
        page_count,
-       freePageCount,
-       lastNonFullPage;
+       freePageCount;
 
-static uint32_t* KB4_Blocks_Bitmap,
-       KB4_Blocks_Count;
-
-static const uint64_t block_size = PAGE_SIZE * 32;
+static BlockTree *highestPriority, *midPriority, *lowPriority;
 
 extern uint64_t _region_kernel_start_, _region_kernel_end_;
 extern uint64_t KERNEL_VADDR;
+
+static uint64_t region_kernel_start, region_kernel_end;
 
 uint32_t
 MemMan_Initialize(void)
@@ -31,168 +44,93 @@ MemMan_Initialize(void)
     // Determine the total number of pages
     freePageCount = page_count = memory_size / PAGE_SIZE;
 
-    if(page_count <= GiB(2)/PAGE_SIZE)lastNonFullPage = (page_count / 32)/2 - 1;
-    else lastNonFullPage = GiB(2)/(PAGE_SIZE * 32) - 1;
+    lowPriority = bootstrap_malloc(sizeof(BlockTree));
+    if(lowPriority == NULL)return -1;
+    lowPriority->addr = 0x100000000;
+    lowPriority->page_count = (memory_size - lowPriority->addr)/PAGE_SIZE;
+    if(lowPriority->page_count < 0)lowPriority->page_count = 0;
 
-    KB4_Blocks_Count = memory_size / (PAGE_SIZE * 32);
-    KB4_Blocks_Bitmap = bootstrap_malloc(KB4_Blocks_Count * sizeof(uint32_t));
 
-    memset(KB4_Blocks_Bitmap, 0, KB4_Blocks_Count * sizeof(uint32_t));
+    midPriority = bootstrap_malloc(sizeof(BlockTree));
+    if(midPriority == NULL)return -1;
+    midPriority->addr = MiB(16);
+    midPriority->page_count = (memory_size - midPriority->addr)/PAGE_SIZE;
 
-    MemMan_MarkUsed(info->framebuffer_addr, info->framebuffer_pitch * info->framebuffer_height);
+    if(midPriority->page_count > (int64_t)((GiB(4) - MiB(16))/PAGE_SIZE))
+      midPriority->page_count = (GiB(4) - MiB(16))/PAGE_SIZE;
 
-    MemMan_MarkUsed((uint64_t)&_region_kernel_start_ - (uint64_t)&KERNEL_VADDR,
-                    (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
+    if(midPriority->page_count < 0)midPriority->page_count = 0;
 
-    for(uint32_t j = 0; j < info->cardinalMemMap_len/sizeof(CardinalMemMap); j++)
+    highestPriority = bootstrap_malloc(sizeof(BlockTree));
+    if(highestPriority == NULL)return -1;
+    highestPriority->addr = 0;
+    highestPriority->page_count = memory_size/PAGE_SIZE;
+
+    if(highestPriority->page_count > (int64_t)(MiB(16)/PAGE_SIZE))
+      highestPriority->page_count = MiB(16)/PAGE_SIZE;
+
+
+    //Mark all memory that isn't marked as available by the bios as taken
+    for(uint32_t i = 0; i < info->cardinalMemMap_len/sizeof(CardinalMemMap); i++)
     {
-      uint64_t addr = info->cardinalMemMap[j].addr;
-      addr = addr/PAGE_SIZE * PAGE_SIZE;
-
-      uint64_t len = info->cardinalMemMap[j].len;
-      if(len % PAGE_SIZE != 0)len = (len/PAGE_SIZE + 1) * PAGE_SIZE;
-
-      if(info->cardinalMemMap[j].type != 1)MemMan_MarkUsed(addr, len);
+      if(info->cardinalMemMap[i].type != 1)
+	{
+	  MemMan_AllocAddress(info->cardinalMemMap[i].addr,
+			      info->cardinalMemMap[i].len);
+	}
     }
 
-    MemMan_MarkUsed(0, MiB(2));
+    region_kernel_start = (uint64_t)&_region_kernel_start_;
+    region_kernel_end = (uint64_t)&_region_kernel_end_;
+
+    //Mark all memory used by the kernel as used
+    MemMan_AllocAddress(region_kernel_start,
+			region_kernel_end - region_kernel_start);
 
     return 0;
 }
 
-static void
-MemMan_SetPageUsed(uint64_t addr)
+uint32_t
+MemMan_AllocAddress(uint64_t 	addr,
+		    size_t 	size)
 {
-    KB4_Blocks_Bitmap[addr/block_size] |= (1 << (addr/PAGE_SIZE % 32));
-  freePageCount--;
-}
+  //Align the address to page boundaries
+  if(addr % PAGE_SIZE != 0)
+    {
+      size += addr % PAGE_SIZE;
+      addr -= addr % PAGE_SIZE;
+    }
 
-static void
-MemMan_SetPageFree(uint64_t addr)
-{
-    KB4_Blocks_Bitmap[addr/block_size] &= ~(1 << (addr/PAGE_SIZE % 32));
-  freePageCount++;
-}
+  if(size == PAGE_SIZE)
+    {
+      //This is the part that actually does the work
+      //Determine which heap this address belongs to
 
-void
-MemMan_MarkUsed(uint64_t addr,
-                uint64_t size)
-{
-    if(size == 0)return;
-
-    if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
-
-    addr = addr/PAGE_SIZE * PAGE_SIZE;
-
-    for(uint64_t i = 0; i < size/PAGE_SIZE; i++)
-        {
-            MemMan_SetPageUsed(addr);
-            addr += PAGE_SIZE;
+      if(addr > GiB(4))
+	{
+	  //Low priority heap
         }
-}
+      else if(addr > MiB(16))
+	{
+	  //Mid priority heap
+	}
+      else
+	{
+	  //High priority heap
+	}
 
-void
-MemMan_MarkFree(uint64_t addr,
-                uint64_t size)
-{
-    if(size == 0)return;
-    if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
+    }else{
 
-    addr = addr/PAGE_SIZE * PAGE_SIZE;
+      //Break the allocation into chunks
+      if(size % PAGE_SIZE != 0)
+	size = (size + PAGE_SIZE) - (size % PAGE_SIZE);
 
-    for(uint64_t i = 0; i < size/PAGE_SIZE; i++)
-        {
-            MemMan_SetPageFree(addr);
-            addr += PAGE_SIZE;
-        }
-}
+      for(size_t i = 0; i < size / PAGE_SIZE; i++)
+	{
+	  MemMan_AllocAddress(addr + i * PAGE_SIZE,
+			      PAGE_SIZE);
+	}
+    }
 
-uint64_t
-MemMan_Alloc(void)
-{
-    if(freePageCount == 0)return 0;
-
-    while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
-        lastNonFullPage = (lastNonFullPage + 1) % page_count;
-
-    uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
-    for(int i = 0; i < 32; i++)
-        {
-            if((block >> i) & 1)
-                {
-                    uint64_t addr = lastNonFullPage * block_size + i * PAGE_SIZE;
-                    MemMan_SetPageUsed(addr);
-                    return addr;
-                }
-        }
-
-    return 0;
-}
-
-uint64_t
-MemMan_Alloc2MiBPage(void)
-{
-    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4));
-}
-
-uint64_t
-MemMan_Alloc2MiBPageCont(int pageCount)
-{
-    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4) * pageCount);
-}
-
-uint64_t
-MemMan_Alloc4KiBPageCont(int pageCount)
-{
-    if(freePageCount == 0)return 0;
-
-    int score = 0;
-    uint64_t addr = 0;
-    int b_j = 0;
-
-
-    for(uint32_t j = 0; j < KB4_Blocks_Count; j++)
-        {
-            uint32_t block = ~KB4_Blocks_Bitmap[j];
-            for(int i = 0; i < 32; i++)
-                {
-                    if(score == pageCount)break;
-                    if((block >> i) & 1)
-                        {
-                            if(score == 0)
-                                {
-                                    b_j = j;
-                                    addr = j * block_size + i * PAGE_SIZE;
-                                }
-                            score++;
-                        }
-                    else
-                        {
-                            score = 0;
-                        }
-                }
-        }
-
-    if(score != pageCount)return 0;
-    else
-        {
-            MemMan_MarkUsed(addr, pageCount * KiB(4));
-            return addr;
-        }
-}
-
-void
-MemMan_Free(uint64_t ptr)
-{
-    ptr = ptr/PAGE_SIZE * PAGE_SIZE;
-
-    MemMan_SetPageFree(ptr);
-    lastNonFullPage = ptr/block_size;
-}
-
-void
-MemMan_FreeCont(uint64_t ptr,
-                int pageCount)
-{
-    MemMan_MarkFree(ptr, pageCount * KiB(4));
+  return 0;
 }

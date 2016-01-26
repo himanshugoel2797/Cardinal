@@ -25,7 +25,7 @@ SECTIONS
 		*(.trampoline_stack)
 	}
 	. = KERNEL_VADDR + 2M;
-  	_region_kernel_start_ = .;
+  	_region_kernel_start_ = . - KERNEL_VADDR;
 	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VADDR)
 	{
 		*(.entry_point)
@@ -54,5 +54,5 @@ SECTIONS
 
 	/* The compiler may produce other sections, by default it will put them in
 	   a segment with the same name. Simply add stuff here as needed. */
-	_region_kernel_end_ = .; 
+	_region_kernel_end_ = . - KERNEL_VADDR;
 }

@@ -3,35 +3,11 @@
 
 #include "types.h"
 
-#ifdef PAGE_SIZE
-#undef PAGE_SIZE
-#endif
-#define PAGE_SIZE (uint64_t)KiB(4)
-
 uint32_t
 MemMan_Initialize(void);
 
-uint64_t
-MemMan_Alloc(void);
-
-void
-MemMan_Free(uint64_t ptr);
-
-void
-MemMan_MarkUsed(uint64_t addr,
-                uint64_t size);
-
-uint64_t
-MemMan_Alloc2MiBPage(void);
-
-uint64_t
-MemMan_Alloc2MiBPageCont(int pageCount);
-
-uint64_t
-MemMan_Alloc4KiBPageCont(int pageCount);
-
-void
-MemMan_FreeCont(uint64_t addr,
-                int pageCount);
+uint32_t
+MemMan_AllocAddress(uint64_t 	addr,
+		    size_t 	size);
 
 #endif /* end of include guard: _PHYS_MEM_MANAGER_H_ */
