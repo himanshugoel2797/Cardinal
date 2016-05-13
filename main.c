@@ -6,7 +6,7 @@
 void
 kernel_main(void)
 {
-    kmalloc_init ();
+    //kmalloc_init ();
 
     //Initialize process manager, setup timers, get threading up and running
     // Enumerate and initialize drivers

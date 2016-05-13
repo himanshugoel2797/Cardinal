@@ -6,6 +6,7 @@
 #define IDT_ENTRY_COUNT 256
 #define IDT_ENTRY_HANDLER_SIZE 0x20
 
+#define IRQ(n) (n + 32)
 
 typedef struct
 {

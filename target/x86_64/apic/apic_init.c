@@ -29,6 +29,7 @@ APIC_Initialize(void)
     //Ask ACPI for the MADT table
     MADT *madt = ACPITables_FindTable(MADT_SIG, 0);
     int q = 1;
+
     if(madt != NULL)
         {
             while(madt != NULL)
@@ -54,31 +55,12 @@ APIC_Initialize(void)
                                         //Insert this thread in front of the list
                                         thread->next = smp_threads;
                                         smp_threads = thread;
-
-                                        if(lapic->apic_id != APIC_GetID())
-                                            {
-                                                APIC_SendIPI(lapic->apic_id, 0, 5);
-                                                for(int a = 0; a < 0xffff; a++);
-                                                APIC_SendIPI(lapic->apic_id, 0x0f, 6);
-                                                SMP_WaitForCoreCountIncrement();
-                                            }
-                                        //We don't need to do anything with these yet
-                                        //COM_WriteStr("\r\nLAPIC\r\n");
-                                        //COM_WriteStr("\tLen: %d\r\n", lapic->h.entry_size);
-                                        //COM_WriteStr("\tID: %u\r\n", lapic->apic_id);
-                                        //COM_WriteStr("\tProcessor ID: %x\r\n", lapic->processor_id);
-                                        //COM_WriteStr("\tFlags %d", lapic->flags);
                                     }
                                     break;
                                     case MADT_IOAPIC_ENTRY_TYPE:
                                     {
                                         if(passNum != 0) break;
                                         MADT_EntryIOAPIC *ioapic = (MADT_EntryIOAPIC*)hdr;
-                                        //COM_WriteStr("\r\nIOAPIC\r\n");
-                                        //COM_WriteStr("\tLen: %d\r\n", ioapic->h.entry_size);
-                                        //COM_WriteStr("\tID: %x\r\n", ioapic->io_apic_id);
-                                        //COM_WriteStr("\tBase Address: %x\r\n", ioapic->io_apic_base_addr);
-                                        //COM_WriteStr("\tGlobal Interrupt Base: %x\r\n", ioapic->global_sys_int_base);
 
                                         IOAPIC_Initialize((uint64_t)GetVirtualAddress(CachingModeUncachable,(void*)(uint64_t)ioapic->io_apic_base_addr), ioapic->global_sys_int_base);
 
@@ -117,19 +99,10 @@ APIC_Initialize(void)
                                                               polarity >> 1,
                                                               APIC_DELIVERY_MODE_FIXED);
                                             }
-
-                                        //COM_WriteStr("\r\nISAOVR\r\n");
-                                        //COM_WriteStr("\tLen: %d\r\n", isaovr->h.entry_size);
-                                        //COM_WriteStr("\tIRQ: %d\r\n", isaovr->irq_src);
-                                        //COM_WriteStr("\tBus: %d\r\n", isaovr->bus_src);
-                                        //COM_WriteStr("\tGlobal Interrupt: %d\r\n", isaovr->global_sys_int);
                                     }
                                     break;
                                     case MADT_IOAPIC_NMI_ENTRY_TYPE:
                                     {
-                                        //if(passNum == 0)break;
-                                        //MADT_EntryIOAPIC_NMI *nmi = (MADT_EntryIOAPIC_NMI*)hdr;
-
 
                                     }
                                     break;
@@ -143,10 +116,13 @@ APIC_Initialize(void)
                             }
                     madt = ACPITables_FindTable(MADT_SIG, q++);
                 }
+
+    __asm__ volatile("sti");
+                APIC_CallibrateTimer();
+
         }
     else
         {
-            //COM_WriteStr("MADT not found!\r\n");
             bootstrap_kernel_panic(0xff);
             return -1;
         }

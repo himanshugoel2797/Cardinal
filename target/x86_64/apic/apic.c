@@ -1,8 +1,10 @@
 #include "apic.h"
 #include "priv_apic.h"
 #include "memory.h"
+#include "interrupts.h"
 #include "IDT/idt.h"
 #include "CPUID/cpuid.h"
+#include "pit/pit.h"
 
 #include "common.h"
 #include "utils/native.h"
@@ -40,6 +42,33 @@ APIC_LockPIC(void)
 
 }
 
+static int32_t pit_ticks;
+static uint32_t apic_timer_value;
+
+static void
+APIC_TimerCallibrate(uint32_t int_no,
+                     uint32_t err_code)
+{
+    err_code = 0;
+    if(int_no == IRQ(0) && pit_ticks >= 0){
+        pit_ticks++;
+        if(pit_ticks == 100)apic_timer_value = APIC_GetTimerValue();
+    }
+
+    APIC_SendEOI(int_no);
+}
+
+static uint32_t rollover_cnt;
+
+static void
+APIC_TimerCallibrateRollover(uint32_t int_no,
+                             uint32_t err_code)
+{
+    if(int_no == IRQ(1))rollover_cnt++;
+    APIC_SendEOI(int_no);
+    if(err_code)return;
+}
+
 uint8_t
 APIC_LocalInitialize(void)
 {
@@ -63,9 +92,43 @@ APIC_LocalInitialize(void)
     svr |= 0xFF;
     APIC_Write(APIC_SVR, svr);
 
-    APIC_SetEnableMode(1);
-
+    APIC_SetEnableMode(TRUE);
     return 0;
+}
+
+void
+APIC_CallibrateTimer(void)
+{
+
+    //Callibrate the APIC Timer to the PIT
+    rollover_cnt = 0;
+    pit_ticks = -1;
+    apic_timer_value = 0;
+
+    AllocateAPLS(APIC_GetID());
+    RegisterInterruptHandler(IRQ(1), APIC_TimerCallibrateRollover);
+    APIC_SetVector(APIC_TIMER, IRQ(1));
+    APIC_SetTimerValue(0);
+    APIC_SetTimerDivisor(1);
+
+
+    PIT_Initialize();
+    RegisterInterruptHandler(IRQ(0), APIC_TimerCallibrate);
+    APIC_SetTimerValue(-1);
+    APIC_SetTimerMode(APIC_TIMER_PERIODIC);
+    
+    PIT_SetEnableMode(ENABLED);
+    APIC_SetEnableInterrupt(APIC_TIMER, ENABLED);
+    pit_ticks = 0;
+
+    while(pit_ticks < 100);
+
+    PIT_SetEnableMode(DISABLED);
+    APIC_SetEnableInterrupt(APIC_TIMER, DISABLED);
+
+    uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);
+    __asm__ volatile("mov %0, %0\n\thlt" :: "ra"(apic_ticks));
+
 }
 
 void
@@ -150,8 +213,8 @@ APIC_SetTimerDivisor(uint8_t divisor)
             divisor /= 16;
         }
 
-    if (divisor == 16) val |= 3;
-    else if (divisor == 1) val = (1<<3)|3;
+    if (divisor == 16) val |= 0b0011;
+    else if (divisor == 1) val = 0b1011;
     else val |= ((divisor >> 2) & 3);
     APIC_Write (0x3E0, val);
 }
@@ -165,7 +228,7 @@ APIC_SetTimerValue(uint32_t val)
 uint32_t
 APIC_GetTimerValue(void)
 {
-    return APIC_Read(APIC_TIMER_VAL);
+    return APIC_Read(APIC_TIMER_CURVAL);
 }
 
 void

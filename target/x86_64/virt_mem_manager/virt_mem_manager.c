@@ -224,9 +224,6 @@ VirtMemMan_Initialize(void)
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
     VirtMemMan_SetCurrent(pml);
-    __asm__ volatile("mov %0, %0\n\thlt" :: "ra"(pml));
-
-
     //Enable the NX bit
 }
 

@@ -16,6 +16,7 @@
 #define APIC_LINT1    0x360
 #define APIC_ERR      0x370
 #define APIC_TIMER_VAL 0x380
+#define APIC_TIMER_CURVAL 0x390
 
 #define APIC_TIMER_ONESHOT 0x0
 #define APIC_TIMER_PERIODIC 0x1
@@ -39,6 +40,9 @@ APIC_LockPIC(void);
 
 uint8_t
 APIC_LocalInitialize(void);
+
+void
+APIC_CallibrateTimer(void);
 
 uint32_t
 APIC_Initialize(void);

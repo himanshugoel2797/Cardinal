@@ -35,7 +35,8 @@ void
 bootstrap_pagefault_handler(Registers *regs)
 {
     regs->int_no = -regs->int_no;
-    while(1)bootstrap_render (0xffffff00);
+    bootstrap_render (0xffffff00);
+    __asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"(regs->rip));
     regs->int_no = -regs->int_no;
 }
 
@@ -61,9 +62,6 @@ bootstrap_kernel(void *param,
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
 
-    //Unmap lower memory
-    pml[0] = 0;
-
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
     if(magic != MULTIBOOT_MAGIC)
@@ -71,23 +69,19 @@ bootstrap_kernel(void *param,
             bootstrap_kernel_panic(0xff);	//We weren't booted by a standards compliant bootloader, can't trust this environment
         }
 
-
     GDT_Initialize();   //Setup the GDT
     IDT_Initialize();   //Setup the IDT
     IDT_RegisterHandler(14, bootstrap_pagefault_handler);
 
-
-
     FPU_Initialize();   //Setup the FPU
+
     ACPITables_Initialize();    //Initialize the ACPI table data
 
 
     SMP_IncrementCoreCount();
 
     MemMan_Initialize ();
-    bootstrap_render(0xffffffff);
     VirtMemMan_Initialize ();
-    while(1);
 
     RTC_Initialize ();
 
@@ -147,9 +141,8 @@ smp_bootstrap(void)
 
     VirtMemMan_SetCurrent(VirtMemMan_GetCurrent());
     APIC_LocalInitialize();
-    AllocateAPLS(APIC_GetID());
-
     SMP_UnlockTrampoline();
 
     while(1);
+
 }
