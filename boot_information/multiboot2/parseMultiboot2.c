@@ -36,7 +36,7 @@ ParseAndSaveBootInformation(void *boot_info)
                     for(uint32_t j = 0; j < (mmap->size - 16); j+= mmap->entry_size)
                         {
                             multiboot_memory_map_t *mmap_e = (multiboot_memory_map_t*)((uint8_t*)mmap->entries + j);
-                                bootInfo.mem_size += mmap_e->len;
+                                bootInfo.mem_size = mmap_e->addr + mmap_e->len;
 
 			    map[j/mmap->entry_size].addr = mmap_e->addr;
 			    map[j/mmap->entry_size].len = mmap_e->len;

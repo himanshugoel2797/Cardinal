@@ -10,42 +10,46 @@
 
 #define THREAD_LOCAL_STORAGE_SIZE KiB(4)
 
+///Memory Caching Modes
 typedef enum
 {
-    CachingModeWriteBack = 0,
-    CachingModeUncachable = 1,
-    CachingModeWriteThrough = 2
+    CachingModeWriteBack = 0,   ///<Write Back 
+    CachingModeUncachable = 1,  ///<Uncachable
+    CachingModeWriteThrough = 2 ///<Write Through
 } CachingMode;
 
+///Memory Allocation Type
 typedef enum
 {
-    MemoryAllocationType_Heap = 0,
-    MemoryAllocationType_Stack = (1 << 0),
-    MemoryAllocationType_MMap = (1 << 1),
-    MemoryAllocationType_Fork = (1 << 2),
-    MemoryAllocationType_Paged = (1 << 3),
-    MemoryAllocationType_Shared = (1 << 4)
+    MemoryAllocationType_Heap = 0,          ///<Heap
+    MemoryAllocationType_Stack = (1 << 0),  ///<Stack
+    MemoryAllocationType_MMap = (1 << 1),   ///<Memory Mapped
+    MemoryAllocationType_Fork = (1 << 2),   ///<Forked
+    MemoryAllocationType_Paged = (1 << 3),  ///<Paged from Disk
+    MemoryAllocationType_Shared = (1 << 4)  ///<Shared Memory
 } MemoryAllocationType;
 
+///Memory Allocation Flags
 typedef enum
 {
-    MemoryAllocationFlags_NoExec = (1 << 0),
-    MemoryAllocationFlags_Exec = (1 << 1),
-    MemoryAllocationFlags_Write = (1 << 2),
-    MemoryAllocationFlags_Kernel = 0,
-    MemoryAllocationFlags_User = (1 << 3)
+    MemoryAllocationFlags_NoExec = (1 << 0),  ///<Execute Disable
+    MemoryAllocationFlags_Exec = (1 << 1),    ///<Execute Enable
+    MemoryAllocationFlags_Write = (1 << 2),   ///<Write Enabled
+    MemoryAllocationFlags_Kernel = 0,         ///<Kernel Access Permission
+    MemoryAllocationFlags_User = (1 << 3)     ///<User Access Permission
 } MemoryAllocationFlags;
 
+///Memory Allocation Errors
 typedef enum
 {
-    MemoryAllocationErrors_None = 0,
-    MemoryAllocationErrors_AlreadyMapped = (1 << 0),
-    MemoryAllocationErrors_NotMapped = (1 << 1),
-    MemoryAllocationErrors_PartiallyMapped = (1 << 2),
-    MemoryAllocationErrors_InvalidFlags = (1 << 3),
-    MemoryAllocationErrors_InvalidVirtualAddress = (1 << 4),
-    MemoryAllocationErrors_InvalidPhysicalAddress = (1 << 5),
-    MemoryAllocationErrors_Unknown = (1 << 6)
+    MemoryAllocationErrors_None = 0,                          ///<No Error
+    MemoryAllocationErrors_AlreadyMapped = (1 << 0),          ///<Memory is already mapped
+    MemoryAllocationErrors_NotMapped = (1 << 1),              ///<Memory is not mapped
+    MemoryAllocationErrors_PartiallyMapped = (1 << 2),        ///<Memory is partially mapped
+    MemoryAllocationErrors_InvalidFlags = (1 << 3),           ///<The Flags parameter is invalid
+    MemoryAllocationErrors_InvalidVirtualAddress = (1 << 4),  ///<Invalid Virtual Address
+    MemoryAllocationErrors_InvalidPhysicalAddress = (1 << 5), ///<Invalid Physical Address
+    MemoryAllocationErrors_Unknown = (1 << 6)                 ///<Unknown Error
 } MemoryAllocationErrors;
 
 typedef struct MemoryAllocationsMap
@@ -119,10 +123,12 @@ void
 FreePhysicalPageCont(uint64_t ptr,
                      int pageCount);
 
+///< Allocate some Application Processor Local Storage
 void
-AllocateTLS(int coreID);
+AllocateAPLS(int coreID);
 
+///< Retrieve the Application Processor Local Storage of a core
 void*
-GetTLS(int coreID);
+GetAPLS(int coreID);
 
 #endif

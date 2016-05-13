@@ -23,10 +23,12 @@
 #define MARK_PSE(a) (a = (a | (1 << 7)))
 #define MARK_GLOBAL_PSE(a) (a = (a | (1 << 8)))
 
-#define GET_ADDR(a) (a & ~0xf000000000000fff)
+#define GET_ADDR_4KB(a) (a & ~0xf000000000000fff)
+#define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
+#define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
 static uint64_t* kernel_pdpt;
-static PML_Instance curPML = (uint64_t*)0x1000;	//This is where the initial PML was placed;
+static PML_Instance curPML = (uint64_t*)0xfffffffe00001000;	//This is where the initial PML was placed;
 static bool hugePageSupport = FALSE;
 
 void
@@ -51,8 +53,10 @@ VirtMemMan_Initialize(void)
 
     void* pdpt_0 = (void*)MemMan_Alloc ();
 
+
+
     kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
-    pml[511] = (uint64_t)pdpt_0 | 3;	//Keep the top 512GiB of memory mapped into all address spaces
+    pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
     //Setup kernel code map
     VirtMemMan_MapHPage(pml,
                         0xFFFFFFFFC0000000,
@@ -220,6 +224,7 @@ VirtMemMan_Initialize(void)
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
     VirtMemMan_SetCurrent(pml);
+    __asm__ volatile("mov %0, %0\n\thlt" :: "ra"(pml));
 
 
     //Enable the NX bit
@@ -244,8 +249,8 @@ PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance)
 {
     PML_Instance tmp = curPML;
+    __asm__ volatile("mov %0, %%cr3" :: "ra"(GetPhysicalAddress(instance)));
     curPML = instance;
-    __asm__ volatile("mov %%rax, %%cr3" :: "a"(GetPhysicalAddress(instance)));
     return tmp;
 }
 
@@ -260,12 +265,13 @@ static void
 VirtMemMan_SetupPDPTEntry(PML_Instance inst,
                           uint32_t     pml_off)
 {
-    if(GET_ADDR(inst[pml_off]) == 0)
+    if(GET_ADDR_4KB(inst[pml_off]) == 0)
         {
-            inst[pml_off] = MemMan_Alloc();
-            MARK_PRESENT(inst[pml_off]);
-            MARK_WRITE(inst[pml_off]);
-            SET_CACHEMODE(inst[pml_off], MEM_TYPE_WB);
+            uint64_t entry = MemMan_Alloc();
+            MARK_PRESENT(entry);
+            MARK_WRITE(entry);
+            SET_CACHEMODE(entry, MEM_TYPE_WB);
+            inst[pml_off] = entry;
         }
 }
 
@@ -275,9 +281,9 @@ VirtMemMan_SetupPDEntry(PML_Instance inst,
                         uint32_t     pdpt_off)
 {
     VirtMemMan_SetupPDPTEntry(inst, pml_off);
-    uint64_t *pdpt = (uint64_t*)GetVirtualAddress (CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
+    uint64_t *pdpt = (uint64_t*)GetVirtualAddress (CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
 
-    if(GET_ADDR(pdpt[pdpt_off]) == 0)
+    if(GET_ADDR_4KB(pdpt[pdpt_off]) == 0)
         {
             pdpt[pdpt_off] = MemMan_Alloc();
             MARK_PRESENT(pdpt[pdpt_off]);
@@ -294,10 +300,10 @@ VirtMemMan_SetupPTEntry(PML_Instance inst,
 {
     VirtMemMan_SetupPDEntry(inst, pml_off, pdpt_off);
 
-    uint64_t *pdpt = (uint64_t*)GetVirtualAddress (CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
-    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pdpt[pdpt_off]));
+    uint64_t *pdpt = (uint64_t*)GetVirtualAddress (CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
+    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
 
-    if(GET_ADDR(pd[pd_off]) == 0)
+    if(GET_ADDR_4KB(pd[pd_off]) == 0)
         {
             pd[pd_off] = MemMan_Alloc();
             MARK_PRESENT(pd[pd_off]);
@@ -315,7 +321,7 @@ VirtMemMan_MapHPage(PML_Instance       inst,
                     MEM_ACCESS_PERMS   access_perm,
                     MEM_SECURITY_PERMS sec_perms)
 {
-    phys_addr = phys_addr/GiB(1) * GiB(1);	//Align the physical address
+    phys_addr = phys_addr/GiB(1) * GiB(1);  //Align the physical address
 
     if(!hugePageSupport)
         {
@@ -332,13 +338,12 @@ VirtMemMan_MapHPage(PML_Instance       inst,
             return;
         }
 
-
     uint32_t pml_off = (virt_addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (virt_addr >> 30) & 0x1FF;
 
     VirtMemMan_SetupPDPTEntry(inst, pml_off);
 
-    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
+    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
     pdpt[pdpt_off] = phys_addr;
     if(present)MARK_PRESENT(pdpt[pdpt_off]);
 
@@ -371,8 +376,8 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
     VirtMemMan_SetupPDEntry(inst, pml_off, pdpt_off);
 
-    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
-    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pdpt[pdpt_off]));
+    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
+    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
 
 
     pd[pd_off] = phys_addr;
@@ -409,9 +414,9 @@ VirtMemMan_MapSPage(PML_Instance       inst,
 
     VirtMemMan_SetupPTEntry(inst, pml_off, pdpt_off, pd_off);
 
-    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
-    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pdpt[pdpt_off]));
-    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pd[pd_off]));
+    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
+    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
+    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_off]));
 
     pt[pt_off] = phys_addr;
     if(present)MARK_PRESENT(pt[pt_off]);
@@ -522,28 +527,31 @@ VirtMemMan_GetPhysicalAddress(PML_Instance  inst,
 
     if(inst[pml_off] & 1)
         {
-            uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(inst[pml_off]));
+            uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
 
-            if(((pdpt[pdpt_off] >> 7) & 1) && (pdpt[pdpt_off] & 1))	//Check for PSE
+            if(((pdpt[pdpt_off] >> 7) & 1) && (pdpt[pdpt_off] & 1)) //Check for PSE
                 {
-                    return (void*)(GET_ADDR(pdpt[pdpt_off]) + (p_addr % GiB(1)));
+                    return (void*)(GET_ADDR_1GB(pdpt[pdpt_off]) + (p_addr % GiB(1)));
                 }
 
             if(pdpt[pdpt_off] & 1)
                 {
-                    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pdpt[pdpt_off]));
+                    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
 
-                    if(((pd[pd_off] >> 7) & 1) && (pd[pd_off] & 1))	//Check for PSE
+                    if(((pd[pd_off] >> 7) & 1) && (pd[pd_off] & 1)) //Check for PSE
                         {
-                            return (void*)(GET_ADDR(pd[pd_off]) + (p_addr % MiB(2)));
+                            return (void*)(GET_ADDR_2MB(pd[pd_off]) + (p_addr % MiB(2)));
                         }
 
-                    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pd[pd_off]));
+                    if(pd[pd_off] & 1){
+                    
+                    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_off]));
 
                     if(pt[pt_off] & 1)
                         {
-                            return (void*)(GET_ADDR(pt[pt_off]) + (p_addr % KiB(4)));
+                            return (void*)(GET_ADDR_4KB(pt[pt_off]) + (p_addr % KiB(4)));
                         }
+                    }
                 }
 
         }
@@ -595,7 +603,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                 }
             else if((inst[pml_i] & 1) == 1)
                 {
-                    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(inst[pml_i]));
+                    uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_i]));
 
                     if(cur_score > 0 && pml_i != 0 && (pml_i - 1) != prev_val)cur_score = 0;
 
@@ -609,7 +617,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                                 }
                             else if((pdpt[pdpt_i] & 1) == 1 && (needed_score - cur_score) < GiB(1))
                                 {
-                                    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pdpt[pdpt_i]));
+                                    uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_i]));
                                     if(cur_score > 0 && pdpt_i != 0 && (pdpt_i - 1) != prev_val)cur_score = 0;
 
                                     for(uint64_t pd_i = 0; pd_i < 512 && cur_score < needed_score; ++pd_i)
@@ -622,7 +630,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                                                 }
                                             else if((pd[pd_i] & 1) == 1 && (needed_score - cur_score) < MiB(2))
                                                 {
-                                                    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR(pd[pd_i]));
+                                                    uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_i]));
                                                     if(cur_score > 0 && pd_i != 0 && (pd_i - 1) != prev_val)cur_score = 0;
 
                                                     for(uint64_t pt_i = 0; pt_i < 512 && cur_score < needed_score; ++pt_i)

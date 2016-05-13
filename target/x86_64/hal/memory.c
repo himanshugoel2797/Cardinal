@@ -213,7 +213,7 @@ static int coreIDMap[MAX_CORES];
 static void* coreTLSMap[MAX_CORES];
 
 void
-AllocateTLS(int coreID)
+AllocateAPLS(int coreID)
 {
   coreIDMap[coreCount] = coreID;
   coreTLSMap[coreCount] = GetVirtualAddress(CachingModeWriteBack,
@@ -223,7 +223,7 @@ AllocateTLS(int coreID)
 }
 
 void*
-GetTLS(int coreID)
+GetAPLS(int coreID)
 {
   int i = 0;
   for(; i < coreCount && coreIDMap[i] != coreID; i++);

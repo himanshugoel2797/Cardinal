@@ -61,24 +61,33 @@ bootstrap_kernel(void *param,
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
 
-    info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);	//Virtualize bootinfo addresses
+    //Unmap lower memory
+    pml[0] = 0;
+
+    info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
     if(magic != MULTIBOOT_MAGIC)
         {
             bootstrap_kernel_panic(0xff);	//We weren't booted by a standards compliant bootloader, can't trust this environment
         }
 
-    GDT_Initialize();	//Setup the GDT
-    IDT_Initialize();	//Setup the IDT
+
+    GDT_Initialize();   //Setup the GDT
+    IDT_Initialize();   //Setup the IDT
     IDT_RegisterHandler(14, bootstrap_pagefault_handler);
-    FPU_Initialize();	//Setup the FPU
-    ACPITables_Initialize();	//Initialize the ACPI table data
+
+
+
+    FPU_Initialize();   //Setup the FPU
+    ACPITables_Initialize();    //Initialize the ACPI table data
 
 
     SMP_IncrementCoreCount();
 
     MemMan_Initialize ();
+    bootstrap_render(0xffffffff);
     VirtMemMan_Initialize ();
+    while(1);
 
     RTC_Initialize ();
 
@@ -95,7 +104,7 @@ bootstrap_kernel(void *param,
     //Initialize syscall mechanism, provide interface to OS for managing syscalls and jumping to user mode
 
     //When threading is up again, call kernel on new thread
-    kernel_main();	//Done initializing all arch specific stuff, call the kernel
+    kernel_main();  //Done initializing all arch specific stuff, call the kernel
 
     //We aren't supposed to reach here!
 
@@ -104,7 +113,7 @@ bootstrap_kernel(void *param,
         {
             for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4)
                 {
-                    *(uint32_t*)(info->framebuffer_addr + y) = color;	//ARGB
+                    *(uint32_t*)(info->framebuffer_addr + y) = color;   //ARGB
                 }
             swap++;
             if(swap == 0x20)
@@ -138,7 +147,7 @@ smp_bootstrap(void)
 
     VirtMemMan_SetCurrent(VirtMemMan_GetCurrent());
     APIC_LocalInitialize();
-    //AllocateTLS(APIC_GetID());
+    AllocateAPLS(APIC_GetID());
 
     SMP_UnlockTrampoline();
 
