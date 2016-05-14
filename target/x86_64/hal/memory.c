@@ -210,7 +210,6 @@ GetAPLS(int coreID) {
 }
 
 void*
-AllocateAPLSMemory(uint64_t size)
-{
+AllocateAPLSMemory(uint64_t size) {
     return VirtMemMan_AllocCoreLocalData(size);
 }

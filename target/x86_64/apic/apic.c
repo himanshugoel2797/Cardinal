@@ -79,7 +79,7 @@ APIC_LocalInitialize(void) {
 
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
     if(apic_base_addr == NULL)apic_base_addr = (uint32_t**)AllocateAPLSMemory(sizeof(uint32_t*));
-    
+
     *apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
     if(cnt == 0)bsp_apic_addr = (uint64_t)*apic_base_addr;
     //if(cnt == 1)__asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"((uint64_t)(*apic_base_addr - bsp_apic_addr)));

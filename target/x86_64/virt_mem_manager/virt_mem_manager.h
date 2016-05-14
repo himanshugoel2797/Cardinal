@@ -4,6 +4,8 @@
 #include "types.h"
 #include "memory.h"
 
+#define APLS_SIZE KiB(16)
+
 typedef uint64_t* PML_Instance;
 
 typedef enum {

@@ -28,20 +28,18 @@
 #define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
 #define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
-typedef struct VirtMemManData
-{
+typedef struct VirtMemManData {
     uint64_t* kernel_pdpt;
     PML_Instance curPML;
     bool hugePageSupport;
-}VirtMemManData;
+} VirtMemManData;
 
 
 static uint64_t coreLocalSpace;
 static VirtMemManData *virtMemData;
 
 void
-VirtMemMan_InitializeBootstrap(void)
-{
+VirtMemMan_InitializeBootstrap(void) {
     virtMemData = bootstrap_malloc(sizeof(VirtMemManData));
     virtMemData->kernel_pdpt = NULL;
     virtMemData->curPML = (uint64_t*)0xfffffffe00001000;    //Where initial PML is located
@@ -238,9 +236,10 @@ VirtMemMan_Initialize(void) {
                         MEM_KERNEL);
 
     //Setup core specific memory
-    VirtMemMan_MapSPage(pml,
-                   0xFFFFFFFB00000000 - KiB(4),
-                   MemMan_Alloc(),
+    VirtMemMan_Map(pml,
+                   0xFFFFFFFB00000000 - APLS_SIZE,
+                   MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE),
+                   APLS_SIZE,
                    TRUE,
                    MEM_TYPE_WB,
                    MEM_READ | MEM_WRITE,
@@ -251,21 +250,19 @@ VirtMemMan_Initialize(void) {
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
     VirtMemManData* tmp = virtMemData;
-    virtMemData = (VirtMemManData*)(0xFFFFFFFB00000000 - KiB(4) + sizeof(VirtMemManData));
+    virtMemData = (VirtMemManData*)(0xFFFFFFFB00000000 - APLS_SIZE + sizeof(VirtMemManData));
     virtMemData->kernel_pdpt = tmp->kernel_pdpt;
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;
-    coreLocalSpace = KiB(4) - sizeof(VirtMemManData);
+    coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
 
     //Enable the NX bit
 }
 
 void*
-VirtMemMan_AllocCoreLocalData(uint64_t size)
-{
-    if(size <= coreLocalSpace && coreLocalSpace > 0)
-    {
-        uint64_t addr = (uint64_t)virtMemData + (KiB(4) - coreLocalSpace);
+VirtMemMan_AllocCoreLocalData(uint64_t size) {
+    if(size <= coreLocalSpace && coreLocalSpace > 0) {
+        uint64_t addr = (uint64_t)virtMemData + (APLS_SIZE - coreLocalSpace);
         coreLocalSpace -= size;
         return (void*)addr;
     }
@@ -422,7 +419,7 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pd[pd_off]);
 
-    
+
     if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "a"(virt_addr));
 }
 
@@ -474,28 +471,34 @@ VirtMemMan_Map(PML_Instance       inst,
     //Determine the generally best mapping for the given size
 
     while(size > 0) {
-        if(size == KiB(4))VirtMemMan_MapSPage(inst,
-                                                  virt_addr,
-                                                  phys_addr,
-                                                  present,
-                                                  cache,
-                                                  access_perm,
-                                                  sec_perms);
-        else if(size == MiB(2))VirtMemMan_MapLPage(inst,
-                    virt_addr,
-                    phys_addr,
-                    present,
-                    cache,
-                    access_perm,
-                    sec_perms);
-        else if(size == GiB(1))VirtMemMan_MapHPage(inst,
-                    virt_addr,
-                    phys_addr,
-                    present,
-                    cache,
-                    access_perm,
-                    sec_perms);
-        else if(size >= GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0) {
+        if(size == KiB(4)) {
+            size -= KiB(4);
+            VirtMemMan_MapSPage(inst,
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
+        } else if(size == MiB(2)) {
+            size -= MiB(2);
+            VirtMemMan_MapLPage(inst,
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
+        } else if(size == GiB(1)) {
+            size -= GiB(1);
+            VirtMemMan_MapHPage(inst,
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
+        } else if(size >= GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0) {
             size -= GiB(1);
             VirtMemMan_Map(inst,
                            virt_addr,

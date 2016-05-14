@@ -48,10 +48,7 @@ __attribute__((section(".entry_point")))	//Ensure that this is always the first 
 void
 bootstrap_kernel(void *param,
                  uint64_t magic) {
-    //Now unmap the bootstrap mappings
-    uint64_t *pml = 0;
-    __asm__ volatile("mov %%cr3, %%rax" : "=a"(pml));
-    pml = GetVirtualAddress(CachingModeWriteBack, pml);
+    //Initialize the bootstrap mappings
     VirtMemMan_InitializeBootstrap();
 
     ParseAndSaveBootInformation(param);
@@ -63,15 +60,13 @@ bootstrap_kernel(void *param,
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
     }
 
-    GDT_Initialize();   //Setup the GDT
-    IDT_Initialize();   //Setup the IDT
+    GDT_Initialize();   //Setup the Bootstrap GDT
+    IDT_Initialize();   //Setup the Bootstrap IDT
     IDT_RegisterHandler(14, bootstrap_pagefault_handler);
 
     FPU_Initialize();   //Setup the FPU
 
     ACPITables_Initialize();    //Initialize the ACPI table data
-
-
     SMP_IncrementCoreCount();
 
     MemMan_Initialize ();
@@ -79,11 +74,13 @@ bootstrap_kernel(void *param,
 
     RTC_Initialize ();
 
+    //Convert framebuffer address to writethrough caching
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
 
     APIC_Initialize();
 
+    //Now that all the processors are booted up and ready to do their job
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
     //Initialize FPU - Done, setup threading code, provide interfaces to OS
@@ -128,8 +125,10 @@ smp_bootstrap(void) {
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
 
+    //Setup the page table for this core
     VirtMemMan_InitializeBootstrap();
     VirtMemMan_Initialize();
+
     APIC_LocalInitialize();
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
