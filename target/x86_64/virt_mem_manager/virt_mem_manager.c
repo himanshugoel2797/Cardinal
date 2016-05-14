@@ -4,6 +4,7 @@
 #include "common/common.h"
 #include "virt_mem_manager.h"
 #include "CPUID/cpuid.h"
+#include "managers.h"
 
 #define PAT_MSR 0x277
 
@@ -27,14 +28,30 @@
 #define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
 #define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
-static uint64_t* kernel_pdpt;
-static PML_Instance curPML = (uint64_t*)0xfffffffe00001000;	//This is where the initial PML was placed;
-static bool hugePageSupport = FALSE;
+typedef struct VirtMemManData
+{
+    uint64_t* kernel_pdpt;
+    PML_Instance curPML;
+    bool hugePageSupport;
+}VirtMemManData;
+
+
+static uint64_t coreLocalSpace;
+static VirtMemManData *virtMemData;
+
+void
+VirtMemMan_InitializeBootstrap(void)
+{
+    virtMemData = bootstrap_malloc(sizeof(VirtMemManData));
+    virtMemData->kernel_pdpt = NULL;
+    virtMemData->curPML = (uint64_t*)0xfffffffe00001000;    //Where initial PML is located
+    virtMemData->hugePageSupport = FALSE;
+}
 
 void
 VirtMemMan_Initialize(void) {
     CPUID_RequestInfo(0x80000001, 0);
-    hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
+    virtMemData->hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
 
     //Setup the PAT stuff
     uint64_t pat = 0;
@@ -53,8 +70,7 @@ VirtMemMan_Initialize(void) {
     void* pdpt_0 = (void*)MemMan_Alloc ();
 
 
-
-    kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
+    virtMemData->kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
     pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
     //Setup kernel code map
     VirtMemMan_MapHPage(pml,
@@ -221,9 +237,40 @@ VirtMemMan_Initialize(void) {
                         MEM_READ | MEM_WRITE | MEM_EXEC,
                         MEM_KERNEL);
 
+    //Setup core specific memory
+    VirtMemMan_MapSPage(pml,
+                   0xFFFFFFFB00000000 - KiB(4),
+                   MemMan_Alloc(),
+                   TRUE,
+                   MEM_TYPE_WB,
+                   MEM_READ | MEM_WRITE,
+                   MEM_KERNEL);
+
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
     VirtMemMan_SetCurrent(pml);
+
+    //Now change the virtMemData pointer to refer to the TLS version of the structure
+    VirtMemManData* tmp = virtMemData;
+    virtMemData = (VirtMemManData*)(0xFFFFFFFB00000000 - KiB(4) + sizeof(VirtMemManData));
+    virtMemData->kernel_pdpt = tmp->kernel_pdpt;
+    virtMemData->curPML = tmp->curPML;
+    virtMemData->hugePageSupport = tmp->hugePageSupport;
+    coreLocalSpace = KiB(4) - sizeof(VirtMemManData);
+
     //Enable the NX bit
+}
+
+void*
+VirtMemMan_AllocCoreLocalData(uint64_t size)
+{
+    if(size <= coreLocalSpace && coreLocalSpace > 0)
+    {
+        uint64_t addr = (uint64_t)virtMemData + (KiB(4) - coreLocalSpace);
+        coreLocalSpace -= size;
+        return (void*)addr;
+    }
+
+    return NULL;
 }
 
 PML_Instance
@@ -232,7 +279,7 @@ VirtMemMan_CreateInstance(void) {
     pml = (PML_Instance)GetVirtualAddress(CachingModeWriteBack, (void*)pml);
     memset ((void*)pml, 0, KiB(4));
 
-    pml[511] = (uint64_t)GetPhysicalAddress(kernel_pdpt);
+    pml[511] = (uint64_t)GetPhysicalAddress(virtMemData->kernel_pdpt);
     MARK_PRESENT(pml[511]);
     MARK_WRITE(pml[511]);
     SET_CACHEMODE(pml[511], MEM_TYPE_WB);
@@ -242,15 +289,15 @@ VirtMemMan_CreateInstance(void) {
 
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
-    PML_Instance tmp = curPML;
+    PML_Instance tmp = virtMemData->curPML;
     __asm__ volatile("mov %0, %%cr3" :: "ra"(GetPhysicalAddress(instance)));
-    curPML = instance;
+    virtMemData->curPML = instance;
     return tmp;
 }
 
 PML_Instance
 VirtMemMan_GetCurrent(void) {
-    return curPML;
+    return virtMemData->curPML;
 }
 
 
@@ -309,7 +356,7 @@ VirtMemMan_MapHPage(PML_Instance       inst,
                     MEM_SECURITY_PERMS sec_perms) {
     phys_addr = phys_addr/GiB(1) * GiB(1);  //Align the physical address
 
-    if(!hugePageSupport) {
+    if(!virtMemData->hugePageSupport) {
         for(uint64_t i = 0; i < 512; i++) {
             VirtMemMan_MapLPage(inst,
                                 virt_addr + i * MiB(2),
@@ -340,7 +387,7 @@ VirtMemMan_MapHPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pdpt[pdpt_off]);
 
-    __asm__ volatile("invlpg (%%rax)" :: "a"(virt_addr));
+    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "a"(virt_addr));
 }
 
 void
@@ -375,7 +422,8 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pd[pd_off]);
 
-    __asm__ volatile("invlpg (%%rax)" :: "a"(virt_addr));
+    
+    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "a"(virt_addr));
 }
 
 
@@ -411,7 +459,7 @@ VirtMemMan_MapSPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pt[pt_off]);
 
-    __asm__ volatile("invlpg (%%rax)" :: "a"(virt_addr));
+    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "a"(virt_addr));
 }
 
 void

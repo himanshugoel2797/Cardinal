@@ -27,6 +27,9 @@ typedef enum {
 void
 VirtMemMan_Initialize(void);
 
+void
+VirtMemMan_InitializeBootstrap(void);
+
 PML_Instance
 VirtMemMan_CreateInstance(void);
 
@@ -85,6 +88,9 @@ void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,
                            MEM_SECURITY_PERMS sec_perms);
+
+void*
+VirtMemMan_AllocCoreLocalData(uint64_t size);
 
 //TODO setup a page fault handler manager, allow certain handlers to be registered to be called
 //on page faults within their subscribed ranges, allows setting up things like copy on write, hdd mapping, virtual memory

@@ -25,14 +25,16 @@ void
 ShadowInterruptHandler(Registers *regs) {
     if(intHandlers[regs->int_no] != NULL)intHandlers[regs->int_no](regs->int_no,
                 regs->err_code);
+
+    if(regs->int_no > 31)APIC_SendEOI(regs->int_no);
 }
 
 uint32_t
 RegisterInterruptHandler(uint32_t int_no,
                          InterruptHandler handler) {
     if(int_no >= 256 || int_no <= 31)return -1;
-    IDT_RegisterHandler(int_no, ShadowInterruptHandler);
     intHandlers[int_no] = handler;
+    IDT_RegisterHandler(int_no, ShadowInterruptHandler);
     return 0;
 }
 
@@ -40,7 +42,7 @@ uint32_t
 GetInterruptHandler(uint32_t int_no,
                     InterruptHandler *handler) {
     if(int_no >= 256)return -1;
-    *handler = intHandlers[int_no];
+    if(handler != NULL)*handler = intHandlers[int_no];
     return 0;
 }
 

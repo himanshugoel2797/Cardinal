@@ -126,4 +126,7 @@ AllocateAPLS(int coreID);
 void*
 GetAPLS(int coreID);
 
+void*
+AllocateAPLSMemory(uint64_t size);
+
 #endif

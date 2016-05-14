@@ -208,3 +208,9 @@ GetAPLS(int coreID) {
 
     return coreTLSMap[i];
 }
+
+void*
+AllocateAPLSMemory(uint64_t size)
+{
+    return VirtMemMan_AllocCoreLocalData(size);
+}

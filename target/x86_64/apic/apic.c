@@ -13,7 +13,7 @@
 
 static void
 APIC_MainHandler(Registers *regs);
-uint32_t *apic_base_addr = 0;
+uint32_t **apic_base_addr = NULL;
 
 #define ICW4_8086 0x01    /* 8086/88 (MCS-80/85) mode */
 #define ICW1_ICW4 0x01    /* ICW4 (not) needed */
@@ -55,8 +55,6 @@ APIC_TimerCallibrate(uint32_t int_no,
         pit_ticks++;
         if(pit_ticks == TICK_CNT)apic_timer_value = APIC_GetTimerValue();
     }
-
-    APIC_SendEOI(int_no);
 }
 
 static uint32_t rollover_cnt;
@@ -65,18 +63,26 @@ static void
 APIC_TimerCallibrateRollover(uint32_t int_no,
                              uint32_t err_code) {
     if(int_no == IRQ(1))rollover_cnt++;
-    APIC_SendEOI(int_no);
     if(err_code)return;
 }
+
+static uint32_t cnt = 0;
+static uint64_t bsp_apic_addr = 0;
 
 uint8_t
 APIC_LocalInitialize(void) {
     for(int i = 32; i < 256; i++) {
-        IDT_RegisterHandler(i, APIC_MainHandler);
+        InterruptHandler h = NULL;
+        GetInterruptHandler(i, &h);
+        RegisterInterruptHandler(i, h);
     }
 
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
-    apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
+    if(apic_base_addr == NULL)apic_base_addr = (uint32_t**)AllocateAPLSMemory(sizeof(uint32_t*));
+    
+    *apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
+    if(cnt == 0)bsp_apic_addr = (uint64_t)*apic_base_addr;
+    //if(cnt == 1)__asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"((uint64_t)(*apic_base_addr - bsp_apic_addr)));
 
     apic_base_msr |= (1 << 11); //Enable the apic
     wrmsr(IA32_APIC_BASE, apic_base_msr);
@@ -92,6 +98,9 @@ APIC_LocalInitialize(void) {
 
     APIC_SetEnableMode(TRUE);
     AllocateAPLS(APIC_GetID());
+
+    cnt++;
+
     return 0;
 }
 
@@ -133,12 +142,12 @@ APIC_CallibrateTimer(void) {
 void
 APIC_Write(uint32_t reg,
            uint32_t val) {
-    apic_base_addr[reg/4] = val;
+    (*apic_base_addr)[reg/4] = val;
 }
 
 uint32_t
 APIC_Read(uint32_t reg) {
-    return apic_base_addr[reg/4];
+    return (*apic_base_addr)[reg/4];
 }
 
 void
@@ -253,5 +262,6 @@ APIC_SendIPI(uint32_t dest,
 
 static void
 APIC_MainHandler(Registers *regs) {
+    __asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"(regs->int_no));
     APIC_SendEOI(regs->int_no);
 }

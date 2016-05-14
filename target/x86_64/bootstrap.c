@@ -52,6 +52,7 @@ bootstrap_kernel(void *param,
     uint64_t *pml = 0;
     __asm__ volatile("mov %%cr3, %%rax" : "=a"(pml));
     pml = GetVirtualAddress(CachingModeWriteBack, pml);
+    VirtMemMan_InitializeBootstrap();
 
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
@@ -59,7 +60,7 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
     if(magic != MULTIBOOT_MAGIC) {
-        bootstrap_kernel_panic(0xff);	//We weren't booted by a standards compliant bootloader, can't trust this environment
+        bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
     }
 
     GDT_Initialize();   //Setup the GDT
@@ -116,7 +117,6 @@ __attribute__((section(".tramp_handler")))
 void
 smp_bootstrap(void) {
     SMP_LockTrampoline();
-    SMP_IncrementCoreCount();
 
     //Allocate a new stack for this thread and put it into the scheduler's queue
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
@@ -128,8 +128,13 @@ smp_bootstrap(void) {
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
 
-    VirtMemMan_SetCurrent(VirtMemMan_GetCurrent());
+    VirtMemMan_InitializeBootstrap();
+    VirtMemMan_Initialize();
     APIC_LocalInitialize();
+    __asm__ volatile("sti");
+    APIC_CallibrateTimer();
+    __asm__ volatile("cli");
+    SMP_IncrementCoreCount();
     SMP_UnlockTrampoline();
 
     while(1);

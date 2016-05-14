@@ -43,10 +43,13 @@ PIT_SetFrequency(uint8_t channel,
 uint32_t pit_ticksToWait = 0;
 uint32_t pit_handlerMode = 0; //0 = Sleep, 1 = Shutdown
 
+uint32_t stop = 0;
+
 static void
 PIT_TempIntHandler(uint32_t int_no,
                    uint32_t err_code) {
     err_code = 0;
+    //if(stop)__asm__ volatile("hlt");
     if(int_no == IRQ(0)) {
         if(pit_handlerMode == 0) {
             if(pit_ticksToWait != 0) {
@@ -54,8 +57,6 @@ PIT_TempIntHandler(uint32_t int_no,
             }
         }
     }
-
-    APIC_SendEOI(int_no);
 }
 
 void
@@ -101,10 +102,9 @@ PIT_Sleep(uint32_t interval) {
 
     pit_handlerMode = 1;
     PIT_SetEnableMode(DISABLED);
-    APIC_SendEOI(IRQ(0));
 
     RegisterInterruptHandler(IRQ(0), handler);
-    __asm__ volatile ("cli");
+    stop = 1;
 }
 
 void
