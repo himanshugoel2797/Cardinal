@@ -52,7 +52,7 @@ APIC_TimerCallibrate(uint32_t int_no,
     err_code = 0;
     if(int_no == IRQ(0) && pit_ticks >= 0){
         pit_ticks++;
-        if(pit_ticks == 100)apic_timer_value = APIC_GetTimerValue();
+        if(pit_ticks == 200)apic_timer_value = APIC_GetTimerValue();
     }
 
     APIC_SendEOI(int_no);
@@ -109,7 +109,7 @@ APIC_CallibrateTimer(void)
     RegisterInterruptHandler(IRQ(1), APIC_TimerCallibrateRollover);
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(0);
-    APIC_SetTimerDivisor(1);
+    APIC_SetTimerDivisor(16);
 
 
     PIT_Initialize();
@@ -121,13 +121,14 @@ APIC_CallibrateTimer(void)
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLED);
     pit_ticks = 0;
 
-    while(pit_ticks < 100);
+    while(pit_ticks < 200);
 
     PIT_SetEnableMode(DISABLED);
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLED);
 
     uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);
-    __asm__ volatile("mov %0, %0\n\thlt" :: "ra"(apic_ticks));
+    apic_ticks *= PIT_FREQUENCY_HZ;
+    apic_ticks /= 200;
 
 }
 
