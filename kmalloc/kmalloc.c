@@ -2,8 +2,7 @@
 #include "common/common.h"
 #include "memory.h"
 
-typedef struct kmalloc_info
-{
+typedef struct kmalloc_info {
     uint64_t pointer;
     size_t size;
     struct kmalloc_info *next;
@@ -32,8 +31,7 @@ kmalloc_info *allocation_info = NULL, *next_free_block = NULL;
 // associated physical page address
 
 //Allocate a 256MB pool for the kernel and map it to a free address space
-void kmalloc_init()
-{
+void kmalloc_init() {
 #define STORE_SIZE MiB(128)
 
     //Allocate blocks of 4KB and map them to a continuous address space of 256MB
@@ -45,21 +43,20 @@ void kmalloc_init()
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
     size_t size = STORE_SIZE;
-    while(size > 0)
-        {
-            uint64_t physBaseAddr_base = AllocatePhysicalPage();
-            MapPage(GetActiveVirtualMemoryInstance(),
-                    NULL,
-                    physBaseAddr_base,
-                    virtBaseAddr_base,
-                    KiB(4),
-                    CachingModeWriteBack,
-                    MemoryAllocationType_Heap,
-                    MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+    while(size > 0) {
+        uint64_t physBaseAddr_base = AllocatePhysicalPage();
+        MapPage(GetActiveVirtualMemoryInstance(),
+                NULL,
+                physBaseAddr_base,
+                virtBaseAddr_base,
+                KiB(4),
+                CachingModeWriteBack,
+                MemoryAllocationType_Heap,
+                MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
-            virtBaseAddr_base += KiB(4);
-            size -= KiB(4);
-        }
+        virtBaseAddr_base += KiB(4);
+        size -= KiB(4);
+    }
     virtBaseAddr_base -= STORE_SIZE;
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
@@ -76,57 +73,47 @@ void kmalloc_init()
     next_free_block++;
 }
 
-void kcompact()
-{
+void kcompact() {
     kmalloc_info *a_info = allocation_info;
 
-    while(a_info->next != NULL)
-        {
-            while(a_info->next != NULL)
-                {
-                    if(IS_FREE(a_info))
-                        {
-                            break;
-                        }
-                    a_info = a_info->next;
-                }
-            if(a_info->next != NULL)
-                {
-                    //TODO this is a memory leak, need some way to reclaim this memory
-                    a_info->size += a_info->next->size;
-                    a_info->next = a_info->next->next;
-                    a_info = a_info->next;
-                }
+    while(a_info->next != NULL) {
+        while(a_info->next != NULL) {
+            if(IS_FREE(a_info)) {
+                break;
+            }
+            a_info = a_info->next;
         }
+        if(a_info->next != NULL) {
+            //TODO this is a memory leak, need some way to reclaim this memory
+            a_info->size += a_info->next->size;
+            a_info->next = a_info->next->next;
+            a_info = a_info->next;
+        }
+    }
 }
 
 bool retry = FALSE;
-void *kmalloc(size_t size)
-{
+void *kmalloc(size_t size) {
     kmalloc_info *a_info = allocation_info;
-    while(a_info != NULL && a_info->next != NULL)
-        {
-            if(IS_FREE(a_info) && a_info->size >= size)
-                {
-                    break;
-                }
-            a_info = a_info->next;
+    while(a_info != NULL && a_info->next != NULL) {
+        if(IS_FREE(a_info) && a_info->size >= size) {
+            break;
         }
+        a_info = a_info->next;
+    }
 
 
-    if(IS_USED(a_info) | (a_info->size < size))
-        {
-            //Compact the allocation info and try again, if failed, return NULL
-            if(!retry)
-                {
-                    retry = TRUE;
-                    //kcompact();
-                    uint64_t res = (uint64_t)kmalloc(size);
-                    retry = FALSE;
-                    return (void*)res;
-                }
-            return (void*)NULL;
+    if(IS_USED(a_info) | (a_info->size < size)) {
+        //Compact the allocation info and try again, if failed, return NULL
+        if(!retry) {
+            retry = TRUE;
+            //kcompact();
+            uint64_t res = (uint64_t)kmalloc(size);
+            retry = FALSE;
+            return (void*)res;
         }
+        return (void*)NULL;
+    }
 
 
     //Allocate this block, mark this one as used, append a new block object at the end that contains the remaining free space
@@ -134,36 +121,32 @@ void *kmalloc(size_t size)
     size_t freeSize = a_info->size - size;
 
     //We need to allocate a new info block only if there is free space
-    if(freeSize != 0)
-        {
-            next_free_block->pointer = addr + size;
-            next_free_block->size = freeSize;
-            next_free_block->next = a_info->next;
-            MARK_FREE(next_free_block);
+    if(freeSize != 0) {
+        next_free_block->pointer = addr + size;
+        next_free_block->size = freeSize;
+        next_free_block->next = a_info->next;
+        MARK_FREE(next_free_block);
 
-            a_info->next = next_free_block;
-            next_free_block++;
+        a_info->next = next_free_block;
+        next_free_block++;
 
-        }
+    }
     MARK_USED(a_info);
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
     return (void*)addr;
 }
 
-void kfree(void *addr)
-{
+void kfree(void *addr) {
     //Find the block that matches the address specified
     kmalloc_info *a_info = allocation_info;
-    while(a_info->next != NULL)
-        {
-            if(IS_USED(a_info) && a_info->pointer == (uint64_t)addr)
-                {
-                    break;
-                }
-
-            a_info = a_info->next;
+    while(a_info->next != NULL) {
+        if(IS_USED(a_info) && a_info->pointer == (uint64_t)addr) {
+            break;
         }
+
+        a_info = a_info->next;
+    }
 
     //Mark this block as free
     MARK_FREE(a_info);

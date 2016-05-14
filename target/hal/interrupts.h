@@ -15,7 +15,7 @@ RegisterInterruptHandler(uint32_t int_no,
 
 uint32_t
 GetInterruptHandler(uint32_t int_no,
-					InterruptHandler *handler);
+                    InterruptHandler *handler);
 
 void
 RemoveInterruptHandler(uint32_t id);

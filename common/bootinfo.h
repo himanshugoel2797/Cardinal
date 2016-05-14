@@ -4,14 +4,13 @@
 #include "types.h"
 
 //! Defines the boot information format for Cardinal
-typedef struct{
-  uint64_t addr;
-  uint64_t len;
-  uint8_t type;
+typedef struct {
+    uint64_t addr;
+    uint64_t len;
+    uint8_t type;
 } CardinalMemMap;
 
-typedef struct
-{
+typedef struct {
     uint64_t mem_size;
     uint32_t elf_shdr_type;
     uint32_t elf_shdr_size;

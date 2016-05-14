@@ -11,16 +11,14 @@
 #define THREAD_LOCAL_STORAGE_SIZE KiB(4)
 
 ///Memory Caching Modes
-typedef enum
-{
-    CachingModeWriteBack = 0,   ///<Write Back 
+typedef enum {
+    CachingModeWriteBack = 0,   ///<Write Back
     CachingModeUncachable = 1,  ///<Uncachable
     CachingModeWriteThrough = 2 ///<Write Through
 } CachingMode;
 
 ///Memory Allocation Type
-typedef enum
-{
+typedef enum {
     MemoryAllocationType_Heap = 0,          ///<Heap
     MemoryAllocationType_Stack = (1 << 0),  ///<Stack
     MemoryAllocationType_MMap = (1 << 1),   ///<Memory Mapped
@@ -30,8 +28,7 @@ typedef enum
 } MemoryAllocationType;
 
 ///Memory Allocation Flags
-typedef enum
-{
+typedef enum {
     MemoryAllocationFlags_NoExec = (1 << 0),  ///<Execute Disable
     MemoryAllocationFlags_Exec = (1 << 1),    ///<Execute Enable
     MemoryAllocationFlags_Write = (1 << 2),   ///<Write Enabled
@@ -40,8 +37,7 @@ typedef enum
 } MemoryAllocationFlags;
 
 ///Memory Allocation Errors
-typedef enum
-{
+typedef enum {
     MemoryAllocationErrors_None = 0,                          ///<No Error
     MemoryAllocationErrors_AlreadyMapped = (1 << 0),          ///<Memory is already mapped
     MemoryAllocationErrors_NotMapped = (1 << 1),              ///<Memory is not mapped
@@ -52,8 +48,7 @@ typedef enum
     MemoryAllocationErrors_Unknown = (1 << 6)                 ///<Unknown Error
 } MemoryAllocationErrors;
 
-typedef struct MemoryAllocationsMap
-{
+typedef struct MemoryAllocationsMap {
     CachingMode 		CacheMode;
     uint64_t	 	VirtualAddress;
     uint64_t 		Length;

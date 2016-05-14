@@ -11,8 +11,7 @@
 */
 
 //! An entry in the MCFG table
-typedef struct
-{
+typedef struct {
     uint64_t baseAddr;
     uint16_t group_segment_number;
     uint8_t start_bus_number;
@@ -21,8 +20,7 @@ typedef struct
 } MCFG_Entry;
 
 //! The MCFG table
-typedef struct
-{
+typedef struct {
     ACPISDTHeader h;
     uint64_t res0;
     MCFG_Entry entries[1];

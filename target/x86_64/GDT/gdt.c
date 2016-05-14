@@ -3,8 +3,7 @@
 #include "common.h"
 
 //Describes a single GDT entry
-typedef struct
-{
+typedef struct {
     uint16_t limit_low;
     uint16_t base_low;
     uint8_t base_mid;
@@ -19,8 +18,7 @@ typedef struct
 void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
 
 //Describes the pointer to the GDT entry
-typedef struct
-{
+typedef struct {
     uint16_t limit; //Size
     uint64_t base; //Location
 } __attribute__((packed)) GDTPtr;
@@ -30,8 +28,7 @@ GDTEntry gdt_entries[GDT_ENTRY_COUNT];
 GDTPtr gdt_table;
 
 __attribute__((optnone))
-void GDT_Initialize()
-{
+void GDT_Initialize() {
     //Make sure interrupts are disabled
     __asm__ ("cli");
 
@@ -77,8 +74,7 @@ void GDT_Initialize()
     return; //Don't enable interrupts yet
 }
 
-void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran)
-{
+void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
     gdt_entries[num].base_low    = (base & 0xFFFF);
     gdt_entries[num].base_mid = (base >> 16) & 0xFF;
     gdt_entries[num].base_high   = (base >> 24) & 0xFF;

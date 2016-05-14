@@ -6,22 +6,19 @@
 
 #define MAX_PROCESS_NAME_LEN (256)
 
-typedef enum
-{
+typedef enum {
     ProcessStatus_Stopped,
     ProcessStatus_Sleeping,
     ProcessStatus_Terminating,
     ProcessStatus_Executing
 } ProcessStatus;
 
-typedef enum
-{
+typedef enum {
     ProcessPriority_Normal,
     ProcessPriority_High
 } ProcessPriority;
 
-typedef enum
-{
+typedef enum {
     ProcessPermissions_None = 0,
     ProcessPermissions_NormalFileIO = (1 << 0),
     ProcessPermissions_RootFileIO = (1 << 1),
@@ -31,8 +28,7 @@ typedef enum
     ProcessPermissions_Network = (1 << 5)
 } ProcessPermissions;
 
-typedef struct ProcessInformation
-{
+typedef struct ProcessInformation {
     UID 			ID;
     char 			Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus 		Status;
@@ -44,14 +40,12 @@ typedef struct ProcessInformation
     struct ProcessInformation	*next;
 } ProcessInformation;
 
-typedef enum
-{
+typedef enum {
     ProcessErrors_None = 0,
     ProcessErrors_Unknown = (1 << 0)
 } ProcessErrors;
 
-typedef enum
-{
+typedef enum {
     ProcessSignals_SIGABRT = (1 << 0),
     ProcessSignals_SIGALRM = (1 << 1),
     ProcessSignals_SIGVTALRM = (1 << 2),

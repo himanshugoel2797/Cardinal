@@ -4,8 +4,7 @@
 #include "kmalloc/kmalloc.h"
 
 void
-kernel_main(void)
-{
+kernel_main(void) {
     //kmalloc_init ();
 
     //Initialize process manager, setup timers, get threading up and running

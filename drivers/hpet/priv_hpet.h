@@ -5,8 +5,7 @@
 
 #include "acpi_tables/priv_acpi_tables.h"
 
-typedef struct
-{
+typedef struct {
     ACPISDTHeader h;
     uint8_t hardware_rev_id;
     uint8_t comparator_count : 5;

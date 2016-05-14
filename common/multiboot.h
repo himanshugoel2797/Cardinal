@@ -15,16 +15,14 @@ typedef uint16_t multiboot_uint16_t;
 typedef uint32_t multiboot_uint32_t;
 typedef uint64_t multiboot_uint64_t;
 
-typedef struct
-{
+typedef struct {
     unsigned short setWindow;
     unsigned short setDisplayStart;
     unsigned short setPalette;
     unsigned short IOPrivInfo;
 } VESA_PM_INFO;
 
-typedef struct
-{
+typedef struct {
     char VbeSignature[4];        // == "VESA"
     uint16_t VbeVersion;            // == 0x0300 for VBE 3.0
     uint16_t OemStringPtr[2];       // isa vbeFarPtr
@@ -33,8 +31,7 @@ typedef struct
     uint16_t TotalMemory;        // as # of 64KB blocks
 } __attribute__((packed)) VbeInfoBlock;
 
-typedef struct
-{
+typedef struct {
     uint16_t attributes;
     uint8_t winA,winB;
     uint16_t granularity;
@@ -59,8 +56,7 @@ typedef struct
     uint16_t offScrSize;
 } __attribute__((packed)) ModeInfoBlock;
 
-struct multiboot_header
-{
+struct multiboot_header {
     /* Must be MULTIBOOT_MAGIC - see above.  */
     multiboot_uint32_t magic;
 
@@ -85,8 +81,7 @@ struct multiboot_header
 };
 
 /* The symbol table for a.out.  */
-struct multiboot_aout_symbol_table
-{
+struct multiboot_aout_symbol_table {
     multiboot_uint32_t tabsize;
     multiboot_uint32_t strsize;
     multiboot_uint32_t addr;
@@ -95,8 +90,7 @@ struct multiboot_aout_symbol_table
 typedef struct multiboot_aout_symbol_table multiboot_aout_symbol_table_t;
 
 /* The section header table for ELF.  */
-struct multiboot_elf_section_header_table
-{
+struct multiboot_elf_section_header_table {
     multiboot_uint32_t num;
     multiboot_uint32_t size;
     multiboot_uint32_t addr;
@@ -104,8 +98,7 @@ struct multiboot_elf_section_header_table
 };
 typedef struct multiboot_elf_section_header_table multiboot_elf_section_header_table_t;
 
-struct multiboot_info
-{
+struct multiboot_info {
     /* Multiboot info version number */
     multiboot_uint32_t flags;
 
@@ -123,8 +116,7 @@ struct multiboot_info
     multiboot_uint32_t mods_count;
     multiboot_uint32_t mods_addr;
 
-    union
-    {
+    union {
         multiboot_aout_symbol_table_t aout_sym;
         multiboot_elf_section_header_table_t elf_sec;
     } u;
@@ -163,15 +155,12 @@ struct multiboot_info
 #define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
 #define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT 2
     multiboot_uint8_t framebuffer_type;
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             multiboot_uint32_t framebuffer_palette_addr;
             multiboot_uint16_t framebuffer_palette_num_colors;
         };
-        struct
-        {
+        struct {
             multiboot_uint8_t framebuffer_red_field_position;
             multiboot_uint8_t framebuffer_red_mask_size;
             multiboot_uint8_t framebuffer_green_field_position;
@@ -183,15 +172,13 @@ struct multiboot_info
 } __attribute__((packed));
 typedef struct multiboot_info multiboot_info_t;
 
-struct multiboot_color
-{
+struct multiboot_color {
     multiboot_uint8_t red;
     multiboot_uint8_t green;
     multiboot_uint8_t blue;
 };
 
-struct multiboot_mmap_entry
-{
+struct multiboot_mmap_entry {
     multiboot_uint32_t size;
     multiboot_uint64_t addr;
     multiboot_uint64_t len;
@@ -199,8 +186,7 @@ struct multiboot_mmap_entry
 } __attribute__((packed));
 typedef struct multiboot_mmap_entry multiboot_memory_map_t;
 
-struct multiboot_mod_list
-{
+struct multiboot_mod_list {
     /* the memory used goes from bytes 'mod_start' to 'mod_end-1' inclusive */
     multiboot_uint32_t mod_start;
     multiboot_uint32_t mod_end;
@@ -214,8 +200,7 @@ struct multiboot_mod_list
 typedef struct multiboot_mod_list multiboot_module_t;
 
 /* APM BIOS info.  */
-struct multiboot_apm_info
-{
+struct multiboot_apm_info {
     multiboot_uint16_t version;
     multiboot_uint16_t cseg;
     multiboot_uint32_t offset;

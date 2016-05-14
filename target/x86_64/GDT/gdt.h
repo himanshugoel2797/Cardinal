@@ -5,8 +5,7 @@
 
 void GDT_Initialize();
 
-typedef volatile struct strtss
-{
+typedef volatile struct strtss {
     unsigned short   link;
     unsigned short   link_h;
     unsigned long   esp0;

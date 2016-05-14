@@ -10,8 +10,7 @@
 
 #define PCI_BUS_MASTER_CMD (1<<2)
 
-typedef struct
-{
+typedef struct {
     uint8_t classCode;
     uint8_t subClassCode;
     uint8_t progIf;

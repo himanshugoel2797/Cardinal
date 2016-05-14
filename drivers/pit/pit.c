@@ -7,8 +7,7 @@
 
 
 uint32_t curFrequency = 0;
-void PIT_SetFrequency(uint8_t channel, uint8_t access, uint8_t mode, uint8_t valType, uint32_t frequency)
-{
+void PIT_SetFrequency(uint8_t channel, uint8_t access, uint8_t mode, uint8_t valType, uint32_t frequency) {
     uint32_t divisor = 1193180 / frequency;
     curFrequency = divisor * 1193180;
 
@@ -24,35 +23,30 @@ void PIT_SetFrequency(uint8_t channel, uint8_t access, uint8_t mode, uint8_t val
     outb(PIT_CMD, cmd);
 
     // Divisor has to be sent byte-wise, so split here into upper/lower bytes.
-    if((access & PIT_ACCESS_LO_BYTE) == PIT_ACCESS_LO_BYTE)
-        {
-            uint8_t l = (uint8_t)(divisor & 0xFF);
-            outb(0x40 + channel, l);
-        }
+    if((access & PIT_ACCESS_LO_BYTE) == PIT_ACCESS_LO_BYTE) {
+        uint8_t l = (uint8_t)(divisor & 0xFF);
+        outb(0x40 + channel, l);
+    }
 
-    if((access & PIT_ACCESS_HI_BYTE) == PIT_ACCESS_HI_BYTE)
-        {
-            uint8_t h = (uint8_t)( (divisor>>8) & 0xFF );
-            outb(0x40 + channel, h);
-        }
+    if((access & PIT_ACCESS_HI_BYTE) == PIT_ACCESS_HI_BYTE) {
+        uint8_t h = (uint8_t)( (divisor>>8) & 0xFF );
+        outb(0x40 + channel, h);
+    }
 }
 
 uint32_t pit_ticksToWait = 0;
 uint32_t pit_handlerMode = 0; //0 = Sleep, 1 = Shutdown
 
-uint32_t PIT_TempIntHandler(Registers *reg)
-{
+uint32_t PIT_TempIntHandler(Registers *reg) {
 
-    if(pit_handlerMode == 0)
-        {
-            if(pit_ticksToWait != 0) pit_ticksToWait--;
-        }
+    if(pit_handlerMode == 0) {
+        if(pit_ticksToWait != 0) pit_ticksToWait--;
+    }
 
     return 1; //Always prevent any other handlers from running
 }
 
-void PIT_Sleep(uint32_t interval)
-{
+void PIT_Sleep(uint32_t interval) {
     //Mask all PIT interrupts
     Interrupts_SetInterruptEnableMode(IRQ(0), DISABLED);
 
@@ -72,23 +66,21 @@ void PIT_Sleep(uint32_t interval)
     //Enable the PIT interrupt
     Interrupts_SetInterruptEnableMode(IRQ(0), ENABLED);
 
-    while(1)
-        {
-            //Prevent race conditions
-            asm volatile ("cli");
-            if(pit_ticksToWait == 0) break;
-            asm volatile ("sti");
+    while(1) {
+        //Prevent race conditions
+        asm volatile ("cli");
+        if(pit_ticksToWait == 0) break;
+        asm volatile ("sti");
 
-            //Wait some time
-            for(int a = 0; a < 50; a++)
-                {
-                    asm volatile ("nop");
-                    asm volatile ("nop");
-                    asm volatile ("nop");
-                    asm volatile ("nop");
-                    asm volatile ("nop");
-                }
+        //Wait some time
+        for(int a = 0; a < 50; a++) {
+            asm volatile ("nop");
+            asm volatile ("nop");
+            asm volatile ("nop");
+            asm volatile ("nop");
+            asm volatile ("nop");
         }
+    }
 
     Interrupts_SetInterruptEnableMode(IRQ(0), DISABLED);
     Interrupts_RegisterHandler(IRQ(0), 0, handler);
@@ -96,13 +88,11 @@ void PIT_Sleep(uint32_t interval)
     asm volatile ("sti");
 }
 
-void PIT_SetEnableMode(bool enabled)
-{
+void PIT_SetEnableMode(bool enabled) {
     Interrupts_SetInterruptEnableMode(IRQ(0), enabled);
 }
 
 
-void PIT_Initialize()
-{
+void PIT_Initialize() {
     PIT_SetFrequency(PIT_CH0, PIT_ACCESS_HI_BYTE | PIT_ACCESS_LO_BYTE, PIT_MODE_RATE, PIT_VAL_16BIT, PIT_FREQUENCY_HZ);
 }

@@ -3,8 +3,7 @@
 
 #include "types.h"
 
-typedef enum
-{
+typedef enum {
     CPUID_FEAT_ECX_SSE3         = 1 << 0,
     CPUID_FEAT_ECX_PCLMUL       = 1 << 1,
     CPUID_FEAT_ECX_DTES64       = 1 << 2,
@@ -63,16 +62,14 @@ typedef enum
     CPUID_FEAT_EDX_PBE          = 1 << 31
 } CPUID_FEAT;
 
-typedef enum
-{
+typedef enum {
     CPUID_EAX = 0,
     CPUID_EBX,
     CPUID_ECX,
     CPUID_EDX
 } CPUID_REG;
 
-typedef enum
-{
+typedef enum {
     CPUID_ECX_IGNORE = 0,
     CPUID_EAX_FIRST_PAGE = 1
 } CPUID_REQUESTS;

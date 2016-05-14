@@ -27,15 +27,13 @@ Jurgen ("Josh") Thelen
 //  of values that are legitimately found on the PCI bus.  The size
 //  definitions should be used for loop control when the table is searched.
 
-    typedef struct _PCI_VENTABLE
-    {
+    typedef struct _PCI_VENTABLE {
         unsigned short	VenId ;
         char *	VenShort ;
         char *	VenFull ;
     }  PCI_VENTABLE, *PPCI_VENTABLE ;
 
-PCI_VENTABLE	PciVenTable [] =
-{
+PCI_VENTABLE	PciVenTable [] = {
     { 0x0033, "<", "Paradyne Corp." } ,
     { 0x003D, "well", "master" } ,
     { 0x0070, "Hauppauge1", "Hauppauge Computer Works Inc." } ,
@@ -1610,16 +1608,14 @@ PCI_VENTABLE	PciVenTable [] =
 // Use this value for loop control during searching:
 #define	PCI_VENTABLE_LEN	(sizeof(PciVenTable)/sizeof(PCI_VENTABLE))
 
-typedef struct _PCI_DEVTABLE
-{
+typedef struct _PCI_DEVTABLE {
     unsigned short	VenId ;
     unsigned short	DevId ;
     char *	Chip ;
     char *	ChipDesc ;
 }  PCI_DEVTABLE, *PPCI_DEVTABLE ;
 
-PCI_DEVTABLE	PciDevTable [] =
-{
+PCI_DEVTABLE	PciDevTable [] = {
     { 0x165C, 0x0002, "FT232BL", "FT232BL" } ,
     { 0x16AE, 0x000A, "SafeXcel-1841", "Crypto Accelerator" } ,
     { 0x16AE, 0x1141, "SafeXcel-1141", "Crypto Accelerator" } ,
@@ -9420,8 +9416,7 @@ PCI_DEVTABLE	PciDevTable [] =
 // Use this value for loop control during searching:
 #define	PCI_DEVTABLE_LEN	(sizeof(PciDevTable)/sizeof(PCI_DEVTABLE))
 
-typedef struct _PCI_CLASSCODETABLE
-{
+typedef struct _PCI_CLASSCODETABLE {
     unsigned char	BaseClass ;
     unsigned char	SubClass ;
     unsigned char	ProgIf ;
@@ -9430,8 +9425,7 @@ typedef struct _PCI_CLASSCODETABLE
     char *		ProgDesc ;
 }  PCI_CLASSCODETABLE, *PPCI_CLASSCODETABLE ;
 
-PCI_CLASSCODETABLE PciClassCodeTable [] =
-{
+PCI_CLASSCODETABLE PciClassCodeTable [] = {
     { 0x00, 0x00, 0x00, "Pre-2.0 PCI Specification Device", "Non-VGA","" } ,
     { 0x00, 0x01, 0x00, "Pre-2.0 PCI Specification Device", "VGA Compatible", "" } ,
 
@@ -9522,8 +9516,7 @@ PCI_CLASSCODETABLE PciClassCodeTable [] =
 // Use this value for loop control during searching:
 #define	PCI_CLASSCODETABLE_LEN	(sizeof(PciClassCodeTable)/sizeof(PCI_CLASSCODETABLE))
 
-char *	PciCommandFlags [] =
-{
+char *	PciCommandFlags [] = {
     "I/O Access",
     "Memory Access",
     "Bus Mastering",
@@ -9546,8 +9539,7 @@ char *	PciCommandFlags [] =
 #define	PCI_COMMANDFLAGS_LEN	(sizeof(PciCommandFlags)/sizeof(char *))
 
 
-char *	PciStatusFlags [] =
-{
+char *	PciStatusFlags [] = {
     "Reserved 0",
     "Reserved 1",
     "Reserved 2",
@@ -9570,8 +9562,7 @@ char *	PciStatusFlags [] =
 #define	PCI_STATUSFLAGS_LEN	(sizeof(PciStatusFlags)/sizeof(char *))
 
 
-char *	PciDevSelFlags [] =
-{
+char *	PciDevSelFlags [] = {
     "Fast Devsel Speed",     // TypeC
     "Medium Devsel Speed",   // TypeB
     "Slow Devsel Speed",     // TypeA

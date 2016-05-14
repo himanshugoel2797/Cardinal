@@ -3,8 +3,7 @@
 
 #include "types.h"
 
-typedef struct
-{
+typedef struct {
     uint8_t seconds;
     uint8_t minutes;
     uint8_t hours;

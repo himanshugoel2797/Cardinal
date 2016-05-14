@@ -6,45 +6,38 @@
 
 void*
 GetVirtualAddress(CachingMode c,
-                  void *physicalAddress)
-{
+                  void *physicalAddress) {
     return VirtMemMan_GetVirtualAddress(c, physicalAddress);
 }
 
 void*
-GetPhysicalAddress(void *virtualAddress)
-{
+GetPhysicalAddress(void *virtualAddress) {
     return GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
                                  virtualAddress);
 }
 
 void*
 GetPhysicalAddressUID(UID 	src,
-                      void 	*virtualAddress)
-{
+                      void 	*virtualAddress) {
     return VirtMemMan_GetPhysicalAddress((PML_Instance)src, virtualAddress);
 }
 
 MemoryAllocationErrors
-CreateVirtualMemoryInstance(UID *inst)
-{
-    if(inst != NULL)
-        {
-            *inst = (UID)VirtMemMan_CreateInstance();
-            return MemoryAllocationErrors_None;
-        }
+CreateVirtualMemoryInstance(UID *inst) {
+    if(inst != NULL) {
+        *inst = (UID)VirtMemMan_CreateInstance();
+        return MemoryAllocationErrors_None;
+    }
     return MemoryAllocationErrors_Unknown;
 }
 
 UID
-SetActiveVirtualMemoryInstance(UID inst)
-{
+SetActiveVirtualMemoryInstance(UID inst) {
     return (UID)VirtMemMan_SetCurrent((PML_Instance)inst);
 }
 
 UID
-GetActiveVirtualMemoryInstance(void)
-{
+GetActiveVirtualMemoryInstance(void) {
     return (UID)VirtMemMan_GetCurrent();
 }
 
@@ -56,8 +49,7 @@ MapPage(UID 			pageTable,
         size_t			size,
         CachingMode 		cacheMode,
         MemoryAllocationType 	allocType,
-        MemoryAllocationFlags 	flags)
-{
+        MemoryAllocationFlags 	flags) {
 
     MEM_TYPES cache = 0;
     if(cacheMode == CachingModeUncachable)cache = MEM_TYPE_UC;
@@ -74,21 +66,19 @@ MapPage(UID 			pageTable,
     else if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
 
     //At this point, all parameters have been verified
-    if(allocationMap != NULL)
-        {
-            allocationMap->CacheMode = cacheMode;
-            allocationMap->VirtualAddress = virtualAddress;
-            allocationMap->Length = size;
-            allocationMap->Flags = flags;
-            allocationMap->AllocationType = allocType;
-            allocationMap->AdditionalData = 0;
-            allocationMap->ReferenceCount = 0;
-        }
+    if(allocationMap != NULL) {
+        allocationMap->CacheMode = cacheMode;
+        allocationMap->VirtualAddress = virtualAddress;
+        allocationMap->Length = size;
+        allocationMap->Flags = flags;
+        allocationMap->AllocationType = allocType;
+        allocationMap->AdditionalData = 0;
+        allocationMap->ReferenceCount = 0;
+    }
 
-    if(flags & MemoryAllocationType_Fork)
-        {
-            access = access & ~MEM_WRITE;	//Forked pages are copy on write
-        }
+    if(flags & MemoryAllocationType_Fork) {
+        access = access & ~MEM_WRITE;	//Forked pages are copy on write
+    }
 
     VirtMemMan_Map((PML_Instance)pageTable,
                    virtualAddress,
@@ -105,8 +95,7 @@ MapPage(UID 			pageTable,
 MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
           uint64_t 		virtualAddress,
-          size_t 		size)
-{
+          size_t 		size) {
     VirtMemMan_Map((PML_Instance)pageTable,
                    virtualAddress,
                    0,
@@ -125,8 +114,7 @@ FindFreeVirtualAddress(UID 			pageTable,
                        uint64_t			*virtualAddress,
                        size_t 			size,
                        MemoryAllocationType 	UNUSED(allocType),
-                       MemoryAllocationFlags 	flags)
-{
+                       MemoryAllocationFlags 	flags) {
 
     if(virtualAddress == NULL)return MemoryAllocationErrors_Unknown;
 
@@ -147,8 +135,7 @@ MemoryAllocationErrors
 ForkTable(UID src,
           MemoryAllocationsMap *srcAllocBase,
           UID *dst,
-          MemoryAllocationsMap **dstAllocBase)
-{
+          MemoryAllocationsMap **dstAllocBase) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
     if(dstAllocBase == NULL)return MemoryAllocationErrors_Unknown;
     if(srcAllocBase == NULL)return MemoryAllocationErrors_Unknown;
@@ -160,51 +147,44 @@ ForkTable(UID src,
 
     CreateVirtualMemoryInstance(dst);
 
-    do
-        {
-            MapPage(*dst,
-                    b,
-                    (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
-                    c->VirtualAddress,
-                    c->Length,
-                    c->CacheMode,
-                    c->AllocationType | MemoryAllocationType_Fork,
-                    c->Flags
-                   );
+    do {
+        MapPage(*dst,
+                b,
+                (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
+                c->VirtualAddress,
+                c->Length,
+                c->CacheMode,
+                c->AllocationType | MemoryAllocationType_Fork,
+                c->Flags
+               );
 
-            if(c->next != NULL)
-                {
-                    b->next = kmalloc(sizeof(MemoryAllocationsMap));
-                    b = b->next;
-                }
+        if(c->next != NULL) {
+            b->next = kmalloc(sizeof(MemoryAllocationsMap));
+            b = b->next;
         }
-    while(c->next != NULL);
+    } while(c->next != NULL);
 
     return MemoryAllocationErrors_None;
 }
 
 uint64_t
-AllocatePhysicalPage(void)
-{
+AllocatePhysicalPage(void) {
     return MemMan_Alloc();
 }
 
 void
-FreePhysicalPage(uint64_t ptr)
-{
+FreePhysicalPage(uint64_t ptr) {
     MemMan_Free(ptr);
 }
 
 uint64_t
-AllocatePhysicalPageCont(int pageCount)
-{
+AllocatePhysicalPageCont(int pageCount) {
     return MemMan_Alloc4KiBPageCont(pageCount);
 }
 
 void
 FreePhysicalPageCont(uint64_t ptr,
-                     int pageCount)
-{
+                     int pageCount) {
     MemMan_FreeCont(ptr, pageCount);
 }
 
@@ -213,20 +193,18 @@ static int coreIDMap[MAX_CORES];
 static void* coreTLSMap[MAX_CORES];
 
 void
-AllocateAPLS(int coreID)
-{
-  coreIDMap[coreCount] = coreID;
-  coreTLSMap[coreCount] = GetVirtualAddress(CachingModeWriteBack,
-					    (void*)AllocatePhysicalPageCont(THREAD_LOCAL_STORAGE_SIZE/PAGE_SIZE));
+AllocateAPLS(int coreID) {
+    coreIDMap[coreCount] = coreID;
+    coreTLSMap[coreCount] = GetVirtualAddress(CachingModeWriteBack,
+                            (void*)AllocatePhysicalPageCont(THREAD_LOCAL_STORAGE_SIZE/PAGE_SIZE));
 
-  coreCount++;
+    coreCount++;
 }
 
 void*
-GetAPLS(int coreID)
-{
-  int i = 0;
-  for(; i < coreCount && coreIDMap[i] != coreID; i++);
+GetAPLS(int coreID) {
+    int i = 0;
+    for(; i < coreCount && coreIDMap[i] != coreID; i++);
 
-  return coreTLSMap[i];
+    return coreTLSMap[i];
 }

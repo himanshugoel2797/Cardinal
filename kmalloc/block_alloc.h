@@ -22,8 +22,7 @@
 #define MEMORY_LEAK_CHECK_BLOCK_SIZE 16
 #endif
 
-typedef enum
-{
+typedef enum {
     BLOCK_TYPE_FREE = 0,
     BLOCK_TYPE_ALLOC_MID = 1,
     BLOCK_TYPE_ALLOC_START = 2,

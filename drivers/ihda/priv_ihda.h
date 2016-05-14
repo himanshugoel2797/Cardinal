@@ -3,8 +3,7 @@
 
 #include "types.h"
 
-typedef struct
-{
+typedef struct {
     uint32_t addr_lo;
     uint32_t addr_hi;
     uint16_t wp;
@@ -15,8 +14,7 @@ typedef struct
 } __attribute__((packed))
 RB_Bufs;
 
-typedef struct
-{
+typedef struct {
     uint16_t gcap;
     uint8_t vmin;
     uint8_t vmaj;
@@ -45,8 +43,7 @@ typedef struct
 } __attribute__((packed))
 IHDA_MMIO;
 
-typedef struct
-{
+typedef struct {
     uint32_t nid;
     uint32_t type;
     uint32_t conn_list_len;
@@ -55,8 +52,7 @@ typedef struct
     uint32_t caps;
 } IHDA_Widget;
 
-typedef struct
-{
+typedef struct {
     uint32_t nid;
     uint32_t type;
     uint32_t sub_node_count;
@@ -64,8 +60,7 @@ typedef struct
     IHDA_Widget *widgets;
 } IHDA_AFG_Info;
 
-typedef struct
-{
+typedef struct {
     IHDA_AFG_Info *afgs;
     uint32_t afg_count;
 } IHDA_Codec;

@@ -2,8 +2,7 @@
 #include "priv_ps2.h"
 #include "utils/native.h"
 
-uint8_t PS2Keyboard_Initialize()
-{
+uint8_t PS2Keyboard_Initialize() {
     //Reset the keyboard
     WAIT_DATA_SENT;
     outb(DATA_PORT, 0xFF);
@@ -22,8 +21,7 @@ uint8_t PS2Keyboard_Initialize()
     inb(DATA_PORT);
 }
 
-void PS2Keyboard_SetLEDStatus(uint8_t led, uint8_t status)
-{
+void PS2Keyboard_SetLEDStatus(uint8_t led, uint8_t status) {
     WAIT_DATA_SENT;
     outb(DATA_PORT, 0xED);
     WAIT_DATA_SENT;

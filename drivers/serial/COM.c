@@ -8,8 +8,7 @@
 #define PORT 0x03F8
 bool com_redirect = FALSE;
 
-void COM_Initialize()
-{
+void COM_Initialize() {
 #if COM_ENABLED == 1
     outb(PORT + 1, 0x00); // Disable all interrupts
     outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -21,8 +20,7 @@ void COM_Initialize()
 #endif
 }
 
-uint8_t COM_ready()
-{
+uint8_t COM_ready() {
 #if COM_ENABLED == 1
     return inb(PORT + 5) & 0x20;
 #else
@@ -31,8 +29,7 @@ uint8_t COM_ready()
 
 }
 int ln = 0;
-void COM_WriteStr(const char *fmt, ...)
-{
+void COM_WriteStr(const char *fmt, ...) {
     char str[1024];
     int index = 0;
     va_list vl;
@@ -40,15 +37,13 @@ void COM_WriteStr(const char *fmt, ...)
     vsnprintf(str, fmt, vl);
     va_end(vl);
 
-    if(com_redirect)
-        {
-            Terminal_Write(str, strlen(str));
-        }
+    if(com_redirect) {
+        Terminal_Write(str, strlen(str));
+    }
 #if COM_ENABLED == 1
-    while(str[index])
-        {
-            while(COM_ready() == 0) ;
-            outb(PORT, str[index++]);
-        }
+    while(str[index]) {
+        while(COM_ready() == 0) ;
+        outb(PORT, str[index++]);
+    }
 #endif
 }

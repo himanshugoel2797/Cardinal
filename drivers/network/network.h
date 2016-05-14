@@ -5,8 +5,7 @@
 #include "rtl8139/rtl8139.h"
 
 //* Provides a means for a network device to be interfaced without regard for which device it is
-typedef struct
-{
+typedef struct {
     bool (*detect)(uint32_t);				//*< Check if this network device is present
     uint32_t (*init)(uint32_t);				//*< Initialize the network device
     uint32_t (*enable)(uint32_t);			//*< Enable the network device

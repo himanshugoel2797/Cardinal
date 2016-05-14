@@ -22,18 +22,15 @@
 #endif
 
 void
-bootstrap_render(uint32_t color)
-{
+bootstrap_render(uint32_t color) {
     CardinalBootInfo *info = GetBootInfo();
-    for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4)
-        {
-            *(uint32_t*)(info->framebuffer_addr + y) = color;  //ARGB
-        }
+    for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
+        *(uint32_t*)(info->framebuffer_addr + y) = color;  //ARGB
+    }
 }
 
 void
-bootstrap_pagefault_handler(Registers *regs)
-{
+bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
     __asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"(regs->rip));
@@ -41,19 +38,16 @@ bootstrap_pagefault_handler(Registers *regs)
 }
 
 void
-bootstrap_kernel_panic(uint8_t severity)
-{
-    while(1)
-        {
-            bootstrap_render(0x00ff0000 | (0xff - severity));
-        }
+bootstrap_kernel_panic(uint8_t severity) {
+    while(1) {
+        bootstrap_render(0x00ff0000 | (0xff - severity));
+    }
 }
 
 __attribute__((section(".entry_point")))	//Ensure that this is always the first thing in the .text section
 void
 bootstrap_kernel(void *param,
-                 uint64_t magic)
-{
+                 uint64_t magic) {
     //Now unmap the bootstrap mappings
     uint64_t *pml = 0;
     __asm__ volatile("mov %%cr3, %%rax" : "=a"(pml));
@@ -64,10 +58,9 @@ bootstrap_kernel(void *param,
 
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
-    if(magic != MULTIBOOT_MAGIC)
-        {
-            bootstrap_kernel_panic(0xff);	//We weren't booted by a standards compliant bootloader, can't trust this environment
-        }
+    if(magic != MULTIBOOT_MAGIC) {
+        bootstrap_kernel_panic(0xff);	//We weren't booted by a standards compliant bootloader, can't trust this environment
+    }
 
     GDT_Initialize();   //Setup the GDT
     IDT_Initialize();   //Setup the IDT
@@ -103,29 +96,25 @@ bootstrap_kernel(void *param,
     //We aren't supposed to reach here!
 
     uint32_t color = 0x00ff0000, prev_col = 0x00ffff00, swap = 0;
-    while(1)
-        {
-            for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4)
-                {
-                    *(uint32_t*)(info->framebuffer_addr + y) = color;   //ARGB
-                }
-            swap++;
-            if(swap == 0x20)
-                {
-                    swap = color;
-                    color = prev_col;
-                    prev_col = swap;
-
-                    swap = 0;
-                }
+    while(1) {
+        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
+            *(uint32_t*)(info->framebuffer_addr + y) = color;   //ARGB
         }
+        swap++;
+        if(swap == 0x20) {
+            swap = color;
+            color = prev_col;
+            prev_col = swap;
+
+            swap = 0;
+        }
+    }
     __asm__ volatile("cli\n\thlt\n\t");
 }
 
 __attribute__((section(".tramp_handler")))
 void
-smp_bootstrap(void)
-{
+smp_bootstrap(void) {
     SMP_LockTrampoline();
     SMP_IncrementCoreCount();
 

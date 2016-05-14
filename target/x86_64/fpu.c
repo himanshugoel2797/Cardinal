@@ -1,10 +1,28 @@
 #include "fpu.h"
+#include "interrupts.h"
 #include "CPUID/cpuid.h"
 #include "x86_64_common.h"
 
+static void
+FPU_SIMDException(uint32_t int_no,
+                  uint32_t err_no) {
+    if(int_no != 0x13)return;
+    err_no = 0;
+
+    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "ra"((uint64_t)0xB00B1E5));
+
+}
+
+static void
+FPU_X87Exception(uint32_t int_no,
+                 uint32_t err_no) {
+    if(int_no != 0x10)return;
+    err_no = 0;
+    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "ra"((uint64_t)0xB00B5));
+}
+
 void
-FPU_Initialize(void)
-{
+FPU_Initialize(void) {
     CPUID_RequestInfo(CPUID_EAX_FIRST_PAGE, CPUID_ECX_IGNORE);
 
     if(!CPUID_FeatureIsAvailable(CPUID_EDX, CPUID_FEAT_EDX_FPU))
@@ -37,8 +55,9 @@ FPU_Initialize(void)
     bitmask |= (1 << 10); //Allow CPU to backup FPU state
     //bitmask |= (1 << 18); //FWAIT should cause a state change
 
-    bootstrap_render(-1);
-    //while(1);
+    RegisterInterruptHandler(0x10, FPU_X87Exception);
+    RegisterInterruptHandler(0x13, FPU_SIMDException);
+
     //Set the control register to the new value
     __asm__ volatile ("mov %0, %%cr4"
                       :: "ra" (bitmask));

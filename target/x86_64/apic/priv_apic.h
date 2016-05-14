@@ -19,8 +19,7 @@
 #define APIC_ICR_LO 0x300
 #define APIC_ICR_HI 0x310
 
-typedef struct APIC_SMPThreads
-{
+typedef struct APIC_SMPThreads {
     uint32_t apic_id;
     uint32_t proc_id;
     struct APIC_SMPThreads *next;

@@ -5,8 +5,7 @@
 #include "drivers.h"
 #include "managers.h"
 
-typedef struct
-{
+typedef struct {
     uint32_t Verb : 20;
     uint32_t NID : 7;
     uint32_t IndirectNID : 1;

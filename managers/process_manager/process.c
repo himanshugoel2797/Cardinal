@@ -3,7 +3,6 @@
 ProcessInformation *processes;
 
 void
-ProcessSys_Initialize(void)
-{
+ProcessSys_Initialize(void) {
 
 }

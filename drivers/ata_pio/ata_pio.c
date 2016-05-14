@@ -5,25 +5,21 @@
 uint16_t curBase;
 uint8_t curDisk;
 
-uint8_t ATA_PIO_Initialize()
-{
+uint8_t ATA_PIO_Initialize() {
     curBase = IDE_CTRL_A_BASE;
 }
 
-uint8_t ATA_PIO_ReadStatus(bool preempt)
-{
+uint8_t ATA_PIO_ReadStatus(bool preempt) {
     return inb(preempt? CMD_REG_STATUS_PORT(curBase) : SPECIAL_STATUS_PORT(curBase));
 }
 
-void ATA_PIO_SelectDrive(uint8_t disk)
-{
+void ATA_PIO_SelectDrive(uint8_t disk) {
     curDisk = disk;
     outb(DRIVE_PORT(curBase), disk);
 
 }
 
-uint8_t ATA_PIO_Identify(uint16_t *result)
-{
+uint8_t ATA_PIO_Identify(uint16_t *result) {
     //Check if the bus even exists
     if(inb(CMD_REG_STATUS_PORT(curBase)) == 0xFF)return -1;	//The bus doesn't exist
 
@@ -46,24 +42,21 @@ uint8_t ATA_PIO_Identify(uint16_t *result)
 
     if(lba_mid != 0 | lba_hi != 0)return -1;
 
-    while(1)
-        {
-            status = ATA_PIO_ReadStatus(TRUE);
-            if(status & STATUS_DRQ == STATUS_DRQ)break;
-            if(status & STATUS_ERR == STATUS_ERR)return -1;
-        }
+    while(1) {
+        status = ATA_PIO_ReadStatus(TRUE);
+        if(status & STATUS_DRQ == STATUS_DRQ)break;
+        if(status & STATUS_ERR == STATUS_ERR)return -1;
+    }
 
     //Read in 256 words and store them into the provided pointer
-    for(int i = 0; i < 256; i++)
-        {
-            result[i] = inl(DATA_PORT(curBase));
-        }
+    for(int i = 0; i < 256; i++) {
+        result[i] = inl(DATA_PORT(curBase));
+    }
 
     return 0;
 }
 
-uint8_t ATA_PIO_Write(uint64_t addr, uint16_t *data, uint16_t sectorCount)
-{
+uint8_t ATA_PIO_Write(uint64_t addr, uint16_t *data, uint16_t sectorCount) {
     outb(DRIVE_PORT(curBase), 0x40 | ((curDisk == IDE_SLAVE) << 4));
 
     outb(FEAT_ERR_PORT(curBase), 0x00);
@@ -83,25 +76,22 @@ uint8_t ATA_PIO_Write(uint64_t addr, uint16_t *data, uint16_t sectorCount)
     uint32_t written_data;
 
     //TODO we now need to queue the callback along with the source pointer
-    while(!(ATA_PIO_ReadStatus(TRUE) & STATUS_DRQ))
-        {
-            if(ATA_PIO_ReadStatus(TRUE) & STATUS_DRQ == 0)break;
-            //ThreadMan_Yield();	//Keep yielding to the other threads until the disk is ready
-        }
+    while(!(ATA_PIO_ReadStatus(TRUE) & STATUS_DRQ)) {
+        if(ATA_PIO_ReadStatus(TRUE) & STATUS_DRQ == 0)break;
+        //ThreadMan_Yield();	//Keep yielding to the other threads until the disk is ready
+    }
 
-    if(ATA_PIO_ReadStatus(TRUE) & STATUS_BUSY == 1)
-        {
-            //The busy bit is frozen reset disk
-            ATA_PIO_Reset();
-            return -1;
-        }
+    if(ATA_PIO_ReadStatus(TRUE) & STATUS_BUSY == 1) {
+        //The busy bit is frozen reset disk
+        ATA_PIO_Reset();
+        return -1;
+    }
 
 
 
 }
 
-uint8_t ATA_PIO_Read(uint64_t addr, uint16_t *data, uint16_t sectorCount)
-{
+uint8_t ATA_PIO_Read(uint64_t addr, uint16_t *data, uint16_t sectorCount) {
     outb(DRIVE_PORT(curBase), 0x40 | ((curDisk == IDE_SLAVE) << 4));
 
     outb(FEAT_ERR_PORT(curBase), 0x00);
@@ -121,14 +111,12 @@ uint8_t ATA_PIO_Read(uint64_t addr, uint16_t *data, uint16_t sectorCount)
     //TODO queue the callback and the destination pointer for processing
 }
 
-void ATA_PIO_Reset()
-{
+void ATA_PIO_Reset() {
     outb(SPECIAL_STATUS_PORT(curBase), 2);
     for(int i = 0; i < 5000; i++);
     outb(SPECIAL_STATUS_PORT(curBase), 0);
 
-    if(curDisk != IDE_MASTER)
-        {
-            ATA_PIO_SelectDrive(curDisk);
-        }
+    if(curDisk != IDE_MASTER) {
+        ATA_PIO_SelectDrive(curDisk);
+    }
 }

@@ -11,8 +11,7 @@
 */
 
 //! The ACPI FADT
-typedef struct
-{
+typedef struct {
     ACPISDTHeader h;    //! The ACPI Section Descriptor Table header
     uint32_t FirmwareCtrl;
     uint32_t Dsdt;      //! Offset of the DSDT

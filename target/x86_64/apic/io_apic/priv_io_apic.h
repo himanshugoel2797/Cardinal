@@ -28,16 +28,14 @@ IOAPIC_Write(uint32_t* io_apic_baseAddr,
              uint32_t val);
 
 
-typedef struct
-{
+typedef struct {
     uint32_t* baseAddr;
     uint32_t global_int_base;
     uint32_t ID;
     uint32_t entry_count;
 } IOAPIC_Desc;
 
-typedef struct
-{
+typedef struct {
     uint32_t ioapic_index;
     uint32_t ioapic_pin;
 } IOAPIC_InterruptMapEntry;
