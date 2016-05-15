@@ -85,4 +85,7 @@ CPUID_FeatureIsAvailable(CPUID_REG cpuid_register,
 uint32_t
 CPUID_GetValue(CPUID_REG cpuid_register);
 
+uint32_t
+CPUID_GetCacheLineSize(void);
+
 #endif

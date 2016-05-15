@@ -1,6 +1,7 @@
 #include "cpuid.h"
 
 static uint32_t eax, ebx, ecx, edx;
+static uint32_t cache_line_size = 0;
 
 void
 CPUID_RequestInfo(uint32_t eax,
@@ -8,6 +9,16 @@ CPUID_RequestInfo(uint32_t eax,
     __asm__ volatile ("cpuid\n\t"
                       : "=a"(eax), "=b"(ebx), "=c" (ecx), "=d" (edx)
                       : "a" (eax), "c"(ecx));
+}
+
+uint32_t
+CPUID_GetCacheLineSize(void)
+{
+    if(cache_line_size == 0){
+        CPUID_RequestInfo(0x80000006, 0);
+        cache_line_size = ecx & 0xFF;
+    }
+    return cache_line_size;
 }
 
 bool
