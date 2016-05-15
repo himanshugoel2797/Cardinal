@@ -62,8 +62,8 @@ MapPage(UID 			pageTable,
     if(flags & MemoryAllocationFlags_Write)access |= MEM_WRITE;
 
     MEM_SECURITY_PERMS perms = 0;
-    if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
-    else if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
+    if((flags & MemoryAllocationFlags_Kernel) == MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
+    if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
 
     //At this point, all parameters have been verified
     if(allocationMap != NULL) {
@@ -120,7 +120,7 @@ FindFreeVirtualAddress(UID 			pageTable,
 
     MEM_SECURITY_PERMS perms = 0;
     if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
-    else if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
+    if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
 
     void* addr = VirtMemMan_FindFreeAddress((PML_Instance)pageTable,
                                             size,

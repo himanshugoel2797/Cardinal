@@ -58,7 +58,6 @@ void kmalloc_init() {
         size -= KiB(4);
     }
     virtBaseAddr_base -= STORE_SIZE;
-
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
     k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));
     max_allocs = MiB(1)/sizeof(kmalloc_info);
