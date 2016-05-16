@@ -111,6 +111,9 @@ FindFreeVirtualAddress(UID 			pageTable,
 uint64_t
 AllocatePhysicalPage(void);
 
+void
+FreePhysicalPage(uint64_t ptr);
+
 uint64_t
 AllocatePhysicalPageCont(int pageCount);
 

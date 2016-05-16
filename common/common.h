@@ -85,4 +85,7 @@ new_uid(void);
 uint32_t
 rand(int seed);
 
+int
+ffs(uint32_t val);
+
 #endif /* end of include guard: _UTILS_COMMON_H_ */

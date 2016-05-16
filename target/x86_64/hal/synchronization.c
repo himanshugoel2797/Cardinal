@@ -11,7 +11,7 @@ CreateSpinlock(void)
 bool
 LockSpinlock(Spinlock *primitive)
 {
-    if(primitive == NULL)return false;
+    if(primitive == NULL)return FALSE;
 	    __asm__ volatile
     (
         ".spin:"
@@ -21,18 +21,18 @@ LockSpinlock(Spinlock *primitive)
         "\n\tlock btsl $0, (%0)"
         "\n\tjc .spin" :: "a"(primitive)
     );
-    return true;
+    return TRUE;
 }
 
 bool
 UnlockSpinlock(Spinlock *primitive)
 {    
-    if(primitive == NULL)return false;
+    if(primitive == NULL)return FALSE;
 	__asm__ volatile
     (
         "movl $0, (%0)" :: "a"(primitive)
     );
-    return true;
+    return TRUE;
 }
 
 void

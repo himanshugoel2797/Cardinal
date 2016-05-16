@@ -6,6 +6,7 @@
 
 #define MAX_PROCESS_NAME_LEN (256)
 
+
 typedef enum {
     ProcessStatus_Stopped,
     ProcessStatus_Sleeping,
@@ -28,21 +29,10 @@ typedef enum {
     ProcessPermissions_Network = (1 << 5)
 } ProcessPermissions;
 
-typedef struct ProcessInformation {
-    UID 			ID;
-    char 			Name[MAX_PROCESS_NAME_LEN];
-    ProcessStatus 		Status;
-    ProcessPriority 		Priority;
-    ProcessPermissions 		Permissions;
-    UID 			PageTable;
-    MemoryAllocationsMap 	*AllocationMap;
-    struct ProcessInformation 	*children;
-    struct ProcessInformation	*next;
-} ProcessInformation;
-
 typedef enum {
     ProcessErrors_None = 0,
-    ProcessErrors_Unknown = (1 << 0)
+    ProcessErrors_Unknown = (1 << 0),
+    ProcessErrors_UIDNotFound = (1 << 1)
 } ProcessErrors;
 
 typedef enum {
@@ -67,16 +57,32 @@ typedef enum {
     ProcessSignals_SIGTERM = (1 << 18),
     ProcessSignals_SIGTRAP = (1 << 19),
     ProcessSignals_SIGXFSZ = (1 << 20),
-    ProcessSignals_SIGWINCH = (1 << 21)
+    ProcessSignals_SIGWINCH = (1 << 21),
+    ProcessSignals_MAX = 22
 } ProcessSignals;
+
+typedef void (*ProcessSignalHandler)(ProcessSignals);
+
+typedef struct ProcessInformation {
+    UID                         ID;
+    char                        Name[MAX_PROCESS_NAME_LEN];
+    ProcessStatus               Status;
+    ProcessPriority             Priority;
+    ProcessPermissions          Permissions;
+    ProcessSignalHandler        SignalHandlers[ProcessSignals_MAX];
+    UID                         PageTable;
+    MemoryAllocationsMap        *AllocationMap;
+    struct ProcessInformation   *children;
+    struct ProcessInformation   *next;
+} ProcessInformation;
 
 ProcessErrors
 ForkProcess(ProcessInformation *src,
-            ProcessInformation *dst);
+            ProcessInformation **dst);
 
 ProcessErrors
-GetProcessInformation(UID 			pid,
-                      ProcessInformation	*procInfo);
+GetProcessInformation(UID           pid,
+                      ProcessInformation    *procInfo);
 
 ProcessErrors
 KillProcess(UID pid);
@@ -87,6 +93,9 @@ SleepProcess(UID pid);
 ProcessErrors
 RegisterSignalHandler(UID 		pid,
                       ProcessSignals 	signals,
-                      void 		(*sigHandler)(ProcessSignals));
+                      ProcessSignalHandler sigHandler);
+
+void
+ProcessSys_Initialize(void);
 
 #endif

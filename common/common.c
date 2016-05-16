@@ -148,7 +148,10 @@ uint32_t
 set_bit_cnt(uint32_t bit_array) {
     uint32_t set_bit = 0;
     if(bit_array == 0)return 0;
-    __asm__("popcnt %%eax, %%ebx" : "=b"(set_bit) : "a"(bit_array));
+    for(int i = 0; i < 32; i++)
+    {
+        if((bit_array >> i) & 1)set_bit++;
+    }
     return set_bit;
 }
 
@@ -165,4 +168,12 @@ rand(int seed) {
     uint32_t m = 2147483647;
     seed = (a * seed) % m;
     return seed / m;
+}
+
+int
+ffs(uint32_t val)
+{
+    int cnt = 0;
+    for(;((val >> cnt) & 1) != 1;cnt++);
+    return cnt;
 }

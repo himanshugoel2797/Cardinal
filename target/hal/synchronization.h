@@ -8,10 +8,10 @@ typedef uint64_t* Spinlock;
 Spinlock
 CreateSpinlock(void);
 
-void
+bool
 LockSpinlock(Spinlock *primitive);
 
-void
+bool
 UnlockSpinlock(Spinlock *primitive);
 
 void
