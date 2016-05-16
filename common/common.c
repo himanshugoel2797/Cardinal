@@ -148,8 +148,7 @@ uint32_t
 set_bit_cnt(uint32_t bit_array) {
     uint32_t set_bit = 0;
     if(bit_array == 0)return 0;
-    for(int i = 0; i < 32; i++)
-    {
+    for(int i = 0; i < 32; i++) {
         if((bit_array >> i) & 1)set_bit++;
     }
     return set_bit;
@@ -171,9 +170,8 @@ rand(int seed) {
 }
 
 int
-ffs(uint32_t val)
-{
+ffs(uint32_t val) {
     int cnt = 0;
-    for(;((val >> cnt) & 1) != 1;cnt++);
+    for(; ((val >> cnt) & 1) != 1; cnt++);
     return cnt;
 }

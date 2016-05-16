@@ -10,11 +10,10 @@
 #include "utils/native.h"
 #include "managers.h"
 
-typedef struct APIC_APLS_Data
-{
+typedef struct APIC_APLS_Data {
     uint32_t *apic_base_addr;
     uint64_t apic_frequency;
-}APIC_APLS_Data;
+} APIC_APLS_Data;
 static APIC_APLS_Data* apic_data = NULL;
 
 #define ICW4_8086 0x01    /* 8086/88 (MCS-80/85) mode */

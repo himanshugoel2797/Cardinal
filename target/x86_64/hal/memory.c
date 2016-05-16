@@ -137,9 +137,9 @@ ForkTable(UID src,
           UID *dst,
           MemoryAllocationsMap **dstAllocBase) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
-    
+
     CreateVirtualMemoryInstance(dst);
-    
+
     if(dstAllocBase == NULL)return MemoryAllocationErrors_Unknown;
     if(srcAllocBase == NULL)return MemoryAllocationErrors_Unknown;
 

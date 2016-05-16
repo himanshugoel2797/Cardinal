@@ -630,35 +630,35 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                     BUILD_ADDR(pml_i, pdpt_i, 0, 0);
                     cur_score += GiB(1);
                     prev_val = pdpt_i;
-                
+
                 } else if((pdpt[pdpt_i] & 1) == 1 && (needed_score - cur_score) < GiB(1)) {
-                
+
                     uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_i]));
-                    
+
                     //Reset the score if a block was skipped
                     if(cur_score > 0 && pdpt_i != 0 && (pdpt_i - 1) != prev_val)cur_score = 0;
 
                     for(uint64_t pd_i = 0; pd_i < 512 && cur_score < needed_score; ++pd_i) {
-                
+
                         if(((pd[pd_i] & 1) == 0) && (needed_score - cur_score) >= MiB(2)) {
-                
+
                             //Check the pd table if more than 2MiB of space is requested
                             BUILD_ADDR(pml_i, pdpt_i, pd_i, 0);
                             cur_score += MiB(2);
                             prev_val = pd_i;
-                
+
                         } else if((pd[pd_i] & 1) == 1 && (needed_score - cur_score) < MiB(2)) {
-                
+
                             uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_i]));
-                            
+
                             //Reset the score if a block was skipped
                             if(cur_score > 0 && pd_i != 0 && (pd_i - 1) != prev_val)cur_score = 0;
 
                             for(uint64_t pt_i = 0; pt_i < 512 && cur_score < needed_score; ++pt_i) {
-                                
+
                                 //Reset the score if a block was skipped
                                 if(pt_i != 0 && prev_val != (pt_i - 1))cur_score = 0;
-                                
+
                                 if((pt[pt_i] & 1) == 0 && (needed_score - cur_score) >= KiB(4)) {
                                     //Check the pt table for 4KiB pages
                                     BUILD_ADDR(pml_i, pdpt_i, pd_i, pt_i);

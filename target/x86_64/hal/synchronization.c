@@ -3,16 +3,14 @@
 #include "kmalloc.h"
 
 Spinlock
-CreateSpinlock(void)
-{
-	return (Spinlock)kmalloc(CPUID_GetCacheLineSize());
+CreateSpinlock(void) {
+    return (Spinlock)kmalloc(CPUID_GetCacheLineSize());
 }
 
 bool
-LockSpinlock(Spinlock *primitive)
-{
+LockSpinlock(Spinlock *primitive) {
     if(primitive == NULL)return FALSE;
-	    __asm__ volatile
+    __asm__ volatile
     (
         ".spin:"
         "\n\tpause"
@@ -25,10 +23,9 @@ LockSpinlock(Spinlock *primitive)
 }
 
 bool
-UnlockSpinlock(Spinlock *primitive)
-{    
+UnlockSpinlock(Spinlock *primitive) {
     if(primitive == NULL)return FALSE;
-	__asm__ volatile
+    __asm__ volatile
     (
         "movl $0, (%0)" :: "a"(primitive)
     );
@@ -36,7 +33,6 @@ UnlockSpinlock(Spinlock *primitive)
 }
 
 void
-FreeSpinlock(Spinlock *primitive)
-{
+FreeSpinlock(Spinlock *primitive) {
     if(primitive != NULL)kfree(primitive);
 }
