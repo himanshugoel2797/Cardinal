@@ -7,51 +7,49 @@
 //TODO: Write a separate schedule manager that dictates thread switching in a process aware manner
 //TODO: For the schedule manager, make sure to delete processes if their state suggests it
 
-typedef enum{
-	ThreadPriority_VeryLow = 0,
-	ThreadPriority_Low = 1,
-	ThreadPriority_Medium = 2,
-	ThreadPriority_Neutral = 3,
-	ThreadPriority_High = 4,
-	ThreadPriority_VeryHigh = 5,
-	ThreadPriority_Maximum = 6
+typedef enum {
+    ThreadPriority_VeryLow = 0,
+    ThreadPriority_Low = 1,
+    ThreadPriority_Medium = 2,
+    ThreadPriority_Neutral = 3,
+    ThreadPriority_High = 4,
+    ThreadPriority_VeryHigh = 5,
+    ThreadPriority_Maximum = 6
 } ThreadPriority;
 
-typedef enum{
-	ThreadState_Initialize,
-	ThreadState_Running,
-	ThreadState_Paused,
-	ThreadState_Exiting
-}ThreadState;
+typedef enum {
+    ThreadState_Initialize,
+    ThreadState_Running,
+    ThreadState_Paused,
+    ThreadState_Exiting
+} ThreadState;
 
 typedef void (*ThreadEntryPoint)(void);
-
-
 
 void
 Thread_Initialize(void);
 
 UID
 CreateThread(UID parentProcess,
-			 ThreadEntryPoint entry_point);
+             ThreadEntryPoint entry_point);
 
 void
 SetThreadState(UID id,
-			   ThreadState state);
+               ThreadState state);
 
 ThreadState
 GetThreadState(UID id);
 
 void
 SetThreadBasePriority(UID id,
-					  ThreadPriority priority);
+                      ThreadPriority priority);
 
 ThreadPriority
 GetThreadPriority(UID id);
 
 void
 SetThreadCoreAffinity(UID id,
-					  int coreID);
+                      int coreID);
 
 int
 GetThreadCoreAffinity(UID id);
@@ -67,7 +65,7 @@ SwitchThread(void);
 
 void
 RegisterCore(int id,
-			int (*getCoreData)(void));
+             int (*getCoreData)(void));
 
 int
 GetCoreCount(void);

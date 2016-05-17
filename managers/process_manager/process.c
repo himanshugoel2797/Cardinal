@@ -69,9 +69,8 @@ KillProcess(UID pid) {
         if(pInf->ID == pid) {
             pInf->Status = ProcessStatus_Terminating;
 
-            for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++)
-            {
-            	SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
+            for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++) {
+                SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
             }
 
             return ProcessErrors_None;

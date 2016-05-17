@@ -84,7 +84,7 @@ bootstrap_kernel(void *param,
     smp_sync_base = 1;
     APIC_Initialize();
 
-    
+
     //Now that all the processors are booted up and ready to do their job
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
@@ -121,14 +121,12 @@ bootstrap_kernel(void *param,
     __asm__ volatile("cli\n\thlt\n\t");
 }
 
-int get_perf_counter(void)
-{
+int get_perf_counter(void) {
     return 0;
 }
 
 void
-smp_unlock_cores(void)
-{
+smp_unlock_cores(void) {
     UnlockSpinlock(&smp_sync);
 }
 
