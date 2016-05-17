@@ -21,6 +21,9 @@
 #include "multiboot2.h"
 #endif
 
+static Spinlock smp_sync;
+static int smp_sync_base;
+
 void
 bootstrap_render(uint32_t color) {
     CardinalBootInfo *info = GetBootInfo();
@@ -44,7 +47,7 @@ bootstrap_kernel_panic(uint8_t severity) {
     }
 }
 
-__attribute__((section(".entry_point")))	//Ensure that this is always the first thing in the .text section
+__attribute__((section(".entry_point")))    //Ensure that this is always the first thing in the .text section
 void
 bootstrap_kernel(void *param,
                  uint64_t magic) {
@@ -78,8 +81,10 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
 
+    smp_sync_base = 1;
     APIC_Initialize();
 
+    
     //Now that all the processors are booted up and ready to do their job
 
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
@@ -89,6 +94,12 @@ bootstrap_kernel(void *param,
     //Initialize syscall mechanism, provide interface to OS for managing syscalls and jumping to user mode
 
     //When threading is up again, call kernel on new thread
+
+    kernel_main_init();
+    smp_sync = CreateSpinlock();
+    LockSpinlock(&smp_sync);
+    smp_sync_base = 0;
+
     kernel_main();  //Done initializing all arch specific stuff, call the kernel
 
     //We aren't supposed to reach here!
@@ -110,6 +121,17 @@ bootstrap_kernel(void *param,
     __asm__ volatile("cli\n\thlt\n\t");
 }
 
+int get_perf_counter(void)
+{
+    return 0;
+}
+
+void
+smp_unlock_cores(void)
+{
+    UnlockSpinlock(&smp_sync);
+}
+
 __attribute__((section(".tramp_handler")))
 void
 smp_bootstrap(void) {
@@ -129,6 +151,8 @@ smp_bootstrap(void) {
     VirtMemMan_InitializeBootstrap();
     VirtMemMan_Initialize();
 
+    int coreID = SMP_GetCoreCount();
+
     APIC_LocalInitialize();
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
@@ -136,6 +160,8 @@ smp_bootstrap(void) {
     SMP_IncrementCoreCount();
     SMP_UnlockTrampoline();
 
-    while(1);
+    while(smp_sync_base);
+    LockSpinlock(&smp_sync);
 
+    smp_core_main(coreID, get_perf_counter);
 }

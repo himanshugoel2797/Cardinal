@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include "memory.h"
+#include "managers.h"
+#include "list.h"
 
 #define MAX_PROCESS_NAME_LEN (256)
 
@@ -72,6 +74,7 @@ typedef struct ProcessInformation {
     ProcessSignalHandler        SignalHandlers[ProcessSignals_MAX];
     UID                         PageTable;
     MemoryAllocationsMap        *AllocationMap;
+    List                        *ThreadIDs;
     struct ProcessInformation   *children;
     struct ProcessInformation   *next;
 } ProcessInformation;

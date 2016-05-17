@@ -2,7 +2,6 @@
 #include "kmalloc.h"
 #include "memory.h"
 #include "common.h"
-#include "list.h"
 
 static List *processes;
 static ProcessInformation *root;
@@ -19,6 +18,7 @@ ProcessSys_Initialize(void) {
     root->AllocationMap = NULL;
     root->children = NULL;
     root->next = NULL;
+    root->ThreadIDs = List_Create();
 
     processes = List_Create();
     List_AddEntry(processes, root);
@@ -39,6 +39,7 @@ ForkProcess(ProcessInformation *src,
     //Add dst to src's children
     dst->next = src->children;
     src->children = dst;
+    dst->ThreadIDs = List_Create();
 
     List_AddEntry(processes, dst);
     *dest = dst;
@@ -67,6 +68,12 @@ KillProcess(UID pid) {
 
         if(pInf->ID == pid) {
             pInf->Status = ProcessStatus_Terminating;
+
+            for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++)
+            {
+            	SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
+            }
+
             return ProcessErrors_None;
         }
     }
