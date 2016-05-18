@@ -11,6 +11,7 @@
 #include "bootinfo.h"
 #include "x86_64_common.h"
 #include "memory.h"
+#include "synchronization.h"
 #include "managers.h"
 #include "apic/apic.h"
 #include "acpi/acpi_tables.h"
@@ -21,7 +22,6 @@
 #include "multiboot2.h"
 #endif
 
-static Spinlock smp_sync;
 static int smp_sync_base;
 
 void
@@ -96,9 +96,6 @@ bootstrap_kernel(void *param,
     //When threading is up again, call kernel on new thread
 
     kernel_main_init();
-    smp_sync = CreateSpinlock();
-    LockSpinlock(&smp_sync);
-    smp_sync_base = 0;
 
     kernel_main();  //Done initializing all arch specific stuff, call the kernel
 
@@ -127,7 +124,7 @@ int get_perf_counter(void) {
 
 void
 smp_unlock_cores(void) {
-    UnlockSpinlock(&smp_sync);
+    smp_sync_base = 0;
 }
 
 __attribute__((section(".tramp_handler")))
@@ -159,7 +156,7 @@ smp_bootstrap(void) {
     SMP_UnlockTrampoline();
 
     while(smp_sync_base);
-    LockSpinlock(&smp_sync);
 
     smp_core_main(coreID, get_perf_counter);
+    while(1);
 }

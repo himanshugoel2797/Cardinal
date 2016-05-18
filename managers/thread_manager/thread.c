@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "common/common.h"
 #include "kmalloc.h"
+#include "synchronization.h"
 #include "common/list.h"
 
 typedef struct ThreadInfo {
@@ -17,6 +18,7 @@ typedef struct CoreInfo {
     int (*getCoreData)(void);
 } CoreInfo;
 
+static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
 
@@ -32,6 +34,16 @@ Thread_Initialize(void) {
     thds = List_Create();
 
     cores = List_Create();
+
+    vLow_s = CreateSpinlock();
+    low_s = CreateSpinlock();
+    medium_s = CreateSpinlock();
+    neutral_s = CreateSpinlock();
+    high_s = CreateSpinlock();
+    vHigh_s = CreateSpinlock();
+    max_s = CreateSpinlock();
+    thds_s = CreateSpinlock();
+    core_s = CreateSpinlock();
 }
 
 UID
@@ -44,15 +56,21 @@ CreateThread(UID parentProcess,
     thd->Parent = parentProcess;
     thd->ID = new_uid();
 
+    LockSpinlock(&neutral_s);
     List_AddEntry(neutral, thd);
+    UnlockSpinlock(&neutral_s);
+
+    LockSpinlock(&thds_s);
     List_AddEntry(thds, thd);
+    UnlockSpinlock(&thds_s);
+
     return thd->ID;
 }
 
 void
 SetThreadState(UID id,
                ThreadState state) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             thd->state = state;
@@ -63,18 +81,19 @@ SetThreadState(UID id,
 
 ThreadState
 GetThreadState(UID id) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             return thd->state;
         }
     }
+    return -1;
 }
 
 void
 SetThreadBasePriority(UID id,
                       ThreadPriority priority) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             thd->priority = priority;
@@ -85,19 +104,20 @@ SetThreadBasePriority(UID id,
 
 ThreadPriority
 GetThreadPriority(UID id) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             return thd->priority;
         }
     }
+    return -1;
 }
 
 
 void
 SetThreadCoreAffinity(UID id,
                       int coreID) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             thd->core_affinity = coreID;
@@ -108,17 +128,23 @@ SetThreadCoreAffinity(UID id,
 
 int
 GetThreadCoreAffinity(UID id) {
-    for(int i = 0; i < List_Length(thds); i++) {
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             return thd->core_affinity;
         }
     }
+    return -1;
 }
 
 void
 FreeThread(UID id) {
-
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( thd->ID == id) {
+            thd->state = ThreadState_Exiting;
+        }
+    }
 }
 
 void
@@ -132,6 +158,14 @@ SwitchThread(void) {
 }
 
 void
+CoreUpdate(int coreID)
+{
+    //Obtain thread to process from the lists
+    //TODO make kmalloc work on all threads by having it share the mappings on to all cores
+    coreID = 0;
+}
+
+void
 RegisterCore(int id,
              int (*getCoreData)(void)) {
     CoreInfo *cInfo = kmalloc(sizeof(CoreInfo));
@@ -142,12 +176,7 @@ RegisterCore(int id,
 }
 
 int
-GetCoreCount(void) {
-    return List_Length(cores);
-}
-
-int
 GetCoreLoad(int coreNum) {
-    if(coreNum > List_Length(cores))return -1;
+    if(coreNum > (int)List_Length(cores))return -1;
     return ((CoreInfo*)List_EntryAt(cores, coreNum))->getCoreData();
 }

@@ -8,6 +8,9 @@ typedef uint64_t* Spinlock;
 Spinlock
 CreateSpinlock(void);
 
+Spinlock
+CreateBootstrapSpinlock(void);
+
 bool
 LockSpinlock(Spinlock *primitive);
 

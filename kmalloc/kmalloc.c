@@ -1,4 +1,5 @@
 #include "kmalloc.h"
+#include "synchronization.h"
 #include "common/common.h"
 #include "memory.h"
 
@@ -13,6 +14,7 @@ void* k_pages_base_addr;
 int max_allocs = 0;
 uint32_t free_space = 0;
 kmalloc_info *allocation_info = NULL, *next_free_block = NULL;
+Spinlock alloc_sync;
 
 //A block is free if the first bit is clear
 #define IS_FREE(x) ((x->pointer & 1) == 0)
@@ -34,6 +36,9 @@ kmalloc_info *allocation_info = NULL, *next_free_block = NULL;
 void kmalloc_init() {
 #define STORE_SIZE MiB(128)
 
+    //TODO Setup TLB shootdowns
+    //0xFFFF800000000000 is the table used for APLS
+    alloc_sync = CreateBootstrapSpinlock();
     //Allocate blocks of 4KB and map them to a continuous address space of 256MB
     uint64_t virtBaseAddr_base = 0;
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
@@ -93,6 +98,7 @@ void kcompact() {
 
 bool retry = FALSE;
 void *kmalloc(size_t size) {
+    LockSpinlock(&alloc_sync);
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
         if(IS_FREE(a_info) && a_info->size >= size) {
@@ -104,6 +110,7 @@ void *kmalloc(size_t size) {
 
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
+            UnlockSpinlock(&alloc_sync);
         if(!retry) {
             retry = TRUE;
             //kcompact();
@@ -133,10 +140,13 @@ void *kmalloc(size_t size) {
     MARK_USED(a_info);
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
+    UnlockSpinlock(&alloc_sync);
     return (void*)addr;
 }
 
 void kfree(void *addr) {
+
+    LockSpinlock(&alloc_sync);
     //Find the block that matches the address specified
     kmalloc_info *a_info = allocation_info;
     while(a_info->next != NULL) {
@@ -149,4 +159,6 @@ void kfree(void *addr) {
 
     //Mark this block as free
     MARK_FREE(a_info);
+
+    UnlockSpinlock(&alloc_sync);
 }

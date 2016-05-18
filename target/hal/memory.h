@@ -24,7 +24,8 @@ typedef enum {
     MemoryAllocationType_MMap = (1 << 1),   ///<Memory Mapped
     MemoryAllocationType_Fork = (1 << 2),   ///<Forked
     MemoryAllocationType_Paged = (1 << 3),  ///<Paged from Disk
-    MemoryAllocationType_Shared = (1 << 4)  ///<Shared Memory
+    MemoryAllocationType_Shared = (1 << 4), ///<Shared Memory
+    MemoryAllocationType_Global = (1 << 5)  ///<Shared between all cores
 } MemoryAllocationType;
 
 ///Memory Allocation Flags
@@ -121,15 +122,10 @@ void
 FreePhysicalPageCont(uint64_t ptr,
                      int pageCount);
 
-///< Allocate some Application Processor Local Storage
-void
-AllocateAPLS(int coreID);
-
-///< Retrieve the Application Processor Local Storage of a core
-void*
-GetAPLS(int coreID);
-
 void*
 AllocateAPLSMemory(uint64_t size);
+
+int
+GetCoreCount(void);
 
 #endif

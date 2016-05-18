@@ -34,7 +34,6 @@ typedef struct VirtMemManData {
     bool hugePageSupport;
 } VirtMemManData;
 
-
 static uint64_t coreLocalSpace;
 static VirtMemManData *virtMemData;
 
@@ -237,7 +236,7 @@ VirtMemMan_Initialize(void) {
 
     //Setup core specific memory
     VirtMemMan_Map(pml,
-                   0xFFFFFFFB00000000 - APLS_SIZE,
+                   0xFFFF800000000000,
                    MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE),
                    APLS_SIZE,
                    TRUE,
@@ -250,7 +249,7 @@ VirtMemMan_Initialize(void) {
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
     VirtMemManData* tmp = virtMemData;
-    virtMemData = (VirtMemManData*)(0xFFFFFFFB00000000 - APLS_SIZE);
+    virtMemData = (VirtMemManData*)(0xFFFF800000000000);
     virtMemData->kernel_pdpt = tmp->kernel_pdpt;
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;

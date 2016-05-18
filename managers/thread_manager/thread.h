@@ -68,9 +68,9 @@ RegisterCore(int id,
              int (*getCoreData)(void));
 
 int
-GetCoreCount(void);
-
-int
 GetCoreLoad(int coreNum);
+
+void
+CoreUpdate(int coreID);
 
 #endif

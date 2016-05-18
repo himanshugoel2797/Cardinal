@@ -3,6 +3,7 @@
 #include "virt_mem_manager/virt_mem_manager.h"
 #include "page_manager/phys_mem_manager.h"
 #include "kmalloc/kmalloc.h"
+#include "smp/smp.h"
 
 void*
 GetVirtualAddress(CachingMode c,
@@ -190,28 +191,13 @@ FreePhysicalPageCont(uint64_t ptr,
     MemMan_FreeCont(ptr, pageCount);
 }
 
-static int coreCount = 0;
-static int coreIDMap[MAX_CORES];
-static void* coreTLSMap[MAX_CORES];
-
-void
-AllocateAPLS(int coreID) {
-    coreIDMap[coreCount] = coreID;
-    coreTLSMap[coreCount] = GetVirtualAddress(CachingModeWriteBack,
-                            (void*)AllocatePhysicalPageCont(THREAD_LOCAL_STORAGE_SIZE/PAGE_SIZE));
-
-    coreCount++;
-}
-
-void*
-GetAPLS(int coreID) {
-    int i = 0;
-    for(; i < coreCount && coreIDMap[i] != coreID; i++);
-
-    return coreTLSMap[i];
-}
-
 void*
 AllocateAPLSMemory(uint64_t size) {
     return VirtMemMan_AllocCoreLocalData(size);
+}
+
+int
+GetCoreCount(void)
+{
+  return SMP_GetCoreCount();
 }

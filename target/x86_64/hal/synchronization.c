@@ -1,10 +1,16 @@
 #include "synchronization.h"
 #include "CPUID/cpuid.h"
+#include "managers.h"
 #include "kmalloc.h"
 
 Spinlock
 CreateSpinlock(void) {
     return (Spinlock)kmalloc(CPUID_GetCacheLineSize());
+}
+
+Spinlock
+CreateBootstrapSpinlock(void){
+    return (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
 }
 
 bool

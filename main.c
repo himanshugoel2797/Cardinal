@@ -22,13 +22,12 @@ kernel_main(void) {
 
     //The kernel is ready to take in the new cores, bring them up
     smp_unlock_cores();
+    CoreUpdate(0);  //BSP is core 0
 }
 
 void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     RegisterCore(coreID, getCoreData);
-    while(1) {
-
-    }
+    //Start the local timer and set it to call the thread switch handler
 }
