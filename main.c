@@ -22,7 +22,7 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
-
+    __asm__ volatile("hlt");
 
     //The kernel is ready to take in the new cores, bring them up
 }

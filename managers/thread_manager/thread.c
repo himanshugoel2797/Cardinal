@@ -10,6 +10,7 @@ typedef struct ThreadInfo {
     ThreadEntryPoint entry_point;
     ThreadState state;
     ThreadPriority priority;
+    void *stack;
     int core_affinity;
 } ThreadInfo;
 
@@ -56,6 +57,7 @@ CreateThread(UID parentProcess,
     thd->priority = ThreadPriority_Neutral;
     thd->Parent = parentProcess;
     thd->ID = new_uid();
+    thd->stack = kmalloc(KiB(16));
 
     LockSpinlock(&neutral_s);
     List_AddEntry(neutral, thd);
@@ -154,12 +156,41 @@ YieldThread(void) {
 }
 
 void
+InterruptTaskSwitch(uint32_t int_no,
+                    uint32_t err_code)
+{
+    uint64_t stack_frame = 0;
+    uint64_t stack_2 = 0;
+    __asm__ volatile("mov %%rsp, %%rax\n\t"
+                     "mov %0, %%rsp\n\t"    : "=ra"(stack_frame): "rb"(stack_2)
+                     );
+}
+
+void
 SwitchThread(void) {
     cur_thread = List_EntryAt(thds, 0);
     List_Remove(thds, 0);
     List_AddEntry(thds, cur_thread);
 
     //Resume execution of the thread
+    if(cur_thread->state == ThreadState_Initialize)
+    {
+        __asm__ volatile
+        (
+            "mov %0, %%rax\n\t"
+            "mov %1, %%rsp\n\t"
+            "pushq %%rax\n\t"
+            "ret"
+            ::
+            "ra"(cur_thread->entry_point),
+            "rb"(cur_thread->stack)
+            );
+    }
+    else if(cur_thread->state == ThreadState_Running)
+    {
+
+    }
+    else if(cur_thread->state == ThreadState_Paused)return;
 }
 
 void
