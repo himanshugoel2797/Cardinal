@@ -204,7 +204,7 @@ multiboot_end:
 
 #Enable paging
                                mov %cr0, %eax
-                               or $0x80000000, %eax
+                               or $0x80010000, %eax
                                mov %eax, %cr0
 
 #We're in IA-32e mode now, restore the values of eax and ebx so they can be used

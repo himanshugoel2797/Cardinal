@@ -66,6 +66,7 @@ MapPage(UID 			pageTable,
     if((flags & MemoryAllocationFlags_Kernel) == MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
     if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
 
+
     //At this point, all parameters have been verified
     if(allocationMap != NULL) {
         allocationMap->CacheMode = cacheMode;
@@ -77,10 +78,10 @@ MapPage(UID 			pageTable,
         allocationMap->ReferenceCount = 0;
     }
 
-    if(flags & MemoryAllocationType_Fork) {
-        access = access & ~MEM_WRITE;	//Forked pages are copy on write
+    if(allocType & MemoryAllocationType_Fork) {
+        access = access & ~MEM_WRITE; //Forked pages are copy on write
     }
-
+    
     VirtMemMan_Map((PML_Instance)pageTable,
                    virtualAddress,
                    physicalAddress,

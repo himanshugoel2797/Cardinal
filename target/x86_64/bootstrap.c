@@ -94,10 +94,7 @@ bootstrap_kernel(void *param,
     //Initialize syscall mechanism, provide interface to OS for managing syscalls and jumping to user mode
 
     //When threading is up again, call kernel on new thread
-
     kernel_main_init();
-
-    kernel_main();  //Done initializing all arch specific stuff, call the kernel
 
     //We aren't supposed to reach here!
 

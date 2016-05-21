@@ -21,6 +21,7 @@ typedef struct CoreInfo {
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
+static ThreadInfo *cur_thread;
 
 void
 Thread_Initialize(void) {
@@ -154,7 +155,11 @@ YieldThread(void) {
 
 void
 SwitchThread(void) {
+    cur_thread = List_EntryAt(thds, 0);
+    List_Remove(thds, 0);
+    List_AddEntry(thds, cur_thread);
 
+    //Resume execution of the thread
 }
 
 void
@@ -163,6 +168,10 @@ CoreUpdate(int coreID)
     //Obtain thread to process from the lists
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
+    while(TRUE)
+    {
+        SwitchThread();
+    }
 }
 
 void
