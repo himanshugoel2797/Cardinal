@@ -1,6 +1,7 @@
 #include "types.h"
 #include "gdt.h"
 #include "common.h"
+#include "memory.h"
 
 //Describes a single GDT entry
 typedef struct {
@@ -26,6 +27,7 @@ typedef struct {
 //GDT Entry region
 GDTEntry gdt_entries[GDT_ENTRY_COUNT];
 GDTPtr gdt_table;
+tss_struct sys_tss; //Define the TSS as a global structure
 
 __attribute__((optnone))
 void GDT_Initialize() {
@@ -33,11 +35,7 @@ void GDT_Initialize() {
     __asm__ ("cli");
 
     memset((void*)&sys_tss, 0, sizeof(tss_struct));
-    sys_tss.ss0 = 0x10;
-    //sys_tss.esp0 = 0x20000000;
     sys_tss.iomap = sizeof(tss_struct);
-    sys_tss.cs   = 0x0b;
-    sys_tss.ss = sys_tss.ds = sys_tss.es = sys_tss.fs = sys_tss.gs = 0x13;
 
     gdt_table.limit = (sizeof(GDTEntry) * GDT_ENTRY_COUNT) - 1;
     gdt_table.base = (uint64_t)&gdt_entries;
@@ -48,7 +46,9 @@ void GDT_Initialize() {
     GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x92, 0x00); // Data segment
     GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFA, 0x20); // User mode code segment
     GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF2, 0x00); // User mode data segment
-    GDT_SetEntry(5, (uint32_t)&sys_tss, ((uint32_t)&sys_tss) + sizeof(tss_struct), 0xE9, 0x00);
+    GDT_SetEntry(5, (uint32_t)GetPhysicalAddress((void*)&sys_tss), sizeof(tss_struct) - 1, 0xE9, 0x00);
+    //GDT_SetEntry(6, (uint32_t)((uint64_t)GetPhysicalAddress((void*)&sys_tss) >> 32), 0, 0, 0);
+
 
     __asm__ ("lgdt (%0)" :: "r" (&gdt_table));
 
@@ -69,6 +69,7 @@ void GDT_Initialize() {
         //"ltr %ax"
     );
 
+    //__asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
     //TODO setup a 64bit TSS
 
     return; //Don't enable interrupts yet
@@ -84,4 +85,16 @@ void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_
 
     gdt_entries[num].granularity |= gran & 0xF0;
     gdt_entries[num].access     = access;
+}
+
+void
+SetKernelStack(void* sp)
+{
+    sys_tss.rsp0 = (uint64_t)sp;   
+}
+
+void
+SetUserStack(void *sp)
+{
+    sys_tss.rsp2 = (uint64_t)sp;
 }

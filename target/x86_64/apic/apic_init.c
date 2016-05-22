@@ -29,13 +29,14 @@ APIC_Initialize(void) {
     //Ask ACPI for the MADT table
     MADT *madt = ACPITables_FindTable(MADT_SIG, 0);
 
+
     PIT_Initialize();
 
     if(madt != NULL) {
         uint32_t len = madt->h.Length - 8 - sizeof(ACPISDTHeader);
         int passNum = 0;
 
-        for(; passNum < 3; passNum++)
+        for(; passNum < 3; passNum++){
             for(uint32_t i = 0; i < len; ) {
                 MADT_EntryHeader *hdr = (MADT_EntryHeader*)&madt->entries[i];
 
@@ -103,7 +104,9 @@ APIC_Initialize(void) {
                 }
                 i += hdr->entry_size;
                 if(hdr->entry_size == 0) i += 8;
+        
             }
+        }
 
         __asm__ volatile("sti");    //At this point we're ready to handle interrupts
         APIC_CallibrateTimer();

@@ -26,6 +26,21 @@ typedef enum {
 
 typedef void (*ThreadEntryPoint)(void);
 
+typedef struct ThreadInfo {
+    UID Parent;
+    UID ID;
+    ThreadEntryPoint entry_point;
+    ThreadState state;
+    ThreadPriority priority;
+    void *stack;
+    int core_affinity;
+} ThreadInfo;
+
+typedef struct CoreInfo {
+    UID ID;
+    int (*getCoreData)(void);
+} CoreInfo;
+
 void
 Thread_Initialize(void);
 

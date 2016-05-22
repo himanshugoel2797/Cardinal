@@ -3,21 +3,7 @@
 #include "kmalloc.h"
 #include "synchronization.h"
 #include "common/list.h"
-
-typedef struct ThreadInfo {
-    UID Parent;
-    UID ID;
-    ThreadEntryPoint entry_point;
-    ThreadState state;
-    ThreadPriority priority;
-    void *stack;
-    int core_affinity;
-} ThreadInfo;
-
-typedef struct CoreInfo {
-    UID ID;
-    int (*getCoreData)(void);
-} CoreInfo;
+#include "target/hal/thread.h"
 
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
@@ -159,11 +145,9 @@ void
 InterruptTaskSwitch(uint32_t int_no,
                     uint32_t err_code)
 {
-    uint64_t stack_frame = 0;
-    uint64_t stack_2 = 0;
-    __asm__ volatile("mov %%rsp, %%rax\n\t"
-                     "mov %0, %%rsp\n\t"    : "=ra"(stack_frame): "rb"(stack_2)
-                     );
+    int_no = 0;
+    err_code = 0;
+    SwapThreadOnInterrupt(cur_thread, cur_thread);
 }
 
 void
@@ -175,16 +159,7 @@ SwitchThread(void) {
     //Resume execution of the thread
     if(cur_thread->state == ThreadState_Initialize)
     {
-        __asm__ volatile
-        (
-            "mov %0, %%rax\n\t"
-            "mov %1, %%rsp\n\t"
-            "pushq %%rax\n\t"
-            "ret"
-            ::
-            "ra"(cur_thread->entry_point),
-            "rb"(cur_thread->stack)
-            );
+        SwitchAndInitializeThread(cur_thread);
     }
     else if(cur_thread->state == ThreadState_Running)
     {

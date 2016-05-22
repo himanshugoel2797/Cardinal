@@ -15,6 +15,7 @@
 #include "managers.h"
 #include "apic/apic.h"
 #include "acpi/acpi_tables.h"
+#include "thread.h"
 
 #ifdef MULTIBOOT1
 #include "multiboot.h"
@@ -36,7 +37,7 @@ void
 bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
-    __asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"(regs->rip));
+    __asm__ volatile("mov %0, %%rax\n\tmov %1, %%rbx\n\thlt" :: "ra"(regs->rip), "rb"(regs->int_no));
     regs->int_no = -regs->int_no;
 }
 
@@ -65,7 +66,8 @@ bootstrap_kernel(void *param,
 
     GDT_Initialize();   //Setup the Bootstrap GDT
     IDT_Initialize();   //Setup the Bootstrap IDT
-    IDT_RegisterHandler(14, bootstrap_pagefault_handler);
+    for(int i = 0; i < 31; i++)
+    IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
     FPU_Initialize();   //Setup the FPU
 
@@ -81,9 +83,12 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
 
-    smp_sync_base = 1;
-    APIC_Initialize();
+    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
+    SetUserStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
 
+    smp_sync_base = 1;
+    __asm__ ("hlt");
+    APIC_Initialize();
 
     //Now that all the processors are booted up and ready to do their job
 
