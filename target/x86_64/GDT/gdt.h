@@ -5,7 +5,7 @@
 
 void GDT_Initialize();
 
-typedef volatile struct strtss {
+typedef volatile struct tss_struct {
     uint32_t rsv0;
     uint64_t rsp0;
     uint64_t rsp1;

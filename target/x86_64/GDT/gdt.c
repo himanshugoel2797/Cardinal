@@ -46,7 +46,7 @@ void GDT_Initialize() {
     GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x92, 0x00); // Data segment
     GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFA, 0x20); // User mode code segment
     GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF2, 0x00); // User mode data segment
-    GDT_SetEntry(5, (uint32_t)GetPhysicalAddress((void*)&sys_tss), sizeof(tss_struct) - 1, 0xE9, 0x00);
+    GDT_SetEntry(5, (uint32_t)&sys_tss, sizeof(tss_struct) - 1, 0xE9, 0x00);
     //GDT_SetEntry(6, (uint32_t)((uint64_t)GetPhysicalAddress((void*)&sys_tss) >> 32), 0, 0, 0);
 
 
@@ -65,11 +65,11 @@ void GDT_Initialize() {
         "mov %ax, %ss\n\t"
 
         //Set the TSS
-        //"mov $0x2B, %ax\n\t"
-        //"ltr %ax"
+        "mov $0x2B, %ax\n\t"
+        "ltr %ax"
     );
 
-    //__asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
+    __asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
     //TODO setup a 64bit TSS
 
     return; //Don't enable interrupts yet
