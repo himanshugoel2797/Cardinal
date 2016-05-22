@@ -1,7 +1,7 @@
 #ifndef _GDT_H_
 #define _GDT_H_
 
-#define GDT_ENTRY_COUNT 6
+#define GDT_ENTRY_COUNT 7
 
 void GDT_Initialize();
 

@@ -87,8 +87,8 @@ bootstrap_kernel(void *param,
     SetUserStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
 
     smp_sync_base = 1;
-    __asm__ ("hlt");
     APIC_Initialize();
+    //__asm__ ("hlt");
 
     //Now that all the processors are booted up and ready to do their job
 
@@ -102,21 +102,6 @@ bootstrap_kernel(void *param,
     kernel_main_init();
 
     //We aren't supposed to reach here!
-
-    uint32_t color = 0x00ff0000, prev_col = 0x00ffff00, swap = 0;
-    while(1) {
-        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
-            *(uint32_t*)(info->framebuffer_addr + y) = color;   //ARGB
-        }
-        swap++;
-        if(swap == 0x20) {
-            swap = color;
-            color = prev_col;
-            prev_col = swap;
-
-            swap = 0;
-        }
-    }
     __asm__ volatile("cli\n\thlt\n\t");
 }
 

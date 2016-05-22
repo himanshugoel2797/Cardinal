@@ -16,7 +16,18 @@ typedef struct {
 
 } __attribute__((packed)) GDTEntry;
 
-void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran);
+void 
+GDT_SetEntry(int num, 
+             uint32_t base, 
+             uint32_t limit, 
+             uint8_t access, 
+             uint8_t gran);
+
+void 
+GDT_SetTSS(int num, 
+           uint64_t base, 
+           uint32_t limit, 
+           uint8_t access);
 
 //Describes the pointer to the GDT entry
 typedef struct {
@@ -46,9 +57,7 @@ void GDT_Initialize() {
     GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x92, 0x00); // Data segment
     GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFA, 0x20); // User mode code segment
     GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF2, 0x00); // User mode data segment
-    GDT_SetEntry(5, (uint32_t)&sys_tss, sizeof(tss_struct) - 1, 0xE9, 0x00);
-    //GDT_SetEntry(6, (uint32_t)((uint64_t)GetPhysicalAddress((void*)&sys_tss) >> 32), 0, 0, 0);
-
+    GDT_SetTSS(5, (uint64_t)&sys_tss, sizeof(tss_struct), 0xE9);
 
     __asm__ ("lgdt (%0)" :: "r" (&gdt_table));
 
@@ -69,13 +78,30 @@ void GDT_Initialize() {
         "ltr %ax"
     );
 
-    __asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
+    //__asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
     //TODO setup a 64bit TSS
 
     return; //Don't enable interrupts yet
 }
 
-void GDT_SetEntry(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
+void 
+GDT_SetTSS(int num, 
+           uint64_t base, 
+           uint32_t limit, 
+           uint8_t access) {
+    GDT_SetEntry(num, (uint32_t)base, limit, access, 0);
+    GDT_SetEntry(num + 1, 0, 0, 0, 0);
+
+    gdt_entries[num + 1].limit_low = (uint16_t)(base >> 32);
+    gdt_entries[num + 1].base_low = (uint16_t)(base >> (32 + 16));
+}
+
+void 
+GDT_SetEntry(int num, 
+             uint32_t base, 
+             uint32_t limit, 
+             uint8_t access, 
+             uint8_t gran) {
     gdt_entries[num].base_low    = (base & 0xFFFF);
     gdt_entries[num].base_mid = (base >> 16) & 0xFF;
     gdt_entries[num].base_high   = (base >> 24) & 0xFF;
