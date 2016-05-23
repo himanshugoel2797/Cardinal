@@ -2,6 +2,7 @@
 #include "synchronization.h"
 #include "common/common.h"
 #include "memory.h"
+#include "block_alloc.h"
 
 typedef struct kmalloc_info {
     uint64_t pointer;
@@ -75,6 +76,8 @@ void kmalloc_init() {
     MARK_FREE(allocation_info);
 
     next_free_block++;
+
+    Balloc_Initialize();
 }
 
 void kcompact() {
@@ -99,6 +102,13 @@ void kcompact() {
 bool retry = FALSE;
 void *kmalloc(size_t size) {
     LockSpinlock(&alloc_sync);
+
+    if(size < LARGE_HEAP_BLOCK_SIZE)
+    {
+        UID a = Balloc_Alloc(size);
+        if(a != (UID)-1) return Balloc_GetBaseAddress(a);
+    }
+
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
         if(IS_FREE(a_info) && a_info->size >= size) {
@@ -148,6 +158,13 @@ void kfree(void *addr) {
 
     LockSpinlock(&alloc_sync);
     //Find the block that matches the address specified
+    UID a = Balloc_GetUID(addr);
+    if(a != (UID)-1)
+    {
+        Balloc_Free(a);
+        return;
+    }
+
     kmalloc_info *a_info = allocation_info;
     while(a_info->next != NULL) {
         if(IS_USED(a_info) && a_info->pointer == (uint64_t)addr) {

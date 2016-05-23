@@ -3,7 +3,7 @@
 
 typedef enum PowerState {
     PowerState_S0,
-    PowerState_S0Away
+    PowerState_S0Away,
     PowerState_S1,
     PowerState_S2,
     PowerState_S3,
@@ -16,7 +16,7 @@ typedef enum PerformanceState {
     PerformanceState_P1,
     PerformanceState_P2,
     PerformanceState_P3
-}
+} PerformanceState;
 
 void
 PWM_Initialize(void);

@@ -12,10 +12,10 @@ typedef enum NotificationError{
 	NotificationError_Success,
 	NotificationError_Failed,
 	NotificationError_InvalidUID
-}
+}NotificationError;
 
-typedef (void)(*NotificationHandler)(NotificationType t, uint64_t n);
-typedef (NotificationError)(*NotificationSubscriptionHandler)(NotificationHandler h, NotificationType t, uint64_t n);
+typedef void (*NotificationHandler)(NotificationType t, uint64_t n);
+typedef NotificationError (*NotificationSubscriptionHandler)(NotificationHandler h, NotificationType t, uint64_t n);
 
 
 NotificationError
