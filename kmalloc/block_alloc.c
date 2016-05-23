@@ -18,6 +18,7 @@ Balloc_Initialize() {
     if (initialized)return 0;
     uint64_t addr = (uint64_t)kmalloc(LARGE_HEAP_MEM_SIZE + SMALL_HEAP_MEM_SIZE);
 
+
     _smallH_Loc = (void*)addr;
     _smallH_FreeSize = SMALL_HEAP_MEM_SIZE;
 
@@ -25,8 +26,8 @@ Balloc_Initialize() {
     _largeH_FreeSize = LARGE_HEAP_MEM_SIZE;
 
     //Initialize all blocks to being free
-    memset(_smallH_Blocks, BLOCK_TYPE_FREE, SMALL_HEAP_BLOCK_COUNT * sizeof(BLOCK_TYPE));
-    memset(_largeH_Blocks, BLOCK_TYPE_FREE, LARGE_HEAP_BLOCK_COUNT * sizeof(BLOCK_TYPE));
+    memset(_smallH_Blocks, BLOCK_TYPE_FREE, SMALL_HEAP_BLOCK_COUNT);
+    memset(_largeH_Blocks, BLOCK_TYPE_FREE, LARGE_HEAP_BLOCK_COUNT);
 
     initialized = TRUE;
 

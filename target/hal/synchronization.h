@@ -12,12 +12,12 @@ Spinlock
 CreateBootstrapSpinlock(void);
 
 bool
-LockSpinlock(Spinlock *primitive);
+LockSpinlock(Spinlock primitive);
 
 bool
-UnlockSpinlock(Spinlock *primitive);
+UnlockSpinlock(Spinlock primitive);
 
 void
-FreeSpinlock(Spinlock *primitive);
+FreeSpinlock(Spinlock primitive);
 
 #endif

@@ -2,19 +2,24 @@
 #include "CPUID/cpuid.h"
 #include "managers.h"
 #include "kmalloc.h"
+#include "common.h"
 
 Spinlock
 CreateSpinlock(void) {
-    return (Spinlock)kmalloc(CPUID_GetCacheLineSize());
+    Spinlock p = kmalloc(CPUID_GetCacheLineSize());
+    memset(p, 0, CPUID_GetCacheLineSize());
+    return p;
 }
 
 Spinlock
 CreateBootstrapSpinlock(void) {
-    return (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
+    Spinlock p = (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
+    memset(p, 0, CPUID_GetCacheLineSize());
+    return p;
 }
 
 bool
-LockSpinlock(Spinlock *primitive) {
+LockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
     (
@@ -29,7 +34,7 @@ LockSpinlock(Spinlock *primitive) {
 }
 
 bool
-UnlockSpinlock(Spinlock *primitive) {
+UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
     (
@@ -39,6 +44,6 @@ UnlockSpinlock(Spinlock *primitive) {
 }
 
 void
-FreeSpinlock(Spinlock *primitive) {
+FreeSpinlock(Spinlock primitive) {
     if(primitive != NULL)kfree(primitive);
 }

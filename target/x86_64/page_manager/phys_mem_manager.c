@@ -16,7 +16,9 @@ static uint32_t* KB4_Blocks_Bitmap,
 
 static const uint64_t block_size = PAGE_SIZE * 32;
 
-extern uint64_t _region_kernel_start_, _region_kernel_end_;
+extern uint64_t _region_kernel_start_, _region_kernel_end_, 
+                _bootstrap_region_start, _bootstrap_region_end,
+                _trampoline_region_start, _trampoline_region_end;
 extern uint64_t KERNEL_VADDR;
 
 uint32_t
@@ -53,8 +55,14 @@ MemMan_Initialize(void) {
     //Mark important regions that have been preallocated
     MemMan_MarkUsed((uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr), info->framebuffer_pitch * info->framebuffer_height);
 
-    MemMan_MarkUsed((uint64_t)GetPhysicalAddress((void*)&_region_kernel_start_),
+    MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
+
+    MemMan_MarkUsed((uint64_t)&_bootstrap_region_start,
+                    (uint64_t)&_bootstrap_region_end - (uint64_t)&_bootstrap_region_start + PAGE_SIZE);
+
+    MemMan_MarkUsed((uint64_t)&_trampoline_region_start,
+                    (uint64_t)&_trampoline_region_end - (uint64_t)&_trampoline_region_start + PAGE_SIZE);
 
     MemMan_MarkUsed(0, MiB(2));
 

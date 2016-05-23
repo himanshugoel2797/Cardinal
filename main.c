@@ -7,7 +7,6 @@
 void
 kernel_main_init(void) {
     kmalloc_init ();
-    __asm__ ("cli\n\thlt");
     ProcessSys_Initialize();
     Thread_Initialize();
     CreateThread(0, kernel_main);
@@ -23,6 +22,7 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    __asm__ ("cli\n\thlt");
 
     //The kernel is ready to take in the new cores, bring them up
 }

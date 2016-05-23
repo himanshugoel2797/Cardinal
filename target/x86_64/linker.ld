@@ -10,20 +10,25 @@ SECTIONS
 	KERNEL_VADDR = 0xFFFFFFFF80000000;
 	. = 1M;
 
+	_bootstrap_region_start = .;
 	.multiboot ALIGN(4K) : AT(ADDR(.multiboot))
 	{
 		*(.multiboot)
     	*(.bootstrap_stack)
     	*(.bootstrap_code)
 	}
+	_bootstrap_region_end = .;
 
 	. = 0x0f000;
+	_trampoline_region_start = .;
 	.trampoline_code ALIGN(4K) : AT(ADDR(.trampoline_code))
 	{
 		*(.trampoline_code)
 	  	*(.trampoline_data)
 		*(.trampoline_stack)
 	}
+	_trampoline_region_end = .;
+	
 	. = KERNEL_VADDR + 2M;
   	_region_kernel_start_ = . - KERNEL_VADDR;
 	.text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VADDR)

@@ -48,22 +48,15 @@ void kmalloc_init() {
                            MemoryAllocationType_Heap,
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
-    size_t size = STORE_SIZE;
-    while(size > 0) {
-        uint64_t physBaseAddr_base = AllocatePhysicalPage();
-        MapPage(GetActiveVirtualMemoryInstance(),
-                NULL,
-                physBaseAddr_base,
-                virtBaseAddr_base,
-                KiB(4),
-                CachingModeWriteBack,
-                MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+    MapPage(GetActiveVirtualMemoryInstance(),
+            NULL,
+            AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE),
+            virtBaseAddr_base,
+            STORE_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
-        virtBaseAddr_base += KiB(4);
-        size -= KiB(4);
-    }
-    virtBaseAddr_base -= STORE_SIZE;
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
     k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));
     max_allocs = MiB(1)/sizeof(kmalloc_info);
@@ -77,7 +70,7 @@ void kmalloc_init() {
 
     next_free_block++;
 
-    //Balloc_Initialize();
+    Balloc_Initialize();
 }
 
 void kcompact() {
@@ -101,15 +94,15 @@ void kcompact() {
 
 bool retry = FALSE;
 void *kmalloc(size_t size) {
-    LockSpinlock(&alloc_sync);
+    LockSpinlock(alloc_sync);
 
     if(size < LARGE_HEAP_BLOCK_SIZE)
     {
-//        UID a = Balloc_Alloc(size);
-//        if(a != (UID)-1){
-//            UnlockSpinlock(&alloc_sync);
-//            return Balloc_GetBaseAddress(a);
-//        }
+        UID a = Balloc_Alloc(size);
+        if(a != (UID)-1){
+            UnlockSpinlock(alloc_sync);
+            return Balloc_GetBaseAddress(a);
+        }
     }
 
     kmalloc_info *a_info = allocation_info;
@@ -123,7 +116,7 @@ void *kmalloc(size_t size) {
 
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
-        UnlockSpinlock(&alloc_sync);
+        UnlockSpinlock(alloc_sync);
         if(!retry) {
             retry = TRUE;
             //kcompact();
@@ -153,21 +146,21 @@ void *kmalloc(size_t size) {
     MARK_USED(a_info);
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
-    UnlockSpinlock(&alloc_sync);
+    UnlockSpinlock(alloc_sync);
     return (void*)addr;
 }
 
 void kfree(void *addr) {
 
-    LockSpinlock(&alloc_sync);
+    LockSpinlock(alloc_sync);
     //Find the block that matches the address specified
-//    UID a = Balloc_GetUID(addr);
-//    if(a != (UID)-1)
-//    {
-//        Balloc_Free(a);
-//        UnlockSpinlock(&alloc_sync);
-//        return;
-//    }
+    UID a = Balloc_GetUID(addr);
+    if(a != (UID)-1)
+    {
+        Balloc_Free(a);
+        UnlockSpinlock(alloc_sync);
+        return;
+    }
 
     kmalloc_info *a_info = allocation_info;
     while(a_info->next != NULL) {
@@ -181,5 +174,5 @@ void kfree(void *addr) {
     //Mark this block as free
     MARK_FREE(a_info);
 
-    UnlockSpinlock(&alloc_sync);
+    UnlockSpinlock(alloc_sync);
 }

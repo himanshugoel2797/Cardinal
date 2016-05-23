@@ -45,13 +45,13 @@ CreateThread(UID parentProcess,
     thd->ID = new_uid();
     thd->stack = kmalloc(KiB(16));
 
-    LockSpinlock(&neutral_s);
+    LockSpinlock(neutral_s);
     List_AddEntry(neutral, thd);
-    UnlockSpinlock(&neutral_s);
+    UnlockSpinlock(neutral_s);
 
-    LockSpinlock(&thds_s);
+    LockSpinlock(thds_s);
     List_AddEntry(thds, thd);
-    UnlockSpinlock(&thds_s);
+    UnlockSpinlock(thds_s);
 
     return thd->ID;
 }
