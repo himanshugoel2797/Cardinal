@@ -142,8 +142,8 @@ YieldThread(void) {
 }
 
 void
-InterruptTaskSwitch(uint32_t int_no,
-                    uint32_t err_code)
+TaskSwitch(uint32_t int_no,
+           uint32_t err_code)
 {
     int_no = 0;
     err_code = 0;

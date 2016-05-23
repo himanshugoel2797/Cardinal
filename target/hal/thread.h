@@ -16,4 +16,8 @@ SetKernelStack(void* sp);
 void
 SetUserStack(void *sp);
 
+void
+TaskSwitch(uint32_t int_no,
+           uint32_t err_code);
+
 #endif
