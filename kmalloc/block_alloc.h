@@ -30,23 +30,19 @@ typedef enum {
     BLOCK_TYPE_ALLOC_START_END = (BLOCK_TYPE_ALLOC_START | BLOCK_TYPE_ALLOC_END)
 } BLOCK_TYPE;
 
-
-void SetRuntimeInitialized(bool status);
-
-int Balloc_Initialize();
-
-UID
-_allocBlockSet(size_t startIndex,
-               size_t blockCount,
-               BLOCK_TYPE *blockData,
-               size_t blockEntries,
-               void *baseLoc,
-               size_t blockSize);
+int 
+Balloc_Initialize(void);
 
 UID
 Balloc_Alloc(size_t size);
-void* Balloc_GetBaseAddress(UID blockID);
-UID Balloc_GetUID(void *baseAddress);
-void Balloc_Free(UID blockID);
+
+void* 
+Balloc_GetBaseAddress(UID blockID);
+
+UID 
+Balloc_GetUID(void *baseAddress);
+
+void 
+Balloc_Free(UID blockID);
 
 #endif

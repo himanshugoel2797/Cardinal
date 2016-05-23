@@ -5,21 +5,16 @@
 
 static void *_largeH_Loc;
 static size_t _largeH_FreeSize;
-static BLOCK_TYPE _largeH_Blocks[LARGE_HEAP_BLOCK_COUNT];
+static uint8_t _largeH_Blocks[LARGE_HEAP_BLOCK_COUNT];
 
 static void *_smallH_Loc;
 static size_t _smallH_FreeSize;
-static BLOCK_TYPE _smallH_Blocks[SMALL_HEAP_BLOCK_COUNT];
+static uint8_t _smallH_Blocks[SMALL_HEAP_BLOCK_COUNT];
 
 static bool initialized = FALSE;
-static bool _runtime_initialized = FALSE;
 
-void SetRuntimeInitialized(bool status) {
-    _runtime_initialized = status;
-}
-
-
-int Balloc_Initialize() {
+int 
+Balloc_Initialize() {
     if (initialized)return 0;
     uint64_t addr = (uint64_t)kmalloc(LARGE_HEAP_MEM_SIZE + SMALL_HEAP_MEM_SIZE);
 
@@ -41,7 +36,7 @@ int Balloc_Initialize() {
 UID
 _allocBlockSet(size_t startIndex,
                size_t blockCount,
-               BLOCK_TYPE *blockData,
+               uint8_t *blockData,
                size_t blockEntries,
                void *baseLoc,
                size_t blockSize) {
@@ -96,7 +91,8 @@ Balloc_Alloc(size_t size) {
     return bid;
 }
 
-void* Balloc_GetBaseAddress(UID blockID) {
+void* 
+Balloc_GetBaseAddress(UID blockID) {
     //Retrieve the base address of the block at the given UID
     UID blockIndex = blockID;
     void *baseLoc = _largeH_Loc;
@@ -112,7 +108,8 @@ void* Balloc_GetBaseAddress(UID blockID) {
     return (void*)((UID)baseLoc + blockSize * blockIndex);
 }
 
-UID Balloc_GetUID(void *baseAddress) {
+UID 
+Balloc_GetUID(void *baseAddress) {
     UID addr = (UID)baseAddress;
 
     size_t blockSize = 0;
@@ -130,11 +127,12 @@ UID Balloc_GetUID(void *baseAddress) {
     }
 }
 
-void Balloc_Free(UID blockID) {
+void 
+Balloc_Free(UID blockID) {
     //Check leak check signature, log warning if it has changed
     //Mark all blocks until and including end block as free
     UID blockIndex = blockID;
-    BLOCK_TYPE *blockType = _largeH_Blocks;
+    uint8_t *blockType = _largeH_Blocks;
     void *baseLoc = _largeH_Loc;
     size_t blockSize = LARGE_HEAP_BLOCK_SIZE;
 
