@@ -9,7 +9,7 @@ CreateSpinlock(void) {
 }
 
 Spinlock
-CreateBootstrapSpinlock(void){
+CreateBootstrapSpinlock(void) {
     return (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
 }
 

@@ -16,17 +16,17 @@ typedef struct {
 
 } __attribute__((packed)) GDTEntry;
 
-void 
-GDT_SetEntry(int num, 
-             uint32_t base, 
-             uint32_t limit, 
-             uint8_t access, 
+void
+GDT_SetEntry(int num,
+             uint32_t base,
+             uint32_t limit,
+             uint8_t access,
              uint8_t gran);
 
-void 
-GDT_SetTSS(int num, 
-           uint64_t base, 
-           uint32_t limit, 
+void
+GDT_SetTSS(int num,
+           uint64_t base,
+           uint32_t limit,
            uint8_t access);
 
 //Describes the pointer to the GDT entry
@@ -84,10 +84,10 @@ void GDT_Initialize() {
     return; //Don't enable interrupts yet
 }
 
-void 
-GDT_SetTSS(int num, 
-           uint64_t base, 
-           uint32_t limit, 
+void
+GDT_SetTSS(int num,
+           uint64_t base,
+           uint32_t limit,
            uint8_t access) {
     GDT_SetEntry(num, (uint32_t)base, limit, access, 0);
     GDT_SetEntry(num + 1, 0, 0, 0, 0);
@@ -96,11 +96,11 @@ GDT_SetTSS(int num,
     gdt_entries[num + 1].base_low = (uint16_t)(base >> (32 + 16));
 }
 
-void 
-GDT_SetEntry(int num, 
-             uint32_t base, 
-             uint32_t limit, 
-             uint8_t access, 
+void
+GDT_SetEntry(int num,
+             uint32_t base,
+             uint32_t limit,
+             uint8_t access,
              uint8_t gran) {
     gdt_entries[num].base_low    = (base & 0xFFFF);
     gdt_entries[num].base_mid = (base >> 16) & 0xFF;
@@ -114,13 +114,11 @@ GDT_SetEntry(int num,
 }
 
 void
-SetKernelStack(void* sp)
-{
-    sys_tss.rsp0 = (uint64_t)sp;   
+SetKernelStack(void* sp) {
+    sys_tss.rsp0 = (uint64_t)sp;
 }
 
 void
-SetUserStack(void *sp)
-{
+SetUserStack(void *sp) {
     sys_tss.rsp2 = (uint64_t)sp;
 }

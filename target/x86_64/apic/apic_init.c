@@ -36,7 +36,7 @@ APIC_Initialize(void) {
         uint32_t len = madt->h.Length - 8 - sizeof(ACPISDTHeader);
         int passNum = 0;
 
-        for(; passNum < 3; passNum++){
+        for(; passNum < 3; passNum++) {
             for(uint32_t i = 0; i < len; ) {
                 MADT_EntryHeader *hdr = (MADT_EntryHeader*)&madt->entries[i];
 
@@ -104,7 +104,7 @@ APIC_Initialize(void) {
                 }
                 i += hdr->entry_size;
                 if(hdr->entry_size == 0) i += 8;
-        
+
             }
         }
 

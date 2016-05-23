@@ -110,7 +110,7 @@ void *kmalloc(size_t size) {
 
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
-            UnlockSpinlock(&alloc_sync);
+        UnlockSpinlock(&alloc_sync);
         if(!retry) {
             retry = TRUE;
             //kcompact();

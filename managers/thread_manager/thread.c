@@ -143,8 +143,7 @@ YieldThread(void) {
 
 void
 TaskSwitch(uint32_t int_no,
-           uint32_t err_code)
-{
+           uint32_t err_code) {
     int_no = 0;
     err_code = 0;
     SwapThreadOnInterrupt(cur_thread, cur_thread);
@@ -157,25 +156,19 @@ SwitchThread(void) {
     List_AddEntry(thds, cur_thread);
 
     //Resume execution of the thread
-    if(cur_thread->state == ThreadState_Initialize)
-    {
+    if(cur_thread->state == ThreadState_Initialize) {
         SwitchAndInitializeThread(cur_thread);
-    }
-    else if(cur_thread->state == ThreadState_Running)
-    {
+    } else if(cur_thread->state == ThreadState_Running) {
 
-    }
-    else if(cur_thread->state == ThreadState_Paused)return;
+    } else if(cur_thread->state == ThreadState_Paused)return;
 }
 
 void
-CoreUpdate(int coreID)
-{
+CoreUpdate(int coreID) {
     //Obtain thread to process from the lists
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
-    while(TRUE)
-    {
+    while(TRUE) {
         SwitchThread();
     }
 }

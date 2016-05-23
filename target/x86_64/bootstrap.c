@@ -67,7 +67,7 @@ bootstrap_kernel(void *param,
     GDT_Initialize();   //Setup the Bootstrap GDT
     IDT_Initialize();   //Setup the Bootstrap IDT
     for(int i = 0; i < 31; i++)
-    IDT_RegisterHandler(i, bootstrap_pagefault_handler);
+        IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
     FPU_Initialize();   //Setup the FPU
 

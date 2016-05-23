@@ -81,7 +81,7 @@ MapPage(UID 			pageTable,
     if(allocType & MemoryAllocationType_Fork) {
         access = access & ~MEM_WRITE; //Forked pages are copy on write
     }
-    
+
     VirtMemMan_Map((PML_Instance)pageTable,
                    virtualAddress,
                    physicalAddress,
@@ -198,7 +198,6 @@ AllocateAPLSMemory(uint64_t size) {
 }
 
 int
-GetCoreCount(void)
-{
-  return SMP_GetCoreCount();
+GetCoreCount(void) {
+    return SMP_GetCoreCount();
 }
