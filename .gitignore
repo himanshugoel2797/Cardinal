@@ -29,6 +29,7 @@ build/*
 *.i*86
 *.x86_64
 *.hex
+setup_env.sh
 
 # Debug files
 *.dSYM/
