@@ -1,6 +1,8 @@
 #ifndef _CARDINAL_POWER_MANAGER_H_
 #define _CARDINAL_POWER_MANAGER_H_
 
+#include "types.h"
+
 typedef enum PowerState {
     PowerState_S0,
     PowerState_S0Away,
@@ -18,8 +20,20 @@ typedef enum PerformanceState {
     PerformanceState_P3
 } PerformanceState;
 
+typedef void (*PWM_StateChangeHandler)(PowerState pwr, PerformanceState perf);
+
+typedef enum PWMError{
+    PWMError_Error = 0,
+    PWMError_Success = 1
+}PWMError;
+
 void
 PWM_Initialize(void);
 
+PWMError
+PWM_RegisterStateChangeHandler(PWM_StateChangeHandler handler);
+
+void
+PWM_UnregisterHandler(PWM_StateChangeHandler handler);
 
 #endif

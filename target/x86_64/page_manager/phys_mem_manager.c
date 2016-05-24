@@ -58,12 +58,6 @@ MemMan_Initialize(void) {
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
 
-    MemMan_MarkUsed((uint64_t)&_bootstrap_region_start,
-                    (uint64_t)&_bootstrap_region_end - (uint64_t)&_bootstrap_region_start + PAGE_SIZE);
-
-    MemMan_MarkUsed((uint64_t)&_trampoline_region_start,
-                    (uint64_t)&_trampoline_region_end - (uint64_t)&_trampoline_region_start + PAGE_SIZE);
-
     MemMan_MarkUsed(0, MiB(2));
 
     return 0;
