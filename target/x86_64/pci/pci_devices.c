@@ -1,5 +1,5 @@
-#include "pci.h"
 #include "pci_devices_names.h"
+#include "types.h"
 
 void
 pci_GetPCIClass3 (
@@ -10,7 +10,7 @@ pci_GetPCIClass3 (
     char **   subdesc,
     char **   progdesc
 ) {
-    int i;
+    uint32_t i;
 
     *basedesc = *subdesc = *progdesc = "";
 
@@ -50,7 +50,7 @@ void
 pci_GetPCIVendor(uint16_t venID,
                  char ** short_name,
                  char ** long_name) {
-    int i;
+    uint32_t i;
     *short_name = *long_name = "Unknown";
 
     for(i = 0; i < PCI_VENTABLE_LEN; ++i) {
@@ -68,7 +68,7 @@ pci_GetPCIDevice(uint16_t venID,
                  uint16_t devID,
                  char **chip_name,
                  char **chip_desc) {
-    int i;
+    uint32_t i;
     *chip_name = *chip_desc = "Unknown";
 
     for(i = 0; i < PCI_DEVTABLE_LEN; ++i) {

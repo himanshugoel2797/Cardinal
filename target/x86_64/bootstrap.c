@@ -2,7 +2,7 @@
 #include "types.h"
 #include "GDT/gdt.h"
 #include "IDT/idt.h"
-#include "fpu.h"
+#include "fpu/fpu.h"
 #include "rtc/rtc.h"
 #include "smp/smp.h"
 #include "virt_mem_manager/virt_mem_manager.h"
@@ -15,6 +15,7 @@
 #include "managers.h"
 #include "apic/apic.h"
 #include "acpi/acpi_tables.h"
+#include "pci/pci.h"
 #include "thread.h"
 
 #ifdef MULTIBOOT1
@@ -88,6 +89,7 @@ bootstrap_kernel(void *param,
 
     smp_sync_base = 1;
     APIC_Initialize();
+    pci_Initialize();
     //__asm__ ("hlt");
 
     //Now that all the processors are booted up and ready to do their job

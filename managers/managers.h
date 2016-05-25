@@ -4,7 +4,6 @@
 #include "bootstrap_mem_pool/bootstrap_mem_pool.h" //Bootstrap memory pool
 #include "process_manager/process.h"			   //Process Manager
 #include "thread_manager/thread.h"				   //Thread Manager
-#include "notification_manager/notifications.h"	   //Notification Manager
 #include "power_manager/pwm.h"					   //Power Manager
 
 #endif /* end of include guard: _MANAGERS_H_ */
