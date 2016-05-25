@@ -72,11 +72,12 @@ bootstrap_kernel(void *param,
 
     FPU_Initialize();   //Setup the FPU
 
-    ACPITables_Initialize();    //Initialize the ACPI table data
-    SMP_IncrementCoreCount();
 
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
+    
+    ACPITables_Initialize();    //Initialize the ACPI table data
+    SMP_IncrementCoreCount();
 
     RTC_Initialize ();
 
@@ -89,7 +90,6 @@ bootstrap_kernel(void *param,
 
     smp_sync_base = 1;
     APIC_Initialize();
-    pci_Initialize();
     //__asm__ ("hlt");
 
     //Now that all the processors are booted up and ready to do their job
@@ -105,6 +105,12 @@ bootstrap_kernel(void *param,
 
     //We aren't supposed to reach here!
     __asm__ volatile("cli\n\thlt\n\t");
+}
+
+void
+target_device_setup(void)
+{
+    pci_Initialize();
 }
 
 int get_perf_counter(void) {

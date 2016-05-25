@@ -7,7 +7,6 @@
 #include "apic/apic.h"
 
 #define MAX_DEVICE_COUNT 128
-#define MAX_POSSIBLE_BARS 6
 #define PCI_MASS_STORAGE_DEVICE_CLASS 0x1
 #define PCI_BUS_MASTER_CMD (1<<2)
 #define PCI_ADDR 0xCF8
@@ -17,27 +16,21 @@
 static MCFG_Entry *mcfg_table;
 static uint64_t mcfg_entry_count;
 
-typedef struct {
-    uint8_t classCode;
-    uint8_t subClassCode;
-    uint8_t progIf;
-
-    uint16_t deviceID;
-    uint16_t vendorID;
-
-    uint32_t bus;
-    uint32_t device;
-    uint32_t function;
-
-    uint8_t bar_count;
-    uint32_t bars[MAX_POSSIBLE_BARS];
-
-    uint8_t headerType;
-} PCI_DeviceFuncs;
-
 static PCI_DeviceFuncs pci_devices[MAX_DEVICE_COUNT];
 static uint32_t pci_deviceCount;
 
+uint32_t
+pci_getDeviceCount(void){
+    return pci_deviceCount;
+}
+
+void
+pci_getDeviceInfo(uint32_t pci_index,
+                  PCI_DeviceFuncs *p)
+{
+    if(p == NULL | pci_index >= pci_deviceCount)return;
+    memcpy(p, &pci_devices[pci_index], sizeof(PCI_DeviceFuncs));
+}
 
 uint32_t
 pci_readDWord(
@@ -212,7 +205,7 @@ pci_Initialize(void) {
     //Change addresses to virtual addresses, detect all devices and register them to the OS
     //The OS may then eventually initialize the relevant drivers
     //Enumerate PCI pci_devices
-    for(int bus = 0; bus < 256; bus++) {
+    for(int bus = 0; bus < 256; bus++)
         for(int device = 0; device < 32; device++) {
             uint32_t vid = pci_readDWord(bus, device, 0, 0);
             if( (vid >> 16) != 0xFFFF) {
@@ -220,11 +213,7 @@ pci_Initialize(void) {
                 int functionCount = 1;
                 if( (headerType >> 23) & 1) functionCount = 8;
 
-                for(int f = 0; f < functionCount; f++) {
-                    char *base, *sub, *prog;
-                    char *vendor_short, *vendor_long;
-                    char *chip_name, *chip_desc;
-
+                for(int f = 0; f < functionCount; f++)
                     if(pci_readDWord(bus, device, f, 0) >> 16 != 0xFFFF) {
 
                         pci_devices[pci_deviceCount].classCode = pci_readDWord(bus, device, f, 8) >> 24;
@@ -252,23 +241,10 @@ pci_Initialize(void) {
                         }
 
 
-                        pci_GetPCIClass(pci_readDWord(bus, device, f, 8),
-                                        &base, &sub, &prog);
-
-                        pci_GetPCIDevice(pci_devices[pci_deviceCount].vendorID,
-                                         pci_devices[pci_deviceCount].deviceID,
-                                         &chip_name,
-                                         &chip_desc);
-
-                        pci_GetPCIVendor(pci_devices[pci_deviceCount].vendorID,
-                                         &vendor_short,
-                                         &vendor_long);
-
                         pci_deviceCount++;
                     }
-                }
             }
         }
-    }
+
 
 }

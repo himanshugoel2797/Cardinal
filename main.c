@@ -22,6 +22,9 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    DeviceManager_Initialize();
+    target_device_setup();
+    
     __asm__ ("cli\n\thlt");
 
     //The kernel is ready to take in the new cores, bring them up

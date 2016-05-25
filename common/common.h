@@ -40,6 +40,12 @@ char*
 strcpy ( char * destination,
          const char * source );
 
+char*
+strcpy_s(char *dst,
+         size_t d_len,
+         const char *src,
+         size_t s_len);
+
 int
 strncmp(const char * s1,
         const char * s2,

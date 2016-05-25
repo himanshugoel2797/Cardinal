@@ -5,4 +5,5 @@ SOURCES=main.o \
 		acpi/acpi_tables.o kmalloc/kmalloc.o kmalloc/block_alloc.o \
 		managers/process_manager/process.o \
 		managers/thread_manager/thread.o \
-		managers/power_manager/pwm.o
+		managers/power_manager/pwm.o \
+		managers/device_manager/device_manager.o

@@ -111,6 +111,15 @@ strcpy(char* destination,
 }
 
 char*
+strcpy_s(char *dst,
+         size_t d_len,
+         const char *src,
+         size_t s_len)
+{
+    return (char*)memcpy(dst, (void*)src, d_len < s_len?d_len:s_len );
+}
+
+char*
 strchr(const char *s,
        int c) {
     while (*s != (char)c)
