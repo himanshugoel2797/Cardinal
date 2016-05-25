@@ -16,9 +16,9 @@ static uint32_t* KB4_Blocks_Bitmap,
 
 static const uint64_t block_size = PAGE_SIZE * 32;
 
-extern uint64_t _region_kernel_start_, _region_kernel_end_, 
-                _bootstrap_region_start, _bootstrap_region_end,
-                _trampoline_region_start, _trampoline_region_end;
+extern uint64_t _region_kernel_start_, _region_kernel_end_,
+       _bootstrap_region_start, _bootstrap_region_end,
+       _trampoline_region_start, _trampoline_region_end;
 extern uint64_t KERNEL_VADDR;
 
 uint32_t

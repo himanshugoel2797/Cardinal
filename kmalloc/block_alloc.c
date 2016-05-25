@@ -13,7 +13,7 @@ static uint8_t _smallH_Blocks[SMALL_HEAP_BLOCK_COUNT];
 
 static bool initialized = FALSE;
 
-int 
+int
 Balloc_Initialize() {
     if (initialized)return 0;
     uint64_t addr = (uint64_t)kmalloc(LARGE_HEAP_MEM_SIZE + SMALL_HEAP_MEM_SIZE);
@@ -92,7 +92,7 @@ Balloc_Alloc(size_t size) {
     return bid;
 }
 
-void* 
+void*
 Balloc_GetBaseAddress(UID blockID) {
     //Retrieve the base address of the block at the given UID
     UID blockIndex = blockID;
@@ -109,7 +109,7 @@ Balloc_GetBaseAddress(UID blockID) {
     return (void*)((UID)baseLoc + blockSize * blockIndex);
 }
 
-UID 
+UID
 Balloc_GetUID(void *baseAddress) {
     UID addr = (UID)baseAddress;
 
@@ -128,7 +128,7 @@ Balloc_GetUID(void *baseAddress) {
     }
 }
 
-void 
+void
 Balloc_Free(UID blockID) {
     //Check leak check signature, log warning if it has changed
     //Mark all blocks until and including end block as free

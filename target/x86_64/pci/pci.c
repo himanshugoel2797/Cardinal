@@ -202,11 +202,10 @@ pci_regMSIVector(uint32_t device_index,
 }
 
 void
-pci_Initialize(void)
-{
-	MCFG *mcfg = ACPITables_FindTable(MCFG_SIG, 0);
+pci_Initialize(void) {
+    MCFG *mcfg = ACPITables_FindTable(MCFG_SIG, 0);
 
-	mcfg_entry_count = (mcfg->h.Length - sizeof(ACPISDTHeader) - 8)/sizeof(MCFG_Entry);
+    mcfg_entry_count = (mcfg->h.Length - sizeof(ACPISDTHeader) - 8)/sizeof(MCFG_Entry);
     mcfg_table = bootstrap_malloc(mcfg_entry_count * sizeof(MCFG_Entry));
     memcpy(mcfg_table, mcfg->entries, sizeof(MCFG_Entry) * mcfg_entry_count);
 

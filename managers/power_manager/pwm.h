@@ -22,10 +22,10 @@ typedef enum PerformanceState {
 
 typedef void (*PWM_StateChangeHandler)(PowerState pwr, PerformanceState perf);
 
-typedef enum PWMError{
+typedef enum PWMError {
     PWMError_Error = 0,
     PWMError_Success = 1
-}PWMError;
+} PWMError;
 
 void
 PWM_Initialize(void);

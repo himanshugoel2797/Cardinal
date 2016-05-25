@@ -96,10 +96,9 @@ bool retry = FALSE;
 void *kmalloc(size_t size) {
     LockSpinlock(alloc_sync);
 
-    if(size < LARGE_HEAP_BLOCK_SIZE)
-    {
+    if(size < LARGE_HEAP_BLOCK_SIZE) {
         UID a = Balloc_Alloc(size);
-        if(a != (UID)-1){
+        if(a != (UID)-1) {
             UnlockSpinlock(alloc_sync);
             return Balloc_GetBaseAddress(a);
         }
@@ -155,8 +154,7 @@ void kfree(void *addr) {
     LockSpinlock(alloc_sync);
     //Find the block that matches the address specified
     UID a = Balloc_GetUID(addr);
-    if(a != (UID)-1)
-    {
+    if(a != (UID)-1) {
         Balloc_Free(a);
         UnlockSpinlock(alloc_sync);
         return;
