@@ -4,6 +4,7 @@
 #include "types.h"
 #include "pci/pci.h"
 #include "managers.h"
+#include "drivers/usb/usb.h"
 
 bool 
 UHCI_DetectController(PCI_DeviceFuncs *device);

@@ -6,4 +6,6 @@ SOURCES=main.o \
 		managers/process_manager/process.o \
 		managers/thread_manager/thread.o \
 		managers/power_manager/pwm.o \
-		managers/device_manager/device_manager.o
+		managers/device_manager/device_manager.o \
+		drivers/usb/controller.o \
+		drivers/usb/uhci/uhci_controller.o
