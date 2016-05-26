@@ -5,7 +5,6 @@
 #include "priv_apic.h"
 #include "acpi/madt.h"
 #include "memory.h"
-#include "drivers.h"
 #include "CPUID/cpuid.h"
 #include "smp/smp.h"
 #include "managers.h"

@@ -6,7 +6,6 @@
 #define MAX_BUS_NAME_LEN 256
 #define MAX_DEVICE_NAME_LEN 256
 
-//Allow for the registration of buses, devices and functions
 typedef enum DeviceType
 {
 	DeviceType_Unknown,

@@ -38,7 +38,7 @@ void
 bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
-    __asm__ volatile("mov %0, %%rax\n\tmov %1, %%rbx\n\thlt" :: "ra"(regs->rip), "rb"(regs->int_no));
+    __asm__ volatile("hlt" :: "a"(regs->rip), "b"(regs->int_no));
     regs->int_no = -regs->int_no;
 }
 
@@ -75,7 +75,7 @@ bootstrap_kernel(void *param,
 
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
-    
+
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
 
@@ -131,7 +131,7 @@ smp_bootstrap(void) {
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
     stack += KiB(16);
 
-    __asm__ volatile("mov %%rax, %%rsp":: "ra"(stack)); //Switch to a new stack
+    __asm__ volatile("mov %%rax, %%rsp":: "a"(stack)); //Switch to a new stack
 
     GDT_Initialize();   //Setup the GDT
     IDT_Initialize();   //Setup the IDT

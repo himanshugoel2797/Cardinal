@@ -181,6 +181,6 @@ rand(int seed) {
 int
 ffs(uint32_t val) {
     int cnt = 0;
-    for(; ((val >> cnt) & 1) != 1; cnt++);
+    for(; ((val >> cnt) & 1) == 1; cnt++);
     return cnt;
 }

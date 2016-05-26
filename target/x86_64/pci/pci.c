@@ -1,4 +1,5 @@
 #include "pci.h"
+#include "drivers/drivers.h"
 #include "acpi/acpi_tables.h"
 #include "acpi/mcfg.h"
 #include "managers.h"
@@ -236,8 +237,31 @@ pci_Initialize(void) {
                             break;
                         }
 
-                        for(uint8_t bar_index = 0; bar_index < pci_devices[pci_deviceCount].bar_count; bar_index++) {
-                            pci_devices[pci_deviceCount].bars[bar_index] = pci_readDWord(bus, device, f, 0x10 + (bar_index * 4));
+                        uint32_t bar_index_v = 0;
+                        uint32_t bar_cnt = pci_devices[pci_deviceCount].bar_count;
+
+                        for(uint8_t bar_index = 0; bar_index < bar_cnt; bar_index++) {
+                            uint64_t bar_val = pci_readDWord(bus, device, f, 0x10 + (bar_index * 4));
+
+                            pci_devices[pci_deviceCount].bars[bar_index].offset = 0x10 + (bar_index * 4);
+                            pci_devices[pci_deviceCount].bars[bar_index].isIOSpace = (bar_val & 1);
+                            
+                            if((bar_val & 0x3) == 0x2)
+                            {
+                                bar_index++;
+                                uint64_t bar_val_2 = pci_readDWord(bus, device, f, 0x10 + (bar_index * 4));
+                                bar_val |= (bar_val_2 << 32);
+                                pci_devices[pci_deviceCount].bar_count--;
+                            }
+
+                            if(bar_val & 1)
+                            {
+                                pci_devices[pci_deviceCount].bars[bar_index].value = bar_val & 0xFFFFFFFFFFFFFFFC;
+                            }else{
+                                pci_devices[pci_deviceCount].bars[bar_index].value = bar_val & 0xFFFFFFFFFFFFFFF0;
+                            }
+
+                            bar_index_v++;
                         }
 
 
@@ -246,5 +270,27 @@ pci_Initialize(void) {
             }
         }
 
+    //Register the bus
+    RegisterBus("PCI");
 
+    //Go through all the built in drivers, load any that match the present hardware
+    for(uint32_t i = 0; i < pci_deviceCount; i++)
+    {
+        int j = -1;
+        while(drivers[++j].detector != NULL)
+        {
+            PCI_DeviceFuncs f;
+            pci_getDeviceInfo(i, &f);
+            if(drivers[j].detector(&f)) //We provide the driver with a copy here because it doesn't own the device yet
+            {
+                RegisterDevice(drivers[j].name,
+                               drivers[j].bus_name,
+                               drivers[j].dev_type,
+                               drivers[j].handler);
+
+                drivers[j].init(&pci_devices[i]);    //The driver now owns the device so it may change things as needed
+                break;
+            }
+        }
+    }
 }

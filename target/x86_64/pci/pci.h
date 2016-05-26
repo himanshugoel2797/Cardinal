@@ -5,6 +5,12 @@
 
 #define MAX_POSSIBLE_BARS 6
 
+typedef struct PCI_BAR{
+    uint64_t value;
+    uint32_t offset;
+    bool isIOSpace;
+}PCI_BAR;
+
 typedef struct {
     uint8_t classCode;
     uint8_t subClassCode;
@@ -18,7 +24,7 @@ typedef struct {
     uint32_t function;
 
     uint8_t bar_count;
-    uint32_t bars[MAX_POSSIBLE_BARS];
+    PCI_BAR bars[MAX_POSSIBLE_BARS];
 
     uint8_t headerType;
 } PCI_DeviceFuncs;
@@ -76,6 +82,12 @@ pci_regMSIVector(uint32_t device_index,
 bool
 pci_enableMSI(uint32_t device_index);
 
+void
+pci_getDeviceInfo(uint32_t pci_index,
+                  PCI_DeviceFuncs *p);
+
+uint32_t
+pci_getDeviceCount(void);
 
 
 #endif
