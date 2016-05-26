@@ -130,6 +130,12 @@ APIC_CallibrateTimer(void) {
     apic_data->apic_frequency = apic_ticks;
 }
 
+uint64_t
+APIC_GetTimerFrequency(void)
+{
+    return apic_data->apic_frequency;
+}
+
 void
 APIC_Write(uint32_t reg,
            uint32_t val) {

@@ -28,6 +28,8 @@
 #define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
 #define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
+#define CORE_LOCAL_MEM_ADDR (0xfffffffa00000000)
+
 typedef struct VirtMemManData {
     uint64_t* kernel_pdpt;
     PML_Instance curPML;
@@ -236,7 +238,7 @@ VirtMemMan_Initialize(void) {
 
     //Setup core specific memory
     VirtMemMan_Map(pml,
-                   0xFFFF800000000000,
+                   CORE_LOCAL_MEM_ADDR,
                    MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE),
                    APLS_SIZE,
                    TRUE,
@@ -249,7 +251,7 @@ VirtMemMan_Initialize(void) {
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
     VirtMemManData* tmp = virtMemData;
-    virtMemData = (VirtMemManData*)(0xFFFF800000000000);
+    virtMemData = (VirtMemManData*)CORE_LOCAL_MEM_ADDR;
     virtMemData->kernel_pdpt = tmp->kernel_pdpt;
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;

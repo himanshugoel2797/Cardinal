@@ -10,7 +10,7 @@ typedef enum USBControllerInterface{
 	USBControllerInterface_xHCI
 }USBControllerInterface;
 
-voidvoid
+void
 USB_AddController(USBControllerInterface interface,
 				  uint64_t bar, 
 				  uint32_t (*read)(uint64_t bar, uint32_t offset), 

@@ -77,6 +77,9 @@ APIC_GetTimerValue(void);
 void
 APIC_SetTimerDivisor(uint8_t divisor);
 
+uint64_t
+APIC_GetTimerFrequency(void);
+
 void
 APIC_SetEnableInterrupt(uint32_t interrupt,
                         int enableMode);

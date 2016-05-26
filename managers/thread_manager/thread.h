@@ -76,6 +76,10 @@ void
 YieldThread(void);
 
 void
+SetPeriodicPreemptVector(uint32_t irq,
+                         uint64_t period);
+
+void
 SwitchThread(void);
 
 void

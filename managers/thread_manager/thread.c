@@ -4,11 +4,14 @@
 #include "synchronization.h"
 #include "common/list.h"
 #include "target/hal/thread.h"
+#include "target/hal/interrupts.h"
 
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
 static ThreadInfo *cur_thread;
+static uint64_t preempt_frequency;
+static uint32_t preempt_vector;
 
 void
 Thread_Initialize(void) {
@@ -141,12 +144,21 @@ YieldThread(void) {
 
 }
 
-void
+static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     int_no = 0;
     err_code = 0;
     SwapThreadOnInterrupt(cur_thread, cur_thread);
+}
+
+void
+SetPeriodicPreemptVector(uint32_t irq,
+                         uint64_t frequency)
+{
+    RegisterInterruptHandler(irq, TaskSwitch);
+    preempt_vector = irq;
+    preempt_frequency = frequency;
 }
 
 void
