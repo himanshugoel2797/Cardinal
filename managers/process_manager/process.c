@@ -7,7 +7,7 @@ static List *processes;
 static ProcessInformation *root;
 
 void
-ProcessSys_Initialize(void) {
+ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     root = kmalloc(sizeof(ProcessInformation));
     root->ID = 0;	//Root process ID is 0
     strcpy(root->Name, "Root Process");
@@ -15,7 +15,7 @@ ProcessSys_Initialize(void) {
     root->Priority = ProcessPriority_High;
     root->Permissions = ProcessPermissions_Kernel;
     root->PageTable = GetActiveVirtualMemoryInstance();
-    root->AllocationMap = NULL;
+    root->AllocationMap = allocMap;
     root->children = NULL;
     root->next = NULL;
     root->ThreadIDs = List_Create();
@@ -55,6 +55,20 @@ GetProcessInformation(UID 			pid,
 
         if(pInf->ID == pid) {
             memcpy(procInfo, pInf, sizeof(ProcessInformation));
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}
+
+ProcessErrors
+GetProcessReference(UID           pid,
+                    ProcessInformation    **procInfo) {
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        if(pInf->ID == pid) {
+            *procInfo = pInf;
             return ProcessErrors_None;
         }
     }

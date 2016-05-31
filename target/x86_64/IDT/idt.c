@@ -13,7 +13,7 @@ IDT_FillSWInterruptHandler(char *idt_handler,
 typedef struct {
     uint16_t base_lo; // offset bits 0..15
     uint16_t selector; // a code segment selector in GDT or LDT
-    uint8_t zero; // unused, set to 0
+    uint8_t zero; // unused, set to 0 (bits (0,1,2) are IST)
     uint8_t type_attr; // type and attributes, see below
     uint16_t base_mid; // offset bits 16..31
     uint32_t base_hi;	//offset bits 32..63
@@ -52,7 +52,7 @@ IDT_Initialize(void) {
     //__asm__ volatile("hlt");
 
     for(int i = 0; i < IDT_ENTRY_COUNT; i++) {
-        IDT_SetEntry(0, 0, 0, 0);
+        IDT_SetEntry(0, 0, 0, 0, 0);
         idt_handler_calls[i] = NULL;
     }
 
@@ -62,20 +62,27 @@ IDT_Initialize(void) {
         //Setup the hardware interrupts
         if(i == 8 || (i >= 10 && i <= 14)) pushesToStack = 0;
         IDT_FillSWInterruptHandler(idt_handlers[i], i, pushesToStack);  //If pushesToStack is non-zero, the value will be pushed to stack
-        IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0x8E);
+        IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0x8E, 0);
         pushesToStack = 1;
     }
 
     return;
 }
 
-void IDT_SetEntry(uint8_t index, uint64_t base, uint16_t selector, uint8_t flags) {
+void IDT_SetEntry(uint8_t index, uint64_t base, uint16_t selector, uint8_t flags, uint8_t ist) {
     idt_entries[index].base_lo = base & 0x0000FFFF;
     idt_entries[index].base_mid = (base >> 16) & 0x0000FFFF;
     idt_entries[index].base_hi = (base >> 32);
     idt_entries[index].type_attr = flags;
-    idt_entries[index].zero = 0;
+    idt_entries[index].zero = ist & 0x7;
     idt_entries[index].selector = selector;
+}
+
+void IDT_ChangeEntry(uint8_t index, uint16_t selector, uint8_t flags, uint8_t ist)
+{
+    idt_entries[index].type_attr = flags;
+    idt_entries[index].zero = ist & 0x7;
+    idt_entries[index].selector = selector;   
 }
 
 void IDT_FillSWInterruptHandler(char *idt_handler, uint8_t intNum, uint8_t pushToStack) {

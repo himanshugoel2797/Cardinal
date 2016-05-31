@@ -122,3 +122,36 @@ void
 SetUserStack(void *sp) {
     sys_tss.rsp2 = (uint64_t)sp;
 }
+
+
+void
+GDT_SetIST(uint8_t ist,
+           uint64_t stack)
+{
+    switch(ist)
+    {
+        case 1:
+        sys_tss.ist1 = stack;
+        break;
+        case 2:
+        sys_tss.ist2 = stack;
+        break;
+        case 3:
+        sys_tss.ist3 = stack;
+        break;
+        case 4:
+        sys_tss.ist4 = stack;
+        break;
+        case 5:
+        sys_tss.ist5 = stack;
+        break;
+        case 6:
+        sys_tss.ist6 = stack;
+        break;
+        case 7:
+        sys_tss.ist7 = stack;
+        break;
+        default:
+        break;
+    }
+}

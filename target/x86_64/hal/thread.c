@@ -6,6 +6,10 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
     __asm__ volatile
     (
         "mov %%rbx, %%rsp\n\t"
+        "popq %%rbx\n\t"
+        "popq %%rbx\n\t"
+        "popq %%rbx\n\t"
+        "popq %%rbx\n\t"
         "pushq %%rax\n\t"
         "ret"
         ::

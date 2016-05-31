@@ -23,4 +23,7 @@ RemoveInterruptHandler(uint32_t id);
 void
 SetInterruptEnableMode(uint32_t vector, bool enableMode);
 
+void
+HandleInterruptNoReturn(uint32_t vector);
+
 #endif

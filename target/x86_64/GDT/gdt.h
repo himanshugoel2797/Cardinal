@@ -5,6 +5,10 @@
 
 void GDT_Initialize();
 
+void
+GDT_SetIST(uint8_t ist,
+           uint64_t stack);
+
 typedef volatile struct tss_struct {
     uint32_t rsv0;
     uint64_t rsp0;

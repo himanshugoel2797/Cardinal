@@ -70,6 +70,13 @@ bootstrap_kernel(void *param,
     for(int i = 0; i < 31; i++)
         IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
+    //Setup IST for important exceptions
+    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
+
+    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
+
     FPU_Initialize();   //Setup the FPU
 
 
@@ -113,12 +120,12 @@ target_device_setup(void)
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
     //A pci device initialization is to be made into a thread spawn, the thread is freed when execution is complete
-    SetPeriodicPreemptVector(IRQ(0), APIC_GetTimerFrequency() / 1000);
-    APIC_SetVector(APIC_TIMER, IRQ(0));
-    APIC_SetTimerValue(APIC_GetTimerFrequency() / 1000);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
+    APIC_SetVector(APIC_TIMER, IRQ(1));
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
-
+    //while(1){__asm__("hlt" :: "a"(APIC_GetTimerFrequency()));}
     pci_Initialize();
 }
 

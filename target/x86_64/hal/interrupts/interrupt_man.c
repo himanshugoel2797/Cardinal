@@ -29,6 +29,13 @@ ShadowInterruptHandler(Registers *regs) {
     if(regs->int_no > 31)APIC_SendEOI(regs->int_no);
 }
 
+void
+HandleInterruptNoReturn(uint32_t vector)
+{
+    if(vector > 31)APIC_SendEOI(vector);
+    __asm__ volatile("sti");
+}
+
 uint32_t
 RegisterInterruptHandler(uint32_t int_no,
                          InterruptHandler handler) {

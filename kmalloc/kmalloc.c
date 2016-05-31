@@ -34,7 +34,7 @@ Spinlock alloc_sync;
 // associated physical page address
 
 //Allocate a 256MB pool for the kernel and map it to a free address space
-void kmalloc_init() {
+void kmalloc_init(MemoryAllocationsMap *allocationMap) {
 #define STORE_SIZE MiB(128)
 
     //TODO Setup TLB shootdowns
@@ -48,14 +48,23 @@ void kmalloc_init() {
                            MemoryAllocationType_Heap,
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
+    uint64_t phys_addr = AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE);
+
     MapPage(GetActiveVirtualMemoryInstance(),
             NULL,
-            AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE),
+            phys_addr,
             virtBaseAddr_base,
             STORE_SIZE,
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
             MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+
+    allocationMap->CacheMode = CachingModeWriteBack;
+    allocationMap->VirtualAddress = virtBaseAddr_base;
+    allocationMap->Length = STORE_SIZE;
+    allocationMap->AllocationType = MemoryAllocationType_Heap;
+    allocationMap->AdditionalData = 0;
+    allocationMap->ReferenceCount = 0;
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
     k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));

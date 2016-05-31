@@ -2,6 +2,7 @@
 #define _K_MALLOC_H_
 
 #include "types.h"
+#include "target/hal/memory.h"
 
 /**
  * \defgroup kmalloc Kernel Memory Allocation
@@ -12,7 +13,7 @@
 
 //! Requires that the physical memory manager and the virtual memory manager be initialized too
 //! \sa kmalloc(), kfree()
-void kmalloc_init();
+void kmalloc_init(MemoryAllocationsMap *allocationMap);
 
 //! kernel malloc
 

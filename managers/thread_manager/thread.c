@@ -45,6 +45,12 @@ CreateThread(UID parentProcess,
     thd->state = ThreadState_Initialize;
     thd->priority = ThreadPriority_Neutral;
     thd->Parent = parentProcess;
+    thd->sleep_duration_ms = 0;
+    if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound)
+    {
+        kfree(thd);
+        return -1;
+    }
     thd->ID = new_uid();
     thd->stack = kmalloc(KiB(16));
 
@@ -69,6 +75,20 @@ SetThreadState(UID id,
             return;
         }
     }
+}
+
+void
+SleepThread(UID id,
+            uint64_t duration_ms)
+{
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( thd->ID == id) {
+            thd->state = ThreadState_Sleep;
+            thd->sleep_duration_ms = duration_ms;
+            return;
+        }
+    }   
 }
 
 ThreadState
@@ -144,12 +164,63 @@ YieldThread(void) {
 
 }
 
+int invokeCount = 0;
+
 static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
-    int_no = 0;
     err_code = 0;
-    SwapThreadOnInterrupt(cur_thread, cur_thread);
+    ThreadInfo *next_thread = List_EntryAt(thds, 0);
+    List_Remove(thds, 0);
+    List_AddEntry(thds, next_thread);
+
+    invokeCount++;
+
+    //Cleanup dead threads
+    while(next_thread->state == ThreadState_Exiting)
+    {
+        List_Remove(thds, List_Length(thds) - 1);
+        kfree(next_thread->stack);
+        kfree(next_thread);
+
+        next_thread = List_EntryAt(thds, 0);
+        List_Remove(thds, 0);
+        List_AddEntry(thds, next_thread);
+    }
+
+    //Skip paused threads
+    while(next_thread->state == ThreadState_Paused)
+    {
+        next_thread = List_EntryAt(thds, 0);
+        List_Remove(thds, 0);
+        List_AddEntry(thds, next_thread);
+    }
+
+    while(next_thread->state == ThreadState_Sleep)
+    {
+        next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
+        if(next_thread->sleep_duration_ms == 0){
+            next_thread->state = ThreadState_Running;
+            break;
+        }else{
+            next_thread = List_EntryAt(thds, 0);
+            List_Remove(thds, 0);
+            List_AddEntry(thds, next_thread);
+        }
+    }
+    if(invokeCount == 1)__asm__ ("hlt" :: "a"(cur_thread->entry_point));
+
+    ThreadInfo *tmp_cur_thread = cur_thread;
+    cur_thread = next_thread;
+    SetActiveVirtualMemoryInstance(next_thread->ParentProcess->PageTable);    
+    if(next_thread->state == ThreadState_Running)
+    {
+        SwapThreadOnInterrupt(tmp_cur_thread, next_thread);
+    }else if(next_thread->state == ThreadState_Initialize)
+    {
+        HandleInterruptNoReturn(int_no);
+        SwitchAndInitializeThread(next_thread);
+    }
 }
 
 void
@@ -169,6 +240,7 @@ SwitchThread(void) {
 
     //Resume execution of the thread
     if(cur_thread->state == ThreadState_Initialize) {
+        cur_thread->state = ThreadState_Running;
         SwitchAndInitializeThread(cur_thread);
     } else if(cur_thread->state == ThreadState_Running) {
 

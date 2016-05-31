@@ -3,13 +3,23 @@
 #include "multiboot.h"
 #include "kmalloc/kmalloc.h"
 #include "managers.h"
+#include "memory.h"
+#include "syscall.h"
+
+void
+kernel_stall(void)
+{
+    __asm__ ("cli\n\thlt");
+}
 
 void
 kernel_main_init(void) {
-    kmalloc_init ();
-    ProcessSys_Initialize();
+    MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
+    kmalloc_init (allocMap);
+    ProcessSys_Initialize(allocMap);
     Thread_Initialize();
     CreateThread(0, kernel_main);
+    CreateThread(0, kernel_stall);
     smp_unlock_cores();
     CoreUpdate(0);  //BSP is core 0
 }
@@ -22,11 +32,13 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    Syscall_Initialize();
     DeviceManager_Initialize();
     target_device_setup();
     
-    __asm__ ("cli\n\thlt");
+    __asm__ ("hlt");
 
+    while(1);
     //The kernel is ready to take in the new cores, bring them up
 }
 

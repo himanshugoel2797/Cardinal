@@ -2,6 +2,7 @@
 #define _CARDINAL_THREAD_H_
 
 #include "types.h"
+#include "managers/process_manager/process_info.h"
 
 //TODO: Create threads, call HAL to handle context switching details
 //TODO: Write a separate schedule manager that dictates thread switching in a process aware manner
@@ -21,6 +22,7 @@ typedef enum {
     ThreadState_Initialize,
     ThreadState_Running,
     ThreadState_Paused,
+    ThreadState_Sleep,
     ThreadState_Exiting
 } ThreadState;
 
@@ -29,11 +31,14 @@ typedef void (*ThreadEntryPoint)(void);
 typedef struct ThreadInfo {
     UID Parent;
     UID ID;
+    ProcessInformation *ParentProcess;
     ThreadEntryPoint entry_point;
     ThreadState state;
     ThreadPriority priority;
     void *stack;
+    void *user_stack;
     int core_affinity;
+    uint64_t sleep_duration_ms;
 } ThreadInfo;
 
 typedef struct CoreInfo {
@@ -51,6 +56,10 @@ CreateThread(UID parentProcess,
 void
 SetThreadState(UID id,
                ThreadState state);
+
+void
+SleepThread(UID id,
+            uint64_t duration_ms);
 
 ThreadState
 GetThreadState(UID id);
