@@ -36,7 +36,7 @@ include Sources.inc
 .c.o:
 	$(CC) $(CFLAGS) -S $? -o $(?:.c=.s)
 	$(AS) $(ASFLAGS) $(?:.c=.s) -c -o $(?:.c=.o)
-	rm -f $(?:.c=.s)
+	#rm -f $(?:.c=.s)
 
 .s.o:
 	$(AS) $(ASFLAGS) $? -c -o $(?:.s=.o)

@@ -7,5 +7,6 @@ SOURCES=main.o \
 		managers/thread_manager/thread.o \
 		managers/power_manager/pwm.o \
 		managers/device_manager/device_manager.o \
+		managers/syscall_manager/syscall.o \
 		drivers/usb/controller.o \
 		drivers/usb/uhci/uhci_controller.o

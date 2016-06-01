@@ -23,7 +23,7 @@ ASM=x86_64-elf-as
 .c.o:
 	$(GCC) $(CFLAGS) -S $? -o $(?:.c=.s)
 	$(ASM) $(?:.c=.s) -c -o $(?:.c=.o)
-	rm -f $(?:.c=.s)
+	#rm -f $(?:.c=.s)
 
 .s.o:
 	$(ASM) $? -c -o $(?:.s=.o)

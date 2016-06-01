@@ -6,5 +6,6 @@
 #include "thread_manager/thread.h"				   //Thread Manager
 #include "power_manager/pwm.h"					   //Power Manager
 #include "device_manager/device_manager.h"		   //Device Manager
+#include "syscall_manager/syscall.h"			   //Syscall Manager
 
 #endif /* end of include guard: _MANAGERS_H_ */
