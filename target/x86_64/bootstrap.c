@@ -91,6 +91,7 @@ bootstrap_kernel(void *param,
     //Convert framebuffer address to writethrough caching
     info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
+    info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
     SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
     SetUserStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));

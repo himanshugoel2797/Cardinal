@@ -20,6 +20,8 @@ typedef struct {
     uint32_t cardinalMemMap_len;
     uint64_t elf_shdr_addr;
     uint64_t rsdp_addr;
+    uint64_t initrd_start_addr;
+    uint64_t initrd_len;
     CardinalMemMap *cardinalMemMap;
     uint64_t framebuffer_addr;
     uint32_t framebuffer_pitch;

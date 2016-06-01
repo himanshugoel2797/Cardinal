@@ -11,6 +11,7 @@ typedef struct multiboot_tag_framebuffer multiboot_tag_framebuffer;
 typedef struct multiboot_tag_mmap multiboot_tag_mmap;
 typedef struct multiboot_tag_new_acpi multiboot_tag_new_acpi;
 typedef struct multiboot_tag_elf_sections multiboot_tag_elf_sections;
+typedef struct multiboot_tag_module multiboot_tag_module;
 
 void
 ParseAndSaveBootInformation(void *boot_info) {
@@ -66,6 +67,12 @@ ParseAndSaveBootInformation(void *boot_info) {
         case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
             multiboot_tag_new_acpi *acpi = (multiboot_tag_new_acpi*)&hdr_8[i];
             bootInfo.rsdp_addr = (uint64_t)acpi->rsdp;
+        }
+        break;
+        case MULTIBOOT_TAG_TYPE_MODULE:{
+            multiboot_tag_module *module = (multiboot_tag_module*)&hdr_8[i];
+            bootInfo.initrd_start_addr = (uint64_t)module->mod_start;
+            bootInfo.initrd_len = (uint64_t)module->size;
         }
         break;
         case MULTIBOOT_TAG_TYPE_END:
