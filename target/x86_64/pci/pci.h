@@ -5,11 +5,11 @@
 
 #define MAX_POSSIBLE_BARS 6
 
-typedef struct PCI_BAR{
+typedef struct PCI_BAR {
     uint64_t value;
     uint32_t offset;
     bool isIOSpace;
-}PCI_BAR;
+} PCI_BAR;
 
 typedef struct {
     uint8_t classCode;

@@ -3,17 +3,17 @@
 
 #include "types.h"
 
-typedef enum USBControllerInterface{
-	USBControllerInterface_UHCI,
-	USBControllerInterface_OHCI,
-	USBControllerInterface_EHCI,
-	USBControllerInterface_xHCI
-}USBControllerInterface;
+typedef enum USBControllerInterface {
+    USBControllerInterface_UHCI,
+    USBControllerInterface_OHCI,
+    USBControllerInterface_EHCI,
+    USBControllerInterface_xHCI
+} USBControllerInterface;
 
 void
 USB_AddController(USBControllerInterface interface,
-				  uint64_t bar, 
-				  uint32_t (*read)(uint64_t bar, uint32_t offset), 
-				  void (*write)(uint64_t bar, uint32_t offset, uint32_t val));
+                  uint64_t bar,
+                  uint32_t (*read)(uint64_t bar, uint32_t offset),
+                  void (*write)(uint64_t bar, uint32_t offset, uint32_t val));
 
 #endif

@@ -14,8 +14,7 @@ static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 
 UID
-GetCurrentThreadUID(void)
-{
+GetCurrentThreadUID(void) {
     return cur_thread->ID;
 }
 
@@ -52,8 +51,7 @@ CreateThread(UID parentProcess,
     thd->priority = ThreadPriority_Neutral;
     thd->Parent = parentProcess;
     thd->sleep_duration_ms = 0;
-    if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound)
-    {
+    if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound) {
         kfree(thd);
         return -1;
     }
@@ -85,8 +83,7 @@ SetThreadState(UID id,
 
 void
 SleepThread(UID id,
-            uint64_t duration_ms)
-{
+            uint64_t duration_ms) {
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -94,7 +91,7 @@ SleepThread(UID id,
             thd->sleep_duration_ms = duration_ms;
             return;
         }
-    }   
+    }
 }
 
 ThreadState
@@ -167,8 +164,7 @@ FreeThread(UID id) {
         }
     }
 
-    if(id == cur_thread->ID)
-    {
+    if(id == cur_thread->ID) {
         q = 1;
         while(1);
     }
@@ -193,8 +189,7 @@ TaskSwitch(uint32_t int_no,
     invokeCount++;
 
     //Cleanup dead threads
-    while(next_thread->state == ThreadState_Exiting)
-    {
+    while(next_thread->state == ThreadState_Exiting) {
         __asm__ ("cli\n\thlt");
         List_Remove(thds, List_Length(thds) - 1);
         kfree(next_thread->stack);
@@ -206,20 +201,18 @@ TaskSwitch(uint32_t int_no,
     }
 
     //Skip paused threads
-    while(next_thread->state == ThreadState_Paused)
-    {
+    while(next_thread->state == ThreadState_Paused) {
         next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
         List_AddEntry(thds, next_thread);
     }
 
-    while(next_thread->state == ThreadState_Sleep)
-    {
+    while(next_thread->state == ThreadState_Sleep) {
         next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
-        if(next_thread->sleep_duration_ms == 0){
+        if(next_thread->sleep_duration_ms == 0) {
             next_thread->state = ThreadState_Running;
             break;
-        }else{
+        } else {
             next_thread = List_EntryAt(thds, 0);
             List_Remove(thds, 0);
             List_AddEntry(thds, next_thread);
@@ -228,12 +221,10 @@ TaskSwitch(uint32_t int_no,
 
     ThreadInfo *tmp_cur_thread = cur_thread;
     cur_thread = next_thread;
-    SetActiveVirtualMemoryInstance(next_thread->ParentProcess->PageTable);    
-    if(next_thread->state == ThreadState_Running)
-    {
+    SetActiveVirtualMemoryInstance(next_thread->ParentProcess->PageTable);
+    if(next_thread->state == ThreadState_Running) {
         SwapThreadOnInterrupt(tmp_cur_thread, next_thread);
-    }else if(next_thread->state == ThreadState_Initialize)
-    {
+    } else if(next_thread->state == ThreadState_Initialize) {
         next_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
         SwitchAndInitializeThread(next_thread);
@@ -242,8 +233,7 @@ TaskSwitch(uint32_t int_no,
 
 void
 SetPeriodicPreemptVector(uint32_t irq,
-                         uint64_t frequency)
-{
+                         uint64_t frequency) {
     RegisterInterruptHandler(irq, TaskSwitch);
     preempt_vector = irq;
     preempt_frequency = frequency;
@@ -270,7 +260,7 @@ CoreUpdate(int coreID) {
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
 //    while(TRUE) {
-        SwitchThread();
+    SwitchThread();
 //    }
 }
 

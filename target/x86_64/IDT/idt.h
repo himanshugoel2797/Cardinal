@@ -29,11 +29,11 @@ IDT_SetEntry(uint8_t index,
              uint8_t flags,
              uint8_t ist);
 
-void 
-IDT_ChangeEntry(uint8_t index, 
-				uint16_t selector, 
-				uint8_t flags, 
-				uint8_t ist);
+void
+IDT_ChangeEntry(uint8_t index,
+                uint16_t selector,
+                uint8_t flags,
+                uint8_t ist);
 
 
 void

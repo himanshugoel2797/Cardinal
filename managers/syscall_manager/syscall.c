@@ -2,10 +2,9 @@
 
 void
 SyscallReceived(uint64_t instruction_pointer,
-				uint64_t syscall_num,
-				uint64_t *syscall_params)
-{
-	instruction_pointer = 0;
-	syscall_num = 0;
-	syscall_params = NULL;
+                uint64_t syscall_num,
+                uint64_t *syscall_params) {
+    instruction_pointer = 0;
+    syscall_num = 0;
+    syscall_params = NULL;
 }

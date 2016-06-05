@@ -78,11 +78,10 @@ void IDT_SetEntry(uint8_t index, uint64_t base, uint16_t selector, uint8_t flags
     idt_entries[index].selector = selector;
 }
 
-void IDT_ChangeEntry(uint8_t index, uint16_t selector, uint8_t flags, uint8_t ist)
-{
+void IDT_ChangeEntry(uint8_t index, uint16_t selector, uint8_t flags, uint8_t ist) {
     idt_entries[index].type_attr = flags;
     idt_entries[index].zero = ist & 0x7;
-    idt_entries[index].selector = selector;   
+    idt_entries[index].selector = selector;
 }
 
 void IDT_FillSWInterruptHandler(char *idt_handler, uint8_t intNum, uint8_t pushToStack) {

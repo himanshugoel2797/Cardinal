@@ -9,8 +9,7 @@
 int s = 0;
 
 void
-kernel_stall(void)
-{
+kernel_stall(void) {
     while(1);
     __asm__ ("cli\n\thlt");
 
@@ -42,7 +41,7 @@ kernel_main(void) {
     s = 1;
     FreeThread(GetCurrentThreadUID());
     __asm__ ("cli\n\thlt");
-    
+
     //The kernel is ready to take in the new cores, bring them up
 }
 

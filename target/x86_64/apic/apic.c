@@ -131,8 +131,7 @@ APIC_CallibrateTimer(void) {
 }
 
 uint64_t
-APIC_GetTimerFrequency(void)
-{
+APIC_GetTimerFrequency(void) {
     return apic_data->apic_frequency;
 }
 

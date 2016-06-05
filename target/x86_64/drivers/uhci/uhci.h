@@ -6,13 +6,13 @@
 #include "managers.h"
 #include "drivers/usb/usb.h"
 
-bool 
+bool
 UHCI_DetectController(PCI_DeviceFuncs *device);
 
 bool
 UHCI_InitializeController(PCI_DeviceFuncs *device);
 
-void 
+void
 UHCI_ActivationStateChange(DeviceActivationState state);
 
 #endif

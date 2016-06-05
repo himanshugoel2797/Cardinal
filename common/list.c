@@ -36,7 +36,7 @@ List_AddEntry(List *a,
     if(a->last != NULL)a->last->next = l;
     a->last = l;
     if(a->nodes == NULL)a->nodes = a->last;
-    if(a->last_accessed_node == NULL){
+    if(a->last_accessed_node == NULL) {
         a->last_accessed_node = a->nodes;
         a->last_accessed_index = 0;
     }
