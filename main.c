@@ -6,10 +6,14 @@
 #include "memory.h"
 #include "syscall.h"
 
+int s = 0;
+
 void
 kernel_stall(void)
 {
+    while(1);
     __asm__ ("cli\n\thlt");
+
 }
 
 void
@@ -35,10 +39,10 @@ kernel_main(void) {
     Syscall_Initialize();
     DeviceManager_Initialize();
     target_device_setup();
+    s = 1;
+    FreeThread(GetCurrentThreadUID());
+    __asm__ ("cli\n\thlt");
     
-    __asm__ ("hlt");
-
-    while(1);
     //The kernel is ready to take in the new cores, bring them up
 }
 

@@ -127,7 +127,7 @@ target_device_setup(void)
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
     //while(1){__asm__("hlt" :: "a"(APIC_GetTimerFrequency()));}
-    pci_Initialize();
+    //pci_Initialize();
 }
 
 int get_perf_counter(void) {

@@ -33,9 +33,13 @@ List_AddEntry(List *a,
     if(l == NULL)return ListError_AllocationFailed;
     l->prev = a->last;
     l->value = value;
+    if(a->last != NULL)a->last->next = l;
     a->last = l;
     if(a->nodes == NULL)a->nodes = a->last;
-    if(a->last_accessed_node == NULL)a->last_accessed_node = a->nodes;
+    if(a->last_accessed_node == NULL){
+        a->last_accessed_node = a->nodes;
+        a->last_accessed_index = 0;
+    }
     a->entry_count++;
     return ListError_None;
 }
@@ -48,7 +52,7 @@ List_Length(List *a) {
 void
 List_Remove(List *a,
             uint64_t index) {
-    if(a->entry_count == 0)return;
+    if(a->entry_count == 0 | index >= a->entry_count)return;
 
     List_EntryAt(a, index);
 
@@ -67,6 +71,7 @@ List_Remove(List *a,
         a->last = a->last_accessed_node->prev;
 
     a->last_accessed_node = a->nodes;
+    a->last_accessed_index = 0;
     kfree(tmp);
 
     a->entry_count--;
@@ -95,6 +100,7 @@ List_EntryAt(List *a,
             a->last_accessed_node = a->last_accessed_node->next;
         }
     }
+    a->last_accessed_index = index;
     return a->last_accessed_node->value;
 }
 

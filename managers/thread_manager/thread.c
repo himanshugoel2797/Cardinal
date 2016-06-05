@@ -13,6 +13,12 @@ static ThreadInfo *cur_thread;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 
+UID
+GetCurrentThreadUID(void)
+{
+    return cur_thread->ID;
+}
+
 void
 Thread_Initialize(void) {
     vLow = List_Create();
@@ -149,13 +155,22 @@ GetThreadCoreAffinity(UID id) {
     return -1;
 }
 
+int q = 0;
+
 void
 FreeThread(UID id) {
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
             thd->state = ThreadState_Exiting;
+            break;
         }
+    }
+
+    if(id == cur_thread->ID)
+    {
+        q = 1;
+        while(1);
     }
 }
 
@@ -170,6 +185,7 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
+    if(q)__asm__ ("hlt" :: "a"(thds));
     ThreadInfo *next_thread = List_EntryAt(thds, 0);
     List_Remove(thds, 0);
     List_AddEntry(thds, next_thread);
@@ -179,6 +195,7 @@ TaskSwitch(uint32_t int_no,
     //Cleanup dead threads
     while(next_thread->state == ThreadState_Exiting)
     {
+        __asm__ ("cli\n\thlt");
         List_Remove(thds, List_Length(thds) - 1);
         kfree(next_thread->stack);
         kfree(next_thread);
@@ -208,7 +225,6 @@ TaskSwitch(uint32_t int_no,
             List_AddEntry(thds, next_thread);
         }
     }
-    if(invokeCount == 1)__asm__ ("hlt" :: "a"(cur_thread->entry_point));
 
     ThreadInfo *tmp_cur_thread = cur_thread;
     cur_thread = next_thread;
@@ -218,6 +234,7 @@ TaskSwitch(uint32_t int_no,
         SwapThreadOnInterrupt(tmp_cur_thread, next_thread);
     }else if(next_thread->state == ThreadState_Initialize)
     {
+        next_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
         SwitchAndInitializeThread(next_thread);
     }
@@ -252,9 +269,9 @@ CoreUpdate(int coreID) {
     //Obtain thread to process from the lists
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
-    while(TRUE) {
+//    while(TRUE) {
         SwitchThread();
-    }
+//    }
 }
 
 void
