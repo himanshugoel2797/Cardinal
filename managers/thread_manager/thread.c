@@ -181,8 +181,8 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-    if(q)__asm__ ("hlt" :: "a"(thds));
     ThreadInfo *next_thread = List_EntryAt(thds, 0);
+    //if(next_thread->state == ThreadState_Exiting)__asm__ ("hlt" :: "a"(*((uint64_t*)thds + 3)));
     List_Remove(thds, 0);
     List_AddEntry(thds, next_thread);
 
@@ -190,7 +190,6 @@ TaskSwitch(uint32_t int_no,
 
     //Cleanup dead threads
     while(next_thread->state == ThreadState_Exiting) {
-        __asm__ ("cli\n\thlt");
         List_Remove(thds, List_Length(thds) - 1);
         kfree(next_thread->stack);
         kfree(next_thread);
@@ -259,9 +258,9 @@ CoreUpdate(int coreID) {
     //Obtain thread to process from the lists
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
-//    while(TRUE) {
+    while(TRUE) {
     SwitchThread();
-//    }
+    }
 }
 
 void
