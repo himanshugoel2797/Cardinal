@@ -88,6 +88,13 @@ List_Free(List *a) {
 void*
 List_EntryAt(List *a,
              uint64_t index) {
+
+    if(a->last_accessed_index >= a->entry_count)
+    {
+        a->last_accessed_index = 0;
+        a->last_accessed_node = a->nodes;
+    }
+
     if(index >= a->entry_count)
         return NULL;
 
