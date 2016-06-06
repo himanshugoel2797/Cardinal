@@ -52,7 +52,7 @@ List_Length(List *a) {
 void
 List_Remove(List *a,
             uint64_t index) {
-    if(a->entry_count == 0 | index >= a->entry_count)return;
+    if(a->entry_count == 0 | index >= a->entry_count | index < 0)return;
 
     List_EntryAt(a, index);
 
@@ -88,7 +88,7 @@ List_Free(List *a) {
 void*
 List_EntryAt(List *a,
              uint64_t index) {
-    if(index >= a->entry_count)
+    if(index >= a->entry_count | index < 0)
         return NULL;
 
     else if(a->last_accessed_index > index) {
@@ -96,7 +96,7 @@ List_EntryAt(List *a,
             a->last_accessed_node = a->last_accessed_node->prev;
         }
     } else if(a->last_accessed_index < index) {
-        while(a->last_accessed_index++ > index) {
+        while(a->last_accessed_index++ < index) {
             a->last_accessed_node = a->last_accessed_node->next;
         }
     }
@@ -107,7 +107,7 @@ List_EntryAt(List *a,
 void*
 List_Next(List *a) {
     if(a->last_accessed_index < a->entry_count - 1) {
-        a->last_accessed_node++;
+        a->last_accessed_index++;
         a->last_accessed_node = a->last_accessed_node->next;
     }
     return a->last_accessed_node->value;
