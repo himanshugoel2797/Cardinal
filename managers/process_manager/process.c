@@ -88,6 +88,9 @@ KillProcess(UID pid) {
                 SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
             }
 
+            //TODO Delete the process data, free up any application memory
+
+
             return ProcessErrors_None;
         }
     }
@@ -109,8 +112,7 @@ SleepProcess(UID pid) {
 
 ProcessErrors
 SetTLSSize(UID pid,
-           uint64_t tls_size)
-{
+           uint64_t tls_size) {
     //Round up tls_size to nearest page boundary
     if(tls_size % PAGE_SIZE != 0)tls_size += PAGE_SIZE - (tls_size % PAGE_SIZE);
 
@@ -120,12 +122,12 @@ SetTLSSize(UID pid,
         if(pInf->ID == pid) {
             if(tls_size == 0) {
                 pInf->TLSSize = tls_size;
-            return ProcessErrors_None;
-            }else 
-            return ProcessErrors_TLSAlreadySetup;
+                return ProcessErrors_None;
+            } else
+                return ProcessErrors_TLSAlreadySetup;
         }
     }
-    return ProcessErrors_UIDNotFound;   
+    return ProcessErrors_UIDNotFound;
 }
 
 ProcessErrors

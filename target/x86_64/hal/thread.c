@@ -30,7 +30,6 @@ SwapThreadOnInterrupt(ThreadInfo *src,
 }
 
 void
-SetTLSBase(void *tlsBase)
-{
+SetTLSBase(void *tlsBase) {
     wrmsr(0xC0000100, (uint64_t)tlsBase);
 }
