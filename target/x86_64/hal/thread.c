@@ -1,5 +1,5 @@
 #include "thread.h"
-
+#include "utils/native.h"
 
 void
 SwitchAndInitializeThread(ThreadInfo *cur_thread) {
@@ -27,4 +27,10 @@ SwapThreadOnInterrupt(ThreadInfo *src,
                      "mov %0, %%rsp\n\t"    : "=a"(stack_frame): "b"(dst->stack)
                     );
     src->stack = (void*)stack_frame;
+}
+
+void
+SetTLSBase(void *tlsBase)
+{
+    wrmsr(0xC0000100, (uint64_t)tlsBase);
 }

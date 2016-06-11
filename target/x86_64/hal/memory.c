@@ -150,8 +150,8 @@ ForkTable(UID src,
 
     MemoryAllocationsMap *c = srcAllocBase;
 
-
-    do {
+    //TODO review this code to make sure it works
+    while(c != NULL){
         MapPage(*dst,
                 b,
                 (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
@@ -166,7 +166,8 @@ ForkTable(UID src,
             b->next = kmalloc(sizeof(MemoryAllocationsMap));
             b = b->next;
         }
-    } while(c->next != NULL);
+        c = c->next;
+    }
 
     return MemoryAllocationErrors_None;
 }

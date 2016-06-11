@@ -18,6 +18,7 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     root->AllocationMap = allocMap;
     root->children = NULL;
     root->next = NULL;
+    root->TLSSize = 0;
     root->ThreadIDs = List_Create();
 
     processes = List_Create();
@@ -104,6 +105,27 @@ SleepProcess(UID pid) {
         }
     }
     return ProcessErrors_UIDNotFound;
+}
+
+ProcessErrors
+SetTLSSize(UID pid,
+           uint64_t tls_size)
+{
+    //Round up tls_size to nearest page boundary
+    if(tls_size % PAGE_SIZE != 0)tls_size += PAGE_SIZE - (tls_size % PAGE_SIZE);
+
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        if(pInf->ID == pid) {
+            if(tls_size == 0) {
+                pInf->TLSSize = tls_size;
+            return ProcessErrors_None;
+            }else 
+            return ProcessErrors_TLSAlreadySetup;
+        }
+    }
+    return ProcessErrors_UIDNotFound;   
 }
 
 ProcessErrors

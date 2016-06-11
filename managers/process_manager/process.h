@@ -27,6 +27,10 @@ ProcessErrors
 SleepProcess(UID pid);
 
 ProcessErrors
+SetTLSSize(UID pid,
+		   uint64_t tls_size);
+
+ProcessErrors
 RegisterSignalHandler(UID 		pid,
                       ProcessSignals 	signals,
                       ProcessSignalHandler sigHandler);

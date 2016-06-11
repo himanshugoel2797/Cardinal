@@ -37,6 +37,7 @@ typedef struct ThreadInfo {
     ThreadPriority priority;
     void *stack;
     void *user_stack;
+    void *tls_base;
     int core_affinity;
     uint64_t sleep_duration_ms;
 } ThreadInfo;

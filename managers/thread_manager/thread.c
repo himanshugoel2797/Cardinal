@@ -51,9 +51,40 @@ CreateThread(UID parentProcess,
     thd->priority = ThreadPriority_Neutral;
     thd->Parent = parentProcess;
     thd->sleep_duration_ms = 0;
-    if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound) {
-        kfree(thd);
-        return -1;
+    if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound)
+            goto error_exit;
+
+    if(thd->ParentProcess->TLSSize != 0)
+    {
+        uint64_t tls_base = 0;
+        FindFreeVirtualAddress(thd->ParentProcess->PageTable,
+                               &tls_base,
+                               thd->ParentProcess->TLSSize,
+                               MemoryAllocationType_Application,
+                               MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+                               );
+
+        if(tls_base != 0)
+        {
+            MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
+            if(alloc == NULL)
+                 goto error_exit;
+
+            MapPage(thd->ParentProcess->PageTable,
+                    alloc,
+                    AllocatePhysicalPageCont(thd->ParentProcess->TLSSize/PAGE_SIZE),
+                    tls_base,
+                    thd->ParentProcess->TLSSize,
+                    CachingModeWriteBack,
+                    MemoryAllocationType_Application,
+                    MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+                    );
+
+            alloc->next = thd->ParentProcess->AllocationMap->next;
+            thd->ParentProcess->AllocationMap->next = alloc;
+
+            thd->tls_base = (void*)tls_base;
+        }else goto error_exit;
     }
     thd->ID = new_uid();
     thd->stack = kmalloc(KiB(16));
@@ -67,6 +98,10 @@ CreateThread(UID parentProcess,
     UnlockSpinlock(thds_s);
 
     return thd->ID;
+
+    error_exit:
+        kfree(thd);
+        return -1;
 }
 
 void

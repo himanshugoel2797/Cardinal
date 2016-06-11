@@ -33,7 +33,8 @@ typedef enum {
 typedef enum {
     ProcessErrors_None = 0,
     ProcessErrors_Unknown = (1 << 0),
-    ProcessErrors_UIDNotFound = (1 << 1)
+    ProcessErrors_UIDNotFound = (1 << 1),
+    ProcessErrors_TLSAlreadySetup = (1 << 2)
 } ProcessErrors;
 
 typedef enum {
@@ -74,6 +75,7 @@ typedef struct ProcessInformation {
     UID                         PageTable;
     MemoryAllocationsMap        *AllocationMap;
     List                        *ThreadIDs;
+    uint64_t                    TLSSize;
     struct ProcessInformation   *children;
     struct ProcessInformation   *next;
 } ProcessInformation;
