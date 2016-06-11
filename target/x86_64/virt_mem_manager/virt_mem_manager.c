@@ -67,181 +67,181 @@ VirtMemMan_Initialize(void) {
 
     memset ((void*)pml, 0, KiB(4));
 
-    if(kernel_pdpt == NULL){
-    void* pdpt_0 = (void*)MemMan_Alloc ();
+    if(kernel_pdpt == NULL) {
+        void* pdpt_0 = (void*)MemMan_Alloc ();
 
 
-    kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
-    pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
-    //Setup kernel code map
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFFC0000000,
-                        0x40000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
+        pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
+        //Setup kernel code map
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFFC0000000,
+                            0x40000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFF80000000,
-                        0x00000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFF80000000,
+                            0x00000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFF40000000,
-                        0xC0000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFF40000000,
+                            0xC0000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFF00000000,
-                        0x80000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFF00000000,
+                            0x80000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    //Setup Upper 4GiB map
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFDC0000000,
-                        0x1C0000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        //Setup Upper 4GiB map
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFDC0000000,
+                            0x1C0000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFD80000000,
-                        0x180000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFD80000000,
+                            0x180000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFD40000000,
-                        0x140000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFD40000000,
+                            0x140000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFD00000000,
-                        0x100000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFD00000000,
+                            0x100000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    //Setup lower 4GiB map
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFEC0000000,
-                        0xC0000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        //Setup lower 4GiB map
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFEC0000000,
+                            0xC0000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFE80000000,
-                        0x80000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFE80000000,
+                            0x80000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFE40000000,
-                        0x40000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFE40000000,
+                            0x40000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFE00000000,
-                        0x00000000,
-                        TRUE,
-                        MEM_TYPE_WB,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFE00000000,
+                            0x00000000,
+                            TRUE,
+                            MEM_TYPE_WB,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    //Uncached
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFB00000000,
-                        0x00000000,
-                        TRUE,
-                        MEM_TYPE_UC,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        //Uncached
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFB00000000,
+                            0x00000000,
+                            TRUE,
+                            MEM_TYPE_UC,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFB40000000,
-                        0x40000000,
-                        TRUE,
-                        MEM_TYPE_UC,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFB40000000,
+                            0x40000000,
+                            TRUE,
+                            MEM_TYPE_UC,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFB80000000,
-                        0x80000000,
-                        TRUE,
-                        MEM_TYPE_UC,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFB80000000,
+                            0x80000000,
+                            TRUE,
+                            MEM_TYPE_UC,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFBC0000000,
-                        0xC0000000,
-                        TRUE,
-                        MEM_TYPE_UC,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFBC0000000,
+                            0xC0000000,
+                            TRUE,
+                            MEM_TYPE_UC,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    //Write Through
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFC00000000,
-                        0x00000000,
-                        TRUE,
-                        MEM_TYPE_WT,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        //Write Through
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFC00000000,
+                            0x00000000,
+                            TRUE,
+                            MEM_TYPE_WT,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFC40000000,
-                        0x40000000,
-                        TRUE,
-                        MEM_TYPE_WT,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFC40000000,
+                            0x40000000,
+                            TRUE,
+                            MEM_TYPE_WT,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFC80000000,
-                        0x80000000,
-                        TRUE,
-                        MEM_TYPE_WT,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFC80000000,
+                            0x80000000,
+                            TRUE,
+                            MEM_TYPE_WT,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
 
-    VirtMemMan_MapHPage(pml,
-                        0xFFFFFFFCC0000000,
-                        0xC0000000,
-                        TRUE,
-                        MEM_TYPE_WT,
-                        MEM_READ | MEM_WRITE | MEM_EXEC,
-                        MEM_KERNEL);
-}else{
+        VirtMemMan_MapHPage(pml,
+                            0xFFFFFFFCC0000000,
+                            0xC0000000,
+                            TRUE,
+                            MEM_TYPE_WT,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
+                            MEM_KERNEL);
+    } else {
 
-    void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
-    pml[511] = (uint64_t)pdpt_0 | 3;
-}
+        void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
+        pml[511] = (uint64_t)pdpt_0 | 3;
+    }
 
     //Setup core specific memory
     VirtMemMan_Map(pml,
@@ -254,9 +254,9 @@ VirtMemMan_Initialize(void) {
                    MEM_KERNEL);
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
-    
+
     virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
-    
+
 
     VirtMemMan_SetCurrent(pml);
 
@@ -300,7 +300,7 @@ VirtMemMan_CreateInstance(void) {
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
     PML_Instance tmp = virtMemData->curPML;
-    
+
     //Setup the thread local storage for this core before changing!
     uint64_t *pml = (uint64_t*)instance;
     pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
@@ -625,26 +625,24 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 #define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
 
     int pml_base = 256;
-    
-    switch(allocType)
-    {
-        case MemoryAllocationType_Heap:
-            pml_base = 511;
-            break;
-            default:
-            pml_base = 256;
-            break;
+
+    switch(allocType) {
+    case MemoryAllocationType_Heap:
+        pml_base = 511;
+        break;
+    default:
+        pml_base = 256;
+        break;
     }
 
     if(sec_perms & MEM_USER) {
 
-        switch(allocType)
-        {
-            case MemoryAllocationType_Heap:
-                pml_base = 1;
+        switch(allocType) {
+        case MemoryAllocationType_Heap:
+            pml_base = 1;
             break;
-            default:
-                pml_base = 0;
+        default:
+            pml_base = 0;
             break;
         }
     }
