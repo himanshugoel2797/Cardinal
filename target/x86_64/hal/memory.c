@@ -116,7 +116,7 @@ MemoryAllocationErrors
 FindFreeVirtualAddress(UID 			pageTable,
                        uint64_t			*virtualAddress,
                        size_t 			size,
-                       MemoryAllocationType 	UNUSED(allocType),
+                       MemoryAllocationType 	allocType,
                        MemoryAllocationFlags 	flags) {
 
     if(virtualAddress == NULL)return MemoryAllocationErrors_Unknown;
@@ -127,6 +127,7 @@ FindFreeVirtualAddress(UID 			pageTable,
 
     void* addr = VirtMemMan_FindFreeAddress((PML_Instance)pageTable,
                                             size,
+                                            allocType,
                                             perms);
 
     if(addr != NULL)*virtualAddress = (uint64_t)addr;

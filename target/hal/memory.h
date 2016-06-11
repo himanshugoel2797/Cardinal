@@ -108,7 +108,7 @@ MemoryAllocationErrors
 FindFreeVirtualAddress(UID 			pageTable,
                        uint64_t			*virtualAddress,
                        size_t 			size,
-                       MemoryAllocationType 	UNUSED(allocType),
+                       MemoryAllocationType 	allocType,
                        MemoryAllocationFlags 	flags);
 
 uint64_t

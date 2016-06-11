@@ -28,12 +28,14 @@
 #define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
 #define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
-#define CORE_LOCAL_MEM_ADDR (0xfffffffa00000000)
+#define CORE_LOCAL_MEM_ADDR (0xffffff0000000000)
+
+uint64_t* kernel_pdpt = NULL;
 
 typedef struct VirtMemManData {
-    uint64_t* kernel_pdpt;
     PML_Instance curPML;
     bool hugePageSupport;
+    uint64_t *coreLocal_pdpt;
 } VirtMemManData;
 
 static uint64_t coreLocalSpace;
@@ -42,7 +44,6 @@ static VirtMemManData *virtMemData;
 void
 VirtMemMan_InitializeBootstrap(void) {
     virtMemData = bootstrap_malloc(sizeof(VirtMemManData));
-    virtMemData->kernel_pdpt = NULL;
     virtMemData->curPML = (uint64_t*)0xfffffffe00001000;    //Where initial PML is located
     virtMemData->hugePageSupport = FALSE;
 }
@@ -66,10 +67,11 @@ VirtMemMan_Initialize(void) {
 
     memset ((void*)pml, 0, KiB(4));
 
+    if(kernel_pdpt == NULL){
     void* pdpt_0 = (void*)MemMan_Alloc ();
 
 
-    virtMemData->kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
+    kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
     pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
     //Setup kernel code map
     VirtMemMan_MapHPage(pml,
@@ -235,6 +237,11 @@ VirtMemMan_Initialize(void) {
                         MEM_TYPE_WT,
                         MEM_READ | MEM_WRITE | MEM_EXEC,
                         MEM_KERNEL);
+}else{
+
+    void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
+    pml[511] = (uint64_t)pdpt_0 | 3;
+}
 
     //Setup core specific memory
     VirtMemMan_Map(pml,
@@ -247,12 +254,16 @@ VirtMemMan_Initialize(void) {
                    MEM_KERNEL);
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
+    
+    virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
+    
+
     VirtMemMan_SetCurrent(pml);
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
     VirtMemManData* tmp = virtMemData;
     virtMemData = (VirtMemManData*)CORE_LOCAL_MEM_ADDR;
-    virtMemData->kernel_pdpt = tmp->kernel_pdpt;
+    virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;
     coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
@@ -278,7 +289,7 @@ VirtMemMan_CreateInstance(void) {
     pml = (PML_Instance)GetVirtualAddress(CachingModeWriteBack, (void*)pml);
     memset ((void*)pml, 0, KiB(4));
 
-    pml[511] = (uint64_t)GetPhysicalAddress(virtMemData->kernel_pdpt);
+    pml[511] = (uint64_t)GetPhysicalAddress(kernel_pdpt);
     MARK_PRESENT(pml[511]);
     MARK_WRITE(pml[511]);
     SET_CACHEMODE(pml[511], MEM_TYPE_WB);
@@ -289,7 +300,13 @@ VirtMemMan_CreateInstance(void) {
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
     PML_Instance tmp = virtMemData->curPML;
+    
+    //Setup the thread local storage for this core before changing!
+    uint64_t *pml = (uint64_t*)instance;
+    pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
+
     __asm__ volatile("mov %0, %%cr3" :: "ra"(GetPhysicalAddress(instance)));
+
     virtMemData->curPML = instance;
     return tmp;
 }
@@ -594,6 +611,7 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
 void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,
+                           MemoryAllocationType allocType,
                            MEM_SECURITY_PERMS sec_perms) {
     if(size % KiB(4) != 0)
         size = (size/KiB(4) + 1) * KiB(4);	//Align the size to higher 4KiB
@@ -607,11 +625,32 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 #define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
 
     int pml_base = 256;
-    if(sec_perms & MEM_USER) {
-        pml_base = 0;
+    
+    switch(allocType)
+    {
+        case MemoryAllocationType_Heap:
+            pml_base = 511;
+            break;
+            default:
+            pml_base = 256;
+            break;
     }
 
-    for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && cur_score < needed_score; ++pml_i) {
+    if(sec_perms & MEM_USER) {
+
+        switch(allocType)
+        {
+            case MemoryAllocationType_Heap:
+                pml_base = 1;
+            break;
+            default:
+                pml_base = 0;
+            break;
+        }
+    }
+
+
+    for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && pml_i < 512 && cur_score < needed_score; ++pml_i) {
         if((inst[pml_i] & 1) == 0 && needed_score >= GiB(256) && needed_score <= GiB(512)) {
             //Check the pml4 table for free entries if more than 256GiB of space is requested
             BUILD_ADDR(pml_i, 0, 0, 0);

@@ -167,7 +167,6 @@ smp_bootstrap(void) {
     SMP_UnlockTrampoline();
 
     while(smp_sync_base);
-
     smp_core_main(coreID, get_perf_counter);
     while(1);
 }

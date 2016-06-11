@@ -29,7 +29,7 @@ kernel_main(void) {
     DeviceManager_Initialize();
     target_device_setup();
 
-    __asm__ ("cli\n\thlt");
+    while(1)__asm__ ("cli\n\thlt");
 
     //The kernel is ready to take in the new cores, bring them up
     FreeThread(GetCurrentThreadUID());
@@ -40,6 +40,7 @@ smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     coreID = 0;
     getCoreData = NULL;
+    while(1);
     //RegisterCore(coreID, getCoreData);
     //Start the local timer and set it to call the thread switch handler
 }
