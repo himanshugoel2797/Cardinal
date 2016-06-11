@@ -63,3 +63,9 @@ void
 SetInterruptEnableMode(uint32_t vector, bool enableMode) {
     IOAPIC_SetEnableMode((uint8_t)vector, enableMode);
 }
+
+void
+RaiseInterrupt(uint32_t int_no)
+{
+    IDT_RaiseInterrupt(int_no);
+}

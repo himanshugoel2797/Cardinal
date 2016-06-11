@@ -205,7 +205,7 @@ FreeThread(UID id) {
 
 void
 YieldThread(void) {
-
+    RaiseInterrupt(preempt_vector);
 }
 
 int invokeCount = 0;

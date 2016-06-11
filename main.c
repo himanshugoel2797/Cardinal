@@ -40,7 +40,7 @@ smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     coreID = 0;
     getCoreData = NULL;
-    while(1);
-    //RegisterCore(coreID, getCoreData);
+    RegisterCore(coreID, getCoreData);
+    CoreUpdate(coreID);
     //Start the local timer and set it to call the thread switch handler
 }

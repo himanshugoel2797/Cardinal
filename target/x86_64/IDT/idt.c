@@ -39,6 +39,9 @@ idt_handlers[IDT_ENTRY_COUNT][IDT_ENTRY_HANDLER_SIZE];
 static void
 (*idt_handler_calls[IDT_ENTRY_COUNT]) (Registers*);
 
+static uint8_t
+int_insts[IDT_ENTRY_COUNT][4];
+
 void
 IDT_Initialize(void) {
     idt_table.limit = (sizeof(IDTEntry) * IDT_ENTRY_COUNT) - 1;
@@ -64,6 +67,13 @@ IDT_Initialize(void) {
         IDT_FillSWInterruptHandler(idt_handlers[i], i, pushesToStack);  //If pushesToStack is non-zero, the value will be pushed to stack
         IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0x8E, 0);
         pushesToStack = 1;
+    }
+
+    for(uint32_t i = 0; i < IDT_ENTRY_COUNT; i++)
+    {
+        int_insts[i][0] = 0xCD;
+        int_insts[i][1] = (uint8_t)i;
+        int_insts[i][2] = 0xC3;
     }
 
     return;
@@ -160,4 +170,13 @@ void IDT_MainHandler(Registers *regs) {
 
 void IDT_RegisterHandler(uint8_t intNum, void (*handler)(Registers*)) {
     idt_handler_calls[intNum] = handler;
+}
+
+typedef void(*null_func)(void); 
+
+void IDT_RaiseInterrupt(uint32_t int_no)
+{
+    if(int_no >= 256)return;
+    null_func r = (null_func)int_insts[int_no];
+    r();
 }
