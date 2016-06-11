@@ -53,6 +53,7 @@ typedef enum {
 typedef struct MemoryAllocationsMap {
     CachingMode 		CacheMode;
     uint64_t	 	VirtualAddress;
+    uint64_t    PhysicalAddress;
     uint64_t 		Length;
     MemoryAllocationFlags Flags;
     MemoryAllocationType 	AllocationType;

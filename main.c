@@ -6,15 +6,6 @@
 #include "memory.h"
 #include "syscall.h"
 
-int s = 0;
-
-void
-kernel_stall(void) {
-    while(1);
-    __asm__ ("cli\n\thlt");
-
-}
-
 void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
@@ -22,7 +13,6 @@ kernel_main_init(void) {
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();
     CreateThread(0, kernel_main);
-    CreateThread(0, kernel_stall);
     smp_unlock_cores();
     CoreUpdate(0);  //BSP is core 0
 }
@@ -38,11 +28,11 @@ kernel_main(void) {
     Syscall_Initialize();
     DeviceManager_Initialize();
     target_device_setup();
-    s = 1;
-    FreeThread(GetCurrentThreadUID());
+
     __asm__ ("cli\n\thlt");
 
     //The kernel is ready to take in the new cores, bring them up
+    FreeThread(GetCurrentThreadUID());
 }
 
 void

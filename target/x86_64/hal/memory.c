@@ -71,6 +71,7 @@ MapPage(UID 			pageTable,
     if(allocationMap != NULL) {
         allocationMap->CacheMode = cacheMode;
         allocationMap->VirtualAddress = virtualAddress;
+        allocationMap->PhysicalAddress = physicalAddress;
         allocationMap->Length = size;
         allocationMap->Flags = flags;
         allocationMap->AllocationType = allocType;

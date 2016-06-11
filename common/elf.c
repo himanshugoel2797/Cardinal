@@ -6,6 +6,9 @@ VerifyElf(void *loc,
           uint64_t size,
           bool * _64bit,
           ElfLimitations limits) {
+
+    if(size < sizeof(Elf_CommonEhdr))return ElfLoaderError_NotElf;
+
     Elf_CommonEhdr *hdr = (Elf_CommonEhdr*) loc;
     if (hdr->e_ident[EI_MAG0] != ELF_MAG0) return ElfLoaderError_NotElf;
     if (hdr->e_ident[EI_MAG1] != ELF_MAG1) return ElfLoaderError_NotElf;
@@ -32,6 +35,8 @@ VerifyElf(void *loc,
     if (hdr->e_ident[EI_OSABI] != ELFOSABI_GNU)
         return ElfLoaderError_UnknownABI;
 
+    *_64bit = (hdr->e_ident[EI_CLASS] == ELFCLASS64);
+
     return ElfLoaderError_Success;
 }
 
@@ -39,22 +44,30 @@ VerifyElf(void *loc,
 ElfLoaderError
 LoadElf32(void *loc,
           uint64_t size,
-          ElfLimitations limits,
+          ElfLimitations UNUSED(limits),
           UID *id) {
-    Elf32_Ehdr *hdr = (Elf32_Ehdr*)loc;
+    *id = 0;
+    if(size < sizeof(Elf32_Ehdr))return ElfLoaderError_NotElf;
 
-    Elf32_Phdr *phdr = (Elf32_Phdr*)(hdr->e_phoff + (uint64_t)loc);
-    Elf32_Shdr *shdr = (Elf32_Shdr*)(hdr->e_shoff + (uint64_t)loc);
+    loc = NULL;
+    //Elf32_Ehdr *hdr = (Elf32_Ehdr*)loc;
+
+    //Elf32_Phdr *phdr = (Elf32_Phdr*)(hdr->e_phoff + (uint64_t)loc);
+    //Elf32_Shdr *shdr = (Elf32_Shdr*)(hdr->e_shoff + (uint64_t)loc);
+
+    return ElfLoaderError_Success;
 }
 
 ElfLoaderError
 LoadElf64(void *loc,
           uint64_t size,
-          ElfLimitations limits,
+          ElfLimitations UNUSED(limits),
           UID *id) {
+    *id = 0;
+    if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
     Elf64_Ehdr *hdr = (Elf64_Ehdr*)loc;
 
-    Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
+    //Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
 
     int sh_cnt = hdr->e_shnum;
@@ -110,6 +123,8 @@ LoadElf64(void *loc,
         }
         shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr);
     }
+
+    return ElfLoaderError_Success;
 }
 
 

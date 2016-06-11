@@ -89,7 +89,16 @@ KillProcess(UID pid) {
             }
 
             //TODO Delete the process data, free up any application memory
-
+            MemoryAllocationsMap *c = pInf->AllocationMap;
+            while(c != NULL)
+            {
+                if(c->AllocationType != MemoryAllocationType_Global && 
+                    c->AllocationType != MemoryAllocationType_Shared &&
+                    c->AllocationType != MemoryAllocationType_Paged &&
+                    c->AllocationType != MemoryAllocationType_Fork)
+                FreePhysicalPageCont(c->PhysicalAddress, c->Length / PAGE_SIZE);
+                c = c->next;
+            }
 
             return ProcessErrors_None;
         }
