@@ -259,7 +259,7 @@ CoreUpdate(int coreID) {
     //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
     while(TRUE) {
-    SwitchThread();
+        SwitchThread();
     }
 }
 

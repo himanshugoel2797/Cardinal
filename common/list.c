@@ -89,8 +89,7 @@ void*
 List_EntryAt(List *a,
              uint64_t index) {
 
-    if(a->last_accessed_index >= a->entry_count)
-    {
+    if(a->last_accessed_index >= a->entry_count) {
         a->last_accessed_index = 0;
         a->last_accessed_node = a->nodes;
     }
@@ -102,12 +101,12 @@ List_EntryAt(List *a,
         a->last_accessed_node = a->last_accessed_node->prev;
         a->last_accessed_index--;
     }
-    
+
     while(a->last_accessed_index < index) {
         a->last_accessed_node = a->last_accessed_node->next;
         a->last_accessed_index++;
     }
-    
+
     return a->last_accessed_node->value;
 }
 
