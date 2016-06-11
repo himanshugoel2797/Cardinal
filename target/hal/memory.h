@@ -25,7 +25,8 @@ typedef enum {
     MemoryAllocationType_Fork = (1 << 2),   ///<Forked
     MemoryAllocationType_Paged = (1 << 3),  ///<Paged from Disk
     MemoryAllocationType_Shared = (1 << 4), ///<Shared Memory
-    MemoryAllocationType_Global = (1 << 5)  ///<Shared between all cores
+    MemoryAllocationType_Global = (1 << 5), ///<Shared between all cores
+    MemoryAllocationType_Application = (1 << 6)
 } MemoryAllocationType;
 
 ///Memory Allocation Flags
