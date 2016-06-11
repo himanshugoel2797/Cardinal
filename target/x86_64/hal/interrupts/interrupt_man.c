@@ -65,7 +65,6 @@ SetInterruptEnableMode(uint32_t vector, bool enableMode) {
 }
 
 void
-RaiseInterrupt(uint32_t int_no)
-{
+RaiseInterrupt(uint32_t int_no) {
     IDT_RaiseInterrupt(int_no);
 }

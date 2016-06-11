@@ -44,7 +44,7 @@ IDT_RegisterHandler(uint8_t intNum,
                     void (*handler)(Registers*));
 
 
-void 
+void
 IDT_RaiseInterrupt(uint32_t int_no);
 
 #endif /* end of include guard: _IDT_H_ */
