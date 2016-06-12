@@ -6,16 +6,21 @@
 #include "target/hal/thread.h"
 #include "target/hal/interrupts.h"
 
+typedef struct CoreThreadState
+{
+ThreadInfo *cur_thread;    
+}CoreThreadState;
+
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
-static ThreadInfo *cur_thread;
+static CoreThreadState *coreState;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 
 UID
 GetCurrentThreadUID(void) {
-    return cur_thread->ID;
+    return coreState->cur_thread->ID;
 }
 
 void
@@ -197,7 +202,7 @@ FreeThread(UID id) {
         }
     }
 
-    if(id == cur_thread->ID) {
+    if(id == coreState->cur_thread->ID) {
         q = 1;
         while(1);
     }
@@ -208,18 +213,15 @@ YieldThread(void) {
     RaiseInterrupt(preempt_vector);
 }
 
-int invokeCount = 0;
+ThreadInfo*
+GetNextThread(void)
+{
+    LockSpinlock(thds_s);
 
-static void
-TaskSwitch(uint32_t int_no,
-           uint32_t err_code) {
-    err_code = 0;
     ThreadInfo *next_thread = List_EntryAt(thds, 0);
     //if(next_thread->state == ThreadState_Exiting)__asm__ ("hlt" :: "a"(*((uint64_t*)thds + 3)));
     List_Remove(thds, 0);
     List_AddEntry(thds, next_thread);
-
-    invokeCount++;
 
     //Cleanup dead threads
     while(next_thread->state == ThreadState_Exiting) {
@@ -251,15 +253,35 @@ TaskSwitch(uint32_t int_no,
         }
     }
 
-    ThreadInfo *tmp_cur_thread = cur_thread;
-    cur_thread = next_thread;
-    SetActiveVirtualMemoryInstance(next_thread->ParentProcess->PageTable);
-    if(next_thread->state == ThreadState_Running) {
-        SwapThreadOnInterrupt(tmp_cur_thread, next_thread);
-    } else if(next_thread->state == ThreadState_Initialize) {
-        next_thread->state = ThreadState_Running;
+    while(next_thread->cur_executing)
+    {
+        next_thread = List_EntryAt(thds, 0);
+        List_Remove(thds, 0);
+        List_AddEntry(thds, next_thread);
+    }
+
+    UnlockSpinlock(thds_s);
+
+    return next_thread;
+}
+
+static void
+TaskSwitch(uint32_t int_no,
+           uint32_t err_code) {
+    err_code = 0;
+    
+
+    ThreadInfo *tmp_cur_thread = coreState->cur_thread;
+    coreState->cur_thread->cur_executing = FALSE;
+    coreState->cur_thread = GetNextThread();
+    coreState->cur_thread->cur_executing = TRUE;
+    SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
+    if(coreState->cur_thread->state == ThreadState_Running) { 
+        SwapThreadOnInterrupt(tmp_cur_thread, coreState->cur_thread);
+    } else if(coreState->cur_thread->state == ThreadState_Initialize) {
+        coreState->cur_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
-        SwitchAndInitializeThread(next_thread);
+        SwitchAndInitializeThread(coreState->cur_thread);
     }
 }
 
@@ -273,17 +295,16 @@ SetPeriodicPreemptVector(uint32_t irq,
 
 void
 SwitchThread(void) {
-    cur_thread = List_EntryAt(thds, 0);
-    List_Remove(thds, 0);
-    List_AddEntry(thds, cur_thread);
+    coreState->cur_thread = GetNextThread();
 
+    coreState->cur_thread->cur_executing = TRUE;
     //Resume execution of the thread
-    if(cur_thread->state == ThreadState_Initialize) {
-        cur_thread->state = ThreadState_Running;
-        SwitchAndInitializeThread(cur_thread);
-    } else if(cur_thread->state == ThreadState_Running) {
+    if(coreState->cur_thread->state == ThreadState_Initialize) {
+        coreState->cur_thread->state = ThreadState_Running;
+        SwitchAndInitializeThread(coreState->cur_thread);
+    } else if(coreState->cur_thread->state == ThreadState_Running) {
 
-    } else if(cur_thread->state == ThreadState_Paused)return;
+    } else if(coreState->cur_thread->state == ThreadState_Paused)return;
 }
 
 void
@@ -299,11 +320,18 @@ CoreUpdate(int coreID) {
 void
 RegisterCore(int id,
              int (*getCoreData)(void)) {
+
+    LockSpinlock(core_s);
     CoreInfo *cInfo = kmalloc(sizeof(CoreInfo));
     cInfo->ID = id;
     cInfo->getCoreData = getCoreData;
 
     List_AddEntry(cores, cInfo);
+
+    coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
+    coreState->cur_thread = NULL;
+
+    UnlockSpinlock(core_s);
 }
 
 int

@@ -40,6 +40,7 @@ typedef struct ThreadInfo {
     void *tls_base;
     int core_affinity;
     uint64_t sleep_duration_ms;
+    bool cur_executing;
 } ThreadInfo;
 
 typedef struct CoreInfo {
