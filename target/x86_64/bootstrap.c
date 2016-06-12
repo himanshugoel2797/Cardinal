@@ -116,8 +116,7 @@ bootstrap_kernel(void *param,
 }
 
 void
-setup_preemption(void)
-{
+setup_preemption(void) {
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
     SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);

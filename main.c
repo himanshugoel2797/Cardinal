@@ -7,14 +7,12 @@
 #include "syscall.h"
 
 void
-sleep_kernel(void)
-{
+sleep_kernel(void) {
     __asm__("cli\n\thlt");
 }
 
 void
-hlt_kernel(void)
-{
+hlt_kernel(void) {
     while(1);
 }
 
@@ -49,11 +47,10 @@ kernel_main(void) {
 }
 
 void
-smp_main(void)
-{
+smp_main(void) {
     setup_preemption();
 
-    while(1);    
+    while(1);
 }
 
 void
