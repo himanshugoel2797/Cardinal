@@ -6,10 +6,9 @@
 #include "target/hal/thread.h"
 #include "target/hal/interrupts.h"
 
-typedef struct CoreThreadState
-{
-ThreadInfo *cur_thread;    
-}CoreThreadState;
+typedef struct CoreThreadState {
+    ThreadInfo *cur_thread;
+} CoreThreadState;
 
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
@@ -214,8 +213,7 @@ YieldThread(void) {
 }
 
 ThreadInfo*
-GetNextThread(void)
-{
+GetNextThread(void) {
     LockSpinlock(thds_s);
 
     ThreadInfo *next_thread = List_EntryAt(thds, 0);
@@ -253,8 +251,7 @@ GetNextThread(void)
         }
     }
 
-    while(next_thread->cur_executing)
-    {
+    while(next_thread->cur_executing) {
         next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
         List_AddEntry(thds, next_thread);
@@ -269,14 +266,14 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-    
+
 
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
     coreState->cur_thread->cur_executing = FALSE;
     coreState->cur_thread = GetNextThread();
     coreState->cur_thread->cur_executing = TRUE;
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
-    if(coreState->cur_thread->state == ThreadState_Running) { 
+    if(coreState->cur_thread->state == ThreadState_Running) {
         SwapThreadOnInterrupt(tmp_cur_thread, coreState->cur_thread);
     } else if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;

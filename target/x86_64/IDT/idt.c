@@ -171,7 +171,7 @@ void IDT_RaiseInterrupt(uint32_t int_no) {
     int_insts[0] = 0xCD;
     int_insts[1] = (uint8_t)int_no;
     int_insts[2] = 0xC3;
-    
+
     null_func r = (null_func)int_insts;
     r();
 }
