@@ -28,7 +28,7 @@ CCADMIN=CCadmin
 CC=clang -target $(TARGET_TRIPLET)
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel
+CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc

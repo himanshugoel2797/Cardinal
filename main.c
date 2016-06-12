@@ -23,6 +23,7 @@ kernel_main_init(void) {
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();
     CreateThread(0, kernel_main);
+    CreateThread(0, sleep_kernel);
     smp_unlock_cores();
     CoreUpdate(0);  //BSP is core 0
 }

@@ -45,8 +45,8 @@ APIC_LockPIC(void) {
 
 }
 
-static int32_t pit_ticks;
-static uint32_t apic_timer_value;
+static volatile int32_t pit_ticks;
+static volatile uint32_t apic_timer_value;
 
 static void
 APIC_TimerCallibrate(uint32_t int_no,

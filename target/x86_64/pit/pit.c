@@ -40,10 +40,10 @@ PIT_SetFrequency(uint8_t channel,
     }
 }
 
-uint32_t pit_ticksToWait = 0;
-uint32_t pit_handlerMode = 0; //0 = Sleep, 1 = Shutdown
+static volatile uint32_t pit_ticksToWait = 0;
+static volatile uint32_t pit_handlerMode = 0; //0 = Sleep, 1 = Shutdown
 
-uint32_t stop = 0;
+static volatile uint32_t stop = 0;
 
 static void
 PIT_TempIntHandler(uint32_t int_no,

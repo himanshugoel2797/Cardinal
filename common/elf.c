@@ -78,6 +78,9 @@ LoadElf64(void *loc,
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
 
 
+        //uint8_t *sh_addr = (uint8_t*)shdr->sh_addr;
+        //uint64_t sh_size = (uint64_t)shdr->sh_size;
+
         //Get the section type
         switch(shdr->sh_type) {
         case SHT_NULL:

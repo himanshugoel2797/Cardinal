@@ -2,8 +2,8 @@
 #include "smp.h"
 #include "apic/apic.h"
 
-static int smp_coreCount = 0;
-static int smp_lock = 0;
+static volatile int smp_coreCount = 0;
+static volatile int smp_lock = 0;
 
 void
 SMP_IncrementCoreCount(void) {

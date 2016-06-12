@@ -29,4 +29,5 @@ typedef uint8_t bool;
 
 #  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
 
+
 #endif /* end of include guard: _OS_TYPES_H_ */

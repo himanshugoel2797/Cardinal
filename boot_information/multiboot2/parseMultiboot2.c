@@ -76,7 +76,7 @@ ParseAndSaveBootInformation(void *boot_info) {
         }
         break;
         case MULTIBOOT_TAG_TYPE_END:
-            //i += 8;	//We're done, exit the loop
+            //i += 8;   //We're done, exit the loop
             break;
         }
         s = *(uint32_t*)(&hdr_8[i + 4]);
