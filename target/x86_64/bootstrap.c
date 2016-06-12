@@ -116,15 +116,20 @@ bootstrap_kernel(void *param,
 }
 
 void
-target_device_setup(void) {
+setup_preemption(void)
+{
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
-    //A pci device initialization is to be made into a thread spawn, the thread is freed when execution is complete
     SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
+}
+
+void
+target_device_setup(void) {
+    //A pci device initialization is to be made into a thread spawn, the thread is freed when execution is complete
     //while(1){__asm__("hlt" :: "a"(APIC_GetTimerFrequency()));}
     //pci_Initialize();
 }

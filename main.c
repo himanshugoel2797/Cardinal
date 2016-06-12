@@ -7,6 +7,18 @@
 #include "syscall.h"
 
 void
+sleep_kernel(void)
+{
+    __asm__("cli\n\thlt");
+}
+
+void
+hlt_kernel(void)
+{
+    while(1);
+}
+
+void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
     kmalloc_init (allocMap);
@@ -25,14 +37,23 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    while(1)__asm__ ("cli\n\thlt");
     Syscall_Initialize();
     DeviceManager_Initialize();
+    setup_preemption();
     target_device_setup();
 
-    while(1)__asm__ ("cli\n\thlt");
 
     //The kernel is ready to take in the new cores, bring them up
     FreeThread(GetCurrentThreadUID());
+}
+
+void
+smp_main(void)
+{
+    setup_preemption();
+
+    while(1);    
 }
 
 void
@@ -40,7 +61,10 @@ smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     coreID = 0;
     getCoreData = NULL;
+
+    //Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
+    CreateThread(0, smp_main);
     CoreUpdate(coreID);
     //Start the local timer and set it to call the thread switch handler
 }

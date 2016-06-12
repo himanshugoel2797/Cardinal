@@ -3,7 +3,7 @@
 #include "managers.h"
 #include "common/common.h"
 
-static uint8_t k_stack[KiB(16)];
+static uint8_t *k_stack = NULL;
 
 __attribute__((naked, noreturn))
 void
@@ -30,7 +30,11 @@ Syscall_Initialize(void) {
     uint64_t cstar = 0;
     uint64_t sfmask = 0;
 
+    if(k_stack == NULL)
+    {
+    k_stack = (uint8_t*)AllocateAPLSMemory(KiB(16));
     memset(k_stack, 0, KiB(16));
+    }
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | 1);	//Enable the syscall instruction
     wrmsr(0xC0000081, star_val);

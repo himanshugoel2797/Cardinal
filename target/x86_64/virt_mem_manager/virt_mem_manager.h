@@ -4,7 +4,7 @@
 #include "types.h"
 #include "memory.h"
 
-#define APLS_SIZE KiB(16)
+#define APLS_SIZE THREAD_LOCAL_STORAGE_SIZE
 
 typedef uint64_t* PML_Instance;
 
