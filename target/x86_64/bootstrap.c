@@ -24,7 +24,7 @@
 #include "multiboot2.h"
 #endif
 
-static int smp_sync_base;
+static volatile int smp_sync_base;
 
 void
 bootstrap_render(uint32_t color) {
