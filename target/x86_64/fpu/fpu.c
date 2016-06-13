@@ -73,45 +73,41 @@ FPU_Initialize(void) {
     //Interrupts_RegisterHandler(7, 0, FPU_StateHandler);
     __asm__ volatile ("fninit");
 
-    if(xsave_available)
-    {
-    //Determine the XSave area size, and setup XCR0
-    CPUID_RequestInfo(0x0D, 0);
-    __asm__ volatile("xsetbv" :: "d"(CPUID_GetValue(CPUID_EDX)), "a"(CPUID_GetValue(CPUID_EAX)), "c"((uint32_t)0));
+    if(xsave_available) {
+        //Determine the XSave area size, and setup XCR0
+        CPUID_RequestInfo(0x0D, 0);
+        __asm__ volatile("xsetbv" :: "d"(CPUID_GetValue(CPUID_EDX)), "a"(CPUID_GetValue(CPUID_EAX)), "c"((uint32_t)0));
 
-    CPUID_RequestInfo(0x0D, 1);
-    state_area_size = CPUID_GetValue(CPUID_EBX);
-    __asm__ volatile("cli\n\thlt" :: "a"(state_area_size));
-    }else{
+        CPUID_RequestInfo(0x0D, 1);
+        state_area_size = CPUID_GetValue(CPUID_EBX);
+        __asm__ volatile("cli\n\thlt" :: "a"(state_area_size));
+    } else {
         state_area_size = 512;
     }
 }
 
 uint64_t
-FPU_GetStateSize(void)
-{
+FPU_GetStateSize(void) {
     return state_area_size;
 }
 
 uint32_t
-FPU_SaveState(void *target)
-{
-    if(xsave_available){
-    __asm__ volatile("xsave %0" : "=m"(target) ::);
-    }else{
+FPU_SaveState(void *target) {
+    if(xsave_available) {
+        __asm__ volatile("xsave %0" : "=m"(target) ::);
+    } else {
         __asm__ volatile("fxsave %0" : "=m"(target) :: );
     }
     return 1;
 }
 
 void
-FPU_LoadState(void *source)
-{
-    if(xsave_available){
-    __asm__ volatile("xrstor %0" :: "m"(source) :);
-}else{
-    __asm__ volatile("fxrstor %0" :: "m"(source) :);
-}
+FPU_LoadState(void *source) {
+    if(xsave_available) {
+        __asm__ volatile("xrstor %0" :: "m"(source) :);
+    } else {
+        __asm__ volatile("fxrstor %0" :: "m"(source) :);
+    }
 }
 
 /*
