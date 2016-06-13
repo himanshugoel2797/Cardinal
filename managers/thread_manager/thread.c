@@ -303,12 +303,12 @@ SetPeriodicPreemptVector(uint32_t irq,
 
 void
 SwitchThread(void) {
-    
+
     coreState->cur_thread = GetNextThread();
     RestoreFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = TRUE;
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
-        //Resume execution of the thread
+    //Resume execution of the thread
     if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
         SwitchAndInitializeThread(coreState->cur_thread);

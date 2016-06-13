@@ -87,7 +87,7 @@ FPU_Initialize(void) {
 
 
 uint64_t
-GetFPUStateSize(void){
+GetFPUStateSize(void) {
     return state_area_size;
 }
 
@@ -100,7 +100,7 @@ SaveFPUState(void *target) {
 }
 
 void
-RestoreFPUState(void *source){
+RestoreFPUState(void *source) {
     if(xsave_available)
         __asm__ volatile("xrstorq (%0)" :: "r"(source) :);
     else
