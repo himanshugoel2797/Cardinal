@@ -94,9 +94,9 @@ GetFPUStateSize(void) {
 void
 SaveFPUState(void *target) {
     if(xsave_available)
-        __asm__ volatile("xsaveq (%0)" : "=r"(target) ::);
+        __asm__ volatile("xsaveq (%0)" :: "r"(target) :);
     else
-        __asm__ volatile("fxsaveq (%0)" : "=r"(target) :: );
+        __asm__ volatile("fxsaveq (%0)" :: "r"(target) : );
 }
 
 void
