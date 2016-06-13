@@ -9,13 +9,11 @@ FPU_Initialize(void);
 
 //! Save the complete VFPU state to the target location
 uint32_t
-FPU_SaveState(void *target,
-              uint32_t size);
+FPU_SaveState(void *target);
 
 //! Restore the complete VFPU state from the given location
 void
-FPU_LoadState(void *source,
-              uint32_t size);
+FPU_LoadState(void *source);
 
 //! Enable/Disable VFPU lazy state saving (VFPU state is stored in the TLS)
 void
