@@ -38,10 +38,10 @@ typedef struct ThreadInfo {
     void *stack;
     void *user_stack;
     void *tls_base;
-    void *fpu_state;
     int core_affinity;
     uint64_t sleep_duration_ms;
     bool cur_executing;
+    void *fpu_state;
 } ThreadInfo;
 
 typedef struct CoreInfo {

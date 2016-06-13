@@ -70,7 +70,6 @@ FPU_Initialize(void) {
     __asm__ volatile ("mov %0, %%cr4"
                       :: "ra" (bitmask));
 
-    //Interrupts_RegisterHandler(7, 0, FPU_StateHandler);
     __asm__ volatile ("fninit");
 
     if(xsave_available) {
@@ -80,34 +79,32 @@ FPU_Initialize(void) {
 
         CPUID_RequestInfo(0x0D, 1);
         state_area_size = CPUID_GetValue(CPUID_EBX);
-        __asm__ volatile("cli\n\thlt" :: "a"(state_area_size));
     } else {
         state_area_size = 512;
     }
 }
 
+
+
 uint64_t
-FPU_GetStateSize(void) {
+GetFPUStateSize(void){
     return state_area_size;
 }
 
-uint32_t
-FPU_SaveState(void *target) {
-    if(xsave_available) {
-        __asm__ volatile("xsave %0" : "=m"(target) ::);
-    } else {
-        __asm__ volatile("fxsave %0" : "=m"(target) :: );
-    }
-    return 1;
+void
+SaveFPUState(void *target) {
+    if(xsave_available)
+        __asm__ volatile("xsaveq (%0)" : "=r"(target) ::);
+    else
+        __asm__ volatile("fxsaveq (%0)" : "=r"(target) :: );
 }
 
 void
-FPU_LoadState(void *source) {
-    if(xsave_available) {
-        __asm__ volatile("xrstor %0" :: "m"(source) :);
-    } else {
-        __asm__ volatile("fxrstor %0" :: "m"(source) :);
-    }
+RestoreFPUState(void *source){
+    if(xsave_available)
+        __asm__ volatile("xrstorq (%0)" :: "r"(source) :);
+    else
+        __asm__ volatile("fxrstorq (%0)" :: "r"(source) :);
 }
 
 /*

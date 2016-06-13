@@ -55,6 +55,15 @@ CreateThread(UID parentProcess,
     thd->priority = ThreadPriority_Neutral;
     thd->Parent = parentProcess;
     thd->sleep_duration_ms = 0;
+    thd->fpu_state = kmalloc(GetFPUStateSize() + 16);
+
+    uint64_t fpu_state_tmp = (uint64_t)thd->fpu_state;
+    if(fpu_state_tmp % 16 != 0)
+        fpu_state_tmp += 16 - fpu_state_tmp % 16;
+
+    thd->fpu_state = (void*)fpu_state_tmp;
+    SaveFPUState(thd->fpu_state);
+
     if(GetProcessReference(parentProcess, &thd->ParentProcess) == ProcessErrors_UIDNotFound)
         goto error_exit;
 
@@ -270,7 +279,9 @@ TaskSwitch(uint32_t int_no,
 
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
     coreState->cur_thread->cur_executing = FALSE;
+    SaveFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread = GetNextThread();
+    RestoreFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = TRUE;
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     if(coreState->cur_thread->state == ThreadState_Running) {
@@ -292,15 +303,16 @@ SetPeriodicPreemptVector(uint32_t irq,
 
 void
 SwitchThread(void) {
+    
     coreState->cur_thread = GetNextThread();
-
+    RestoreFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = TRUE;
-    //Resume execution of the thread
+    SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
+        //Resume execution of the thread
     if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
         SwitchAndInitializeThread(coreState->cur_thread);
     } else if(coreState->cur_thread->state == ThreadState_Running) {
-
     } else if(coreState->cur_thread->state == ThreadState_Paused)return;
 }
 

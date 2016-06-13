@@ -19,4 +19,13 @@ SetUserStack(void *sp);
 void
 SetTLSBase(void *tlsBase);
 
+void
+RestoreFPUState(void *dst);
+
+void
+SaveFPUState(void *src);
+
+uint64_t
+GetFPUStateSize(void);
+
 #endif
