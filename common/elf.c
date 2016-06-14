@@ -1,5 +1,6 @@
 #include "elf.h"
-#include "memory.h"
+#include "kmalloc.h"
+#include "common.h"
 
 ElfLoaderError
 VerifyElf(void *loc,
@@ -45,8 +46,12 @@ ElfLoaderError
 LoadElf32(void *loc,
           uint64_t size,
           ElfLimitations UNUSED(limits),
+          UID pageTable,
+          MemoryAllocationsMap **map,
           UID *id) {
     *id = 0;
+    pageTable = 0;
+    *map = NULL;
     if(size < sizeof(Elf32_Ehdr))return ElfLoaderError_NotElf;
 
     loc = NULL;
@@ -62,6 +67,8 @@ ElfLoaderError
 LoadElf64(void *loc,
           uint64_t size,
           ElfLimitations UNUSED(limits),
+          UID pageTable,
+          MemoryAllocationsMap **map,
           UID *id) {
     *id = 0;
     if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
@@ -78,51 +85,123 @@ LoadElf64(void *loc,
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
 
 
-        //uint8_t *sh_addr = (uint8_t*)shdr->sh_addr;
-        //uint64_t sh_size = (uint64_t)shdr->sh_size;
+        uint64_t sh_addr = (uint64_t)shdr->sh_addr;
+        uint64_t sh_size = (uint64_t)shdr->sh_size;
+        uint64_t sh_aligned = sh_addr - sh_addr % PAGE_SIZE;
+        uint64_t sh_pg_offset = sh_addr % PAGE_SIZE;
 
-        //Get the section type
-        switch(shdr->sh_type) {
-        case SHT_NULL:
-            break;
-        case SHT_PROGBITS:
-            //Setup the mapping and copy over the related data
 
-            break;
-        case SHT_SYMTAB:
-            break;
-        case SHT_STRTAB:
-            break;
-        case SHT_RELA:
-            break;
-        case SHT_HASH:
-            break;
-        case SHT_DYNAMIC:
-            break;
-        case SHT_NOTE:
-            break;
-        case SHT_NOBITS:
-            //Setup the mapping and clear the related area
+        MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
 
-            break;
-        case SHT_REL:
-            break;
-        case SHT_SHLIB:
-            break;
-        case SHT_DYNSYM:
-            break;
-        case SHT_INIT_ARRAY:
-            break;
-        case SHT_FINI_ARRAY:
-            break;
-        case SHT_PREINIT_ARRAY:
-            break;
-        case SHT_GROUP:
-            break;
-        case SHT_SYMTAB_SHNDX:
-            break;
-        default:
-            break;
+        uint64_t v_tmp_addr = 0;
+        FindFreeVirtualAddress(pageTable,
+                               &v_tmp_addr,
+                               PAGE_SIZE,
+                               MemoryAllocationType_Heap,
+                               MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+
+
+        for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_aligned + sh_size; aligned_addr += PAGE_SIZE) {
+            if(GetPhysicalAddressUID(pageTable, (void*)sh_addr) == NULL) {
+                uint64_t phys_addr = AllocatePhysicalPage();
+
+                if(aligned_addr > sh_addr)
+                {
+                    sh_aligned = aligned_addr;
+                    sh_pg_offset = 0;
+                }
+
+                MapPage(pageTable,
+                        alloc,
+                        phys_addr,
+                        aligned_addr,
+                        PAGE_SIZE,
+                        CachingModeWriteBack,
+                        MemoryAllocationType_Application,
+                        flags
+                       );
+
+                if(*map != NULL)
+                {
+                    alloc->next = *map;
+                    *map = alloc;
+                }
+
+
+                //Get the section type
+                switch(shdr->sh_type) {
+                case SHT_NULL:
+                    break;
+                case SHT_PROGBITS:
+                    //Setup the mapping and copy over the related data
+                    MapPage(GetActiveVirtualMemoryInstance(),
+                            NULL,
+                            phys_addr,
+                            v_tmp_addr,
+                            PAGE_SIZE,
+                            CachingModeWriteBack,
+                            MemoryAllocationType_Heap,
+                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+
+                    memcpy((void*)(v_tmp_addr + sh_pg_offset),
+                           (uint8_t*)loc + shdr->sh_offset,
+                           PAGE_SIZE - sh_pg_offset);
+
+                    UnmapPage(GetActiveVirtualMemoryInstance(),
+                              v_tmp_addr,
+                              PAGE_SIZE);
+                    break;
+                case SHT_SYMTAB:
+                    break;
+                case SHT_STRTAB:
+                    break;
+                case SHT_RELA:
+                    break;
+                case SHT_HASH:
+                    break;
+                case SHT_DYNAMIC:
+                    break;
+                case SHT_NOTE:
+                    break;
+                case SHT_NOBITS:
+                    //Setup the mapping and clear the related area
+                    MapPage(GetActiveVirtualMemoryInstance(),
+                            NULL,
+                            phys_addr,
+                            v_tmp_addr,
+                            PAGE_SIZE,
+                            CachingModeWriteBack,
+                            MemoryAllocationType_Heap,
+                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+
+                    memset((void*)(v_tmp_addr + sh_pg_offset),
+                           0,
+                           PAGE_SIZE - sh_pg_offset);
+
+                    UnmapPage(GetActiveVirtualMemoryInstance(),
+                              v_tmp_addr,
+                              PAGE_SIZE);
+                    break;
+                case SHT_REL:
+                    break;
+                case SHT_SHLIB:
+                    break;
+                case SHT_DYNSYM:
+                    break;
+                case SHT_INIT_ARRAY:
+                    break;
+                case SHT_FINI_ARRAY:
+                    break;
+                case SHT_PREINIT_ARRAY:
+                    break;
+                case SHT_GROUP:
+                    break;
+                case SHT_SYMTAB_SHNDX:
+                    break;
+                default:
+                    break;
+                }
+            }
         }
         shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr);
     }
@@ -135,6 +214,8 @@ ElfLoaderError
 LoadElf(void *loc,
         uint64_t size,
         ElfLimitations limits,
+        UID pageTable,
+        MemoryAllocationsMap **map,
         UID *id) {
 
     bool _64bit = FALSE;
@@ -142,8 +223,8 @@ LoadElf(void *loc,
     if (err != ElfLoaderError_Success)return err;
 
     if(_64bit)
-        return LoadElf64(loc, size, limits, id);
+        return LoadElf64(loc, size, limits, pageTable, map, id);
     else
-        return LoadElf32(loc, size, limits, id);
+        return LoadElf32(loc, size, limits, pageTable, map, id);
 
 }

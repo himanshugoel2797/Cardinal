@@ -2,6 +2,7 @@
 #define _CARDINAL_ELF_H_
 
 #include "types.h"
+#include "memory.h"
 
 typedef uint32_t Elf32_Addr;
 typedef uint32_t Elf32_Off;
@@ -401,6 +402,8 @@ ElfLoaderError
 LoadElf(void *loc,
         uint64_t size,
         ElfLimitations limits,
+        UID pageTable,
+        MemoryAllocationsMap **map,
         UID *id);
 
 #endif
