@@ -105,8 +105,7 @@ LoadElf64(void *loc,
             if(GetPhysicalAddressUID(pageTable, (void*)sh_addr) == NULL) {
                 uint64_t phys_addr = AllocatePhysicalPage();
 
-                if(aligned_addr > sh_addr)
-                {
+                if(aligned_addr > sh_addr) {
                     sh_aligned = aligned_addr;
                     sh_pg_offset = 0;
                 }
@@ -121,8 +120,7 @@ LoadElf64(void *loc,
                         flags
                        );
 
-                if(*map != NULL)
-                {
+                if(*map != NULL) {
                     alloc->next = *map;
                     *map = alloc;
                 }
