@@ -268,6 +268,7 @@ GetNextThread(void) {
 
     UnlockSpinlock(thds_s);
 
+        //__asm__ volatile("cli\n\thlt");
     return next_thread;
 }
 
@@ -275,7 +276,6 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-
 
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
     coreState->cur_thread->cur_executing = FALSE;
@@ -319,7 +319,6 @@ SwitchThread(void) {
 void
 CoreUpdate(int coreID) {
     //Obtain thread to process from the lists
-    //TODO make kmalloc work on all threads by having it share the mappings on to all cores
     coreID = 0;
     while(TRUE) {
         SwitchThread();

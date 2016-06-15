@@ -93,6 +93,7 @@ typedef struct {
 #define ELFDATA2LSB 1
 #define ELFDATA2MSB 2
 
+#define ELFOSABI_NONE 0
 #define ELFOSABI_GNU 3
 
 typedef struct {

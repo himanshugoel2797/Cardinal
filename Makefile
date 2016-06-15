@@ -54,7 +54,8 @@ debug: build build-tests
 build:$(SOURCES)
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	mkdir -p build/$(CONF)
-	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES)) $(SOURCES) -lgcc -mcmodel=kernel
+	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES)) $(SOURCES) -mcmodel=kernel
+	cp test build/$(CONF)/initrd
 # clean
 clean:
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
@@ -71,6 +72,7 @@ build-tests:build
 	mkdir -p ISO/isodir
 	mkdir -p ISO/isodir/boot
 	cp "build/$(CONF)/kernel.bin" ISO/isodir/boot/kernel.bin
+	cp "build/$(CONF)/initrd" ISO/isodir/boot/initrd
 	mkdir -p ISO/isodir/boot/grub
 	cp grub.cfg ISO/isodir/boot/grub/grub.cfg
 	grub2-mkrescue -o ISO/os.iso ISO/isodir

@@ -305,7 +305,7 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
     uint64_t *pml = (uint64_t*)instance;
     pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
 
-    __asm__ volatile("mov %0, %%cr3" :: "ra"(GetPhysicalAddress(instance)));
+    __asm__ volatile("mov %0, %%cr3" :: "r"(GetPhysicalAddress(instance)));
 
     virtMemData->curPML = instance;
     return tmp;
@@ -326,6 +326,7 @@ VirtMemMan_SetupPDPTEntry(PML_Instance inst,
         MARK_WRITE(entry);
         SET_CACHEMODE(entry, MEM_TYPE_WB);
         inst[pml_off] = entry;
+        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(inst[pml_off])));
     }
 }
 
@@ -341,6 +342,7 @@ VirtMemMan_SetupPDEntry(PML_Instance inst,
         MARK_PRESENT(pdpt[pdpt_off]);
         MARK_WRITE(pdpt[pdpt_off]);
         SET_CACHEMODE(pdpt[pdpt_off], MEM_TYPE_WB);
+        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(pdpt[pdpt_off])));
     }
 }
 
@@ -359,6 +361,7 @@ VirtMemMan_SetupPTEntry(PML_Instance inst,
         MARK_PRESENT(pd[pd_off]);
         MARK_WRITE(pd[pd_off]);
         SET_CACHEMODE(pd[pd_off], MEM_TYPE_WB);
+        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(pd[pd_off])));
     }
 }
 
@@ -464,6 +467,7 @@ VirtMemMan_MapSPage(PML_Instance       inst,
     uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
     uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_off]));
 
+    if(virt_addr == 0xfffffffb08800000)__asm__ ("cli\n\thlt" :: "a"(pt[pt_off]));
     pt[pt_off] = phys_addr;
     if(present)MARK_PRESENT(pt[pt_off]);
 
@@ -475,7 +479,9 @@ VirtMemMan_MapSPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pt[pt_off]);
 
-    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "a"(virt_addr));
+    if(inst == virtMemData->curPML){
+    __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    }
 }
 
 void

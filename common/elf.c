@@ -16,6 +16,7 @@ VerifyElf(void *loc,
     if (hdr->e_ident[EI_MAG2] != ELF_MAG2) return ElfLoaderError_NotElf;
     if (hdr->e_ident[EI_MAG3] != ELF_MAG3) return ElfLoaderError_NotElf;
 
+    
     bool arch = limits & 1;
     if ((hdr->e_ident[EI_CLASS] == ELFCLASS32) != arch)
         return ElfLoaderError_UnknownClass;
@@ -33,7 +34,7 @@ VerifyElf(void *loc,
     if (hdr->e_version != EV_CURRENT)
         return ElfLoaderError_NotElf;
 
-    if (hdr->e_ident[EI_OSABI] != ELFOSABI_GNU)
+    if (hdr->e_ident[EI_OSABI] != ELFOSABI_GNU && hdr->e_ident[EI_OSABI] != ELFOSABI_NONE)
         return ElfLoaderError_UnknownABI;
 
     *_64bit = (hdr->e_ident[EI_CLASS] == ELFCLASS64);
@@ -70,7 +71,7 @@ LoadElf64(void *loc,
           UID pageTable,
           MemoryAllocationsMap **map,
           UID *id) {
-    *id = 0;
+    id = NULL;
     if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
     Elf64_Ehdr *hdr = (Elf64_Ehdr*)loc;
 
@@ -78,8 +79,10 @@ LoadElf64(void *loc,
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
 
     int sh_cnt = hdr->e_shnum;
-    for(int i = 0; i < sh_cnt; i++) {
+    for(int i = 0; i < sh_cnt; i++, 
+        shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
         //Get the section flags
+                if(shdr->sh_type == SHT_NULL)continue;
         MemoryAllocationFlags flags = MemoryAllocationFlags_Kernel;
         if(shdr->sh_flags & SHF_EXECINSTR)flags |= MemoryAllocationFlags_Exec;
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
@@ -94,7 +97,7 @@ LoadElf64(void *loc,
         MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
 
         uint64_t v_tmp_addr = 0;
-        FindFreeVirtualAddress(pageTable,
+        FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                                &v_tmp_addr,
                                PAGE_SIZE,
                                MemoryAllocationType_Heap,
@@ -103,6 +106,8 @@ LoadElf64(void *loc,
 
         for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_aligned + sh_size; aligned_addr += PAGE_SIZE) {
             if(GetPhysicalAddressUID(pageTable, (void*)sh_addr) == NULL) {
+
+
                 uint64_t phys_addr = AllocatePhysicalPage();
 
                 if(aligned_addr > sh_addr) {
@@ -141,6 +146,7 @@ LoadElf64(void *loc,
                             MemoryAllocationType_Heap,
                             MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
+        if(i == 1)__asm__ ("cli\n\thlt" :: "a"(v_tmp_addr));
                     memcpy((void*)(v_tmp_addr + sh_pg_offset),
                            (uint8_t*)loc + shdr->sh_offset,
                            PAGE_SIZE - sh_pg_offset);
@@ -201,7 +207,6 @@ LoadElf64(void *loc,
                 }
             }
         }
-        shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr);
     }
 
     return ElfLoaderError_Success;
