@@ -21,6 +21,7 @@ hlt_kernel(void) {
 void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
+
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();

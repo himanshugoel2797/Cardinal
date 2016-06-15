@@ -467,7 +467,6 @@ VirtMemMan_MapSPage(PML_Instance       inst,
     uint64_t *pd = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
     uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_off]));
 
-    if(virt_addr == 0xfffffffb08800000)__asm__ ("cli\n\thlt" :: "a"(pt[pt_off]));
     pt[pt_off] = phys_addr;
     if(present)MARK_PRESENT(pt[pt_off]);
 
@@ -634,7 +633,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
     switch(allocType) {
     case MemoryAllocationType_Heap:
-        pml_base = 511;
+        pml_base = 510;
         break;
     default:
         pml_base = 256;

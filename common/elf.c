@@ -146,7 +146,6 @@ LoadElf64(void *loc,
                             MemoryAllocationType_Heap,
                             MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
-        if(i == 1)__asm__ ("cli\n\thlt" :: "a"(v_tmp_addr));
                     memcpy((void*)(v_tmp_addr + sh_pg_offset),
                            (uint8_t*)loc + shdr->sh_offset,
                            PAGE_SIZE - sh_pg_offset);
