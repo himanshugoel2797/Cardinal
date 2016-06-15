@@ -41,7 +41,7 @@ kernel_main(void) {
 
     Syscall_Initialize();
     DeviceManager_Initialize();
-    setup_preemption();
+//    setup_preemption();
     target_device_setup();
 
     void *elf_loc = NULL;
@@ -52,6 +52,16 @@ kernel_main(void) {
     Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
     LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, NULL);
 
+    MapPage(GetActiveVirtualMemoryInstance(),
+            NULL,
+            AllocatePhysicalPage(),
+            0x1000000,
+            PAGE_SIZE * 4,
+            CachingModeWriteBack,
+            MemoryAllocationType_Application,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    SwitchToUserMode(0x4000b0, 0x1000000 + KiB(8));
     __asm__ volatile("push $0x4000b0\n\tretq");
     while(1)__asm__ ("cli\n\thlt");
 

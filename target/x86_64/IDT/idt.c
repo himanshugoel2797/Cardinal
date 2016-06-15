@@ -131,6 +131,9 @@ void IDT_DefaultHandler() {
         "pushq %r13\n\t"
         "pushq %r14\n\t"
         "pushq %r15\n\t"
+        "mov $0x10, %ax\n\t"
+        "mov %ax, %ss\n\t"
+        "mov %ax, %ds\n\t"
         "movq %rsp, %rdi\n\t"
         "callq IDT_MainHandler\n\t"
         "popq %r15\n\t"
@@ -156,6 +159,7 @@ void IDT_DefaultHandler() {
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
+    else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code));
 }
 
 void IDT_RegisterHandler(uint8_t intNum, void (*handler)(Registers*)) {

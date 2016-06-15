@@ -83,7 +83,7 @@ LoadElf64(void *loc,
             shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
         //Get the section flags
         if(shdr->sh_type == SHT_NULL)continue;
-        MemoryAllocationFlags flags = MemoryAllocationFlags_Kernel;
+        MemoryAllocationFlags flags = MemoryAllocationFlags_User | MemoryAllocationFlags_Exec | MemoryAllocationFlags_Write;
         if(shdr->sh_flags & SHF_EXECINSTR)flags |= MemoryAllocationFlags_Exec;
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
 

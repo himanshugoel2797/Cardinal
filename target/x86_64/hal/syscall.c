@@ -12,20 +12,34 @@ Syscall_Handler(void) {
     __asm__ volatile
     (
         "mov %%rsp, %%rax\n\t"
-        "mov $k_stack, %%rsp\n\t"
+        "mov k_stack, %%rsp\n\t"
         "push %%rax\n\t"
         "push %%rcx\n\t"
         "call (SyscallReceived)\n\t"
         "pop %%rcx\n\t"
         "pop %%rax\n\t"
         "mov %%rax, %%rsp\n\t"
-        "sysret\n\t" :::
+        "sysretq\n\t" :::
+    );
+}
+
+void
+SwitchToUserMode(uint64_t pc, uint64_t sp)
+{
+    __asm__ volatile
+    (
+        "cli\n\t"
+        "pushfq\n\t"
+        "popq %%r11\n\t"
+        "mov %%rax, %%rsp\n\t"
+        "mov %%rsp, %%rbp\n\t"
+        "sysretq\n\t" :: "a"(sp), "c"(pc)
     );
 }
 
 void
 Syscall_Initialize(void) {
-    uint64_t star_val = (0x8ull >> 32) | (0x18ull >> 48);
+    uint64_t star_val = (0x08ull << 32) | (0x18ull << 48);
     uint64_t lstar = (uint64_t)Syscall_Handler;
     uint64_t cstar = 0;
     uint64_t sfmask = 0;

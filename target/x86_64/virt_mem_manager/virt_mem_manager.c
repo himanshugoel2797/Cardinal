@@ -324,9 +324,9 @@ VirtMemMan_SetupPDPTEntry(PML_Instance inst,
         uint64_t entry = MemMan_Alloc();
         MARK_PRESENT(entry);
         MARK_WRITE(entry);
+        MARK_USER(entry);
         SET_CACHEMODE(entry, MEM_TYPE_WB);
         inst[pml_off] = entry;
-        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(inst[pml_off])));
     }
 }
 
@@ -341,8 +341,8 @@ VirtMemMan_SetupPDEntry(PML_Instance inst,
         pdpt[pdpt_off] = MemMan_Alloc();
         MARK_PRESENT(pdpt[pdpt_off]);
         MARK_WRITE(pdpt[pdpt_off]);
+        MARK_USER(pdpt[pdpt_off]);
         SET_CACHEMODE(pdpt[pdpt_off], MEM_TYPE_WB);
-        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(pdpt[pdpt_off])));
     }
 }
 
@@ -360,8 +360,8 @@ VirtMemMan_SetupPTEntry(PML_Instance inst,
         pd[pd_off] = MemMan_Alloc();
         MARK_PRESENT(pd[pd_off]);
         MARK_WRITE(pd[pd_off]);
+        MARK_USER(pd[pd_off]);
         SET_CACHEMODE(pd[pd_off], MEM_TYPE_WB);
-        __asm__ volatile("invlpg (%0)" :: "r"(GET_ADDR_4KB(pd[pd_off])));
     }
 }
 

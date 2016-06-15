@@ -53,11 +53,12 @@ void GDT_Initialize() {
 
 
     GDT_SetEntry(0, 0, 0, 0, 0);
-    GDT_SetEntry(1, 0, 0xFFFFFFFF, 0x9A, 0x20); // Code segment
-    GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x92, 0x00); // Data segment
-    GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFA, 0x20); // User mode code segment
-    GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF2, 0x00); // User mode data segment
-    GDT_SetTSS(5, (uint64_t)&sys_tss, sizeof(tss_struct), 0xE9);
+    GDT_SetEntry(1, 0, 0xFFFFFFFF, 0x9B, 0xA0); // Code segment
+    GDT_SetEntry(2, 0, 0xFFFFFFFF, 0x93, 0x00); // Data segment
+    GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFB, 0xD0); // User mode code segment (32bit)
+    GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF3, 0x00); // User mode data segment
+    GDT_SetEntry(5, 0, 0xFFFFFFFF, 0xFB, 0xA0); // User mode code segment (64bit)
+    GDT_SetTSS(6, (uint64_t)&sys_tss, sizeof(tss_struct), 0xE9);
 
     __asm__ ("lgdt (%0)" :: "r" (&gdt_table));
 
@@ -74,7 +75,7 @@ void GDT_Initialize() {
         "mov %ax, %ss\n\t"
 
         //Set the TSS
-        "mov $0x2B, %ax\n\t"
+        "mov $0x33, %ax\n\t"
         "ltr %ax"
     );
 

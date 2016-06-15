@@ -36,9 +36,9 @@ bootstrap_render(uint32_t color) {
 
 void
 bootstrap_pagefault_handler(Registers *regs) {
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no));
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
-    __asm__ volatile("hlt" :: "a"(regs->rip), "b"(regs->int_no));
     regs->int_no = -regs->int_no;
 }
 
@@ -94,7 +94,7 @@ bootstrap_kernel(void *param,
     info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
     SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
-    SetUserStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
+    SetUserStack((void*)(0x1000000 + KiB(8)));
 
     smp_sync_base = 1;
     APIC_Initialize();
