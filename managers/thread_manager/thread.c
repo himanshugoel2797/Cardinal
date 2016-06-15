@@ -268,7 +268,7 @@ GetNextThread(void) {
 
     UnlockSpinlock(thds_s);
 
-        //__asm__ volatile("cli\n\thlt");
+    //__asm__ volatile("cli\n\thlt");
     return next_thread;
 }
 

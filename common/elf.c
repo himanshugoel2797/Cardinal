@@ -16,7 +16,7 @@ VerifyElf(void *loc,
     if (hdr->e_ident[EI_MAG2] != ELF_MAG2) return ElfLoaderError_NotElf;
     if (hdr->e_ident[EI_MAG3] != ELF_MAG3) return ElfLoaderError_NotElf;
 
-    
+
     bool arch = limits & 1;
     if ((hdr->e_ident[EI_CLASS] == ELFCLASS32) != arch)
         return ElfLoaderError_UnknownClass;
@@ -79,10 +79,10 @@ LoadElf64(void *loc,
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
 
     int sh_cnt = hdr->e_shnum;
-    for(int i = 0; i < sh_cnt; i++, 
-        shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
+    for(int i = 0; i < sh_cnt; i++,
+            shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
         //Get the section flags
-                if(shdr->sh_type == SHT_NULL)continue;
+        if(shdr->sh_type == SHT_NULL)continue;
         MemoryAllocationFlags flags = MemoryAllocationFlags_Kernel;
         if(shdr->sh_flags & SHF_EXECINSTR)flags |= MemoryAllocationFlags_Exec;
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;

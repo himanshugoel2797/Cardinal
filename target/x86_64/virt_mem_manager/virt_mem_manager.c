@@ -478,8 +478,8 @@ VirtMemMan_MapSPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pt[pt_off]);
 
-    if(inst == virtMemData->curPML){
-    __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    if(inst == virtMemData->curPML) {
+        __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
     }
 }
 
