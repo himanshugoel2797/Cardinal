@@ -24,8 +24,7 @@ Syscall_Handler(void) {
 }
 
 void
-SwitchToUserMode(uint64_t pc, uint64_t sp)
-{
+SwitchToUserMode(uint64_t pc, uint64_t sp) {
     __asm__ volatile
     (
         "cli\n\t"

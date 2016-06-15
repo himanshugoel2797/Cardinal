@@ -42,6 +42,11 @@ PML_Instance
 VirtMemMan_GetCurrent(void);
 
 void
+VirtMemMan_Unmap(    PML_Instance     inst,
+                     uint64_t         virt_addr,
+                     uint64_t         size);
+
+void
 VirtMemMan_MapHPage(PML_Instance       inst,
                     uint64_t           virt_addr,
                     uint64_t           phys_addr,

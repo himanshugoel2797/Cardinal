@@ -99,15 +99,9 @@ MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
           uint64_t 		virtualAddress,
           size_t 		size) {
-    VirtMemMan_Map((PML_Instance)pageTable,
-                   virtualAddress,
-                   0,
-                   size,
-                   FALSE,
-                   MEM_TYPE_UC,
-                   0,
-                   MEM_KERNEL
-                  );
+    VirtMemMan_Unmap((PML_Instance)pageTable,
+                     virtualAddress,
+                     (uint64_t)size);
 
     return MemoryAllocationErrors_None;
 }
