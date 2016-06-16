@@ -148,15 +148,17 @@ ForkTable(UID src,
 
     //TODO review this code to make sure it works
     while(c != NULL) {
+        if(c->AllocationType != MemoryAllocationType_Stack){
         MapPage(*dst,
                 b,
                 (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
                 c->VirtualAddress,
                 c->Length,
                 c->CacheMode,
-                c->AllocationType | MemoryAllocationType_Fork,
+                c->AllocationType,
                 c->Flags
                );
+      }
 
         if(c->next != NULL) {
             b->next = kmalloc(sizeof(MemoryAllocationsMap));

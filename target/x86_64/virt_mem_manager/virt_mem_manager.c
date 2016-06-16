@@ -32,7 +32,7 @@
 
 #define CORE_LOCAL_MEM_ADDR (0xffffff0000000000)
 
-uint64_t* kernel_pdpt;
+static uint64_t* kernel_pdpt = NULL;
 
 typedef struct VirtMemManData {
     PML_Instance curPML;
@@ -41,7 +41,7 @@ typedef struct VirtMemManData {
 } VirtMemManData;
 
 static uint64_t coreLocalSpace;
-static VirtMemManData *virtMemData;
+static volatile VirtMemManData *virtMemData;
 
 void
 VirtMemMan_InitializeBootstrap(void) {
@@ -263,7 +263,7 @@ VirtMemMan_Initialize(void) {
     VirtMemMan_SetCurrent(pml);
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
-    VirtMemManData* tmp = virtMemData;
+    VirtMemManData* tmp = (VirtMemManData*)virtMemData;
     virtMemData = (VirtMemManData*)CORE_LOCAL_MEM_ADDR;
     virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
     virtMemData->curPML = tmp->curPML;
@@ -744,6 +744,9 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
             pml_base = 1;
             break;
         case MemoryAllocationType_Application:
+            pml_base = 20;
+            break;
+        case MemoryAllocationType_Stack:
             pml_base = 2;
             break;
         default:

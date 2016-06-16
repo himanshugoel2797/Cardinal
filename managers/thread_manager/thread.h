@@ -108,7 +108,7 @@ int
 GetCoreLoad(int coreNum);
 
 void
-CoreUpdate(int coreID);
+CoreUpdate();
 
 UID
 GetCurrentThreadUID(void);

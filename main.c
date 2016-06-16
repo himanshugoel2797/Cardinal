@@ -35,7 +35,7 @@ kernel_main_init(void) {
     Thread_Initialize();
     RegisterCore(0, NULL);
     CreateThread(0, kernel_main);
-    CoreUpdate(0);  //BSP is core 0
+    CoreUpdate();  //BSP is core 0
 }
 
 void
@@ -49,7 +49,7 @@ load_elf(void)
     LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
     
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
-    while(1);
+    while(1) __asm__("cli\n\thlt");
 }
 
 int coreCount = 0;
@@ -78,6 +78,7 @@ kernel_main(void) {
     ForkProcess(&p_info, &elf_proc);
     if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
 
+    //YieldThread();
     while(1);
     FreeThread(GetCurrentThreadUID());    
 }
@@ -101,6 +102,6 @@ smp_core_main(int coreID,
     Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
     CreateThread(0, smp_main);
-    CoreUpdate(coreID);
+    CoreUpdate();
     //Start the local timer and set it to call the thread switch handler
 }

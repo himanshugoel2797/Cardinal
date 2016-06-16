@@ -8,12 +8,13 @@
 
 typedef struct CoreThreadState {
     ThreadInfo *cur_thread;
+    uint32_t    coreID;
 } CoreThreadState;
 
 static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
-static CoreThreadState *coreState;
+static volatile CoreThreadState *coreState;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 
@@ -104,7 +105,7 @@ CreateThread(UID parentProcess,
         thd->ParentProcess->PageTable,
         (uint64_t*)&thd->user_stack,
         PAGE_SIZE * 4,
-        MemoryAllocationType_Application,
+        MemoryAllocationType_Stack,
         MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
     if((uint64_t)thd->user_stack == 0)while(1);
@@ -117,7 +118,7 @@ CreateThread(UID parentProcess,
             (uint64_t)thd->user_stack,
             PAGE_SIZE * 4,
             CachingModeWriteBack,
-            MemoryAllocationType_Application,
+            MemoryAllocationType_Stack,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
             );
 
@@ -317,52 +318,51 @@ YieldThread(void) {
 
 ThreadInfo*
 GetNextThread(void) {
+
+    while(List_Length(thds) == 0);
+
     LockSpinlock(thds_s);
+    ThreadInfo *next_thread = NULL;
 
-    ThreadInfo *next_thread = List_EntryAt(thds, 0);
-    //if(next_thread->state == ThreadState_Exiting)__asm__ ("hlt" :: "a"(*((uint64_t*)thds + 3)));
-    List_Remove(thds, 0);
-    List_AddEntry(thds, next_thread);
-
-    //Cleanup dead threads
-    while(next_thread->state == ThreadState_Exiting) {
-        List_Remove(thds, List_Length(thds) - 1);
-        kfree(next_thread->stack);
-        kfree(next_thread);
-
+    bool exit_loop = FALSE;
+    while(!exit_loop)
+    {
         next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
         List_AddEntry(thds, next_thread);
-    }
 
-    //Skip paused threads
-    while(next_thread->state == ThreadState_Paused) {
-        next_thread = List_EntryAt(thds, 0);
-        List_Remove(thds, 0);
-        List_AddEntry(thds, next_thread);
-    }
-
-    while(next_thread->state == ThreadState_Sleep) {
-        next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
-        if(next_thread->sleep_duration_ms == 0) {
-            next_thread->state = ThreadState_Running;
+        switch(next_thread->state)
+        {
+            case ThreadState_Exiting:
+            List_Remove(thds, List_Length(thds) - 1);
+            kfree(next_thread->stack);
+            kfree(next_thread);
             break;
-        } else {
-            next_thread = List_EntryAt(thds, 0);
-            List_Remove(thds, 0);
-            List_AddEntry(thds, next_thread);
+            case ThreadState_Paused:
+            break;
+            case ThreadState_Sleep:
+            next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
+            if(next_thread->sleep_duration_ms == 0) {
+                next_thread->state = ThreadState_Running;
+                exit_loop = TRUE;
+                if(!next_thread->cur_executing){
+                exit_loop = TRUE;
+                next_thread->cur_executing = TRUE;
+            }
+            }
+            break;
+            default:
+            if(!next_thread->cur_executing){
+                exit_loop = TRUE;
+                next_thread->cur_executing = TRUE;
+            }
+            break;
         }
-    }
 
-    while(next_thread->cur_executing) {
-        next_thread = List_EntryAt(thds, 0);
-        List_Remove(thds, 0);
-        List_AddEntry(thds, next_thread);
     }
-
+    
     UnlockSpinlock(thds_s);
 
-    //__asm__ volatile("cli\n\thlt");
     return next_thread;
 }
 
@@ -370,13 +370,13 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-
+    //__asm__ ("hlt":: "a"(List_Length(thds)));
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
-    coreState->cur_thread->cur_executing = FALSE;
     SaveFPUState(coreState->cur_thread->fpu_state);
+    coreState->cur_thread->cur_executing = FALSE;
     coreState->cur_thread = GetNextThread();
-    RestoreFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = TRUE;
+    RestoreFPUState(coreState->cur_thread->fpu_state);
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     if(coreState->cur_thread->state == ThreadState_Running) {
         SwapThreadOnInterrupt(tmp_cur_thread, coreState->cur_thread);
@@ -399,8 +399,8 @@ void
 SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread();
-    RestoreFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = TRUE;
+    RestoreFPUState(coreState->cur_thread->fpu_state);
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     //Resume execution of the thread
     if(coreState->cur_thread->state == ThreadState_Initialize) {
@@ -411,9 +411,8 @@ SwitchThread(void) {
 }
 
 void
-CoreUpdate(int coreID) {
+CoreUpdate() {
     //Obtain thread to process from the lists
-    coreID = 0;
     while(TRUE) {
         SwitchThread();
     }
@@ -432,6 +431,7 @@ RegisterCore(int id,
 
     coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
     coreState->cur_thread = NULL;
+    coreState->coreID = id;
 
     UnlockSpinlock(core_s);
 }

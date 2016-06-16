@@ -39,6 +39,9 @@ idt_handlers[IDT_ENTRY_COUNT][IDT_ENTRY_HANDLER_SIZE];
 static void
 (*idt_handler_calls[IDT_ENTRY_COUNT]) (Registers*);
 
+static uint8_t 
+int_insts[4];
+
 void
 IDT_Initialize(void) {
     idt_table.limit = (sizeof(IDTEntry) * IDT_ENTRY_COUNT) - 1;
@@ -131,9 +134,6 @@ void IDT_DefaultHandler() {
         "pushq %r13\n\t"
         "pushq %r14\n\t"
         "pushq %r15\n\t"
-        "mov $0x10, %ax\n\t"
-        "mov %ax, %ss\n\t"
-        "mov %ax, %ds\n\t"
         "movq %rsp, %rdi\n\t"
         "callq IDT_MainHandler\n\t"
         "popq %r15\n\t"
@@ -171,7 +171,6 @@ typedef void(*null_func)(void);
 void IDT_RaiseInterrupt(uint32_t int_no) {
     if(int_no >= 256)return;
 
-    uint8_t int_insts[4];
     int_insts[0] = 0xCD;
     int_insts[1] = (uint8_t)int_no;
     int_insts[2] = 0xC3;

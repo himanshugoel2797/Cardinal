@@ -36,10 +36,10 @@ bootstrap_render(uint32_t color) {
 
 void
 bootstrap_pagefault_handler(Registers *regs) {
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no));
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
     regs->int_no = -regs->int_no;
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no), "c"(regs->err_code));
 }
 
 void
@@ -93,7 +93,7 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
     info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
-    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
+    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16)));
 
     smp_sync_base = 1;
     APIC_Initialize();
@@ -118,9 +118,9 @@ void
 setup_preemption(void) {
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/100);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
@@ -159,6 +159,10 @@ smp_bootstrap(void) {
 
     //Setup the page table for this core
     VirtMemMan_InitializeBootstrap();
+    SMP_IncrementCoreCount();
+    int coreID = SMP_GetCoreCount();
+    SMP_UnlockTrampoline();
+    while(1);
     VirtMemMan_Initialize();
 
 
@@ -166,11 +170,7 @@ smp_bootstrap(void) {
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
-    SMP_IncrementCoreCount();
-    int coreID = SMP_GetCoreCount();
-    SMP_UnlockTrampoline();
 
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
-    while(1);
 }

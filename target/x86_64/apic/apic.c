@@ -14,7 +14,7 @@ typedef struct APIC_APLS_Data {
     uint32_t *apic_base_addr;
     uint64_t apic_frequency;
 } APIC_APLS_Data;
-static APIC_APLS_Data* apic_data = NULL;
+static volatile APIC_APLS_Data* apic_data = NULL;
 
 #define ICW4_8086 0x01    /* 8086/88 (MCS-80/85) mode */
 #define ICW1_ICW4 0x01    /* ICW4 (not) needed */
@@ -124,6 +124,8 @@ APIC_CallibrateTimer(void) {
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLED);
 
     uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);
+    //__asm__("cli\n\thlt" :: "a"(apic_ticks));
+
     apic_ticks *= PIT_FREQUENCY_HZ;
     apic_ticks /= TICK_CNT;
 
