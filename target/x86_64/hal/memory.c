@@ -52,6 +52,8 @@ MapPage(UID 			pageTable,
         MemoryAllocationType 	allocType,
         MemoryAllocationFlags 	flags) {
 
+    if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
+
     MEM_TYPES cache = 0;
     if(cacheMode == CachingModeUncachable)cache = MEM_TYPE_UC;
     else if(cacheMode == CachingModeWriteBack)cache = MEM_TYPE_WB;

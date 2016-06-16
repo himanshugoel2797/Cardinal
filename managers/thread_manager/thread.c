@@ -293,6 +293,10 @@ GetThreadCoreAffinity(UID id) {
 
 void
 FreeThread(UID id) {
+    if(id == coreState->cur_thread->ID) {
+        coreState->cur_thread->state = ThreadState_Exiting;
+        while(1);
+    }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -301,9 +305,6 @@ FreeThread(UID id) {
         }
     }
 
-    if(id == coreState->cur_thread->ID) {
-        while(1);
-    }
 }
 
 void
@@ -321,14 +322,16 @@ GetNextThread(void) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
+        do{
         next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
         List_AddEntry(thds, next_thread);
+        }while(next_thread->cur_executing);
 
         switch(next_thread->state) {
         case ThreadState_Exiting:
             List_Remove(thds, List_Length(thds) - 1);
-            kfree(next_thread->stack);
+            kfree(next_thread->stack_base);
             kfree(next_thread);
             break;
         case ThreadState_Paused:
@@ -345,10 +348,8 @@ GetNextThread(void) {
             }
             break;
         default:
-            if(!next_thread->cur_executing) {
-                exit_loop = TRUE;
                 next_thread->cur_executing = TRUE;
-            }
+                exit_loop = TRUE;
             break;
         }
 
@@ -364,10 +365,11 @@ TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
-    SaveFPUState(coreState->cur_thread->fpu_state);
+    if(coreState->cur_thread->state == ThreadState_Exiting)
+        tmp_cur_thread = NULL;
+    else SaveFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = FALSE;
     coreState->cur_thread = GetNextThread();
-    coreState->cur_thread->cur_executing = TRUE;
     RestoreFPUState(coreState->cur_thread->fpu_state);
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     HandleInterruptNoReturn(int_no);
@@ -391,7 +393,6 @@ void
 SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread();
-    coreState->cur_thread->cur_executing = TRUE;
     RestoreFPUState(coreState->cur_thread->fpu_state);
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     //Resume execution of the thread

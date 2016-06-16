@@ -33,6 +33,7 @@ List_AddEntry(List *a,
     if(l == NULL)return ListError_AllocationFailed;
     l->prev = a->last;
     l->value = value;
+    l->next = NULL;
     if(a->last != NULL)a->last->next = l;
     a->last = l;
     if(a->nodes == NULL)a->nodes = a->last;
