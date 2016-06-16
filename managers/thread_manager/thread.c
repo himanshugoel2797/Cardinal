@@ -372,13 +372,10 @@ GetNextThread(void) {
     return next_thread;
 }
 
-int t_cnt = 0;
-
 static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-    t_cnt++;
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
     SaveFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = FALSE;
@@ -388,7 +385,6 @@ TaskSwitch(uint32_t int_no,
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
     HandleInterruptNoReturn(int_no);
     if(coreState->cur_thread->state == ThreadState_Running) {
-    //if(t_cnt == 1)__asm__ ("hlt":: "a"(List_Length(thds)));
         SwapThreadOnInterrupt(tmp_cur_thread, coreState->cur_thread);
     } else if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
