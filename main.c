@@ -7,6 +7,9 @@
 #include "syscall.h"
 #include "initrd.h"
 #include "elf.h"
+#include "synchronization.h"
+
+Spinlock smp_lock;
 
 void
 sleep_kernel(void) {
@@ -19,17 +22,37 @@ hlt_kernel(void) {
 }
 
 void
+hlt2_kernel(void) {
+    while(1);
+}
+void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
+    allocMap->next = NULL;
 
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();
     RegisterCore(0, NULL);
     CreateThread(0, kernel_main);
-    smp_unlock_cores();
     CoreUpdate(0);  //BSP is core 0
 }
+
+void
+load_elf(void)
+{
+    void *elf_loc = NULL;
+    uint64_t elf_size = 0;
+    MemoryAllocationsMap *m;
+    ElfInformation elf_info;
+    Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
+    LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
+    
+    SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
+    while(1);
+}
+
+int coreCount = 0;
 
 void
 kernel_main(void) {
@@ -39,50 +62,43 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    coreCount++;
     Syscall_Initialize();
     DeviceManager_Initialize();
-//    setup_preemption();
+    setup_preemption();
     target_device_setup();
+    smp_lock = CreateSpinlock();
+    //smp_unlock_cores();
 
-    void *elf_loc = NULL;
-    uint64_t elf_size = 0;
-    MemoryAllocationsMap *m;
+    //while(coreCount != GetCoreCount());
 
+    ProcessInformation p_info;
+    GetProcessInformation(0, &p_info);
+    ProcessInformation *elf_proc;
+    ForkProcess(&p_info, &elf_proc);
+    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
 
-    Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
-    LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, NULL);
-
-    MapPage(GetActiveVirtualMemoryInstance(),
-            NULL,
-            AllocatePhysicalPage(),
-            0x1000000,
-            PAGE_SIZE * 4,
-            CachingModeWriteBack,
-            MemoryAllocationType_Application,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
-
-    SwitchToUserMode(0x4000b0, 0x1000000 + KiB(8));
-    __asm__ volatile("push $0x4000b0\n\tretq");
-    while(1)__asm__ ("cli\n\thlt");
-
-    //The kernel is ready to take in the new cores, bring them up
-    FreeThread(GetCurrentThreadUID());
+    while(1);
+    FreeThread(GetCurrentThreadUID());    
 }
+
 
 void
 smp_main(void) {
+    LockSpinlock(smp_lock);
     setup_preemption();
-
-    while(1);
+    coreCount++;
+    UnlockSpinlock(smp_lock);
+    CreateThread(0, hlt_kernel);
+    CreateThread(0, hlt2_kernel);
+    FreeThread(GetCurrentThreadUID());
 }
 
 void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
-    coreID = 0;
     getCoreData = NULL;
-    while(1);
-    //Syscall_Initialize();
+    Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
     CreateThread(0, smp_main);
     CoreUpdate(coreID);

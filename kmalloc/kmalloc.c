@@ -61,7 +61,7 @@ void kmalloc_init(MemoryAllocationsMap *allocationMap) {
 
     allocationMap->CacheMode = CachingModeWriteBack;
     allocationMap->VirtualAddress = virtBaseAddr_base;
-    allocationMap->Length = STORE_SIZE;
+    allocationMap->Length = STORE_SIZE * 0;
     allocationMap->AllocationType = MemoryAllocationType_Heap;
     allocationMap->AdditionalData = 0;
     allocationMap->ReferenceCount = 0;

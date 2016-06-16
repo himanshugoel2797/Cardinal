@@ -49,8 +49,8 @@ LoadElf32(void *loc,
           ElfLimitations UNUSED(limits),
           UID pageTable,
           MemoryAllocationsMap **map,
-          UID *id) {
-    *id = 0;
+          ElfInformation *elfData) {
+    elfData = NULL;
     pageTable = 0;
     *map = NULL;
     if(size < sizeof(Elf32_Ehdr))return ElfLoaderError_NotElf;
@@ -70,20 +70,27 @@ LoadElf64(void *loc,
           ElfLimitations UNUSED(limits),
           UID pageTable,
           MemoryAllocationsMap **map,
-          UID *id) {
-    id = NULL;
+          ElfInformation *elfData) {
     if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
     Elf64_Ehdr *hdr = (Elf64_Ehdr*)loc;
 
+    elfData->entry_point = (void*)hdr->e_entry;
+
+
     //Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
+    
+    elfData->shdr_data_size = (hdr->e_shentsize * hdr->e_shnum);
+    elfData->shdr_data = kmalloc(elfData->shdr_data_size);
+    
+    memcpy(elfData->shdr_data, shdr, elfData->shdr_data_size);
 
     int sh_cnt = hdr->e_shnum;
     for(int i = 0; i < sh_cnt; i++,
             shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
         //Get the section flags
         if(shdr->sh_type == SHT_NULL)continue;
-        MemoryAllocationFlags flags = MemoryAllocationFlags_User | MemoryAllocationFlags_Exec | MemoryAllocationFlags_Write;
+        MemoryAllocationFlags flags = MemoryAllocationFlags_User;
         if(shdr->sh_flags & SHF_EXECINSTR)flags |= MemoryAllocationFlags_Exec;
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
 
@@ -218,15 +225,15 @@ LoadElf(void *loc,
         ElfLimitations limits,
         UID pageTable,
         MemoryAllocationsMap **map,
-        UID *id) {
+        ElfInformation *elfData) {
 
     bool _64bit = FALSE;
     ElfLoaderError err = VerifyElf(loc, size, &_64bit, limits);
     if (err != ElfLoaderError_Success)return err;
 
     if(_64bit)
-        return LoadElf64(loc, size, limits, pageTable, map, id);
+        return LoadElf64(loc, size, limits, pageTable, map, elfData);
     else
-        return LoadElf32(loc, size, limits, pageTable, map, id);
+        return LoadElf32(loc, size, limits, pageTable, map, elfData);
 
 }

@@ -28,7 +28,7 @@ CCADMIN=CCadmin
 CC=clang -target $(TARGET_TRIPLET)
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3
+CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
@@ -80,7 +80,7 @@ build-tests:build
 # run tests
 test: build-tests
 # Add your pre 'test' code here...
-	qemu-system-x86_64 -enable-kvm -m 4096M -machine q35 -cpu host,+xsave,level=13 -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=flash.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso"
+	qemu-system-x86_64 -enable-kvm -m 4096M -machine q35 -cpu host -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=flash.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso"
 
 install:clean build-tests
 	sudo dd if="ISO/os.iso" of=/dev/$(OUTDISK) && sync

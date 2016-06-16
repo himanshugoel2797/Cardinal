@@ -14,9 +14,6 @@ void
 SetKernelStack(void* sp);
 
 void
-SetUserStack(void *sp);
-
-void
 SetTLSBase(void *tlsBase);
 
 void

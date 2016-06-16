@@ -94,7 +94,6 @@ bootstrap_kernel(void *param,
     info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
     SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4)));
-    SetUserStack((void*)(0x1000000 + KiB(8)));
 
     smp_sync_base = 1;
     APIC_Initialize();
@@ -119,10 +118,11 @@ void
 setup_preemption(void) {
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/100);
     APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
+    __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }
 
@@ -161,13 +161,13 @@ smp_bootstrap(void) {
     VirtMemMan_InitializeBootstrap();
     VirtMemMan_Initialize();
 
-    int coreID = SMP_GetCoreCount();
 
     APIC_LocalInitialize();
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
     SMP_IncrementCoreCount();
+    int coreID = SMP_GetCoreCount();
     SMP_UnlockTrampoline();
 
     while(smp_sync_base);

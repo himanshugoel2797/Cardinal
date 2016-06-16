@@ -27,9 +27,10 @@ void
 SwitchToUserMode(uint64_t pc, uint64_t sp) {
     __asm__ volatile
     (
-        "cli\n\t"
         "pushfq\n\t"
         "popq %%r11\n\t"
+        "orq $512, %%r11\n\t"
+        "cli\n\t"
         "mov %%rax, %%rsp\n\t"
         "mov %%rsp, %%rbp\n\t"
         "sysretq\n\t" :: "a"(sp), "c"(pc)

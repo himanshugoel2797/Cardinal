@@ -35,8 +35,9 @@ ForkProcess(ProcessInformation *src,
     dst->Permissions = src->Permissions;
     for(int i = 0; i < ProcessSignals_MAX; i++)
         dst->SignalHandlers[i] = src->SignalHandlers[i];
-    ForkTable(src->PageTable, src->AllocationMap, &dst->PageTable, &dst->AllocationMap);
 
+    ForkTable(src->PageTable, src->AllocationMap, &dst->PageTable, &dst->AllocationMap);
+    
     //Add dst to src's children
     dst->next = src->children;
     src->children = dst;

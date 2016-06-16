@@ -159,7 +159,7 @@ void IDT_DefaultHandler() {
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
-    else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code));
+    else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code), "c"(regs->rip));
 }
 
 void IDT_RegisterHandler(uint8_t intNum, void (*handler)(Registers*)) {

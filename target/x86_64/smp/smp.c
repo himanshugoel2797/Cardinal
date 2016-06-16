@@ -17,7 +17,7 @@ SMP_GetCoreCount(void) {
 
 void
 SMP_WaitForCoreCountIncrement(void) {
-    int curCC = SMP_GetCoreCount();
+    volatile int curCC = SMP_GetCoreCount();
     while(curCC == SMP_GetCoreCount());
 }
 

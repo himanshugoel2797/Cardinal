@@ -100,6 +100,31 @@ CreateThread(UID parentProcess,
     thd->ID = new_uid();
     thd->stack = kmalloc(KiB(16));
 
+    FindFreeVirtualAddress(
+        thd->ParentProcess->PageTable,
+        (uint64_t*)&thd->user_stack,
+        PAGE_SIZE * 4,
+        MemoryAllocationType_Application,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    if((uint64_t)thd->user_stack == 0)while(1);
+
+    MemoryAllocationsMap *alloc_stack = kmalloc(sizeof(MemoryAllocationsMap));
+    if((uint64_t)alloc_stack == 0)while(1);
+    MapPage(thd->ParentProcess->PageTable,
+            alloc_stack,
+            AllocatePhysicalPageCont(4),
+            (uint64_t)thd->user_stack,
+            PAGE_SIZE * 4,
+            CachingModeWriteBack,
+            MemoryAllocationType_Application,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+            );
+
+    thd->user_stack = (void*)((uint64_t)thd->user_stack + PAGE_SIZE * 4 - 128);
+    alloc_stack->next = thd->ParentProcess->AllocationMap->next;
+    thd->ParentProcess->AllocationMap->next = alloc_stack;
+
     LockSpinlock(neutral_s);
     List_AddEntry(neutral, thd);
     UnlockSpinlock(neutral_s);
@@ -118,6 +143,12 @@ error_exit:
 void
 SetThreadState(UID id,
                ThreadState state) {
+    if(id == coreState->cur_thread->ID)
+    {
+        coreState->cur_thread->state = state;
+        return;
+    }
+
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -130,6 +161,13 @@ SetThreadState(UID id,
 void
 SleepThread(UID id,
             uint64_t duration_ms) {
+    if(id == coreState->cur_thread->ID)
+    {
+        coreState->cur_thread->state = ThreadState_Sleep;
+        coreState->cur_thread->sleep_duration_ms = duration_ms;
+        return;
+    }
+
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -142,6 +180,11 @@ SleepThread(UID id,
 
 ThreadState
 GetThreadState(UID id) {
+        if(id == coreState->cur_thread->ID)
+    {
+        return coreState->cur_thread->state;
+    }
+
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -151,9 +194,49 @@ GetThreadState(UID id) {
     return -1;
 }
 
+void*
+GetThreadUserStack(UID id)
+{
+    if(id == coreState->cur_thread->ID)
+    {
+        return coreState->cur_thread->user_stack;
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( thd->ID == id) {
+            return thd->user_stack;
+        }
+    }
+    return NULL;
+}
+
+void*
+GetThreadKernelStack(UID id)
+{
+    if(id == coreState->cur_thread->ID)
+    {
+        return coreState->cur_thread->stack;
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( thd->ID == id) {
+            return thd->stack;
+        }
+    }
+    return NULL;
+}
+
 void
 SetThreadBasePriority(UID id,
                       ThreadPriority priority) {
+    if(id == coreState->cur_thread->ID)
+    {
+        coreState->cur_thread->priority = priority;
+        return;
+    }
+
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -165,6 +248,11 @@ SetThreadBasePriority(UID id,
 
 ThreadPriority
 GetThreadPriority(UID id) {
+    if(id == coreState->cur_thread->ID)
+    {
+        return coreState->cur_thread->priority;
+    }
+
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -178,6 +266,11 @@ GetThreadPriority(UID id) {
 void
 SetThreadCoreAffinity(UID id,
                       int coreID) {
+    if(id == coreState->cur_thread->ID)
+    {
+        coreState->cur_thread->core_affinity = coreID;
+        return;
+    }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -189,6 +282,10 @@ SetThreadCoreAffinity(UID id,
 
 int
 GetThreadCoreAffinity(UID id) {
+    if(id == coreState->cur_thread->ID)
+    {
+        return coreState->cur_thread->core_affinity;
+    }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( thd->ID == id) {
@@ -197,8 +294,6 @@ GetThreadCoreAffinity(UID id) {
     }
     return -1;
 }
-
-int q = 0;
 
 void
 FreeThread(UID id) {
@@ -211,7 +306,6 @@ FreeThread(UID id) {
     }
 
     if(id == coreState->cur_thread->ID) {
-        q = 1;
         while(1);
     }
 }

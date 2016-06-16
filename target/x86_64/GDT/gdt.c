@@ -120,12 +120,6 @@ SetKernelStack(void* sp) {
 }
 
 void
-SetUserStack(void *sp) {
-    sys_tss.rsp2 = (uint64_t)sp;
-}
-
-
-void
 GDT_SetIST(uint8_t ist,
            uint64_t stack) {
     switch(ist) {
