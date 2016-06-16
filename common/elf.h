@@ -399,12 +399,11 @@ typedef enum ElfLimitations {
     ElfLimitations_MSB = (1 << 1)
 } ElfLimitations;
 
-typedef struct ElfInformation
-{
+typedef struct ElfInformation {
     void *entry_point;
     void *shdr_data;
     uint64_t shdr_data_size;
-}ElfInformation;
+} ElfInformation;
 
 
 ElfLoaderError
@@ -414,6 +413,6 @@ LoadElf(void *loc,
         UID pageTable,
         MemoryAllocationsMap **map,
         ElfInformation *elfData
-        );
+       );
 
 #endif

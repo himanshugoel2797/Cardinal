@@ -126,7 +126,7 @@ CreateThread(UID parentProcess,
             CachingModeWriteBack,
             MemoryAllocationType_Stack,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-            );
+           );
 
     thd->user_stack = (void*)((uint64_t)thd->user_stack_base + PAGE_SIZE * 4 - 128);
     alloc_stack->next = thd->ParentProcess->AllocationMap->next;
@@ -150,8 +150,7 @@ error_exit:
 void
 SetThreadState(UID id,
                ThreadState state) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         coreState->cur_thread->state = state;
         return;
     }
@@ -168,8 +167,7 @@ SetThreadState(UID id,
 void
 SleepThread(UID id,
             uint64_t duration_ms) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         coreState->cur_thread->state = ThreadState_Sleep;
         coreState->cur_thread->sleep_duration_ms = duration_ms;
         return;
@@ -187,8 +185,7 @@ SleepThread(UID id,
 
 ThreadState
 GetThreadState(UID id) {
-        if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         return coreState->cur_thread->state;
     }
 
@@ -202,10 +199,8 @@ GetThreadState(UID id) {
 }
 
 void*
-GetThreadUserStack(UID id)
-{
-    if(id == coreState->cur_thread->ID)
-    {
+GetThreadUserStack(UID id) {
+    if(id == coreState->cur_thread->ID) {
         return coreState->cur_thread->user_stack;
     }
 
@@ -219,10 +214,8 @@ GetThreadUserStack(UID id)
 }
 
 void*
-GetThreadKernelStack(UID id)
-{
-    if(id == coreState->cur_thread->ID)
-    {
+GetThreadKernelStack(UID id) {
+    if(id == coreState->cur_thread->ID) {
         return coreState->cur_thread->stack;
     }
 
@@ -238,8 +231,7 @@ GetThreadKernelStack(UID id)
 void
 SetThreadBasePriority(UID id,
                       ThreadPriority priority) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         coreState->cur_thread->priority = priority;
         return;
     }
@@ -255,8 +247,7 @@ SetThreadBasePriority(UID id,
 
 ThreadPriority
 GetThreadPriority(UID id) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         return coreState->cur_thread->priority;
     }
 
@@ -273,8 +264,7 @@ GetThreadPriority(UID id) {
 void
 SetThreadCoreAffinity(UID id,
                       int coreID) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         coreState->cur_thread->core_affinity = coreID;
         return;
     }
@@ -289,8 +279,7 @@ SetThreadCoreAffinity(UID id,
 
 int
 GetThreadCoreAffinity(UID id) {
-    if(id == coreState->cur_thread->ID)
-    {
+    if(id == coreState->cur_thread->ID) {
         return coreState->cur_thread->core_affinity;
     }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
@@ -331,34 +320,32 @@ GetNextThread(void) {
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
-    while(!exit_loop)
-    {
+    while(!exit_loop) {
         next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
         List_AddEntry(thds, next_thread);
 
-        switch(next_thread->state)
-        {
-            case ThreadState_Exiting:
+        switch(next_thread->state) {
+        case ThreadState_Exiting:
             List_Remove(thds, List_Length(thds) - 1);
             kfree(next_thread->stack);
             kfree(next_thread);
             break;
-            case ThreadState_Paused:
+        case ThreadState_Paused:
             break;
-            case ThreadState_Sleep:
+        case ThreadState_Sleep:
             next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
             if(next_thread->sleep_duration_ms == 0) {
                 next_thread->state = ThreadState_Running;
                 exit_loop = TRUE;
-                if(!next_thread->cur_executing){
-                exit_loop = TRUE;
-                next_thread->cur_executing = TRUE;
-            }
+                if(!next_thread->cur_executing) {
+                    exit_loop = TRUE;
+                    next_thread->cur_executing = TRUE;
+                }
             }
             break;
-            default:
-            if(!next_thread->cur_executing){
+        default:
+            if(!next_thread->cur_executing) {
                 exit_loop = TRUE;
                 next_thread->cur_executing = TRUE;
             }
@@ -366,7 +353,7 @@ GetNextThread(void) {
         }
 
     }
-    
+
     UnlockSpinlock(thds_s);
 
     return next_thread;

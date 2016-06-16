@@ -79,10 +79,10 @@ LoadElf64(void *loc,
 
     //Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
-    
+
     elfData->shdr_data_size = (hdr->e_shentsize * hdr->e_shnum);
     elfData->shdr_data = kmalloc(elfData->shdr_data_size);
-    
+
     memcpy(elfData->shdr_data, shdr, elfData->shdr_data_size);
 
     int sh_cnt = hdr->e_shnum;

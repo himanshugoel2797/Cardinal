@@ -37,7 +37,7 @@ ForkProcess(ProcessInformation *src,
         dst->SignalHandlers[i] = src->SignalHandlers[i];
 
     ForkTable(src->PageTable, src->AllocationMap, &dst->PageTable, &dst->AllocationMap);
-    
+
     //Add dst to src's children
     dst->next = src->children;
     src->children = dst;

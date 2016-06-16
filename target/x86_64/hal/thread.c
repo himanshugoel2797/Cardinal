@@ -29,23 +29,23 @@ SwapThreadOnInterrupt(ThreadInfo *src,
     memset(regs, 0, sizeof(Registers));
 
     __asm__ volatile("mov %0, %%rsp\n\t"
-        "popq %%r15\n\t"
-        "popq %%r14\n\t"
-        "popq %%r13\n\t"
-        "popq %%r12\n\t"
-        "popq %%r11\n\t"
-        "popq %%r10\n\t"
-        "popq %%r9\n\t"
-        "popq %%r8\n\t"
-        "popq %%rdi\n\t"
-        "popq %%rsi\n\t"
-        "popq %%rbp\n\t"
-        "popq %%rdx\n\t"
-        "popq %%rcx\n\t"
-        "popq %%rbx\n\t"
-        "popq %%rax\n\t"
-        "add $16, %%rsp\n\t"
-        "iretq\n\t" :: "r"(dst->stack)
+                     "popq %%r15\n\t"
+                     "popq %%r14\n\t"
+                     "popq %%r13\n\t"
+                     "popq %%r12\n\t"
+                     "popq %%r11\n\t"
+                     "popq %%r10\n\t"
+                     "popq %%r9\n\t"
+                     "popq %%r8\n\t"
+                     "popq %%rdi\n\t"
+                     "popq %%rsi\n\t"
+                     "popq %%rbp\n\t"
+                     "popq %%rdx\n\t"
+                     "popq %%rcx\n\t"
+                     "popq %%rbx\n\t"
+                     "popq %%rax\n\t"
+                     "add $16, %%rsp\n\t"
+                     "iretq\n\t" :: "r"(dst->stack)
                     );
 }
 

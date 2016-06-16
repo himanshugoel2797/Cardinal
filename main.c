@@ -39,8 +39,7 @@ kernel_main_init(void) {
 }
 
 void
-load_elf(void)
-{
+load_elf(void) {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
@@ -51,7 +50,7 @@ load_elf(void)
     ElfInformation elf_info;
     Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
     LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
-    
+
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
     while(1) {
         YieldThread();
@@ -87,7 +86,7 @@ kernel_main(void) {
     //CreateThread(0, load_elf);
 
     while(1);
-    FreeThread(GetCurrentThreadUID());    
+    FreeThread(GetCurrentThreadUID());
 }
 
 

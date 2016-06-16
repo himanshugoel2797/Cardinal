@@ -74,7 +74,6 @@ RaiseInterrupt(uint32_t int_no) {
 }
 
 void*
-GetSavedInterruptState(void)
-{
+GetSavedInterruptState(void) {
     return &regs_saved;
 }
