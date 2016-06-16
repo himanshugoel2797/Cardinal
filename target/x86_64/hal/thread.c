@@ -26,7 +26,7 @@ SwapThreadOnInterrupt(ThreadInfo *src,
                       ThreadInfo *dst) {
     Registers *regs = GetSavedInterruptState();
     if(src != NULL)
-    src->stack = (void*)regs->rsp;
+        src->stack = (void*)regs->rsp;
     memset(regs, 0, sizeof(Registers));
 
     __asm__ volatile("mov %0, %%rsp\n\t"

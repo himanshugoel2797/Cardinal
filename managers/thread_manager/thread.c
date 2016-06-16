@@ -322,11 +322,11 @@ GetNextThread(void) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        do{
-        next_thread = List_EntryAt(thds, 0);
-        List_Remove(thds, 0);
-        List_AddEntry(thds, next_thread);
-        }while(next_thread->cur_executing);
+        do {
+            next_thread = List_EntryAt(thds, 0);
+            List_Remove(thds, 0);
+            List_AddEntry(thds, next_thread);
+        } while(next_thread->cur_executing);
 
         switch(next_thread->state) {
         case ThreadState_Exiting:
@@ -348,8 +348,8 @@ GetNextThread(void) {
             }
             break;
         default:
-                next_thread->cur_executing = TRUE;
-                exit_loop = TRUE;
+            next_thread->cur_executing = TRUE;
+            exit_loop = TRUE;
             break;
         }
 
