@@ -23,6 +23,11 @@ GetCurrentThreadUID(void) {
     return coreState->cur_thread->ID;
 }
 
+UID
+GetCurrentProcessUID(void) {
+    return coreState->cur_thread->ParentProcess->ID;
+}
+
 void
 Thread_Initialize(void) {
     vLow = List_Create();
@@ -99,30 +104,31 @@ CreateThread(UID parentProcess,
         } else goto error_exit;
     }
     thd->ID = new_uid();
-    thd->stack = kmalloc(KiB(16));
+    thd->stack_base = kmalloc(KiB(16));
+    thd->stack = (void*)((uint64_t)thd->stack_base + KiB(16) - 8);
 
     FindFreeVirtualAddress(
         thd->ParentProcess->PageTable,
-        (uint64_t*)&thd->user_stack,
+        (uint64_t*)&thd->user_stack_base,
         PAGE_SIZE * 4,
         MemoryAllocationType_Stack,
         MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-    if((uint64_t)thd->user_stack == 0)while(1);
+    if((uint64_t)thd->user_stack_base == 0)while(1);
 
     MemoryAllocationsMap *alloc_stack = kmalloc(sizeof(MemoryAllocationsMap));
     if((uint64_t)alloc_stack == 0)while(1);
     MapPage(thd->ParentProcess->PageTable,
             alloc_stack,
             AllocatePhysicalPageCont(4),
-            (uint64_t)thd->user_stack,
+            (uint64_t)thd->user_stack_base,
             PAGE_SIZE * 4,
             CachingModeWriteBack,
             MemoryAllocationType_Stack,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
             );
 
-    thd->user_stack = (void*)((uint64_t)thd->user_stack + PAGE_SIZE * 4 - 128);
+    thd->user_stack = (void*)((uint64_t)thd->user_stack_base + PAGE_SIZE * 4 - 128);
     alloc_stack->next = thd->ParentProcess->AllocationMap->next;
     thd->ParentProcess->AllocationMap->next = alloc_stack;
 
@@ -366,11 +372,13 @@ GetNextThread(void) {
     return next_thread;
 }
 
+int t_cnt = 0;
+
 static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-    //__asm__ ("hlt":: "a"(List_Length(thds)));
+    t_cnt++;
     ThreadInfo *tmp_cur_thread = coreState->cur_thread;
     SaveFPUState(coreState->cur_thread->fpu_state);
     coreState->cur_thread->cur_executing = FALSE;
@@ -378,11 +386,12 @@ TaskSwitch(uint32_t int_no,
     coreState->cur_thread->cur_executing = TRUE;
     RestoreFPUState(coreState->cur_thread->fpu_state);
     SetActiveVirtualMemoryInstance(coreState->cur_thread->ParentProcess->PageTable);
+    HandleInterruptNoReturn(int_no);
     if(coreState->cur_thread->state == ThreadState_Running) {
+    //if(t_cnt == 1)__asm__ ("hlt":: "a"(List_Length(thds)));
         SwapThreadOnInterrupt(tmp_cur_thread, coreState->cur_thread);
     } else if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
-        HandleInterruptNoReturn(int_no);
         SwitchAndInitializeThread(coreState->cur_thread);
     }
 }

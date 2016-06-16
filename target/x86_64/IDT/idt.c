@@ -42,8 +42,12 @@ static void
 static uint8_t 
 int_insts[4];
 
+static bool
+table_initialized = FALSE;
+
 void
 IDT_Initialize(void) {
+
     idt_table.limit = (sizeof(IDTEntry) * IDT_ENTRY_COUNT) - 1;
     idt_table.base = (void*)&idt_entries;
 
@@ -54,6 +58,8 @@ IDT_Initialize(void) {
     __asm__ volatile("lidt (%%rax)" :: "a" (physAddr));         //Load the IDT
     //__asm__ volatile("hlt");
 
+    if(!table_initialized){
+        table_initialized = TRUE;
     for(int i = 0; i < IDT_ENTRY_COUNT; i++) {
         IDT_SetEntry(0, 0, 0, 0, 0);
         idt_handler_calls[i] = NULL;
@@ -68,6 +74,7 @@ IDT_Initialize(void) {
         IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0x8E, 0);
         pushesToStack = 1;
     }
+}
 
     return;
 }
@@ -135,7 +142,10 @@ void IDT_DefaultHandler() {
         "pushq %r14\n\t"
         "pushq %r15\n\t"
         "movq %rsp, %rdi\n\t"
+        "pushq %rdi\n\t"
+        "movq %rsp, %rdi\n\t"
         "callq IDT_MainHandler\n\t"
+        "popq %rdi\n\t"
         "popq %r15\n\t"
         "popq %r14\n\t"
         "popq %r13\n\t"

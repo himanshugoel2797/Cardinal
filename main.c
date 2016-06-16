@@ -43,13 +43,20 @@ load_elf(void)
 {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
-    MemoryAllocationsMap *m;
+
+    ProcessInformation p_info;
+    GetProcessInformation(GetCurrentProcessUID(), &p_info);
+
+    MemoryAllocationsMap *m = p_info.AllocationMap;
     ElfInformation elf_info;
     Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
     LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
     
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
-    while(1) __asm__("cli\n\thlt");
+    while(1) {
+        YieldThread();
+        __asm__("cli\n\thlt");
+    }
 }
 
 int coreCount = 0;
@@ -77,8 +84,8 @@ kernel_main(void) {
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
     if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
+    //CreateThread(0, load_elf);
 
-    //YieldThread();
     while(1);
     FreeThread(GetCurrentThreadUID());    
 }

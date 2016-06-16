@@ -1,5 +1,8 @@
 #include "thread.h"
+#include "IDT/idt.h"
 #include "utils/native.h"
+#include "interrupts.h"
+#include "common.h"
 
 void
 SwitchAndInitializeThread(ThreadInfo *cur_thread) {
@@ -21,12 +24,29 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
 void
 SwapThreadOnInterrupt(ThreadInfo *src,
                       ThreadInfo *dst) {
-    uint64_t stack_frame = 0;
+    Registers *regs = GetSavedInterruptState();
+    src->stack = (void*)regs->rsp;
+    memset(regs, 0, sizeof(Registers));
 
-    __asm__ volatile("mov %%rsp, %%rax\n\t"
-                     "mov %0, %%rsp\n\t"    : "=a"(stack_frame): "b"(dst->stack)
+    __asm__ volatile("mov %0, %%rsp\n\t"
+        "popq %%r15\n\t"
+        "popq %%r14\n\t"
+        "popq %%r13\n\t"
+        "popq %%r12\n\t"
+        "popq %%r11\n\t"
+        "popq %%r10\n\t"
+        "popq %%r9\n\t"
+        "popq %%r8\n\t"
+        "popq %%rdi\n\t"
+        "popq %%rsi\n\t"
+        "popq %%rbp\n\t"
+        "popq %%rdx\n\t"
+        "popq %%rcx\n\t"
+        "popq %%rbx\n\t"
+        "popq %%rax\n\t"
+        "add $16, %%rsp\n\t"
+        "iretq\n\t" :: "r"(dst->stack)
                     );
-    src->stack = (void*)stack_frame;
 }
 
 void

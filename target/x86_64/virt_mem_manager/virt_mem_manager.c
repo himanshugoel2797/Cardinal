@@ -239,6 +239,8 @@ VirtMemMan_Initialize(void) {
                             MEM_TYPE_WT,
                             MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
+
+        coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
     } else {
 
         void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
@@ -258,8 +260,6 @@ VirtMemMan_Initialize(void) {
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 
     virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
-
-
     VirtMemMan_SetCurrent(pml);
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
@@ -268,7 +268,6 @@ VirtMemMan_Initialize(void) {
     virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;
-    coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
 
     //__asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"((uint64_t)&virtMemData->curPML));
     //Enable the NX bit

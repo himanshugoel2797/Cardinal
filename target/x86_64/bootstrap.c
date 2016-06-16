@@ -159,10 +159,6 @@ smp_bootstrap(void) {
 
     //Setup the page table for this core
     VirtMemMan_InitializeBootstrap();
-    SMP_IncrementCoreCount();
-    int coreID = SMP_GetCoreCount();
-    SMP_UnlockTrampoline();
-    while(1);
     VirtMemMan_Initialize();
 
 
@@ -170,7 +166,11 @@ smp_bootstrap(void) {
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
+    SMP_IncrementCoreCount();
+    int coreID = SMP_GetCoreCount();
+    SMP_UnlockTrampoline();
 
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
+    while(1);
 }

@@ -29,4 +29,7 @@ SetInterruptEnableMode(uint32_t vector, bool enableMode);
 void
 HandleInterruptNoReturn(uint32_t vector);
 
+void*
+GetSavedInterruptState(void);
+
 #endif

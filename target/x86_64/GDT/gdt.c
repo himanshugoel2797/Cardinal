@@ -40,13 +40,19 @@ GDTEntry gdt_entries[GDT_ENTRY_COUNT];
 GDTPtr gdt_table;
 tss_struct sys_tss; //Define the TSS as a global structure
 
+static bool table_initialized = FALSE;
+
 __attribute__((optnone))
 void GDT_Initialize() {
     //Make sure interrupts are disabled
     __asm__ ("cli");
 
+    if(!table_initialized){
+        table_initialized = TRUE;
+
     memset((void*)&sys_tss, 0, sizeof(tss_struct));
     sys_tss.iomap = sizeof(tss_struct);
+    }
 
     gdt_table.limit = (sizeof(GDTEntry) * GDT_ENTRY_COUNT) - 1;
     gdt_table.base = (uint64_t)&gdt_entries;

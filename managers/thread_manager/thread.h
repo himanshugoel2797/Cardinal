@@ -35,6 +35,8 @@ typedef struct ThreadInfo {
     ThreadEntryPoint entry_point;
     ThreadState state;
     ThreadPriority priority;
+    void *stack_base;
+    void *user_stack_base;
     void *stack;
     void *user_stack;
     void *tls_base;
@@ -112,5 +114,8 @@ CoreUpdate();
 
 UID
 GetCurrentThreadUID(void);
+
+UID
+GetCurrentProcessUID(void);
 
 #endif
