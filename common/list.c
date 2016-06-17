@@ -13,16 +13,20 @@ typedef struct List {
     ListNode *last_accessed_node;
     uint64_t last_accessed_index;
     uint64_t entry_count;
+    Spinlock spin;
 } List;
 
 List*
-List_Create(void) {
+List_Create(Spinlock spin) {
     List* t = kmalloc(sizeof(List));
+    LockSpinlock(spin);
     t->nodes = NULL;
     t->last = NULL;
     t->last_accessed_node = NULL;
     t->last_accessed_index = 0;
     t->entry_count = 0;
+    t->spin = spin;
+    UnlockSpinlock(spin);
     return t;
 }
 
@@ -31,6 +35,9 @@ List_AddEntry(List *a,
               void *value) {
     ListNode *l = kmalloc(sizeof(ListNode));
     if(l == NULL)return ListError_AllocationFailed;
+
+
+    LockSpinlock(a->spin);
     l->prev = a->last;
     l->value = value;
     l->next = NULL;
@@ -42,12 +49,16 @@ List_AddEntry(List *a,
         a->last_accessed_index = 0;
     }
     a->entry_count++;
+    UnlockSpinlock(a->spin);
     return ListError_None;
 }
 
 uint64_t
 List_Length(List *a) {
-    return a->entry_count;
+    LockSpinlock(a->spin);
+    uint64_t val = a->entry_count;
+    UnlockSpinlock(a->spin);
+    return val;
 }
 
 void
@@ -57,6 +68,7 @@ List_Remove(List *a,
 
     List_EntryAt(a, index);
 
+    LockSpinlock(a->spin);
     void *tmp = a->last_accessed_node;
 
     if(a->last_accessed_node->prev != NULL)
@@ -76,6 +88,7 @@ List_Remove(List *a,
     kfree(tmp);
 
     a->entry_count--;
+    UnlockSpinlock(a->spin);
 }
 
 void
@@ -83,13 +96,16 @@ List_Free(List *a) {
     while(List_Length(a) > 0) {
         List_Remove(a, 0);
     }
+    Spinlock p = a->spin;
     kfree(a);
+    FreeSpinlock(p);
 }
 
 void*
 List_EntryAt(List *a,
              uint64_t index) {
 
+    LockSpinlock(a->spin);
     if(a->last_accessed_index >= a->entry_count) {
         a->last_accessed_index = 0;
         a->last_accessed_node = a->nodes;
@@ -108,23 +124,31 @@ List_EntryAt(List *a,
         a->last_accessed_index++;
     }
 
-    return a->last_accessed_node->value;
+    void *val = a->last_accessed_node->value;
+    UnlockSpinlock(a->spin);
+    return val;
 }
 
 void*
 List_Next(List *a) {
+    LockSpinlock(a->spin);
     if(a->last_accessed_index < a->entry_count - 1) {
         a->last_accessed_index++;
         a->last_accessed_node = a->last_accessed_node->next;
     }
-    return a->last_accessed_node->value;
+    void *val = a->last_accessed_node->value;
+    UnlockSpinlock(a->spin);
+    return val;
 }
 
 void*
 List_Prev(List *a) {
+    LockSpinlock(a->spin);
     if(a->last_accessed_index > 0) {
         a->last_accessed_index--;
         a->last_accessed_node = a->last_accessed_node->prev;
     }
-    return a->last_accessed_node->value;
+    void *val = a->last_accessed_node->value;
+    UnlockSpinlock(a->spin);
+    return val;
 }

@@ -6,7 +6,7 @@ static List *pwm_data;
 
 void
 PWM_Initialize(void) {
-    pwm_data = List_Create();
+    pwm_data = List_Create(CreateSpinlock());
 }
 
 

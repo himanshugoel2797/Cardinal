@@ -14,6 +14,9 @@ CreateBootstrapSpinlock(void);
 bool
 LockSpinlock(Spinlock primitive);
 
+uint64_t
+GetSpinlockContenderCount(Spinlock primitive);
+
 bool
 UnlockSpinlock(Spinlock primitive);
 

@@ -19,9 +19,9 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     root->children = NULL;
     root->next = NULL;
     root->TLSSize = 0;
-    root->ThreadIDs = List_Create();
+    root->ThreadIDs = List_Create(CreateSpinlock());
 
-    processes = List_Create();
+    processes = List_Create(CreateSpinlock());
     List_AddEntry(processes, root);
 }
 
@@ -41,7 +41,7 @@ ForkProcess(ProcessInformation *src,
     //Add dst to src's children
     dst->next = src->children;
     src->children = dst;
-    dst->ThreadIDs = List_Create();
+    dst->ThreadIDs = List_Create(CreateSpinlock());
 
     List_AddEntry(processes, dst);
     *dest = dst;

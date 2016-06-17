@@ -10,7 +10,6 @@ typedef struct CoreThreadState {
     uint32_t    coreID;
 } CoreThreadState;
 
-static Spinlock vLow_s, low_s, medium_s, neutral_s, high_s, vHigh_s, max_s, thds_s, core_s;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
 static volatile CoreThreadState *coreState;
@@ -70,26 +69,17 @@ GetCurrentProcessUID(void) {
 
 void
 Thread_Initialize(void) {
-    vLow = List_Create();
-    low = List_Create();
-    medium = List_Create();
-    neutral = List_Create();
-    high = List_Create();
-    vHigh = List_Create();
-    max = List_Create();
-    thds = List_Create();
+    vLow = List_Create(CreateSpinlock());
+    low = List_Create(CreateSpinlock());
+    medium = List_Create(CreateSpinlock());
+    neutral = List_Create(CreateSpinlock());
+    high = List_Create(CreateSpinlock());
+    vHigh = List_Create(CreateSpinlock());
+    max = List_Create(CreateSpinlock());
+    thds = List_Create(CreateSpinlock());
 
-    cores = List_Create();
+    cores = List_Create(CreateSpinlock());
 
-    vLow_s = CreateSpinlock();
-    low_s = CreateSpinlock();
-    medium_s = CreateSpinlock();
-    neutral_s = CreateSpinlock();
-    high_s = CreateSpinlock();
-    vHigh_s = CreateSpinlock();
-    max_s = CreateSpinlock();
-    thds_s = CreateSpinlock();
-    core_s = CreateSpinlock();
 }
 
 UID
@@ -174,13 +164,8 @@ CreateThread(UID parentProcess,
     alloc_stack->next = thd->ParentProcess->AllocationMap->next;
     thd->ParentProcess->AllocationMap->next = alloc_stack;
 
-    LockSpinlock(neutral_s);
     List_AddEntry(neutral, thd);
-    UnlockSpinlock(neutral_s);
-
-    LockSpinlock(thds_s);
     List_AddEntry(thds, thd);
-    UnlockSpinlock(thds_s);
 
     return GET_PROPERTY_VAL(thd, ID);
 
@@ -352,7 +337,6 @@ GetNextThread(void) {
 
     while(List_Length(thds) == 0);
 
-    LockSpinlock(thds_s);
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
@@ -365,10 +349,13 @@ GetNextThread(void) {
 
         switch(GET_PROPERTY_VAL(next_thread, state)) {
         case ThreadState_Exiting:
-            List_Remove(thds, List_Length(thds) - 1);
-            kfree(next_thread->stack_base);
-            FreeSpinlock(next_thread->lock);
-            kfree(next_thread);
+            if(GetSpinlockContenderCount(next_thread->lock) == 0){
+                LockSpinlock(next_thread->lock);
+                List_Remove(thds, List_Length(thds) - 1);
+                kfree(next_thread->stack_base);
+                FreeSpinlock(next_thread->lock);
+                kfree(next_thread);
+            }
             break;
         case ThreadState_Paused:
             break;
@@ -392,8 +379,6 @@ GetNextThread(void) {
         }
 
     }
-
-    UnlockSpinlock(thds_s);
 
     return next_thread;
 }
@@ -456,7 +441,6 @@ void
 RegisterCore(int id,
              int (*getCoreData)(void)) {
 
-    LockSpinlock(core_s);
     CoreInfo *cInfo = kmalloc(sizeof(CoreInfo));
     cInfo->ID = id;
     cInfo->getCoreData = getCoreData;
@@ -466,8 +450,6 @@ RegisterCore(int id,
     coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
     coreState->cur_thread = NULL;
     coreState->coreID = id;
-
-    UnlockSpinlock(core_s);
 }
 
 int

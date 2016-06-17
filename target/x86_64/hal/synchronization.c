@@ -30,6 +30,8 @@ LockSpinlock(Spinlock primitive) {
         "shlq $16, %%rcx\n\t"
         "movw $1, %%cx\n\t"
         "lock xaddw %%cx, +2(%0)\n\t"
+        "cmpw %%cx, (%0)\n\t"
+        "je .acquired\n\t"
         ".spin:\n\t"
         "btq $25, %%rcx\n\t"
         "jnc .skip_sti\n\t"
@@ -38,29 +40,30 @@ LockSpinlock(Spinlock primitive) {
         "pause\n\t"
         "cmpw %%cx, (%0)\n\t"
         "jne .spin\n\t"
+        ".acquired:\n\t"
         "btq $25, %%rcx\n\t"
         "jnc .skip_flag_store\n\t"
         "orw $1, +4(%0)\n\t"
         ".skip_flag_store:\n\t"
         "cli\n\t"
         "popq %%rcx\n\t"
-/*
-        ".acquire:\n\t"
-        "cli\n\t"
-        "lock btsl $0, (%0)\n\t"
-        "jnc .acquired\n\t"
-        ".spin:\n\t"
-        "sti\n\t"
-        "pause\n\t"
-        "btl $0, (%0)\n\t"
-        "jnc .spin\n\t"
-        "cli\n\t"
-        "lock btsl $0, (%0)\n\t"
-        "jc .spin\n\t"
-        ".acquired:\n\t"*/
         :: "a"(primitive)
     );
     return TRUE;
+}
+
+uint64_t
+GetSpinlockContenderCount(Spinlock primitive)
+{
+    uint32_t cnt = 0;
+    __asm__ volatile
+    (
+        "lock movl (%%rax), %%eax\n\t"
+        : "=a"(cnt) : "a"(primitive) :
+        );
+
+    cnt = (cnt >> 16) - (cnt & 0xFFFF);
+    return (uint64_t)cnt;
 }
 
 bool
@@ -69,7 +72,6 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "lock incw (%0)\n\t"
-        //"movl $0, (%0)\n\t"
         "btw $0, +4(%0)\n\t"
         "jnc .unlock_skip_sti\n\t" 
         "sti\n\t"

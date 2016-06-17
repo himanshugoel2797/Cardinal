@@ -2,6 +2,7 @@
 #define _CARDINAL_LIST_H_
 
 #include "types.h"
+#include "synchronization.h"
 
 typedef struct ListNode ListNode;
 typedef struct List List;
@@ -14,7 +15,7 @@ typedef enum ListError {
 } ListError;
 
 List*
-List_Create(void);
+List_Create(Spinlock spin);
 
 ListError
 List_AddEntry(List *a, void *value);

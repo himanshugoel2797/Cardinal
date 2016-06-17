@@ -18,7 +18,7 @@ List *buses;
 
 void
 DeviceManager_Initialize(void) {
-    buses = List_Create();
+    buses = List_Create(CreateSpinlock());
 }
 
 DeviceManagerError
@@ -34,7 +34,7 @@ RegisterBus(const char *name) {
     if(!b)return DeviceManagerError_Unknown;
 
     strcpy_s(b->name, MAX_BUS_NAME_LEN, name, strlen(name));
-    b->devices = List_Create();
+    b->devices = List_Create(CreateSpinlock());
     if(!b->devices) {
         kfree(b);
         return DeviceManagerError_Unknown;

@@ -15,7 +15,7 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
         "popq %%rbx\n\t"
         "popq %%rbx\n\t"
         "pushq %%rax\n\t"
-        "ret"
+        "retq"
         ::
         "a"(cur_thread->entry_point),
         "b"(cur_thread->stack)
@@ -39,7 +39,7 @@ SwitchToThread(ThreadInfo *dst) {
     uint64_t target_stack = (uint64_t)dst->stack;
     UnlockSpinlock(dst->lock);
 
-    __asm__ volatile("mov %0, %%rsp\n\t"
+    __asm__ volatile("movq %0, %%rsp\n\t"
                      "popq %%r15\n\t"
                      "popq %%r14\n\t"
                      "popq %%r13\n\t"

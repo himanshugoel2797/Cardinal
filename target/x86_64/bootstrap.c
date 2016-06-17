@@ -39,7 +39,7 @@ bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no = -regs->int_no;
     bootstrap_render (0xffffff00);
     regs->int_no = -regs->int_no;
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no), "c"(regs->err_code));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
 }
 
 void
