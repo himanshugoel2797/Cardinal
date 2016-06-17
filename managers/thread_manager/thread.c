@@ -19,6 +19,7 @@ static uint32_t preempt_vector;
 
 #define PROPERTY_GET(type, name, default_val) type get_thread_##name (ThreadInfo *t) \
                              { \
+                                if(t == NULL)__asm__("add $0x10, %rsp\n\tpopq %rax\n\tpopq %rax\n\tcli\n\thlt"); \
                                 type tmp = default_val ; \
                                 LockSpinlock(t->lock);  \
                                 tmp = t-> name ; \
