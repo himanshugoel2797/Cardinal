@@ -3,6 +3,7 @@
 #include "utils/native.h"
 #include "interrupts.h"
 #include "common.h"
+#include "synchronization.h"
 
 void
 SwitchAndInitializeThread(ThreadInfo *cur_thread) {
@@ -22,12 +23,21 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
 }
 
 void
-SwapThreadOnInterrupt(ThreadInfo *src,
-                      ThreadInfo *dst) {
+SavePreviousThread(ThreadInfo *src) {
     Registers *regs = GetSavedInterruptState();
-    if(src != NULL)
+    if(src != NULL){
+        LockSpinlock(src->lock);
         src->stack = (void*)regs->rsp;
+        UnlockSpinlock(src->lock);
+    }
     memset(regs, 0, sizeof(Registers));
+}
+
+void
+SwitchToThread(ThreadInfo *dst) {
+    LockSpinlock(dst->lock);
+    uint64_t target_stack = (uint64_t)dst->stack;
+    UnlockSpinlock(dst->lock);
 
     __asm__ volatile("mov %0, %%rsp\n\t"
                      "popq %%r15\n\t"
@@ -46,7 +56,7 @@ SwapThreadOnInterrupt(ThreadInfo *src,
                      "popq %%rbx\n\t"
                      "popq %%rax\n\t"
                      "add $16, %%rsp\n\t"
-                     "iretq\n\t" :: "r"(dst->stack)
+                     "iretq\n\t" :: "r"(target_stack)
                     );
 }
 

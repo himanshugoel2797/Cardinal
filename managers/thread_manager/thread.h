@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "managers/process_manager/process_info.h"
+#include "synchronization.h"
 
 //TODO: Create threads, call HAL to handle context switching details
 //TODO: Write a separate schedule manager that dictates thread switching in a process aware manner
@@ -44,6 +45,7 @@ typedef struct ThreadInfo {
     uint64_t sleep_duration_ms;
     bool cur_executing;
     void *fpu_state;
+    Spinlock lock;
 } ThreadInfo;
 
 typedef struct CoreInfo {

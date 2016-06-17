@@ -7,8 +7,10 @@ void
 SwitchAndInitializeThread(ThreadInfo *thd);
 
 void
-SwapThreadOnInterrupt(ThreadInfo *src,
-                      ThreadInfo *dst);
+SwitchToThread(ThreadInfo *dst);
+
+void
+SavePreviousThread(ThreadInfo *src);
 
 void
 SetKernelStack(void* sp);

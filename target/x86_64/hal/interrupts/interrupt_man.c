@@ -4,9 +4,10 @@
 #include "IDT/idt.h"
 #include "apic/io_apic/io_apic.h"
 #include "apic/apic.h"
+#include "memory.h"
 
 static InterruptHandler intHandlers[256] = {0};
-static Registers regs_saved;
+static Registers *regs_saved = NULL;
 
 uint32_t
 RequestInterruptVectorBlock(uint32_t vectorCount) {
@@ -25,11 +26,16 @@ RequestInterruptVectorBlock(uint32_t vectorCount) {
 
 void
 ShadowInterruptHandler(Registers *regs) {
-    memcpy(&regs_saved, regs, sizeof(Registers));
+    if(regs_saved == NULL)
+    {
+        regs_saved = AllocateAPLSMemory(sizeof(Registers));
+    }
+    memcpy(regs_saved, regs, sizeof(Registers));
+
     if(intHandlers[regs->int_no] != NULL)intHandlers[regs->int_no](regs->int_no,
                 regs->err_code);
 
-    memset(&regs_saved, 0, sizeof(Registers));
+    memset(regs_saved, 0, sizeof(Registers));
     if(regs->int_no > 31)APIC_SendEOI(regs->int_no);
 }
 
@@ -75,5 +81,5 @@ RaiseInterrupt(uint32_t int_no) {
 
 void*
 GetSavedInterruptState(void) {
-    return &regs_saved;
+    return regs_saved;
 }

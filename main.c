@@ -74,9 +74,9 @@ kernel_main(void) {
     setup_preemption();
     target_device_setup();
     smp_lock = CreateSpinlock();
-    //smp_unlock_cores();
+    smp_unlock_cores();
 
-    //while(coreCount != GetCoreCount());
+    while(coreCount != GetCoreCount());
 
     ProcessInformation p_info;
     GetProcessInformation(0, &p_info);
@@ -96,7 +96,6 @@ smp_main(void) {
     coreCount++;
     UnlockSpinlock(smp_lock);
     CreateThread(0, hlt_kernel);
-    CreateThread(0, hlt2_kernel);
     FreeThread(GetCurrentThreadUID());
 }
 
