@@ -23,12 +23,20 @@ LockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
     (
-        ".spin:"
-        "\n\tpause"
-        "\n\ttestl $1, (%0)"
-        "\n\tjnz .spin"
-        "\n\tlock btsl $0, (%0)"
-        "\n\tjc .spin" :: "a"(primitive)
+        ".acquire:\n\t"
+        "cli\n\t"
+        "lock btsl $0, (%0)\n\t"
+        "jnc .acquired\n\t"
+        ".spin:\n\t"
+        "sti\n\t"
+        "pause\n\t"
+        "btl $0, (%0)\n\t"
+        "jnc .spin\n\t"
+        "cli\n\t"
+        "lock btsl $0, (%0)\n\t"
+        "jc .spin\n\t"
+        ".acquired:\n\t"
+        "sti" :: "a"(primitive)
     );
     return TRUE;
 }
