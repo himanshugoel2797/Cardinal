@@ -74,7 +74,10 @@ VirtMemMan_Initialize(void) {
 
 
         kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
-        pml[511] = (uint64_t)pdpt_0 | 3;    //Keep the top 512GiB of memory mapped into all address spaces
+        pml[511] = (uint64_t)pdpt_0;    //Keep the top 512GiB of memory mapped into all address spaces
+    MARK_PRESENT(pml[511]);
+    MARK_WRITE(pml[511]);
+    SET_CACHEMODE(pml[511], MEM_TYPE_WB);
         //Setup kernel code map
         VirtMemMan_MapHPage(pml,
                             0xFFFFFFFFC0000000,
@@ -244,7 +247,10 @@ VirtMemMan_Initialize(void) {
     } else {
 
         void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
-        pml[511] = (uint64_t)pdpt_0 | 3;
+        pml[511] = (uint64_t)pdpt_0;
+    MARK_PRESENT(pml[511]);
+    MARK_WRITE(pml[511]);
+    SET_CACHEMODE(pml[511], MEM_TYPE_WB);
     }
 
     //Setup core specific memory

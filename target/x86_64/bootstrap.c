@@ -36,10 +36,9 @@ bootstrap_render(uint32_t color) {
 
 void
 bootstrap_pagefault_handler(Registers *regs) {
-    regs->int_no = -regs->int_no;
-    bootstrap_render (0xffffff00);
-    regs->int_no = -regs->int_no;
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
+    regs->int_no += 16;
+    bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no - 16), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
 }
 
 void

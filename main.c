@@ -51,6 +51,9 @@ load_elf(void) {
     Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
     LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
 
+    //GetProcessInformation(0, &p_info);
+
+    //__asm__("cli\n\thlt" :: "a"(p_info.PageTable));
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
     while(1) {
         YieldThread();
@@ -82,8 +85,8 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
-    //CreateThread(0, load_elf);
+    //if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
+    CreateThread(0, load_elf);
 
     while(1);
     FreeThread(GetCurrentThreadUID());
