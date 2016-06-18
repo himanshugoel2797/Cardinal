@@ -53,14 +53,13 @@ LockSpinlock(Spinlock primitive) {
 }
 
 uint64_t
-GetSpinlockContenderCount(Spinlock primitive)
-{
+GetSpinlockContenderCount(Spinlock primitive) {
     uint32_t cnt = 0;
     __asm__ volatile
     (
         "lock movl (%%rax), %%eax\n\t"
         : "=a"(cnt) : "a"(primitive) :
-        );
+    );
 
     cnt = (cnt >> 16) - (cnt & 0xFFFF);
     return (uint64_t)cnt;
@@ -73,7 +72,7 @@ UnlockSpinlock(Spinlock primitive) {
     (
         "lock incw (%0)\n\t"
         "btw $0, +4(%0)\n\t"
-        "jnc .unlock_skip_sti\n\t" 
+        "jnc .unlock_skip_sti\n\t"
         "sti\n\t"
         "movw $0, +4(%0)\n\t"
         ".unlock_skip_sti:\n\t"

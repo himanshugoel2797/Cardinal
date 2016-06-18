@@ -24,7 +24,7 @@ static uint32_t preempt_vector;
                                 tmp = t-> name ; \
                                 UnlockSpinlock(t->lock);    \
                                 return tmp; \
-                             } 
+                             }
 
 #define PROPERTY_SET(type, name) void set_thread_##name (ThreadInfo *t, type v) \
                             { \
@@ -87,7 +87,7 @@ CreateThread(UID parentProcess,
              ThreadEntryPoint entry_point) {
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
-    
+
     SET_PROPERTY_VAL(thd, entry_point, entry_point);
     SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
@@ -154,7 +154,7 @@ CreateThread(UID parentProcess,
         MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
     if(user_stack_base == 0)while(1);
-    
+
     SET_PROPERTY_VAL(thd, user_stack_base, (void*)user_stack_base);
 
     MemoryAllocationsMap *alloc_stack = kmalloc(sizeof(MemoryAllocationsMap));
@@ -355,7 +355,7 @@ GetNextThread(void) {
 
         switch(GET_PROPERTY_VAL(next_thread, state)) {
         case ThreadState_Exiting:
-            if(GetSpinlockContenderCount(next_thread->lock) == 0){
+            if(GetSpinlockContenderCount(next_thread->lock) == 0) {
                 LockSpinlock(next_thread->lock);
                 List_Remove(thds, List_Length(thds) - 1);
                 kfree(next_thread->stack_base);
@@ -393,7 +393,7 @@ static void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
-    
+
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
     SET_PROPERTY_VAL(coreState->cur_thread, cur_executing, FALSE);

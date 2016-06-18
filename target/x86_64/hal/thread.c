@@ -25,7 +25,7 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
 void
 SavePreviousThread(ThreadInfo *src) {
     Registers *regs = GetSavedInterruptState();
-    if(src != NULL){
+    if(src != NULL) {
         LockSpinlock(src->lock);
         src->stack = (void*)regs->rsp;
         UnlockSpinlock(src->lock);
