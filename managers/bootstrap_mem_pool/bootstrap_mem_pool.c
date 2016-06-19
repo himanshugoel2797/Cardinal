@@ -10,7 +10,7 @@ bootstrap_malloc(size_t size) {
     //Make sure size is 32bit aligned
     if(size % 4 != 0)size = (size/4 + 1) * 4;
     if( (pos + size) > BOOTSTRAP_MEM_POOL )
-        return NULL;
+        __asm__("cli\n\thlt");
 
     void *ptr = &mem_pool[pos];
     pos += size;

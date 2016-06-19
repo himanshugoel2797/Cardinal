@@ -80,7 +80,7 @@ FPU_Initialize(void) {
         CPUID_RequestInfo(0x0D, 1);
         state_area_size = CPUID_GetValue(CPUID_EBX);
     } else {
-        state_area_size = 512;
+        state_area_size = 1024;
     }
 }
 
@@ -94,17 +94,17 @@ GetFPUStateSize(void) {
 void
 SaveFPUState(void *target) {
     if(xsave_available)
-        __asm__ volatile("xsaveq (%0)" :: "r"(target) :);
+        __asm__ volatile("xsaveq (%0)" :: "r"(target) : "memory");
     else
-        __asm__ volatile("fxsaveq (%0)" :: "r"(target) : );
+        __asm__ volatile("fxsaveq (%0)" :: "r"(target) : "memory");
 }
 
 void
 RestoreFPUState(void *source) {
     if(xsave_available)
-        __asm__ volatile("xrstorq (%0)" :: "r"(source) :);
+        __asm__ volatile("xrstorq (%0)" :: "r"(source) : "memory");
     else
-        __asm__ volatile("fxrstorq (%0)" :: "r"(source) :);
+        __asm__ volatile("fxrstorq (%0)" :: "r"(source) : "memory");
 }
 
 /*

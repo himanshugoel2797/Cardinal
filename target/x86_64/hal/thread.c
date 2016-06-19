@@ -30,7 +30,6 @@ SavePreviousThread(ThreadInfo *src) {
         src->stack = (void*)regs->rsp;
         UnlockSpinlock(src->lock);
     }
-    memset(regs, 0, sizeof(Registers));
 }
 
 void

@@ -74,19 +74,19 @@ kernel_main(void) {
     coreCount++;
     Syscall_Initialize();
     DeviceManager_Initialize();
-    setup_preemption();
-    target_device_setup();
     smp_lock = CreateSpinlock();
     smp_unlock_cores();
 
     while(coreCount != GetCoreCount());
+    setup_preemption();
+    target_device_setup();
 
     ProcessInformation p_info;
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
     //if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
-    CreateThread(0, load_elf);
+    //CreateThread(0, load_elf);
 
     while(1);
     FreeThread(GetCurrentThreadUID());

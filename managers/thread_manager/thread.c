@@ -94,6 +94,7 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, Parent, parentProcess);
     SET_PROPERTY_VAL(thd, sleep_duration_ms, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
+    SET_PROPERTY_VAL(thd, cur_executing, FALSE);
 
     uint64_t fpu_state_tmp = (uint64_t)thd->fpu_state;
     if(fpu_state_tmp % 16 != 0)
@@ -339,25 +340,30 @@ YieldThread(void) {
 }
 
 ThreadInfo*
-GetNextThread(void) {
+GetNextThread(ThreadInfo *prevThread) {
 
-    while(List_Length(thds) == 0);
+    /*
+    - Get a thread from the queue
+    - Process the thread
+    - Put the thread back once done
+    */
+
+    if(prevThread != NULL){
+        SET_PROPERTY_VAL(prevThread, cur_executing, FALSE);
+        List_AddEntry(thds, prevThread);
+    }
 
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        do {
-            next_thread = List_EntryAt(thds, 0);
-            List_Remove(thds, 0);
-            List_AddEntry(thds, next_thread);
-        } while(GET_PROPERTY_VAL(next_thread, cur_executing));
+        next_thread = List_EntryAt(thds, 0);
+        List_Remove(thds, 0);
 
         switch(GET_PROPERTY_VAL(next_thread, state)) {
         case ThreadState_Exiting:
             if(GetSpinlockContenderCount(next_thread->lock) == 0) {
                 LockSpinlock(next_thread->lock);
-                List_Remove(thds, List_Length(thds) - 1);
                 kfree(next_thread->stack_base);
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
@@ -384,6 +390,8 @@ GetNextThread(void) {
             break;
         }
 
+        if(!exit_loop)
+            List_AddEntry(thds, next_thread);
     }
 
     return next_thread;
@@ -396,8 +404,7 @@ TaskSwitch(uint32_t int_no,
 
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
-    SET_PROPERTY_VAL(coreState->cur_thread, cur_executing, FALSE);
-    coreState->cur_thread = GetNextThread();
+    coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
@@ -421,7 +428,7 @@ SetPeriodicPreemptVector(uint32_t irq,
 void
 SwitchThread(void) {
 
-    coreState->cur_thread = GetNextThread();
+    coreState->cur_thread = GetNextThread(NULL);
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
     //Resume execution of the thread

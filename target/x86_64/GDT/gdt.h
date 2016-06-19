@@ -3,6 +3,13 @@
 
 #define GDT_ENTRY_COUNT 8
 
+
+void 
+GDT_Bootstrap(void);
+
+void
+GDT_InitializeMP(void);
+
 void GDT_Initialize();
 
 void

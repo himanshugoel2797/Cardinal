@@ -23,6 +23,7 @@ LockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
     (
+        "mfence\n\t"
         "pushq %%rcx\n\t"
         "pushfq\n\t"
         "cli\n\t"
@@ -47,7 +48,7 @@ LockSpinlock(Spinlock primitive) {
         ".skip_flag_store:\n\t"
         "cli\n\t"
         "popq %%rcx\n\t"
-        :: "a"(primitive)
+        :: "a"(primitive) : "memory"
     );
     return TRUE;
 }
@@ -70,13 +71,14 @@ UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
     (
+        "mfence\n\t"
         "lock incw (%0)\n\t"
         "btw $0, +4(%0)\n\t"
         "jnc .unlock_skip_sti\n\t"
         "sti\n\t"
         "movw $0, +4(%0)\n\t"
         ".unlock_skip_sti:\n\t"
-        :: "r"(primitive)
+        :: "r"(primitive) : "memory"
     );
     return TRUE;
 }

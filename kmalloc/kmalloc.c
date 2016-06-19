@@ -38,7 +38,6 @@ void kmalloc_init(MemoryAllocationsMap *allocationMap) {
 #define STORE_SIZE MiB(128)
 
     //TODO Setup TLB shootdowns
-    //0xFFFF800000000000 is the table used for APLS
     alloc_sync = CreateBootstrapSpinlock();
     //Allocate blocks of 4KB and map them to a continuous address space of 256MB
     uint64_t virtBaseAddr_base = 0;

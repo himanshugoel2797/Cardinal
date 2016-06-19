@@ -36,9 +36,9 @@ bootstrap_render(uint32_t color) {
 
 void
 bootstrap_pagefault_handler(Registers *regs) {
-    regs->int_no += 16;
+    regs->int_no *= 16;
     bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no - 16), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
 }
 
 void
@@ -64,7 +64,7 @@ bootstrap_kernel(void *param,
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
     }
 
-    GDT_Initialize();   //Setup the Bootstrap GDT
+    GDT_Bootstrap();
     IDT_Initialize();   //Setup the Bootstrap IDT
     for(int i = 0; i < 31; i++)
         IDT_RegisterHandler(i, bootstrap_pagefault_handler);
@@ -78,9 +78,12 @@ bootstrap_kernel(void *param,
 
     FPU_Initialize();   //Setup the FPU
 
-
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
+    
+    GDT_InitializeMP();
+    GDT_Initialize();   //Setup the Bootstrap GDT
+    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
 
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
@@ -92,7 +95,6 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
     info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
-    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16)));
 
     smp_sync_base = 1;
     APIC_Initialize();
@@ -152,13 +154,15 @@ smp_bootstrap(void) {
 
     __asm__ volatile("mov %%rax, %%rsp":: "a"(stack)); //Switch to a new stack
 
-    GDT_Initialize();   //Setup the GDT
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
 
     //Setup the page table for this core
     VirtMemMan_InitializeBootstrap();
     VirtMemMan_Initialize();
+
+    GDT_Initialize();   //Setup the GDT
+    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
 
 
     APIC_LocalInitialize();

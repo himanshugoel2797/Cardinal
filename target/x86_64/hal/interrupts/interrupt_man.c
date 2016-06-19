@@ -40,6 +40,7 @@ ShadowInterruptHandler(Registers *regs) {
 
 void
 HandleInterruptNoReturn(uint32_t vector) {
+    memset(regs_saved, 0, sizeof(Registers));
     if(vector > 31)APIC_SendEOI(vector);
     __asm__ volatile("sti");
 }
