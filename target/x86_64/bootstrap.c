@@ -95,7 +95,6 @@ bootstrap_kernel(void *param,
     info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
     info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
-
     smp_sync_base = 1;
     APIC_Initialize();
     //__asm__ ("hlt");

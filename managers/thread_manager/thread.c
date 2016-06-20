@@ -10,9 +10,10 @@ typedef struct CoreThreadState {
     uint32_t    coreID;
 } CoreThreadState;
 
+static Spinlock sync_lock;
 static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
 static List* cores;
-static volatile CoreThreadState *coreState;
+static volatile CoreThreadState *coreState = NULL;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 
@@ -78,6 +79,7 @@ Thread_Initialize(void) {
     thds = List_Create(CreateSpinlock());
 
     cores = List_Create(CreateSpinlock());
+    sync_lock = CreateSpinlock();
 }
 
 UID
@@ -344,7 +346,7 @@ GetNextThread(ThreadInfo *prevThread) {
     - Process the thread
     - Put the thread back once done
     */
-
+    
     if(prevThread != NULL) {
         SET_PROPERTY_VAL(prevThread, cur_executing, FALSE);
         List_AddEntry(thds, prevThread);
@@ -354,8 +356,13 @@ GetNextThread(ThreadInfo *prevThread) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        while(next_thread == NULL)next_thread = List_EntryAt(thds, 0);
-        List_Remove(thds, 0);
+        
+        LockSpinlock(sync_lock);
+        next_thread = List_EntryAt(thds, 0);
+        if(next_thread != NULL)List_Remove(thds, 0);
+        UnlockSpinlock(sync_lock);
+
+        if(next_thread == NULL)continue;
 
         switch(GET_PROPERTY_VAL(next_thread, state)) {
         case ThreadState_Exiting:
@@ -376,12 +383,11 @@ GetNextThread(ThreadInfo *prevThread) {
             if(next_thread->sleep_duration_ms == 0) {
                 next_thread->state = ThreadState_Running;
                 exit_loop = TRUE;
-                if(!next_thread->cur_executing) {
-                    exit_loop = TRUE;
-                    next_thread->cur_executing = TRUE;
-                }
-            }
-            UnlockSpinlock(next_thread->lock);
+                UnlockSpinlock(next_thread->lock);
+            }else{
+                UnlockSpinlock(next_thread->lock);
+                List_AddEntry(thds, next_thread);
+            } 
             break;
         default:
             SET_PROPERTY_VAL(next_thread, cur_executing, TRUE);
@@ -389,9 +395,8 @@ GetNextThread(ThreadInfo *prevThread) {
             break;
         }
 
-        if(!exit_loop && next_thread != NULL)
-            List_AddEntry(thds, next_thread);
     }
+
 
     return next_thread;
 }
@@ -462,7 +467,9 @@ RegisterCore(int id,
 
     List_AddEntry(cores, cInfo);
 
-    coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
+    if(coreState == NULL)
+        coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
+    
     coreState->cur_thread = NULL;
     coreState->coreID = id;
 }

@@ -29,7 +29,6 @@ void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
     allocMap->next = NULL;
-
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();
@@ -75,9 +74,9 @@ kernel_main(void) {
     Syscall_Initialize();
     DeviceManager_Initialize();
     smp_lock = CreateSpinlock();
-    //smp_unlock_cores();
+    smp_unlock_cores();
 
-    //while(coreCount != GetCoreCount());
+    while(coreCount != GetCoreCount());
     setup_preemption();
     target_device_setup();
 
@@ -85,11 +84,11 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
-    CreateThread(0, hlt2_kernel);
+    if(!CreateThread(0, load_elf))__asm__("cli\n\thlt");
+    //CreateThread(0, hlt2_kernel);
 
-    FreeThread(GetCurrentThreadUID());
     while(1);
+    FreeThread(GetCurrentThreadUID());
 }
 
 
