@@ -9,9 +9,8 @@
 static Spinlock vmem_lock = NULL;
 
 void
-MemoryHAL_Initialize(void)
-{
-  vmem_lock = CreateBootstrapSpinlock();
+MemoryHAL_Initialize(void) {
+    vmem_lock = CreateBootstrapSpinlock();
 }
 
 void*
@@ -24,7 +23,7 @@ GetVirtualAddress(CachingMode c,
 void*
 GetPhysicalAddress(void *virtualAddress) {
     void *ret = GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
-                                 virtualAddress);
+                                      virtualAddress);
     return ret;
 }
 
@@ -57,7 +56,7 @@ SetActiveVirtualMemoryInstance(UID inst) {
 UID
 GetActiveVirtualMemoryInstance(void) {
     UID ret = (UID)VirtMemMan_GetCurrent();
-return ret;
+    return ret;
 }
 
 MemoryAllocationErrors
@@ -218,7 +217,7 @@ FreePhysicalPage(uint64_t ptr) {
 
 uint64_t
 AllocatePhysicalPageCont(int pageCount) {
-  LockSpinlock(vmem_lock);
+    LockSpinlock(vmem_lock);
     uint64_t ret = MemMan_Alloc4KiBPageCont(pageCount);
     UnlockSpinlock(vmem_lock);
     return ret;
@@ -227,14 +226,14 @@ AllocatePhysicalPageCont(int pageCount) {
 void
 FreePhysicalPageCont(uint64_t ptr,
                      int pageCount) {
-  LockSpinlock(vmem_lock);
+    LockSpinlock(vmem_lock);
     MemMan_FreeCont(ptr, pageCount);
     UnlockSpinlock(vmem_lock);
 }
 
 void*
 AllocateAPLSMemory(uint64_t size) {
-  LockSpinlock(vmem_lock);
+    LockSpinlock(vmem_lock);
     void* ret = VirtMemMan_AllocCoreLocalData(size);
     UnlockSpinlock(vmem_lock);
     return ret;

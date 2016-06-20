@@ -372,7 +372,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 kfree((void*)(next_thread->kernel_stack_base + 128 - KiB(8)));
                 kfree((void*)(next_thread->interrupt_stack_base + 128 - KiB(8)));
                 FreePhysicalPageCont((uint64_t)GetPhysicalAddress((void*)(next_thread->user_stack_base + 128 - KiB(8))), 2);
-                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base, KiB(8));    
+                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base, KiB(8));
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
                 next_thread = NULL;
