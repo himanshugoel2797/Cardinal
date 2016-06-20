@@ -53,7 +53,7 @@ load_elf(void) {
 
     //GetProcessInformation(0, &p_info);
 
-    //__asm__("cli\n\thlt" :: "a"(p_info.PageTable));
+    //__asm__("cli\n\thlt" :: "a"((uint64_t)GetThreadUserStack(GetCurrentThreadUID())));
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
     while(1) {
         YieldThread();
@@ -75,9 +75,9 @@ kernel_main(void) {
     Syscall_Initialize();
     DeviceManager_Initialize();
     smp_lock = CreateSpinlock();
-    smp_unlock_cores();
+    //smp_unlock_cores();
 
-    while(coreCount != GetCoreCount());
+    //while(coreCount != GetCoreCount());
     setup_preemption();
     target_device_setup();
 
@@ -85,10 +85,9 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    //if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
-    //CreateThread(0, load_elf);
+    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
+    CreateThread(0, hlt2_kernel);
 
-    while(1);
     FreeThread(GetCurrentThreadUID());
 }
 
@@ -96,10 +95,10 @@ kernel_main(void) {
 void
 smp_main(void) {
     LockSpinlock(smp_lock);
-    setup_preemption();
     coreCount++;
     UnlockSpinlock(smp_lock);
-    CreateThread(0, hlt_kernel);
+    setup_preemption();
+    //CreateThread(0, hlt_kernel);
     while(1);
     FreeThread(GetCurrentThreadUID());
 }

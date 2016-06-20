@@ -55,6 +55,7 @@ PROPERTY_GET_SET(int, core_affinity, 0)
 PROPERTY_GET_SET(uint64_t, sleep_duration_ms, 0)
 PROPERTY_GET_SET(bool, cur_executing, FALSE)
 PROPERTY_GET_SET(void*, fpu_state, NULL)
+PROPERTY_GET_SET(void*, interrupt_stack_base, NULL)
 
 
 UID
@@ -79,7 +80,6 @@ Thread_Initialize(void) {
     thds = List_Create(CreateSpinlock());
 
     cores = List_Create(CreateSpinlock());
-
 }
 
 UID
@@ -95,6 +95,7 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, sleep_duration_ms, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
     SET_PROPERTY_VAL(thd, cur_executing, FALSE);
+    SET_PROPERTY_VAL(thd, interrupt_stack_base, (void*)((uint64_t)kmalloc(KiB(8)) + KiB(8) - 128));
 
     uint64_t fpu_state_tmp = (uint64_t)thd->fpu_state;
     if(fpu_state_tmp % 16 != 0)
@@ -357,7 +358,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        next_thread = List_EntryAt(thds, 0);
+        while(next_thread == NULL)next_thread = List_EntryAt(thds, 0);
         List_Remove(thds, 0);
 
         switch(GET_PROPERTY_VAL(next_thread, state)) {
@@ -365,6 +366,7 @@ GetNextThread(ThreadInfo *prevThread) {
             if(GetSpinlockContenderCount(next_thread->lock) == 0) {
                 LockSpinlock(next_thread->lock);
                 kfree(next_thread->stack_base);
+                kfree(next_thread->interrupt_stack_base);
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
             }
@@ -405,6 +407,7 @@ TaskSwitch(uint32_t int_no,
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
     coreState->cur_thread = GetNextThread(coreState->cur_thread);
+    SetKernelStack(coreState->cur_thread->interrupt_stack_base);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
@@ -429,6 +432,7 @@ void
 SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread(NULL);
+    SetKernelStack(coreState->cur_thread->interrupt_stack_base);
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
     //Resume execution of the thread

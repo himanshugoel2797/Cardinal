@@ -36,6 +36,7 @@ typedef struct ThreadInfo {
     ThreadEntryPoint entry_point;
     ThreadState state;
     ThreadPriority priority;
+    void *interrupt_stack_base;
     void *stack_base;
     void *user_stack_base;
     void *stack;

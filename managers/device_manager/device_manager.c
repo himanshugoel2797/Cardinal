@@ -14,11 +14,12 @@ typedef struct BusEntry {
     List *devices;
 } BusEntry;
 
-List *buses;
+static List *buses;
 
 void
 DeviceManager_Initialize(void) {
-    buses = List_Create(CreateSpinlock());
+    Spinlock s = CreateSpinlock();
+    buses = List_Create(s);
 }
 
 DeviceManagerError

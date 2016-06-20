@@ -8,6 +8,7 @@ Spinlock
 CreateSpinlock(void) {
     Spinlock p = kmalloc(CPUID_GetCacheLineSize());
     memset(p, 0, CPUID_GetCacheLineSize());
+    if(*(uint64_t*)p != 0)__asm__("cli\n\thlt" :: "a"(CPUID_GetCacheLineSize()));
     return p;
 }
 
@@ -21,6 +22,7 @@ CreateBootstrapSpinlock(void) {
 bool
 LockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
+
     __asm__ volatile
     (
         "mfence\n\t"
@@ -30,8 +32,9 @@ LockSpinlock(Spinlock primitive) {
         "popq %%rcx\n\t"
         "shlq $16, %%rcx\n\t"
         "movw $1, %%cx\n\t"
-        "lock xaddw %%cx, +2(%0)\n\t"
-        "cmpw %%cx, (%0)\n\t"
+        "lock xaddw %%cx, +2(%[prim])\n\t"
+        "cmpw %%cx, (%[prim])\n\t"
+        "jg .wtf\n\t"
         "je .acquired\n\t"
         ".spin:\n\t"
         "btq $25, %%rcx\n\t"
@@ -39,16 +42,20 @@ LockSpinlock(Spinlock primitive) {
         "sti\n\t"
         ".skip_sti:"
         "pause\n\t"
-        "cmpw %%cx, (%0)\n\t"
+        "cmpw %%cx, (%[prim])\n\t"
         "jne .spin\n\t"
         ".acquired:\n\t"
         "btq $25, %%rcx\n\t"
         "jnc .skip_flag_store\n\t"
-        "orw $1, +4(%0)\n\t"
+        "orw $1, +4(%[prim])\n\t"
         ".skip_flag_store:\n\t"
         "cli\n\t"
         "popq %%rcx\n\t"
-        :: "a"(primitive) : "memory"
+        "jmp .exit\n\t"
+        ".wtf:\n\t"
+        "hlt\n\t"
+        ".exit:\n\t"
+        :: [prim]"r"(primitive) : "memory"
     );
     return TRUE;
 }
