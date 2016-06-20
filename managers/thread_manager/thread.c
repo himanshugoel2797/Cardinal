@@ -403,14 +403,14 @@ TaskSwitch(uint32_t int_no,
 
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
-    
+
     coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetKernelStack((void*)coreState->cur_thread->interrupt_stack_base);
-    
+
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
-    
+
     HandleInterruptNoReturn(int_no);
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Running) {
         SwitchToThread(coreState->cur_thread);
