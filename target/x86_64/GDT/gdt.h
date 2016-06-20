@@ -4,7 +4,7 @@
 #define GDT_ENTRY_COUNT 8
 
 
-void 
+void
 GDT_Bootstrap(void);
 
 void

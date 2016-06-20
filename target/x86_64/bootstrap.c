@@ -80,7 +80,7 @@ bootstrap_kernel(void *param,
 
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
-    
+
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
     SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));

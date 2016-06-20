@@ -36,15 +36,15 @@ typedef struct {
     uint64_t base; //Location
 } __attribute__((packed)) GDTPtr;
 
-typedef struct GDT_CoreData{
+typedef struct GDT_CoreData {
 //GDT Entry region
-GDTEntry gdt_entries[GDT_ENTRY_COUNT];
-GDTPtr gdt_table;
-tss_struct sys_tss; //Define the TSS as a global structure
+    GDTEntry gdt_entries[GDT_ENTRY_COUNT];
+    GDTPtr gdt_table;
+    tss_struct sys_tss; //Define the TSS as a global structure
 } GDT_CoreData;
 static GDT_CoreData *coreLocalData;
 
-void 
+void
 GDT_Bootstrap(void) {
     __asm__ ("cli");
     coreLocalData = bootstrap_malloc(sizeof(GDT_CoreData));
@@ -88,7 +88,7 @@ GDT_Bootstrap(void) {
 }
 
 void
-GDT_InitializeMP(void){
+GDT_InitializeMP(void) {
     coreLocalData = AllocateAPLSMemory(sizeof(GDT_CoreData));
 }
 

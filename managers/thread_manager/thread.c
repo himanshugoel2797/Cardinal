@@ -349,7 +349,7 @@ GetNextThread(ThreadInfo *prevThread) {
     - Put the thread back once done
     */
 
-    if(prevThread != NULL){
+    if(prevThread != NULL) {
         SET_PROPERTY_VAL(prevThread, cur_executing, FALSE);
         List_AddEntry(thds, prevThread);
     }
