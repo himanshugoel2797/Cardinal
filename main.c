@@ -85,10 +85,10 @@ kernel_main(void) {
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
     if(!CreateThread(0, load_elf))__asm__("cli\n\thlt");
-    //CreateThread(0, hlt2_kernel);
+    CreateThread(0, hlt2_kernel);
 
-    while(1);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
@@ -98,9 +98,9 @@ smp_main(void) {
     coreCount++;
     UnlockSpinlock(smp_lock);
     setup_preemption();
-    //CreateThread(0, hlt_kernel);
-    while(1);
+    CreateThread(0, hlt_kernel);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 void

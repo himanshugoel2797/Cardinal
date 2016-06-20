@@ -409,7 +409,7 @@ TaskSwitch(uint32_t int_no,
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
 
-    coreState->cur_thread = GetNextThread(coreState->cur_thread);
+    if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetKernelStack((void*)coreState->cur_thread->interrupt_stack_base);
