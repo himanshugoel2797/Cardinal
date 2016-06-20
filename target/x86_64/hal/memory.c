@@ -4,29 +4,43 @@
 #include "page_manager/phys_mem_manager.h"
 #include "kmalloc/kmalloc.h"
 #include "smp/smp.h"
+#include "synchronization.h"
+
+static Spinlock vmem_lock = NULL;
+
+void
+MemoryHAL_Initialize(void)
+{
+  vmem_lock = CreateBootstrapSpinlock();
+}
 
 void*
 GetVirtualAddress(CachingMode c,
                   void *physicalAddress) {
-    return VirtMemMan_GetVirtualAddress(c, physicalAddress);
+    void* ret = VirtMemMan_GetVirtualAddress(c, physicalAddress);
+    return ret;
 }
 
 void*
 GetPhysicalAddress(void *virtualAddress) {
-    return GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
+    void *ret = GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
                                  virtualAddress);
+    return ret;
 }
 
 void*
 GetPhysicalAddressUID(UID 	src,
                       void 	*virtualAddress) {
-    return VirtMemMan_GetPhysicalAddress((PML_Instance)src, virtualAddress);
+    void *ret = VirtMemMan_GetPhysicalAddress((PML_Instance)src, virtualAddress);
+    return ret;
 }
 
 MemoryAllocationErrors
 CreateVirtualMemoryInstance(UID *inst) {
     if(inst != NULL) {
+        LockSpinlock(vmem_lock);
         *inst = (UID)VirtMemMan_CreateInstance();
+        UnlockSpinlock(vmem_lock);
         return MemoryAllocationErrors_None;
     }
     return MemoryAllocationErrors_Unknown;
@@ -34,12 +48,16 @@ CreateVirtualMemoryInstance(UID *inst) {
 
 UID
 SetActiveVirtualMemoryInstance(UID inst) {
-    return (UID)VirtMemMan_SetCurrent((PML_Instance)inst);
+    LockSpinlock(vmem_lock);
+    UID ret = (UID)VirtMemMan_SetCurrent((PML_Instance)inst);
+    UnlockSpinlock(vmem_lock);
+    return ret;
 }
 
 UID
 GetActiveVirtualMemoryInstance(void) {
-    return (UID)VirtMemMan_GetCurrent();
+    UID ret = (UID)VirtMemMan_GetCurrent();
+return ret;
 }
 
 MemoryAllocationErrors
@@ -59,6 +77,8 @@ MapPage(UID 			pageTable,
     else if(cacheMode == CachingModeWriteBack)cache = MEM_TYPE_WB;
     else if(cacheMode == CachingModeWriteThrough)cache = MEM_TYPE_WT;
     else return MemoryAllocationErrors_InvalidFlags;
+
+    LockSpinlock(vmem_lock);
 
     MEM_ACCESS_PERMS access = 0;
     if(flags & MemoryAllocationFlags_Exec)access |= MEM_EXEC;
@@ -94,6 +114,8 @@ MapPage(UID 			pageTable,
                    access,
                    perms);
 
+    UnlockSpinlock(vmem_lock);
+
     return MemoryAllocationErrors_None;
 }
 
@@ -101,10 +123,13 @@ MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
           uint64_t 		virtualAddress,
           size_t 		size) {
+
+    LockSpinlock(vmem_lock);
     VirtMemMan_Unmap((PML_Instance)pageTable,
                      virtualAddress,
                      (uint64_t)size);
 
+    UnlockSpinlock(vmem_lock);
     return MemoryAllocationErrors_None;
 }
 
@@ -117,6 +142,8 @@ FindFreeVirtualAddress(UID 			pageTable,
 
     if(virtualAddress == NULL)return MemoryAllocationErrors_Unknown;
 
+    LockSpinlock(vmem_lock);
+
     MEM_SECURITY_PERMS perms = 0;
     if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
     if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
@@ -127,6 +154,8 @@ FindFreeVirtualAddress(UID 			pageTable,
                                             perms);
 
     if(addr != NULL)*virtualAddress = (uint64_t)addr;
+
+    UnlockSpinlock(vmem_lock);
 
     return MemoryAllocationErrors_None;
 }
@@ -174,28 +203,41 @@ ForkTable(UID src,
 
 uint64_t
 AllocatePhysicalPage(void) {
-    return MemMan_Alloc();
+    LockSpinlock(vmem_lock);
+    uint64_t ret = MemMan_Alloc();
+    UnlockSpinlock(vmem_lock);
+    return ret;
 }
 
 void
 FreePhysicalPage(uint64_t ptr) {
+    LockSpinlock(vmem_lock);
     MemMan_Free(ptr);
+    UnlockSpinlock(vmem_lock);
 }
 
 uint64_t
 AllocatePhysicalPageCont(int pageCount) {
-    return MemMan_Alloc4KiBPageCont(pageCount);
+  LockSpinlock(vmem_lock);
+    uint64_t ret = MemMan_Alloc4KiBPageCont(pageCount);
+    UnlockSpinlock(vmem_lock);
+    return ret;
 }
 
 void
 FreePhysicalPageCont(uint64_t ptr,
                      int pageCount) {
+  LockSpinlock(vmem_lock);
     MemMan_FreeCont(ptr, pageCount);
+    UnlockSpinlock(vmem_lock);
 }
 
 void*
 AllocateAPLSMemory(uint64_t size) {
-    return VirtMemMan_AllocCoreLocalData(size);
+  LockSpinlock(vmem_lock);
+    void* ret = VirtMemMan_AllocCoreLocalData(size);
+    UnlockSpinlock(vmem_lock);
+    return ret;
 }
 
 int

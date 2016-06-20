@@ -11,6 +11,7 @@ Syscall_Handler(void) {
     //Setup the environment to move into the OS syscall handler
     __asm__ volatile
     (
+        "cli\n\thlt\n\t"
         "mov %%rsp, %%rax\n\t"
         "mov k_stack, %%rsp\n\t"
         "push %%rax\n\t"

@@ -80,6 +80,7 @@ bootstrap_kernel(void *param,
 
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
+    MemoryHAL_Initialize ();
 
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT

@@ -48,11 +48,10 @@ load_elf(void) {
     MemoryAllocationsMap *m = p_info.AllocationMap;
     ElfInformation elf_info;
     Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
-    LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info);
+    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 
     //GetProcessInformation(0, &p_info);
-
-    //__asm__("cli\n\thlt" :: "a"((uint64_t)GetThreadUserStack(GetCurrentThreadUID())));
+    //__asm__("cli\n\thlt" :: "a"((uint64_t)elf_info.entry_point));
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
     while(1) {
         YieldThread();

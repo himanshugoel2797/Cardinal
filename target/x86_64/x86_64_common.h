@@ -3,6 +3,9 @@
 
 #include "types.h"
 
+void
+MemoryHAL_Initialize(void);
+
 
 void
 bootstrap_render(uint32_t color);
