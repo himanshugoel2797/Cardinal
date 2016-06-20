@@ -346,7 +346,7 @@ GetNextThread(ThreadInfo *prevThread) {
     - Process the thread
     - Put the thread back once done
     */
-    
+
     if(prevThread != NULL) {
         SET_PROPERTY_VAL(prevThread, cur_executing, FALSE);
         List_AddEntry(thds, prevThread);
@@ -356,7 +356,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        
+
         LockSpinlock(sync_lock);
         next_thread = List_EntryAt(thds, 0);
         if(next_thread != NULL)List_Remove(thds, 0);
@@ -384,10 +384,10 @@ GetNextThread(ThreadInfo *prevThread) {
                 next_thread->state = ThreadState_Running;
                 exit_loop = TRUE;
                 UnlockSpinlock(next_thread->lock);
-            }else{
+            } else {
                 UnlockSpinlock(next_thread->lock);
                 List_AddEntry(thds, next_thread);
-            } 
+            }
             break;
         default:
             SET_PROPERTY_VAL(next_thread, cur_executing, TRUE);
@@ -469,7 +469,7 @@ RegisterCore(int id,
 
     if(coreState == NULL)
         coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
-    
+
     coreState->cur_thread = NULL;
     coreState->coreID = id;
 }

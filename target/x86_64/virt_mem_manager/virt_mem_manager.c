@@ -51,8 +51,8 @@ void
 VirtMemMan_InitializeBootstrap(void) {
     virtMemData = bootstrap_malloc(sizeof(VirtMemManData));
     virtMemData->curPML = (uint64_t*)BOOTSTRAP_PML_ADDR;    //Where initial PML is located
-    
-    if(tmp_corePML == NULL){
+
+    if(tmp_corePML == NULL) {
         tmp_corePML = bootstrap_malloc(8096);
         if((uint64_t)tmp_corePML % KiB(4) != 0)
             tmp_corePML = (uint64_t*)((uint64_t)tmp_corePML + KiB(4) - ((uint64_t)tmp_corePML % KiB(4)));
@@ -287,8 +287,7 @@ VirtMemMan_Initialize(void) {
     virtMemData->curPML = tmp->curPML;
     virtMemData->hugePageSupport = tmp->hugePageSupport;
     virtMemData->coreLocalPMLData = bootstrap_malloc(8096);
-    if((uint64_t)virtMemData->coreLocalPMLData % KiB(4) != 0)
-    {
+    if((uint64_t)virtMemData->coreLocalPMLData % KiB(4) != 0) {
         virtMemData->coreLocalPMLData = (uint64_t*)((uint64_t)virtMemData->coreLocalPMLData + KiB(4) - ((uint64_t)virtMemData->coreLocalPMLData % KiB(4)));
     }
 
@@ -324,12 +323,12 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
     if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance) memcpy(tmp, virtMemData->coreLocalPMLData, 512 * sizeof(uint64_t));
-    
+
     //Setup the thread local storage for this core before changing!
     uint64_t *pml = (uint64_t*)instance;
     memcpy((void*)virtMemData->coreLocalPMLData, pml, 512 * sizeof(uint64_t));
     virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
-    
+
     virtMemData->coreLocalPMLData[511] = (uint64_t)GetPhysicalAddress(kernel_pdpt);
     MARK_PRESENT(virtMemData->coreLocalPMLData[511]);
     MARK_WRITE(virtMemData->coreLocalPMLData[511]);
