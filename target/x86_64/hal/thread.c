@@ -18,7 +18,7 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
         "retq"
         ::
         "a"(cur_thread->entry_point),
-        "b"(cur_thread->stack)
+        "b"(cur_thread->kernel_stack_base)
     );
 }
 
@@ -27,7 +27,7 @@ SavePreviousThread(ThreadInfo *src) {
     Registers *regs = GetSavedInterruptState();
     if(src != NULL) {
         LockSpinlock(src->lock);
-        src->stack = (void*)regs->rsp;
+        src->current_stack = regs->rsp;
         UnlockSpinlock(src->lock);
     }
 }
@@ -35,7 +35,7 @@ SavePreviousThread(ThreadInfo *src) {
 void
 SwitchToThread(ThreadInfo *dst) {
     LockSpinlock(dst->lock);
-    uint64_t target_stack = (uint64_t)dst->stack;
+    uint64_t target_stack = dst->current_stack;
     UnlockSpinlock(dst->lock);
 
     __asm__ volatile("movq %0, %%rsp\n\t"

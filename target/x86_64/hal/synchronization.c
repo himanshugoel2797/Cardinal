@@ -25,6 +25,16 @@ LockSpinlock(Spinlock primitive) {
 
     __asm__ volatile
     (
+        "pushq %%rdx\n\t"
+        "popq %%rdx\n\t"
+        "add $0x10, %%rsp\n\t"
+        "popq %%rdx\n\t"
+        "popq %%rdx\n\t"
+        "add $0x10, %%rsp\n\t"
+        "popq %%rdx\n\t"
+        "popq %%rdx\n\t"
+        "sub $0x20, %%rsp\n\t"
+        "sub $0x28, %%rsp\n\t"
         "mfence\n\t"
         "pushq %%rcx\n\t"
         "pushfq\n\t"
@@ -50,11 +60,12 @@ LockSpinlock(Spinlock primitive) {
         "orw $1, +4(%[prim])\n\t"
         ".skip_flag_store:\n\t"
         "cli\n\t"
-        "popq %%rcx\n\t"
         "jmp .exit\n\t"
         ".wtf:\n\t"
         "hlt\n\t"
         ".exit:\n\t"
+        "popq %%rcx\n\t"
+        "popq %%rdx\n\t"
         :: [prim]"r"(primitive) : "memory"
     );
     return TRUE;
@@ -62,14 +73,14 @@ LockSpinlock(Spinlock primitive) {
 
 uint64_t
 GetSpinlockContenderCount(Spinlock primitive) {
-    uint32_t cnt = 0;
+    uint64_t cnt = 0;
     __asm__ volatile
     (
-        "lock movl (%%rax), %%eax\n\t"
+        "movq (%%rax), %%rax\n\t"
         : "=a"(cnt) : "a"(primitive) :
     );
 
-    cnt = (cnt >> 16) - (cnt & 0xFFFF);
+    cnt = ((cnt >> 16) & 0xFFFF) - (cnt & 0xFFFF);
     return (uint64_t)cnt;
 }
 

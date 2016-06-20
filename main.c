@@ -89,6 +89,7 @@ kernel_main(void) {
     CreateThread(0, hlt2_kernel);
 
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
