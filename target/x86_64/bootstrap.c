@@ -83,7 +83,7 @@ bootstrap_kernel(void *param,
 
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
-    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
+    SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
 
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
@@ -161,7 +161,7 @@ smp_bootstrap(void) {
     VirtMemMan_Initialize();
 
     GDT_Initialize();   //Setup the GDT
-    SetKernelStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
+    SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
 
 
     APIC_LocalInitialize();

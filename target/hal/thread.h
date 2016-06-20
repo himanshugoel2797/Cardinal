@@ -13,7 +13,7 @@ void
 SavePreviousThread(ThreadInfo *src);
 
 void
-SetKernelStack(void* sp);
+SetInterruptStack(void* sp);
 
 void
 SetTLSBase(void *tlsBase);

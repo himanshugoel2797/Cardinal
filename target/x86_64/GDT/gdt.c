@@ -172,7 +172,7 @@ GDT_SetEntry(int num,
 }
 
 void
-SetKernelStack(void* sp) {
+SetInterruptStack(void* sp) {
     coreLocalData->sys_tss.rsp0 = (uint64_t)sp;
 }
 

@@ -4,6 +4,7 @@
 #include "common/list.h"
 #include "target/hal/thread.h"
 #include "target/hal/interrupts.h"
+#include "target/hal/syscall.h"
 
 typedef struct CoreThreadState {
     ThreadInfo *cur_thread;
@@ -414,7 +415,8 @@ TaskSwitch(uint32_t int_no,
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
-    SetKernelStack((void*)coreState->cur_thread->interrupt_stack_base);
+    SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_base);
+    SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
 
@@ -439,7 +441,9 @@ void
 SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread(NULL);
-    SetKernelStack((void*)coreState->cur_thread->interrupt_stack_base);
+    SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_base);
+    SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
+
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
     //Resume execution of the thread

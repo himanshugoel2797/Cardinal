@@ -9,4 +9,7 @@ Syscall_Initialize(void);
 void
 SwitchToUserMode(uint64_t pc, uint64_t sp);
 
+void
+SetKernelStack(void* stack);
+
 #endif
