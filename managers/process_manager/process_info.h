@@ -4,6 +4,7 @@
 #include "types.h"
 #include "list.h"
 #include "memory.h"
+#include "synchronization.h"
 
 #define MAX_PROCESS_NAME_LEN (256)
 
@@ -76,6 +77,7 @@ typedef struct ProcessInformation {
     MemoryAllocationsMap        *AllocationMap;
     List                        *ThreadIDs;
     uint64_t                    TLSSize;
+    Spinlock                    lock;
     struct ProcessInformation   *children;
     struct ProcessInformation   *next;
 } ProcessInformation;
