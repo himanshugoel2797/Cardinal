@@ -120,11 +120,11 @@ LockPage(void *virtualAddress);
 
 //Unlock the physical page to allow modification, if this was allowed
 void
-UnlockPage(void *virtualAddress, 
+UnlockPage(void *virtualAddress,
            uint32_t lockKey);
 
 void
-HandlePageFault(void *virtualAddress, 
+HandlePageFault(void *virtualAddress,
                 MemoryAllocationFlags error);
 
 uint64_t

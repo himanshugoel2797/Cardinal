@@ -22,6 +22,6 @@ AllocateSyscall(void);
 
 void
 RegisterSyscall(uint64_t syscall_num,
-				SyscallHandler handler);
+                SyscallHandler handler);
 
 #endif

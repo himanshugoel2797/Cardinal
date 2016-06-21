@@ -7,9 +7,8 @@ SyscallHandler Syscalls[MAX_SYSCALL_COUNT];
 
 
 void
-SyscallMan_Initialize(void)
-{
-	syscall_lock = CreateSpinlock();
+SyscallMan_Initialize(void) {
+    syscall_lock = CreateSpinlock();
 }
 
 void
@@ -33,22 +32,19 @@ SyscallReceived(uint64_t instruction_pointer,
 }
 
 uint64_t
-AllocateSyscall(void)
-{
-	LockSpinlock(syscall_lock);
-	uint64_t ret = free_syscall_index++;
-	UnlockSpinlock(syscall_lock);
-	return ret;
+AllocateSyscall(void) {
+    LockSpinlock(syscall_lock);
+    uint64_t ret = free_syscall_index++;
+    UnlockSpinlock(syscall_lock);
+    return ret;
 }
 
 void
 RegisterSyscall(uint64_t syscall_num,
-				SyscallHandler handler)
-{
-	if(syscall_num < MAX_SYSCALL_COUNT)
-	{
-		LockSpinlock(syscall_lock);
-		Syscalls[syscall_num] = handler;
-		UnlockSpinlock(syscall_lock);
-	}
+                SyscallHandler handler) {
+    if(syscall_num < MAX_SYSCALL_COUNT) {
+        LockSpinlock(syscall_lock);
+        Syscalls[syscall_num] = handler;
+        UnlockSpinlock(syscall_lock);
+    }
 }
