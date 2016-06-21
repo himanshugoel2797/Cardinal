@@ -4,6 +4,7 @@
 #include "common/common.h"
 
 static uint8_t *k_stack = NULL;
+static uint64_t rflags = 0;
 
 __attribute__((naked, noreturn))
 void
@@ -11,15 +12,20 @@ Syscall_Handler(void) {
     //Setup the environment to move into the OS syscall handler
     __asm__ volatile
     (
-        "cli\n\thlt\n\t"
-        "mov %%rsp, %%rax\n\t"
-        "mov k_stack, %%rsp\n\t"
-        "push %%rax\n\t"
-        "push %%rcx\n\t"
-        "call (SyscallReceived)\n\t"
-        "pop %%rcx\n\t"
-        "pop %%rax\n\t"
-        "mov %%rax, %%rsp\n\t"
+        "pushq %%rax\n\t"
+        "movq %%rsp, %%rax\n\t"
+        "movq k_stack, %%rsp\n\t"
+        "pushq %%rax\n\t"
+        "pushq %%rcx\n\t"
+        "pushq %%rdi\n\t"
+        "movq %%rcx, %%rdi\n\t"
+        "movq %%r11, rflags\n\t"
+        "callq (SyscallReceived)\n\t"
+        "popq %%rdi\n\t"
+        "popq %%rcx\n\t"
+        "popq %%rax\n\t"
+        "movq %%rax, %%rsp\n\t"
+        "popq %%rax\n\t"
         "sysretq\n\t" :::
     );
 }
