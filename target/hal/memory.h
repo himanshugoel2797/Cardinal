@@ -77,6 +77,9 @@ GetPhysicalAddressUID(UID 	src,
 MemoryAllocationErrors
 CreateVirtualMemoryInstance(UID *inst);
 
+void
+FreeVirtualMemoryInstance(UID inst);
+
 UID
 SetActiveVirtualMemoryInstance(UID inst);
 
@@ -110,6 +113,19 @@ FindFreeVirtualAddress(UID 			pageTable,
                        size_t 			size,
                        MemoryAllocationType 	allocType,
                        MemoryAllocationFlags 	flags);
+
+//Lock the physical page to prevent modification
+uint32_t
+LockPage(void *virtualAddress);
+
+//Unlock the physical page to allow modification, if this was allowed
+void
+UnlockPage(void *virtualAddress, 
+           uint32_t lockKey);
+
+void
+HandlePageFault(void *virtualAddress, 
+                MemoryAllocationFlags error);
 
 uint64_t
 AllocatePhysicalPage(void);

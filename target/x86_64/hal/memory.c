@@ -45,6 +45,15 @@ CreateVirtualMemoryInstance(UID *inst) {
     return MemoryAllocationErrors_Unknown;
 }
 
+void
+FreeVirtualMemoryInstance(UID inst){
+    if(inst != NULL && inst % PAGE_SIZE == 0) {
+        LockSpinlock(vmem_lock);
+        VirtMemMan_FreePageTable((PML_Instance)inst);
+        UnlockSpinlock(vmem_lock);
+    }
+}
+
 UID
 SetActiveVirtualMemoryInstance(UID inst) {
     LockSpinlock(vmem_lock);
@@ -178,14 +187,14 @@ ForkTable(UID src,
 
     //TODO review this code to make sure it works
     while(c != NULL) {
-        if(c->AllocationType != MemoryAllocationType_Stack) {
+        if((c->AllocationType & MemoryAllocationType_Stack) != MemoryAllocationType_Stack) {
             MapPage(*dst,
                     b,
                     (uint64_t)GetPhysicalAddressUID(src, (void*)c->VirtualAddress),
                     c->VirtualAddress,
                     c->Length,
                     c->CacheMode,
-                    c->AllocationType,
+                    c->AllocationType | MemoryAllocationType_Fork,
                     c->Flags
                    );
         }
