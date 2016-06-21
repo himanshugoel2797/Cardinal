@@ -47,7 +47,7 @@ CreateVirtualMemoryInstance(UID *inst) {
 
 void
 FreeVirtualMemoryInstance(UID inst) {
-    if(inst != NULL && inst % PAGE_SIZE == 0) {
+    if(inst != 0 && inst % PAGE_SIZE == 0) {
         LockSpinlock(vmem_lock);
         VirtMemMan_FreePageTable((PML_Instance)inst);
         UnlockSpinlock(vmem_lock);

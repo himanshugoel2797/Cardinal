@@ -4,7 +4,7 @@
 #include "common/common.h"
 
 static uint8_t *k_stack = NULL;
-static uint64_t rflags = 0;
+static volatile uint64_t rflags = 0;
 
 __attribute__((naked, noreturn))
 void
@@ -55,6 +55,7 @@ Syscall_Initialize(void) {
     uint64_t lstar = (uint64_t)Syscall_Handler;
     uint64_t cstar = 0;
     uint64_t sfmask = 0;
+    rflags = 0;
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | 1);	//Enable the syscall instruction
     wrmsr(0xC0000081, star_val);

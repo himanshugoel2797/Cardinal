@@ -858,8 +858,8 @@ void
 VirtMemMan_FreePageTable(PML_Instance inst) {
     for(int pml_i = 0; pml_i < 512; pml_i++) {
         uint64_t pml_paddr = GET_ADDR_4KB(inst[pml_i]);
-        uint64_t *pml_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pml_paddr);
-        if(pml_paddr == NULL)continue;
+        uint64_t *pml_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pml_paddr);
+        if(pml_paddr == 0)continue;
 
         for(int pdpt_i = 0; pdpt_i < 512; pdpt_i++) {
             uint64_t pdpt_paddr = pml_vaddr[pdpt_i];
@@ -868,9 +868,9 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
             else
                 pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
 
-            uint64_t *pdpt_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_paddr);
+            uint64_t *pdpt_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pdpt_paddr);
 
-            if(pdpt_paddr == NULL)continue;
+            if(pdpt_paddr == 0)continue;
 
             for(int pd_i = 0; pd_i < 512; pd_i++) {
                 uint64_t pd_paddr = pdpt_vaddr[pd_i];
@@ -880,9 +880,7 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
                 else
                     pd_paddr = GET_ADDR_4KB(pd_paddr);
 
-                uint64_t *pd_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pd_paddr);
-
-                if(pd_paddr == NULL)continue;
+                if(pd_paddr == 0)continue;
 
                 MemMan_Free(pd_paddr);
             }

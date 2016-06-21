@@ -60,7 +60,7 @@ GetProcessInformation(UID 			pid,
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
@@ -80,7 +80,7 @@ GetProcessReference(UID           pid,
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
@@ -97,7 +97,7 @@ KillProcess(UID pid) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
@@ -115,7 +115,7 @@ KillProcess(UID pid) {
             while(c != NULL) {
                 MemoryAllocationType allocType = c->AllocationType;
 
-                if(allocType & MemoryAllocationType_Fork == 0){
+                if((allocType & MemoryAllocationType_Fork) == 0){
                 allocType = allocType & ~MemoryAllocationType_Fork;
 
                 if(allocType != MemoryAllocationType_Global &&
@@ -126,7 +126,7 @@ KillProcess(UID pid) {
                 c = c->next;
             }
 
-            FreeVirtualMemoryInstace(pInf->PageTable);
+            FreeVirtualMemoryInstance(pInf->PageTable);
             List_Free(root->ThreadIDs);
 
             UnlockSpinlock(pInf->lock);
@@ -143,7 +143,7 @@ SleepProcess(UID pid) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
@@ -166,7 +166,7 @@ SetTLSSize(UID pid,
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
@@ -195,7 +195,7 @@ RegisterSignalHandler(UID 		pid,
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
         LockSpinlock(pInf->lock);
-        UID pInfID = pInfID->ID;
+        UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {

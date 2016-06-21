@@ -42,9 +42,39 @@ static uint32_t preempt_vector;
 #define SET_PROPERTY_VAL(t, name, val) set_thread_##name (t, val)
 #define GET_PROPERTY_VAL(t, name) get_thread_##name (t)
 
+
+#define PROPERTY_PROC_GET(type, name, default_val) type get_proc_##name (ProcessInformation *t) \
+                             { \
+                                if(t == NULL)__asm__("add $0x20, %rsp\n\tpopq %rax\n\tpopq %rax\n\tcli\n\thlt"); \
+                                type tmp = default_val ; \
+                                LockSpinlock(t->lock);  \
+                                tmp = t-> name ; \
+                                UnlockSpinlock(t->lock);    \
+                                return tmp; \
+                             }
+
+#define PROPERTY_PROC_SET(type, name) void set_proc_##name (ProcessInformation *t, type v) \
+                            { \
+                                LockSpinlock(t->lock); \
+                                t-> name = v; \
+                                UnlockSpinlock(t->lock); \
+                            }
+
+#define PROPERTY_PROC_GET_SET(type, name, default_val) PROPERTY_PROC_GET(type, name, default_val) \
+                            PROPERTY_PROC_SET(type, name)
+
+
+#define SET_PROPERTY_PROC_VAL(t, name, val) set_proc_##name (GET_PROPERTY_VAL(t, ParentProcess), val)
+#define GET_PROPERTY_PROC_VAL(t, name) get_proc_##name (GET_PROPERTY_VAL(t,ParentProcess))
+
 PROPERTY_GET_SET(UID, Parent, 0)
 PROPERTY_GET_SET(UID, ID, 0)
 PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
+PROPERTY_PROC_GET(UID, ID, 0)
+PROPERTY_PROC_GET(uint64_t, TLSSize, 0)
+PROPERTY_PROC_GET(UID, PageTable, 0)
+PROPERTY_PROC_GET(MemoryAllocationsMap*, AllocationMap, NULL)
+
 PROPERTY_GET_SET(ThreadEntryPoint, entry_point, NULL)
 PROPERTY_GET_SET(ThreadState, state, 0)
 PROPERTY_GET_SET(ThreadPriority, priority, 0)
@@ -113,11 +143,11 @@ CreateThread(UID parentProcess,
 
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
 
-    if(GET_PROPERTY_VAL(thd, ParentProcess)->TLSSize != 0) {
+    if(GET_PROPERTY_PROC_VAL(thd, TLSSize) != 0) {
         uint64_t tls_base = 0;
-        FindFreeVirtualAddress(GET_PROPERTY_VAL(thd, ParentProcess)->PageTable,
+        FindFreeVirtualAddress(GET_PROPERTY_PROC_VAL(thd, PageTable),
                                &tls_base,
-                               GET_PROPERTY_VAL(thd, ParentProcess)->TLSSize,
+                               GET_PROPERTY_PROC_VAL(thd, TLSSize),
                                MemoryAllocationType_Application,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_User
                               );
@@ -127,18 +157,18 @@ CreateThread(UID parentProcess,
             if(alloc == NULL)
                 goto error_exit;
 
-            MapPage(GET_PROPERTY_VAL(thd, ParentProcess)->PageTable,
+            MapPage(GET_PROPERTY_PROC_VAL(thd, PageTable),
                     alloc,
-                    AllocatePhysicalPageCont(GET_PROPERTY_VAL(thd, ParentProcess)->TLSSize/PAGE_SIZE),
+                    AllocatePhysicalPageCont(GET_PROPERTY_PROC_VAL(thd, TLSSize)/PAGE_SIZE),
                     tls_base,
-                    GET_PROPERTY_VAL(thd, ParentProcess)->TLSSize,
+                    GET_PROPERTY_PROC_VAL(thd, TLSSize),
                     CachingModeWriteBack,
                     MemoryAllocationType_Application,
                     MemoryAllocationFlags_Write | MemoryAllocationFlags_User
                    );
 
-            alloc->next = GET_PROPERTY_VAL(thd, ParentProcess)->AllocationMap->next;
-            GET_PROPERTY_VAL(thd, ParentProcess)->AllocationMap->next = alloc;
+            alloc->next = GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next;
+            GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next = alloc;
 
             thd->tls_base = (void*)tls_base;
         } else goto error_exit;
@@ -149,7 +179,7 @@ CreateThread(UID parentProcess,
     uint64_t user_stack_base = 0;
 
     FindFreeVirtualAddress(
-        GET_PROPERTY_VAL(thd, ParentProcess)->PageTable,
+        GET_PROPERTY_PROC_VAL(thd, PageTable),
         (uint64_t*)&user_stack_base,
         PAGE_SIZE * 2,
         MemoryAllocationType_Stack,
@@ -161,7 +191,7 @@ CreateThread(UID parentProcess,
 
     MemoryAllocationsMap *alloc_stack = kmalloc(sizeof(MemoryAllocationsMap));
     if((uint64_t)alloc_stack == 0)while(1);
-    MapPage(GET_PROPERTY_VAL(thd, ParentProcess)->PageTable,
+    MapPage(GET_PROPERTY_PROC_VAL(thd, PageTable),
             alloc_stack,
             AllocatePhysicalPageCont(2),
             user_stack_base,
@@ -171,8 +201,8 @@ CreateThread(UID parentProcess,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
            );
 
-    alloc_stack->next = GET_PROPERTY_VAL(thd, ParentProcess)->AllocationMap->next;
-    GET_PROPERTY_VAL(thd, ParentProcess)->AllocationMap->next = alloc_stack;
+    alloc_stack->next = GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next;
+    GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next = alloc_stack;
 
     List_AddEntry(neutral, thd);
     List_AddEntry(thds, thd);
@@ -372,7 +402,8 @@ GetNextThread(ThreadInfo *prevThread) {
                 kfree((void*)(next_thread->kernel_stack_base + 128 - KiB(8)));
                 kfree((void*)(next_thread->interrupt_stack_base + 128 - KiB(8)));
                 FreePhysicalPageCont((uint64_t)GetPhysicalAddress((void*)(next_thread->user_stack_base + 128 - KiB(8))), 2);
-                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base, KiB(8));
+                UnmapPage(GET_PROPERTY_PROC_VAL(next_thread, PageTable), next_thread->user_stack_base, KiB(8));
+
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
                 next_thread = NULL;
@@ -418,7 +449,7 @@ TaskSwitch(uint32_t int_no,
     SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_base);
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
 
-    SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
+    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
 
     HandleInterruptNoReturn(int_no);
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Running) {
@@ -445,7 +476,7 @@ SwitchThread(void) {
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
-    SetActiveVirtualMemoryInstance(GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->PageTable);
+    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     //Resume execution of the thread
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Initialize) {
         SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Running);
