@@ -403,7 +403,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 kfree((void*)(next_thread->interrupt_stack_base + 128 - KiB(8)));
                 FreePhysicalPageCont((uint64_t)GetPhysicalAddress((void*)(next_thread->user_stack_base + 128 - KiB(8))), 2);
                 LockSpinlock(next_thread->ParentProcess->lock);
-                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base, KiB(8));
+                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base + 128 - KiB(8), KiB(8));
 
                 for(uint64_t i = 0; i < List_Length(next_thread->ParentProcess->ThreadIDs); i++)
                 {
@@ -412,13 +412,19 @@ GetNextThread(ThreadInfo *prevThread) {
                     }
                 }
 
-                if((List_Length(next_thread->ParentProcess->ThreadIDs) == 0) | 
-                    (next_thread->ParentProcess->Status == ProcessStatus_Terminating))
-                    KillProcess(next_thread->ParentProcess->ID);
+                uint64_t parent_thd_cnt = List_Length(next_thread->ParentProcess->ThreadIDs);
+                ProcessStatus parent_status = next_thread->ParentProcess->Status;
+                uint64_t parent_pid = next_thread->ParentProcess->ID;
+
+                UnlockSpinlock(next_thread->ParentProcess->lock);
+                if((parent_thd_cnt == 0) | (parent_status == ProcessStatus_Terminating))
+                    KillProcess(parent_pid);
 
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
                 next_thread = NULL;
+            }else{
+                List_AddEntry(thds, next_thread);
             }
             break;
         case ThreadState_Paused:
@@ -452,17 +458,17 @@ TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;
 
-    SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
+    //SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SavePreviousThread(coreState->cur_thread);
 
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
-    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
+    //RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_base);
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
-    
+
     HandleInterruptNoReturn(int_no);
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Running) {
         SwitchToThread(coreState->cur_thread);

@@ -28,10 +28,12 @@ CCADMIN=CCadmin
 CC=clang -target $(TARGET_TRIPLET)
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3
+CFLAGS= -ffreestanding -Wall -Wextra -Werror -Wno-trigraphs -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -MMD -MP
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
+
+-include $(SOURCES:.o=.d)
 
 .c.o:
 	$(CC) $(CFLAGS) -S $? -o $(?:.c=.s)
@@ -50,8 +52,12 @@ run: all
 
 debug: build build-tests
 
+clean_output:
+	rm -rf build/$(CONF)/*
+	rm -rf ISO/*
+
 # build
-build:$(SOURCES)
+build:$(SOURCES) clean_output
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	mkdir -p build/$(CONF)
 	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES)) $(SOURCES) -mcmodel=kernel
@@ -60,6 +66,7 @@ build:$(SOURCES)
 clean:
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
 	rm -f $(SOURCES)
+	rm -f $(SOURCES:.o=.d)
 	rm -rf build/$(CONF)/*
 	rm -rf ISO/*
 

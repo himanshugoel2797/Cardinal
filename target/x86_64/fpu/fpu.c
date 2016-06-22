@@ -12,7 +12,7 @@ FPU_SIMDException(uint32_t int_no,
     if(int_no != 0x13)return;
     err_no = 0;
 
-    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "ra"((uint64_t)0xB00B1E5));
+    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "a"((uint64_t)0xB00B1E5));
 
 }
 
@@ -21,7 +21,7 @@ FPU_X87Exception(uint32_t int_no,
                  uint32_t err_no) {
     if(int_no != 0x10)return;
     err_no = 0;
-    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "ra"((uint64_t)0xB00B5));
+    __asm__ volatile("cli\n\tmov %0, %%rax\n\thlt" :: "a"((uint64_t)0xB00B5));
 }
 
 void
@@ -42,7 +42,7 @@ FPU_Initialize(void) {
     uint64_t bitmask = 0;
     //Get the current control register 0 value
     __asm__ volatile ("mov %%cr0, %0"
-                      : "=ra" (bitmask));
+                      : "=r" (bitmask));
 
     bitmask &= ~(1 << 2); //Enable the FPU
     bitmask |= (1 << 5); //Enable FPU exceptions
@@ -50,11 +50,11 @@ FPU_Initialize(void) {
 
     //Set the control register to the new value
     __asm__ volatile ("mov %0, %%cr0"
-                      :: "ra" (bitmask));
+                      :: "r" (bitmask));
 
     //Get the current control register 0 value
     __asm__ volatile ("mov %%cr4, %0"
-                      : "=ra" (bitmask));
+                      : "=r" (bitmask));
 
     bitmask |= (1 << 9); //Enable SSE support
     bitmask |= (1 << 10); //Enable #XF exception
@@ -68,7 +68,7 @@ FPU_Initialize(void) {
 
     //Set the control register to the new value
     __asm__ volatile ("mov %0, %%cr4"
-                      :: "ra" (bitmask));
+                      :: "r" (bitmask));
 
     __asm__ volatile ("fninit");
 

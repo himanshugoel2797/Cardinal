@@ -27,15 +27,10 @@ Spinlock alloc_sync;
 #define GET_ADDR(x) (x->pointer & ~1)
 #define SET_ADDR(x, val) (x->pointer = val | (x->pointer & 1))
 
-// Allocate a set of pages and maintain a list of them, each page contains a
-// kmalloc_page_hdr header to track how much of the page is in use, kernel
-// RAM
-// is from virtual addresses 0x20000000 to 0x40000000 without regard for the
-// associated physical page address
 
 //Allocate a 256MB pool for the kernel and map it to a free address space
 void kmalloc_init(MemoryAllocationsMap *allocationMap) {
-#define STORE_SIZE MiB(128)
+#define STORE_SIZE MiB(256)
 
     //TODO Setup TLB shootdowns
     alloc_sync = CreateBootstrapSpinlock();
@@ -78,7 +73,7 @@ void kmalloc_init(MemoryAllocationsMap *allocationMap) {
 
     next_free_block++;
 
-    Balloc_Initialize();
+    //Balloc_Initialize();
 }
 
 void kcompact() {
@@ -100,17 +95,45 @@ void kcompact() {
     }
 }
 
+#if defined(DEBUG)
+static void* ksetup_instrumentation(void* addr, size_t size)
+{
+    size -= 8 * 6;
+
+    uint64_t* top_addr = (uint64_t*)addr;
+    top_addr[0] = 0xDEADBEEFCAFEBABE;
+    top_addr[1] = size;
+    top_addr[2] = 0xDEADBEEFCAFEBABE;
+
+    uint64_t* bottom_addr = (uint64_t*)((uint64_t)top_addr + 8 * 3 + size);
+    bottom_addr[0] = 0xDEADC0DEB00B1EE5;
+    bottom_addr[1] = size;
+    bottom_addr[2] = 0xDEADC0DEB00B1EE5;
+
+    return (void*)((uint64_t)addr + 24);
+}
+
+#endif
+
 bool retry = FALSE;
 void *kmalloc(size_t size) {
     LockSpinlock(alloc_sync);
 
-    if(size < LARGE_HEAP_BLOCK_SIZE) {
+#if defined(DEBUG)
+    size += 8 * 6;
+
+#else
+    #define ksetup_instrumentation(a, b) a
+
+#endif
+
+    /*if(size < LARGE_HEAP_BLOCK_SIZE) {
         UID a = Balloc_Alloc(size);
         if(a != (UID)-1) {
             UnlockSpinlock(alloc_sync);
             return Balloc_GetBaseAddress(a);
         }
-    }
+    }*/
 
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
@@ -129,7 +152,7 @@ void *kmalloc(size_t size) {
             //kcompact();
             uint64_t res = (uint64_t)kmalloc(size);
             retry = FALSE;
-            return (void*)res;
+            return ksetup_instrumentation((void*)res, size);
         }
         return (void*)NULL;
     }
@@ -154,18 +177,23 @@ void *kmalloc(size_t size) {
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
     UnlockSpinlock(alloc_sync);
-    return (void*)addr;
+    return ksetup_instrumentation((void*)addr, size);
 }
 
 void kfree(void *addr) {
     LockSpinlock(alloc_sync);
     //Find the block that matches the address specified
-    UID a = Balloc_GetUID(addr);
+    /*UID a = Balloc_GetUID(addr);
     if(a != (UID)-1) {
         Balloc_Free(a);
         UnlockSpinlock(alloc_sync);
         return;
-    }
+    }*/
+
+#if defined(DEBUG)
+    uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);
+    if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile("add $0x28, %%rsp\n\tpopq %%rbx\n\tcli\n\thlt" :: "a"(addr));
+#endif
 
     kmalloc_info *a_info = allocation_info;
     while(a_info->next != NULL) {
