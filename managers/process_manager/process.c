@@ -97,46 +97,45 @@ KillProcess(UID pid) {
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
-            
-            LockSpinlock(pInf->lock);
-
-            if(List_Length(pInf->ThreadIDs) != 0)
-            {
-            pInf->Status = ProcessStatus_Terminating;
-
-            for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++) {
-                SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
-            }
-
-            UnlockSpinlock(pInf->lock);
-        }else{
 
             LockSpinlock(pInf->lock);
-            List_Remove(processes, i);
-            //TODO Delete the process data, free up any application memory
-            MemoryAllocationsMap *c = pInf->AllocationMap;
-            while(c != NULL) {
-                MemoryAllocationType allocType = c->AllocationType;
 
-                if((allocType & MemoryAllocationType_Fork) == 0){
-                allocType = allocType & ~MemoryAllocationType_Fork;
+            if(List_Length(pInf->ThreadIDs) != 0) {
+                pInf->Status = ProcessStatus_Terminating;
 
-                if(allocType != MemoryAllocationType_Global &&
-                    allocType != MemoryAllocationType_Shared &&
-                    allocType != MemoryAllocationType_Paged)
-                    FreePhysicalPageCont(c->PhysicalAddress, c->Length / PAGE_SIZE);
+                for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++) {
+                    SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
+                }
+
+                UnlockSpinlock(pInf->lock);
+            } else {
+
+                LockSpinlock(pInf->lock);
+                List_Remove(processes, i);
+                //TODO Delete the process data, free up any application memory
+                MemoryAllocationsMap *c = pInf->AllocationMap;
+                while(c != NULL) {
+                    MemoryAllocationType allocType = c->AllocationType;
+
+                    if((allocType & MemoryAllocationType_Fork) == 0) {
+                        allocType = allocType & ~MemoryAllocationType_Fork;
+
+                        if(allocType != MemoryAllocationType_Global &&
+                                allocType != MemoryAllocationType_Shared &&
+                                allocType != MemoryAllocationType_Paged)
+                            FreePhysicalPageCont(c->PhysicalAddress, c->Length / PAGE_SIZE);
+                    }
+                    MemoryAllocationsMap *tmp_c = c;
+                    c = c->next;
+                    kfree(tmp_c);
+                }
+
+                FreeVirtualMemoryInstance(pInf->PageTable);
+                List_Free(root->ThreadIDs);
+
+                FreeSpinlock(pInf->lock);
+                kfree(pInf);
             }
-                MemoryAllocationsMap *tmp_c = c;
-                c = c->next;
-                kfree(tmp_c);
-            }
-
-            FreeVirtualMemoryInstance(pInf->PageTable);
-            List_Free(root->ThreadIDs);
-
-            FreeSpinlock(pInf->lock);
-            kfree(pInf);
-        }
 
             return ProcessErrors_None;
         }
@@ -207,7 +206,7 @@ RegisterSignalHandler(UID 		pid,
 
         if(pInfID == pid) {
             for(int i = 0; i < ProcessSignals_MAX; i++) {
-                if((signals >> i) & 1){
+                if((signals >> i) & 1) {
                     LockSpinlock(pInf->lock);
                     pInf->SignalHandlers[i] = sigHandler;
                     UnlockSpinlock(pInf->lock);

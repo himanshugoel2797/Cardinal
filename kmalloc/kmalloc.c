@@ -96,8 +96,7 @@ void kcompact() {
 }
 
 #if defined(DEBUG)
-static void* ksetup_instrumentation(void* addr, size_t size)
-{
+static void* ksetup_instrumentation(void* addr, size_t size) {
     size -= 8 * 6;
 
     uint64_t* top_addr = (uint64_t*)addr;
@@ -123,7 +122,7 @@ void *kmalloc(size_t size) {
     size += 8 * 6;
 
 #else
-    #define ksetup_instrumentation(a, b) a
+#define ksetup_instrumentation(a, b) a
 
 #endif
 

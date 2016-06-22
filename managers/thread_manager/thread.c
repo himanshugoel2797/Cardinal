@@ -405,8 +405,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
                 UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base + 128 - KiB(8), KiB(8));
 
-                for(uint64_t i = 0; i < List_Length(next_thread->ParentProcess->ThreadIDs); i++)
-                {
+                for(uint64_t i = 0; i < List_Length(next_thread->ParentProcess->ThreadIDs); i++) {
                     if((uint64_t)List_EntryAt(next_thread->ParentProcess->ThreadIDs, i) == next_thread->ID) {
                         List_Remove(next_thread->ParentProcess->ThreadIDs, i);
                     }
@@ -423,7 +422,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
                 next_thread = NULL;
-            }else{
+            } else {
                 List_AddEntry(thds, next_thread);
             }
             break;

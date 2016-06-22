@@ -321,9 +321,9 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
 
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
-    if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance){
-     memcpy(tmp, virtMemData->coreLocalPMLData, 512 * sizeof(uint64_t));
- }
+    if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance) {
+        memcpy(tmp, virtMemData->coreLocalPMLData, 512 * sizeof(uint64_t));
+    }
 
     //Setup the thread local storage for this core before changing!
     uint64_t *pml = (uint64_t*)instance;
@@ -336,7 +336,7 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
     SET_CACHEMODE(virtMemData->coreLocalPMLData[511], MEM_TYPE_WB);
 
     __asm__ volatile("mov %0, %%cr3" :: "r"(GetPhysicalAddress((void*)virtMemData->coreLocalPMLData)));
-    
+
     virtMemData->curPML = instance;
     return tmp;
 }
