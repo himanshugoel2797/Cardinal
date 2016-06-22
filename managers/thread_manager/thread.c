@@ -402,7 +402,19 @@ GetNextThread(ThreadInfo *prevThread) {
                 kfree((void*)(next_thread->kernel_stack_base + 128 - KiB(8)));
                 kfree((void*)(next_thread->interrupt_stack_base + 128 - KiB(8)));
                 FreePhysicalPageCont((uint64_t)GetPhysicalAddress((void*)(next_thread->user_stack_base + 128 - KiB(8))), 2);
-                UnmapPage(GET_PROPERTY_PROC_VAL(next_thread, PageTable), next_thread->user_stack_base, KiB(8));
+                LockSpinlock(next_thread->ParentProcess->lock);
+                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base, KiB(8));
+
+                for(uint64_t i = 0; i < List_Length(next_thread->ParentProcess->ThreadIDs); i++)
+                {
+                    if((uint64_t)List_EntryAt(next_thread->ParentProcess->ThreadIDs, i) == next_thread->ID) {
+                        List_Remove(next_thread->ParentProcess->ThreadIDs, i);
+                    }
+                }
+
+                if((List_Length(next_thread->ParentProcess->ThreadIDs) == 0) | 
+                    (next_thread->ParentProcess->Status == ProcessStatus_Terminating))
+                    KillProcess(next_thread->ParentProcess->ID);
 
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
@@ -450,7 +462,7 @@ TaskSwitch(uint32_t int_no,
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_base);
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
-
+    
     HandleInterruptNoReturn(int_no);
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Running) {
         SwitchToThread(coreState->cur_thread);

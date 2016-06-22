@@ -49,7 +49,6 @@ LockSpinlock(Spinlock primitive) {
         ".spin:\n\t"
         "btq $25, %%rcx\n\t"
         "jnc .skip_sti\n\t"
-        "sti\n\t"
         ".skip_sti:"
         "pause\n\t"
         "cmpw %%cx, (%[prim])\n\t"

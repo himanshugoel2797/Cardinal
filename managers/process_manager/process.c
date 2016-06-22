@@ -19,8 +19,6 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     root->ThreadIDs = List_Create(CreateSpinlock());
     root->TLSSize = 0;
     root->lock = CreateSpinlock();
-    root->children = NULL;
-    root->next = NULL;
 
     processes = List_Create(CreateSpinlock());
     List_AddEntry(processes, root);
@@ -42,8 +40,6 @@ ForkProcess(ProcessInformation *src,
     ForkTable(src->PageTable, src->AllocationMap, &dst->PageTable, &dst->AllocationMap);
 
     //Add dst to src's children
-    dst->next = src->children;
-    src->children = dst;
     dst->ThreadIDs = List_Create(CreateSpinlock());
 
     UnlockSpinlock(src->lock);
@@ -104,12 +100,19 @@ KillProcess(UID pid) {
             
             LockSpinlock(pInf->lock);
 
+            if(List_Length(pInf->ThreadIDs) != 0)
+            {
             pInf->Status = ProcessStatus_Terminating;
 
             for(uint64_t j = 0; j < List_Length(pInf->ThreadIDs); j++) {
                 SetThreadState((UID)List_EntryAt(pInf->ThreadIDs, j), ThreadState_Exiting);
             }
 
+            UnlockSpinlock(pInf->lock);
+        }else{
+
+            LockSpinlock(pInf->lock);
+            List_Remove(processes, i);
             //TODO Delete the process data, free up any application memory
             MemoryAllocationsMap *c = pInf->AllocationMap;
             while(c != NULL) {
@@ -123,13 +126,17 @@ KillProcess(UID pid) {
                     allocType != MemoryAllocationType_Paged)
                     FreePhysicalPageCont(c->PhysicalAddress, c->Length / PAGE_SIZE);
             }
+                MemoryAllocationsMap *tmp_c = c;
                 c = c->next;
+                kfree(tmp_c);
             }
 
             FreeVirtualMemoryInstance(pInf->PageTable);
             List_Free(root->ThreadIDs);
 
-            UnlockSpinlock(pInf->lock);
+            FreeSpinlock(pInf->lock);
+            kfree(pInf);
+        }
 
             return ProcessErrors_None;
         }

@@ -34,6 +34,7 @@
 #define BOOTSTRAP_PML_ADDR (0xfffffffe00001000)
 
 static uint64_t* kernel_pdpt = NULL;
+static uint64_t* kernel_pdpt_paddr = NULL;
 
 typedef struct VirtMemManData {
     uint64_t *coreLocalPMLData;
@@ -83,7 +84,7 @@ VirtMemMan_Initialize(void) {
 
     if(kernel_pdpt == NULL) {
         void* pdpt_0 = (void*)MemMan_Alloc ();
-
+        kernel_pdpt_paddr = (uint64_t*)pdpt_0;
 
         kernel_pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, pdpt_0);
         pml[511] = (uint64_t)pdpt_0;    //Keep the top 512GiB of memory mapped into all address spaces
@@ -257,9 +258,7 @@ VirtMemMan_Initialize(void) {
 
         coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
     } else {
-
-        void* pdpt_0 = GetPhysicalAddress(kernel_pdpt);
-        pml[511] = (uint64_t)pdpt_0;
+        pml[511] = (uint64_t)kernel_pdpt_paddr;
         MARK_PRESENT(pml[511]);
         MARK_WRITE(pml[511]);
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
@@ -322,20 +321,22 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
 
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
-    if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance) memcpy(tmp, virtMemData->coreLocalPMLData, 512 * sizeof(uint64_t));
+    if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance){
+     memcpy(tmp, virtMemData->coreLocalPMLData, 512 * sizeof(uint64_t));
+ }
 
     //Setup the thread local storage for this core before changing!
     uint64_t *pml = (uint64_t*)instance;
     memcpy((void*)virtMemData->coreLocalPMLData, pml, 512 * sizeof(uint64_t));
     virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
 
-    virtMemData->coreLocalPMLData[511] = (uint64_t)GetPhysicalAddress(kernel_pdpt);
+    virtMemData->coreLocalPMLData[511] = (uint64_t)kernel_pdpt_paddr;
     MARK_PRESENT(virtMemData->coreLocalPMLData[511]);
     MARK_WRITE(virtMemData->coreLocalPMLData[511]);
     SET_CACHEMODE(virtMemData->coreLocalPMLData[511], MEM_TYPE_WB);
 
     __asm__ volatile("mov %0, %%cr3" :: "r"(GetPhysicalAddress((void*)virtMemData->coreLocalPMLData)));
-
+    
     virtMemData->curPML = instance;
     return tmp;
 }

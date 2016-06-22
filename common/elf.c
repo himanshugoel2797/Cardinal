@@ -111,7 +111,7 @@ LoadElf64(void *loc,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
 
-        for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_aligned + sh_size; aligned_addr += PAGE_SIZE) {
+        for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_aligned + sh_pg_offset + sh_size; aligned_addr += PAGE_SIZE) {
             if(GetPhysicalAddressUID(pageTable, (void*)sh_addr) == NULL) {
 
 
@@ -214,6 +214,7 @@ LoadElf64(void *loc,
             }
         }
     }
+        __asm__("cli\n\thlt");
 
     return ElfLoaderError_Success;
 }

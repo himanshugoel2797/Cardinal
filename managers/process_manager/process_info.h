@@ -78,8 +78,6 @@ typedef struct ProcessInformation {
     List                        *ThreadIDs;
     uint64_t                    TLSSize;
     Spinlock                    lock;
-    struct ProcessInformation   *children;
-    struct ProcessInformation   *next;
 } ProcessInformation;
 
 #endif
