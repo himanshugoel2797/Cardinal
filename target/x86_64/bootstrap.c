@@ -38,7 +38,7 @@ void
 bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no *= 16;
     bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentProcessUID()));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentThreadUID()), "S"(regs->useresp));
 }
 
 void
@@ -69,12 +69,6 @@ bootstrap_kernel(void *param,
     for(int i = 0; i < 31; i++)
         IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
-    //Setup IST for important exceptions
-    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
-    IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
-
-    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
-    IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
     FPU_Initialize();   //Setup the FPU
 
@@ -85,6 +79,12 @@ bootstrap_kernel(void *param,
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
     SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
+    //Setup IST for important exceptions
+    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
+
+    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
@@ -164,6 +164,11 @@ smp_bootstrap(void) {
     GDT_Initialize();   //Setup the GDT
     SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
 
+    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
+
+    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
+    IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
     APIC_LocalInitialize();
     __asm__ volatile("sti");

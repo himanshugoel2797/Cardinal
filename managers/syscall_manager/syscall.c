@@ -28,7 +28,7 @@ SyscallReceived(uint64_t instruction_pointer,
       Copy the parameters over to a kernel buffer, then disable the protection.
       Now function only with the kernel buffer
     */
-    while(1) __asm__ ("cli\n\thlt" :: "a"(syscall_num));
+    //while(1) __asm__ ("cli\n\thlt" :: "a"(syscall_num));
 }
 
 uint64_t

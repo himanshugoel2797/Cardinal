@@ -40,6 +40,8 @@ typedef struct ThreadInfo {
     uint64_t kernel_stack_base;
     uint64_t user_stack_base;
     uint64_t current_stack;
+    uint64_t kernel_stack_aligned;
+    uint64_t interrupt_stack_aligned;
     void *tls_base;
     int core_affinity;
     uint64_t sleep_duration_ms;

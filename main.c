@@ -79,7 +79,7 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
+    if(!CreateThread(0, load_elf))__asm__("cli\n\thlt");
     //CreateThread(0, hlt2_kernel);
 
     while(1);
