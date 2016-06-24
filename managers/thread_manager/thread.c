@@ -487,7 +487,7 @@ TaskSwitch(uint32_t int_no,
         coreState->cur_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
         SwitchAndInitializeThread(coreState->cur_thread);
-    } else{
+    } else {
         __asm__("cli\n\thlt" :: "a"(coreState->cur_thread->state));
     }
 }

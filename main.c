@@ -30,7 +30,7 @@ kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
     allocMap->next = NULL;
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
-    
+
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();

@@ -3,11 +3,10 @@
 #include "managers.h"
 #include "common/common.h"
 
-typedef struct CoreKernelStackInfo
-{
+typedef struct CoreKernelStackInfo {
     uint8_t *k_stack;
     uint64_t rflags;
-}CoreKernelStackInfo;
+} CoreKernelStackInfo;
 
 static volatile CoreKernelStackInfo* k_stack_info;
 
@@ -17,7 +16,7 @@ Syscall_Handler(void) {
     //Setup the environment to move into the OS syscall handler
     __asm__ volatile
     (
-     //   "cli\n\t"
+        //   "cli\n\t"
         "sysretq\n\t"
         "pushq %%rax\n\t"
         "movq %%rsp, %%rax\n\t"

@@ -101,13 +101,12 @@ bootstrap_kernel(void *param,
     //__asm__ ("hlt");
 
 
-    for(int i = 0; i < 32; i++)
-    {
+    for(int i = 0; i < 32; i++) {
         IDT_ChangeEntry(i, 0x08, 0x8E, 0x2);
     }
 
     //Now that all the processors are booted up and ready to do their job
-SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
     //Initialize FPU - Done, setup threading code, provide interfaces to OS
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)
