@@ -97,7 +97,7 @@ VirtMemMan_Initialize(void) {
                             0x40000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -105,7 +105,7 @@ VirtMemMan_Initialize(void) {
                             0x00000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -113,7 +113,7 @@ VirtMemMan_Initialize(void) {
                             0xC0000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -121,7 +121,7 @@ VirtMemMan_Initialize(void) {
                             0x80000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         //Setup Upper 4GiB map
@@ -130,7 +130,7 @@ VirtMemMan_Initialize(void) {
                             0x1C0000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -138,7 +138,7 @@ VirtMemMan_Initialize(void) {
                             0x180000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -146,7 +146,7 @@ VirtMemMan_Initialize(void) {
                             0x140000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -154,7 +154,7 @@ VirtMemMan_Initialize(void) {
                             0x100000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         //Setup lower 4GiB map
@@ -163,7 +163,7 @@ VirtMemMan_Initialize(void) {
                             0xC0000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -171,7 +171,7 @@ VirtMemMan_Initialize(void) {
                             0x80000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -179,7 +179,7 @@ VirtMemMan_Initialize(void) {
                             0x40000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -187,7 +187,7 @@ VirtMemMan_Initialize(void) {
                             0x00000000,
                             TRUE,
                             MEM_TYPE_WB,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         //Uncached
@@ -196,7 +196,7 @@ VirtMemMan_Initialize(void) {
                             0x00000000,
                             TRUE,
                             MEM_TYPE_UC,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -204,7 +204,7 @@ VirtMemMan_Initialize(void) {
                             0x40000000,
                             TRUE,
                             MEM_TYPE_UC,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -212,7 +212,7 @@ VirtMemMan_Initialize(void) {
                             0x80000000,
                             TRUE,
                             MEM_TYPE_UC,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -220,7 +220,7 @@ VirtMemMan_Initialize(void) {
                             0xC0000000,
                             TRUE,
                             MEM_TYPE_UC,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         //Write Through
@@ -229,7 +229,7 @@ VirtMemMan_Initialize(void) {
                             0x00000000,
                             TRUE,
                             MEM_TYPE_WT,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -237,7 +237,7 @@ VirtMemMan_Initialize(void) {
                             0x40000000,
                             TRUE,
                             MEM_TYPE_WT,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -245,7 +245,7 @@ VirtMemMan_Initialize(void) {
                             0x80000000,
                             TRUE,
                             MEM_TYPE_WT,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         VirtMemMan_MapHPage(pml,
@@ -253,7 +253,7 @@ VirtMemMan_Initialize(void) {
                             0xC0000000,
                             TRUE,
                             MEM_TYPE_WT,
-                            MEM_READ | MEM_WRITE | MEM_EXEC | MEM_GLOBAL,
+                            MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
         coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
@@ -271,13 +271,16 @@ VirtMemMan_Initialize(void) {
                    APLS_SIZE,
                    TRUE,
                    MEM_TYPE_WB,
-                   MEM_READ | MEM_WRITE | MEM_GLOBAL,
+                   MEM_READ | MEM_WRITE,
                    MEM_KERNEL);
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
-
+    
     virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
+    virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
+
     VirtMemMan_SetCurrent(pml);
+
 
     //Now change the virtMemData pointer to refer to the TLS version of the structure
     VirtMemManData* tmp = (VirtMemManData*)virtMemData;
@@ -289,16 +292,11 @@ VirtMemMan_Initialize(void) {
     if((uint64_t)virtMemData->coreLocalPMLData % KiB(4) != 0) {
         virtMemData->coreLocalPMLData = (uint64_t*)((uint64_t)virtMemData->coreLocalPMLData + KiB(4) - ((uint64_t)virtMemData->coreLocalPMLData % KiB(4)));
     }
+    
+    virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
 
-    MARK_GLOBAL(pml[511]);
-    MARK_GLOBAL(pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF]);
 
-    __asm__("pushq %rax\n\tmov %cr4, %rax\n\tor $(1 << 7), %rax\n\tmov %rax, %cr4\n\tpopq %rax");
     VirtMemMan_SetCurrent(pml);
-
-
-    //__asm__ volatile("mov %0, %%rax\n\thlt" :: "ra"((uint64_t)&virtMemData->curPML));
-    //Enable the NX bit
 }
 
 void*
@@ -317,19 +315,38 @@ VirtMemMan_CreateInstance(void) {
     PML_Instance pml = (void*)MemMan_Alloc();
     pml = (PML_Instance)GetVirtualAddress(CachingModeWriteBack, (void*)pml);
     memset ((void*)pml, 0, KiB(4));
-
-
+    
+    pml[511] = (uint64_t)kernel_pdpt_paddr;
+    MARK_PRESENT(pml[511]);
+    MARK_WRITE(pml[511]);
+    SET_CACHEMODE(pml[511], MEM_TYPE_WB);
+    
     return pml;
 }
+
+extern int x_cnt;
 
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
 
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
+    uint64_t *tmp_pml = (uint64_t*)tmp;
+    uint64_t *pml = (uint64_t*)instance;
 
-    __asm__ volatile("mov %0, %%cr3" :: "r"(GetPhysicalAddress((void*)instance)));
+    for(int i = 0; i < 512; i++)
+    {
+        if(i == ((CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF))continue;
 
+        if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance)
+            tmp_pml[i] = virtMemData->coreLocalPMLData[i];
+        
+        virtMemData->coreLocalPMLData[i] = pml[i];
+    }
+
+    //Setup the thread local storage for this core before changing!
+    __asm__ volatile("mov %0, %%cr3" :: "r"(GetPhysicalAddress((void*)virtMemData->coreLocalPMLData)));
+    
     virtMemData->curPML = instance;
     return tmp;
 }
@@ -343,7 +360,7 @@ VirtMemMan_GetCurrent(void) {
 static void
 VirtMemMan_SetupPDPTEntry(PML_Instance inst,
                           uint32_t     pml_off) {
-    if((GET_ADDR_4KB(inst[pml_off]) == 0) | (GET_PSE(inst[pml_off])==1)) {
+    if((GET_ADDR_4KB(inst[pml_off]) == 0)) {
         uint64_t entry = MemMan_Alloc();
         MARK_PRESENT(entry);
         MARK_WRITE(entry);
@@ -419,8 +436,6 @@ VirtMemMan_MapHPage(PML_Instance       inst,
     uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
     pdpt[pdpt_off] = phys_addr;
     if(present)MARK_PRESENT(pdpt[pdpt_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(inst[pml_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pdpt[pdpt_off]);
 
     MARK_PSE(pdpt[pdpt_off]);
     SET_CACHEMODE(pdpt[pdpt_off], cache);
@@ -431,7 +446,10 @@ VirtMemMan_MapHPage(PML_Instance       inst,
 
     if(sec_perms & MEM_USER)MARK_USER(pdpt[pdpt_off]);
 
-    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    if(inst == virtMemData->curPML){
+        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
+        __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    }
 }
 
 void
@@ -456,9 +474,6 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
     pd[pd_off] = phys_addr;
     if(present)MARK_PRESENT(pd[pd_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(inst[pml_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pdpt[pdpt_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pd[pd_off]);
 
     MARK_PSE(pd[pd_off]);
     SET_CACHEMODE(pd[pd_off], cache);
@@ -470,7 +485,10 @@ VirtMemMan_MapLPage(PML_Instance       inst,
     if(sec_perms & MEM_USER)MARK_USER(pd[pd_off]);
 
 
-    if(inst == virtMemData->curPML)__asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    if(inst == virtMemData->curPML){
+        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
+        __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+    }
 }
 
 
@@ -497,10 +515,6 @@ VirtMemMan_MapSPage(PML_Instance       inst,
 
     pt[pt_off] = phys_addr;
     if(present)MARK_PRESENT(pt[pt_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(inst[pml_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pdpt[pdpt_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pd[pd_off]);
-    if(access_perm & MEM_GLOBAL)MARK_GLOBAL(pt[pt_off]);
 
     SET_CACHEMODE(pt[pt_off], cache);
     if(access_perm & MEM_WRITE)MARK_WRITE(pt[pt_off]);
@@ -511,6 +525,7 @@ VirtMemMan_MapSPage(PML_Instance       inst,
     if(sec_perms & MEM_USER)MARK_USER(pt[pt_off]);
 
     if(inst == virtMemData->curPML) {
+        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
         __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
     }
 }
@@ -531,8 +546,10 @@ VirtMemMan_UnmapSPage(PML_Instance inst, uint64_t virt_addr) {
                 uint64_t *pt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pd[pd_off]));
 
                 pt[pt_off] = 0;
-                if(inst == virtMemData->curPML)
+                if(inst == virtMemData->curPML){
+                    virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
                     __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+                }
             }
         }
     }
@@ -552,8 +569,10 @@ VirtMemMan_UnmapLPage(PML_Instance inst, uint64_t virt_addr) {
 
 
             pd[pd_off] = 0;
-            if(inst == virtMemData->curPML)
+            if(inst == virtMemData->curPML){
+        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
                 __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+            }
         }
     }
 }
@@ -566,8 +585,10 @@ VirtMemMan_UnmapHPage(PML_Instance inst, uint64_t virt_addr) {
         uint64_t *pdpt = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
 
         pdpt[pdpt_off] = 0;
-        if(inst == virtMemData->curPML)
+        if(inst == virtMemData->curPML){
+        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
             __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
+        }
     }
 }
 
