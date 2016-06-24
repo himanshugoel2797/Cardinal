@@ -38,7 +38,7 @@ void
 bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no *= 16;
     bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentThreadUID()), "S"(regs->useresp));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentThreadUID()), "S"(regs->useresp), "D"(regs->rsp));
 }
 
 void
@@ -66,7 +66,7 @@ bootstrap_kernel(void *param,
 
     GDT_Bootstrap();
     IDT_Initialize();   //Setup the Bootstrap IDT
-    for(int i = 0; i < 31; i++)
+    for(int i = 0; i < 32; i++)
         IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
 
@@ -100,8 +100,14 @@ bootstrap_kernel(void *param,
     APIC_Initialize();
     //__asm__ ("hlt");
 
-    //Now that all the processors are booted up and ready to do their job
 
+    for(int i = 0; i < 32; i++)
+    {
+        IDT_ChangeEntry(i, 0x08, 0x8E, 0x2);
+    }
+
+    //Now that all the processors are booted up and ready to do their job
+SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
     //Initialize FPU - Done, setup threading code, provide interfaces to OS
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)
@@ -152,7 +158,7 @@ smp_bootstrap(void) {
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
     stack += KiB(16);
 
-    __asm__ volatile("mov %%rax, %%rsp":: "a"(stack)); //Switch to a new stack
+    __asm__ volatile("mov %0, %%rsp":: "r"(stack)); //Switch to a new stack
 
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU

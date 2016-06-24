@@ -29,6 +29,8 @@ void
 kernel_main_init(void) {
     MemoryAllocationsMap *allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
     allocMap->next = NULL;
+    //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
+    
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
     Thread_Initialize();
@@ -53,6 +55,7 @@ load_elf(void) {
     //GetProcessInformation(0, &p_info);
     //__asm__("cli\n\thlt" :: "a"((uint64_t)elf_info.entry_point));
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
+    while(1);
 }
 
 int coreCount = 0;
@@ -70,6 +73,16 @@ kernel_main(void) {
     DeviceManager_Initialize();
     smp_lock = CreateSpinlock();
     smp_unlock_cores();
+    while(1);
+    //coreCount = 0;
+
+    /*while(1)
+    {
+        __asm__ volatile("mov %%rsp, %0" : "=r"(stack));
+        YieldThread();
+        __asm__ volatile("mov %%rsp, %0" : "=r"(stack_2));
+        if(stack != stack_2)__asm__("cli\n\thlt");
+    }*/
 
     while(coreCount != GetCoreCount());
     setup_preemption();
@@ -79,7 +92,7 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(0, load_elf))__asm__("cli\n\thlt");
+    //if(!CreateThread(0, load_elf))__asm__("cli\n\thlt");
     //CreateThread(0, hlt2_kernel);
 
     while(1);
@@ -106,5 +119,6 @@ smp_core_main(int coreID,
     RegisterCore(coreID, getCoreData);
     CreateThread(0, smp_main);
     CoreUpdate();
+    while(1);
     //Start the local timer and set it to call the thread switch handler
 }

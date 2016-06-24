@@ -33,7 +33,7 @@ CFLAGS=  -target $(TARGET_TRIPLET) -ffreestanding -Wall -Wextra -Werror -Wno-tri
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
 
--include $(SOURCES:.o=.d)
+#-include $(SOURCES:.o=.d)
 
 .c.o:
 	$(CC) $(CFLAGS) -S $? -o $(?:.c=.s)

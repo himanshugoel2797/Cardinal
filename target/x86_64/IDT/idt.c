@@ -169,7 +169,7 @@ void IDT_DefaultHandler() {
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
-    else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code), "c"(regs->rip));
+    //else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code), "c"(regs->rip));
 }
 
 void IDT_RegisterHandler(uint8_t intNum, void (*handler)(Registers*)) {
@@ -181,9 +181,9 @@ typedef void(*null_func)(void);
 void IDT_RaiseInterrupt(uint32_t int_no) {
     if(int_no >= 256)return;
 
-    int_insts[0] = 0xCD;
+    int_insts[0] = 0xcd;
     int_insts[1] = (uint8_t)int_no;
-    int_insts[2] = 0xC3;
+    int_insts[2] = 0xc3;
 
     null_func r = (null_func)int_insts;
     r();
