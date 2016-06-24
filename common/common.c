@@ -6,7 +6,7 @@ memcpy(void *dest,
 
     while(size--)
         *(uint8_t*)dest++ = *(uint8_t*)src++;
-    
+
     return dest;
 }
 

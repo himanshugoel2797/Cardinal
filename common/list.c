@@ -65,7 +65,7 @@ void
 List_Remove(List *a,
             uint64_t index) {
     LockSpinlock(a->spin);
-    if(a->entry_count == 0 | index >= a->entry_count){
+    if(a->entry_count == 0 | index >= a->entry_count) {
         UnlockSpinlock(a->spin);
         return;
     }
@@ -127,7 +127,7 @@ List_EntryAt(List *a,
         a->last_accessed_node = a->nodes;
     }
 
-    if(index >= a->entry_count){
+    if(index >= a->entry_count) {
         UnlockSpinlock(a->spin);
         return NULL;
     }
