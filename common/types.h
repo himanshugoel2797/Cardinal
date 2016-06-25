@@ -29,5 +29,16 @@ typedef uint8_t bool;
 
 #define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
 
+#if defined(DEBUG)
+
+#if defined(x86_64)
+#define ASSERT(x) if(!(x))__asm__ volatile("cli\n\thlt")
+#endif
+
+
+#else
+
+#define ASSET(x)
+#endif
 
 #endif /* end of include guard: _OS_TYPES_H_ */

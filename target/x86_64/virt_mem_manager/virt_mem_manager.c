@@ -334,6 +334,8 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
     uint64_t *tmp_pml = (uint64_t*)tmp;
     uint64_t *pml = (uint64_t*)instance;
 
+    ASSERT(instance != NULL);
+
     for(int i = 0; i < 512; i++) {
         if(i == ((CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF))continue;
 

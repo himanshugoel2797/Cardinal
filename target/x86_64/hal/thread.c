@@ -25,6 +25,7 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
         "mov $0, %%r13\n\t"
         "mov $0, %%r14\n\t"
         "mov $0, %%r15\n\t"
+        "sti\n\t"
         "retq"
         ::
         "a"(cur_thread->entry_point),

@@ -1,10 +1,11 @@
 include Archs.inc
 
+TARGET_ARCH=$(ARCH_x86_64)
+
 BUILD_DIR=$(HOME)/Documents/Cardinal
 INCLUDES=. common managers drivers kmalloc target/hal
-DEFINES=MULTIBOOT2
+DEFINES=MULTIBOOT2 $(TARGET_ARCH)
 
-TARGET_ARCH=$(ARCH_x86_64)
 
 
 

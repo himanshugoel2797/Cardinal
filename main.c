@@ -85,8 +85,8 @@ kernel_main(void) {
     if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
     //CreateThread(0, hlt2_kernel);
 
-    while(1);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
