@@ -891,16 +891,15 @@ void
 VirtMemMan_ReturnPermissions(uint64_t entry,
                              MEM_TYPES *cacheType,
                              MEM_ACCESS_PERMS *access_perm,
-                             MEM_SECURITY_PERMS *security_perm)
-{
+                             MEM_SECURITY_PERMS *security_perm) {
 
 
     MEM_ACCESS_PERMS access = 0;
     MEM_SECURITY_PERMS sec = 0;
     MEM_TYPES cache = 0;
 
-    if(GET_PRESENT(entry)){
-        
+    if(GET_PRESENT(entry)) {
+
         access |= MEM_READ;
 
         if(GET_USER(entry))
@@ -927,9 +926,8 @@ VirtMemMan_CheckAddressPermissions(PML_Instance inst,
                                    uint64_t addr,
                                    MEM_TYPES *cacheType,
                                    MEM_ACCESS_PERMS *access_perm,
-                                   MEM_SECURITY_PERMS *security_perm)
-{
-    #define GET_PERM(x) return VirtMemMan_ReturnPermissions(x, cacheType, access_perm, security_perm)
+                                   MEM_SECURITY_PERMS *security_perm) {
+#define GET_PERM(x) return VirtMemMan_ReturnPermissions(x, cacheType, access_perm, security_perm)
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (addr >> 30) & 0x1FF;
@@ -966,7 +964,7 @@ VirtMemMan_CheckAddressPermissions(PML_Instance inst,
 
     GET_PERM(pd_vaddr[pt_off]);
 
-    #undef GET_PERM
+#undef GET_PERM
 }
 
 void

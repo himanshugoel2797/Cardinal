@@ -121,7 +121,7 @@ LockPageToUser(void *virtualAddress);
 //Unlock the physical page to allow modification, if this was allowed
 void
 UnlockPageToUser(void *virtualAddress,
-           uint32_t lockKey);
+                 uint32_t lockKey);
 
 void
 HandlePageFault(void *virtualAddress,

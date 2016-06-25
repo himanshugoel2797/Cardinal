@@ -256,23 +256,20 @@ GetCoreCount(void) {
 
 //Lock the physical page to prevent modification
 uint32_t
-LockPageToUser(void *virtualAddress)
-{
+LockPageToUser(void *virtualAddress) {
 
 }
 
 //Unlock the physical page to allow modification, if this was allowed
 void
 UnlockPageToUser(void *virtualAddress,
-           uint32_t lockKey)
-{
+                 uint32_t lockKey) {
 
 }
 
 void
 HandlePageFault(void *virtualAddress,
-                MemoryAllocationFlags error)
-{
+                MemoryAllocationFlags error) {
 
 }
 
@@ -280,7 +277,6 @@ void
 CheckAddressPermissions(UID pageTable,
                         uint64_t addr,
                         CachingMode *cacheMode,
-                        MemoryAllocationFlags *flags)
-{
-    
+                        MemoryAllocationFlags *flags) {
+
 }

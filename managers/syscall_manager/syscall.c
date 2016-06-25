@@ -32,8 +32,8 @@ SyscallReceived(uint64_t instruction_pointer,
         return SyscallError_NoSyscall;
 
     if(Syscalls[syscall_baseNum] != NULL)
-        return Syscalls[syscall_baseNum](instruction_pointer, 
-                                         syscall_functionNum, 
+        return Syscalls[syscall_baseNum](instruction_pointer,
+                                         syscall_functionNum,
                                          syscall_params);
 
     return SyscallError_NoSyscall;
