@@ -116,16 +116,22 @@ FindFreeVirtualAddress(UID 			pageTable,
 
 //Lock the physical page to prevent modification
 uint32_t
-LockPage(void *virtualAddress);
+LockPageToUser(void *virtualAddress);
 
 //Unlock the physical page to allow modification, if this was allowed
 void
-UnlockPage(void *virtualAddress,
+UnlockPageToUser(void *virtualAddress,
            uint32_t lockKey);
 
 void
 HandlePageFault(void *virtualAddress,
                 MemoryAllocationFlags error);
+
+void
+CheckAddressPermissions(UID pageTable,
+                        uint64_t addr,
+                        CachingMode *cacheMode,
+                        MemoryAllocationFlags *flags);
 
 uint64_t
 AllocatePhysicalPage(void);

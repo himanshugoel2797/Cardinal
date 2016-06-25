@@ -106,7 +106,6 @@ bootstrap_kernel(void *param,
     }
 
     //Now that all the processors are booted up and ready to do their job
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
     //Initialize FPU - Done, setup threading code, provide interfaces to OS
     //Setup platform specific rendering code and supply interface to the OS (VESA driver?)

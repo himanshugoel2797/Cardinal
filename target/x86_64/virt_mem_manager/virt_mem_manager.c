@@ -19,7 +19,14 @@
 #define MARK_KERNELONLY(a) (a = (a & ~(1 << 2)))
 #define MARK_EXEC(a) (a = (a & ~(1ull << 63)))
 
+#define GET_WRITE(a) ((a & (1 << 1)))
+#define GET_USER(a) ((a & (1 << 2)))
+#define GET_NX(a)   ((a & (1ull << 63)))
+
+
+#define GET_PRESENT(a) ((a & 1))
 #define SET_CACHEMODE(a, b) (a = (a | (b << 3)))
+#define GET_CACHEMODE(a) (((a >> 3) & 3))
 
 #define MARK_PSE(a) (a = (a | (1 << 7)))
 #define MARK_GLOBAL(a) (a = (a | (1 << 8)))
@@ -73,7 +80,7 @@ VirtMemMan_Initialize(void) {
     pat |= 0x6;                   //PAT0 WB
     pat |= ((uint64_t)0x4) << 8;  //PAT1 WT
     pat |= ((uint64_t)0x0) << 16; //PAT2 UC
-    pat |= ((uint64_t)0x1) << 24;  //PAT3
+    pat |= ((uint64_t)0x1) << 24;  //PAT3 WC
     wrmsr(PAT_MSR, pat);
 
     //Allocate a new PML4 and set of pages
@@ -877,6 +884,89 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 #undef BUILD_ADDR
     if(addr == 0)addr = KiB(4);
     return (void*)addr;
+}
+
+
+void
+VirtMemMan_ReturnPermissions(uint64_t entry,
+                             MEM_TYPES *cacheType,
+                             MEM_ACCESS_PERMS *access_perm,
+                             MEM_SECURITY_PERMS *security_perm)
+{
+
+
+    MEM_ACCESS_PERMS access = 0;
+    MEM_SECURITY_PERMS sec = 0;
+    MEM_TYPES cache = 0;
+
+    if(GET_PRESENT(entry)){
+        
+        access |= MEM_READ;
+
+        if(GET_USER(entry))
+            sec |= MEM_USER;
+        else
+            sec |= MEM_KERNEL;
+
+        if(GET_WRITE(entry))
+            access |= MEM_WRITE;
+
+        if(!GET_NX(entry))
+            access |= MEM_EXEC;
+
+        cache = GET_CACHEMODE(entry);
+    }
+
+    if(cacheType != NULL)*cacheType = cache;
+    if(access_perm != NULL)*access_perm = access;
+    if(security_perm != NULL)*security_perm = sec;
+}
+
+void
+VirtMemMan_CheckAddressPermissions(PML_Instance inst,
+                                   uint64_t addr,
+                                   MEM_TYPES *cacheType,
+                                   MEM_ACCESS_PERMS *access_perm,
+                                   MEM_SECURITY_PERMS *security_perm)
+{
+    #define GET_PERM(x) return VirtMemMan_ReturnPermissions(x, cacheType, access_perm, security_perm)
+
+    uint32_t pml_off = (addr >> 39) & 0x1FF;
+    uint32_t pdpt_off = (addr >> 30) & 0x1FF;
+    uint32_t pd_off = (addr >> 21) & 0x1FF;
+    uint32_t pt_off = (addr >> 12) & 0x1FF;
+
+    if(cacheType != NULL)*cacheType = 0;
+    if(access_perm != NULL)*access_perm = 0;
+    if(security_perm != NULL)*security_perm = 0;
+
+    uint64_t pml_paddr = GET_ADDR_4KB(inst[pml_off]);
+    uint64_t *pml_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pml_paddr);
+    if(pml_paddr == 0)return;
+
+    uint64_t pdpt_paddr = pml_vaddr[pdpt_off];
+    if(GET_PSE(pdpt_paddr))
+        GET_PERM(pdpt_paddr);
+    else
+        pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
+
+    if(pdpt_paddr == 0)return;
+    uint64_t *pdpt_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pdpt_paddr);
+
+
+    uint64_t pd_paddr = pdpt_vaddr[pd_off];
+
+    if(GET_PSE(pd_paddr))
+        GET_PERM(pd_paddr);
+    else
+        pd_paddr = GET_ADDR_4KB(pd_paddr);
+
+    if(pd_paddr == 0)return;
+    uint64_t *pd_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pd_paddr);
+
+    GET_PERM(pd_vaddr[pt_off]);
+
+    #undef GET_PERM
 }
 
 void

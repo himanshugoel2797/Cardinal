@@ -19,7 +19,6 @@ typedef enum {
     MEM_WRITE = 2,	//Writable
     MEM_READ = 4,	//Readable
     MEM_EXEC = 1,	//Executable
-    MEM_GLOBAL = 8
 } MEM_ACCESS_PERMS;	//Memory Permissions
 
 typedef enum {
@@ -97,6 +96,13 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,
                            MemoryAllocationType allocType,
                            MEM_SECURITY_PERMS sec_perms);
+
+void
+VirtMemMan_CheckAddressPermissions(PML_Instance inst,
+                                   uint64_t addr,
+                                   MEM_TYPES *cacheType,
+                                   MEM_ACCESS_PERMS *access_perm,
+                                   MEM_SECURITY_PERMS *security_perm);
 
 void*
 VirtMemMan_AllocCoreLocalData(uint64_t size);

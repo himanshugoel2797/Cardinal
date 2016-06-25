@@ -28,6 +28,7 @@ Syscall_Handler(void) {
         "pushq %%rdi\n\t"
         "movq %%rcx, %%rdi\n\t"
         "callq (SyscallReceived)\n\t"
+        "movq %%rax, %%rsi\n\t"
         "popq %%rdi\n\t"
         "popq %%rcx\n\t"
         "popq %%rax\n\t"

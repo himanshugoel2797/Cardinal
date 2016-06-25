@@ -1,5 +1,6 @@
 #include "syscall.h"
 #include "synchronization.h"
+#include "libs/libCardinal/include/syscall.h"
 
 static uint64_t free_syscall_index = 0;
 static Spinlock syscall_lock;
@@ -11,15 +12,10 @@ SyscallMan_Initialize(void) {
     syscall_lock = CreateSpinlock();
 }
 
-void
+uint64_t
 SyscallReceived(uint64_t instruction_pointer,
                 uint64_t syscall_num,
                 uint64_t *syscall_params) {
-
-
-    instruction_pointer = 0;
-    syscall_num = 0;
-    syscall_params = NULL;
 
     /*First thing to do is make the page the syscall_param points to read only
       informing the page fault handler to stall other cores if they attempt
@@ -28,7 +24,19 @@ SyscallReceived(uint64_t instruction_pointer,
       Copy the parameters over to a kernel buffer, then disable the protection.
       Now function only with the kernel buffer
     */
-    //while(1) __asm__ ("cli\n\thlt" :: "a"(syscall_num));
+
+    uint32_t syscall_baseNum = (uint32_t)syscall_num;
+    uint32_t syscall_functionNum = (uint32_t)(syscall_num >> 32);
+
+    if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
+        return SyscallError_NoSyscall;
+
+    if(Syscalls[syscall_baseNum] != NULL)
+        return Syscalls[syscall_baseNum](instruction_pointer, 
+                                         syscall_functionNum, 
+                                         syscall_params);
+
+    return SyscallError_NoSyscall;
 }
 
 uint64_t
