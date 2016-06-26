@@ -1005,3 +1005,101 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
         MemMan_Free(pml_paddr);
     }
 }
+
+uint64_t
+VirtMemMan_LockPageToUser(void *virtualAddress)
+{
+    uint64_t addr = (uint64_t)virtualAddress;
+
+    uint32_t pml_off = (addr >> 39) & 0x1FF;
+    uint32_t pdpt_off = (addr >> 30) & 0x1FF;
+    uint32_t pd_off = (addr >> 21) & 0x1FF;
+    uint32_t pt_off = (addr >> 12) & 0x1FF;
+
+    uint64_t pml_paddr = GET_ADDR_4KB(inst[pml_off]);
+    uint64_t *pml_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pml_paddr);
+    if(pml_paddr == 0)return -1;
+
+    uint64_t pdpt_paddr = pml_vaddr[pdpt_off];
+    if(GET_PSE(pdpt_paddr))
+        {
+            uint64_t val = pml_vaddr[pdpt_off];
+            MARK_READONLY(pml_vaddr[pdpt_off]);
+            __asm__ volatile("invlpg (%0)" :: "r"(addr));
+            return val;
+        }
+    else
+        pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
+
+    if(pdpt_paddr == 0)return -1;
+    uint64_t *pdpt_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pdpt_paddr);
+
+
+    uint64_t pd_paddr = pdpt_vaddr[pd_off];
+
+    if(GET_PSE(pd_paddr))
+        {
+            uint64_t val = pdpt_vaddr[pd_off];
+            MARK_READONLY(pdpt_vaddr[pd_off]);
+            __asm__ volatile("invlpg (%0)" :: "r"(addr));
+            return val;
+        }
+    else
+        pd_paddr = GET_ADDR_4KB(pd_paddr);
+
+    if(pd_paddr == 0)return -1;
+    uint64_t *pd_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pd_paddr);
+
+    uint64_t val = pd_vaddr[pt_off];
+    MARK_READONLY(pd_vaddr[pt_off]);
+    __asm__ volatile("invlpg (%0)" :: "r"(addr));
+    return val;
+}
+
+void
+VirtMemMan_UnlockPageToUser(void *virtualAddress, 
+                            uint64_t key)
+{
+    uint64_t addr = (uint64_t)virtualAddress;
+
+    uint32_t pml_off = (addr >> 39) & 0x1FF;
+    uint32_t pdpt_off = (addr >> 30) & 0x1FF;
+    uint32_t pd_off = (addr >> 21) & 0x1FF;
+    uint32_t pt_off = (addr >> 12) & 0x1FF;
+
+    uint64_t pml_paddr = GET_ADDR_4KB(inst[pml_off]);
+    uint64_t *pml_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pml_paddr);
+    if(pml_paddr == 0)return;
+
+    uint64_t pdpt_paddr = pml_vaddr[pdpt_off];
+    if(GET_PSE(pdpt_paddr))
+        {
+            pml_vaddr[pdpt_off] = key;
+            __asm__ volatile("invlpg (%0)" :: "r"(addr));
+            return;
+        }
+    else
+        pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
+
+    if(pdpt_paddr == 0)return;
+    uint64_t *pdpt_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pdpt_paddr);
+
+
+    uint64_t pd_paddr = pdpt_vaddr[pd_off];
+
+    if(GET_PSE(pd_paddr))
+        {
+            pdpt_vaddr[pd_off] = key;
+            __asm__ volatile("invlpg (%0)" :: "r"(addr));
+            return;
+        }
+    else
+        pd_paddr = GET_ADDR_4KB(pd_paddr);
+
+    if(pd_paddr == 0)return;
+    uint64_t *pd_vaddr = (uint64_t*)GetVirtualAddress(CachingModeWriteBack, (void*)pd_paddr);
+
+    pd_vaddr[pt_off] = key;
+    __asm__ volatile("invlpg (%0)" :: "r"(addr));
+    return;
+}

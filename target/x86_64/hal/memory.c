@@ -255,16 +255,21 @@ GetCoreCount(void) {
 
 
 //Lock the physical page to prevent modification
-uint32_t
-LockPageToUser(void *virtualAddress) {
-
+uint64_t
+LockPageToUser(uint64_t virtualAddress) {
+    LockSpinlock(vmem_lock);
+    uint64_t val = VirtMemMan_LockPageToUser((void*)virtualAddress);
+    UnlockSpinlock(vmem_lock);
+    return val;
 }
 
 //Unlock the physical page to allow modification, if this was allowed
 void
-UnlockPageToUser(void *virtualAddress,
-                 uint32_t lockKey) {
-
+UnlockPageToUser(uint64_t virtualAddress,
+                 uint64_t lockKey) {
+    LockSpinlock(vmem_lock);
+    VirtMemMan_UnlockPageToUser((void*)virtualAddress, lockKey);
+    UnlockSpinlock(vmem_lock);
 }
 
 void
@@ -278,5 +283,49 @@ CheckAddressPermissions(UID pageTable,
                         uint64_t addr,
                         CachingMode *cacheMode,
                         MemoryAllocationFlags *flags) {
+    MEM_TYPES cache = 0;
+    MEM_ACCESS_PERMS access_perm = 0;
+    MEM_SECURITY_PERMS sec_perm = 0;
 
+    CachingMode c = 0;
+    MemoryAllocationFlags a = 0;
+
+    LockSpinlock(vmem_lock);
+    VirtMemMan_CheckAddressPermissions((PML_Instance)pageTable, addr, &cache, &access_perm, &sec_perm);
+    UnlockSpinlock(vmem_lock);
+
+    if(cache == 0 && access_perm == 0 && sec_perm == 0)
+    {
+        if(cacheMode != NULL)*cacheMode = 0;
+        if(flags != NULL)*flags = 0;
+        
+        return;        
+    }
+
+    switch(cache)
+    {
+        case MEM_TYPE_WT:
+            c = CachingModeWriteThrough;
+            break;
+            case MEM_TYPE_WB:
+            c = CachingModeWriteBack;
+            break;
+            case MEM_TYPE_UC:
+            c = CachingModeUncachable;
+            break;
+            default:
+            c = 0;
+            break;
+    }
+
+    if(sec_perm & MEM_USER)a |= MemoryAllocationFlags_User;
+    else a |= MemoryAllocationFlags_Kernel;
+
+    if(access_perm & MEM_READ)a |= MemoryAllocationFlag_Read;
+    if(access_perm & MEM_WRITE)a |= MemoryAllocationFlags_Write;
+    if(access_perm & MEM_EXEC)a |= MemoryAllocationFlags_Exec;
+    else a |= MemoryAllocationFlags_NoExec;
+
+    if(cacheMode != NULL)*cacheMode = c;
+    if(flags != NULL)*flags = a;
 }

@@ -8,7 +8,7 @@
 #endif
 #define PAGE_SIZE KiB(4)
 
-#define THREAD_LOCAL_STORAGE_SIZE KiB(40)
+#define THREAD_LOCAL_STORAGE_SIZE KiB(8)
 
 ///Memory Caching Modes
 typedef enum {
@@ -115,13 +115,13 @@ FindFreeVirtualAddress(UID 			pageTable,
                        MemoryAllocationFlags 	flags);
 
 //Lock the physical page to prevent modification
-uint32_t
-LockPageToUser(void *virtualAddress);
+uint64_t
+LockPageToUser(uint64_t virtualAddress);
 
 //Unlock the physical page to allow modification, if this was allowed
 void
-UnlockPageToUser(void *virtualAddress,
-                 uint32_t lockKey);
+UnlockPageToUser(uint64_t virtualAddress,
+                 uint64_t lockKey);
 
 void
 HandlePageFault(void *virtualAddress,

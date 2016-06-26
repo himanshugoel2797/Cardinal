@@ -110,4 +110,12 @@ VirtMemMan_AllocCoreLocalData(uint64_t size);
 void
 VirtMemMan_FreePageTable(PML_Instance inst);
 
+uint64_t
+VirtMemMan_LockPageToUser(void *virtualAddress);
+
+void
+VirtMemMan_UnlockPageToUser(void *virtualAddress, 
+                            uint64_t key);
+
+
 #endif
