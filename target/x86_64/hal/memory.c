@@ -321,7 +321,7 @@ CheckAddressPermissions(UID pageTable,
     if(sec_perm & MEM_USER)a |= MemoryAllocationFlags_User;
     else a |= MemoryAllocationFlags_Kernel;
 
-    if(access_perm & MEM_READ)a |= MemoryAllocationFlag_Read;
+    if(access_perm & MEM_READ)a |= MemoryAllocationFlags_Read;
     if(access_perm & MEM_WRITE)a |= MemoryAllocationFlags_Write;
     if(access_perm & MEM_EXEC)a |= MemoryAllocationFlags_Exec;
     else a |= MemoryAllocationFlags_NoExec;

@@ -25,6 +25,26 @@ SyscallReceived(uint64_t instruction_pointer,
       Now function only with the kernel buffer
     */
 
+    SyscallData *data = (SyscallData*)syscall_params;      
+
+    MemoryAllocationFlags flags = 0;
+    CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags);
+
+    if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
+        return SyscallError_InvalidParameters;
+
+    flags = 0;
+    CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)data->params, NULL, &flags);
+
+    if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
+        return SyscallError_InvalidParameters;
+
+    if(data->param_num > MAX_PARAM_COUNT)
+      return SyscallError_InvalidParameters;
+
+    if(data->size != sizeof(SyscallData))
+      return SyscallError_InvalidParameters;
+
     uint32_t syscall_baseNum = (uint32_t)syscall_num;
     uint32_t syscall_functionNum = (uint32_t)(syscall_num >> 32);
 
