@@ -1007,8 +1007,7 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
 }
 
 uint64_t
-VirtMemMan_LockPageToUser(void *virtualAddress)
-{
+VirtMemMan_LockPageToUser(void *virtualAddress) {
     uint64_t addr = (uint64_t)virtualAddress;
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
@@ -1021,14 +1020,12 @@ VirtMemMan_LockPageToUser(void *virtualAddress)
     if(pml_paddr == 0)return -1;
 
     uint64_t pdpt_paddr = pml_vaddr[pdpt_off];
-    if(GET_PSE(pdpt_paddr))
-        {
-            uint64_t val = pml_vaddr[pdpt_off];
-            MARK_READONLY(pml_vaddr[pdpt_off]);
-            __asm__ volatile("invlpg (%0)" :: "r"(addr));
-            return val;
-        }
-    else
+    if(GET_PSE(pdpt_paddr)) {
+        uint64_t val = pml_vaddr[pdpt_off];
+        MARK_READONLY(pml_vaddr[pdpt_off]);
+        __asm__ volatile("invlpg (%0)" :: "r"(addr));
+        return val;
+    } else
         pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
 
     if(pdpt_paddr == 0)return -1;
@@ -1037,14 +1034,12 @@ VirtMemMan_LockPageToUser(void *virtualAddress)
 
     uint64_t pd_paddr = pdpt_vaddr[pd_off];
 
-    if(GET_PSE(pd_paddr))
-        {
-            uint64_t val = pdpt_vaddr[pd_off];
-            MARK_READONLY(pdpt_vaddr[pd_off]);
-            __asm__ volatile("invlpg (%0)" :: "r"(addr));
-            return val;
-        }
-    else
+    if(GET_PSE(pd_paddr)) {
+        uint64_t val = pdpt_vaddr[pd_off];
+        MARK_READONLY(pdpt_vaddr[pd_off]);
+        __asm__ volatile("invlpg (%0)" :: "r"(addr));
+        return val;
+    } else
         pd_paddr = GET_ADDR_4KB(pd_paddr);
 
     if(pd_paddr == 0)return -1;
@@ -1057,9 +1052,8 @@ VirtMemMan_LockPageToUser(void *virtualAddress)
 }
 
 void
-VirtMemMan_UnlockPageToUser(void *virtualAddress, 
-                            uint64_t key)
-{
+VirtMemMan_UnlockPageToUser(void *virtualAddress,
+                            uint64_t key) {
     uint64_t addr = (uint64_t)virtualAddress;
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
@@ -1072,13 +1066,11 @@ VirtMemMan_UnlockPageToUser(void *virtualAddress,
     if(pml_paddr == 0)return;
 
     uint64_t pdpt_paddr = pml_vaddr[pdpt_off];
-    if(GET_PSE(pdpt_paddr))
-        {
-            pml_vaddr[pdpt_off] = key;
-            __asm__ volatile("invlpg (%0)" :: "r"(addr));
-            return;
-        }
-    else
+    if(GET_PSE(pdpt_paddr)) {
+        pml_vaddr[pdpt_off] = key;
+        __asm__ volatile("invlpg (%0)" :: "r"(addr));
+        return;
+    } else
         pdpt_paddr = GET_ADDR_4KB(pdpt_paddr);
 
     if(pdpt_paddr == 0)return;
@@ -1087,13 +1079,11 @@ VirtMemMan_UnlockPageToUser(void *virtualAddress,
 
     uint64_t pd_paddr = pdpt_vaddr[pd_off];
 
-    if(GET_PSE(pd_paddr))
-        {
-            pdpt_vaddr[pd_off] = key;
-            __asm__ volatile("invlpg (%0)" :: "r"(addr));
-            return;
-        }
-    else
+    if(GET_PSE(pd_paddr)) {
+        pdpt_vaddr[pd_off] = key;
+        __asm__ volatile("invlpg (%0)" :: "r"(addr));
+        return;
+    } else
         pd_paddr = GET_ADDR_4KB(pd_paddr);
 
     if(pd_paddr == 0)return;

@@ -294,28 +294,26 @@ CheckAddressPermissions(UID pageTable,
     VirtMemMan_CheckAddressPermissions((PML_Instance)pageTable, addr, &cache, &access_perm, &sec_perm);
     UnlockSpinlock(vmem_lock);
 
-    if(cache == 0 && access_perm == 0 && sec_perm == 0)
-    {
+    if(cache == 0 && access_perm == 0 && sec_perm == 0) {
         if(cacheMode != NULL)*cacheMode = 0;
         if(flags != NULL)*flags = 0;
-        
-        return;        
+
+        return;
     }
 
-    switch(cache)
-    {
-        case MEM_TYPE_WT:
-            c = CachingModeWriteThrough;
-            break;
-            case MEM_TYPE_WB:
-            c = CachingModeWriteBack;
-            break;
-            case MEM_TYPE_UC:
-            c = CachingModeUncachable;
-            break;
-            default:
-            c = 0;
-            break;
+    switch(cache) {
+    case MEM_TYPE_WT:
+        c = CachingModeWriteThrough;
+        break;
+    case MEM_TYPE_WB:
+        c = CachingModeWriteBack;
+        break;
+    case MEM_TYPE_UC:
+        c = CachingModeUncachable;
+        break;
+    default:
+        c = 0;
+        break;
     }
 
     if(sec_perm & MEM_USER)a |= MemoryAllocationFlags_User;

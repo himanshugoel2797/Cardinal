@@ -114,7 +114,7 @@ uint64_t
 VirtMemMan_LockPageToUser(void *virtualAddress);
 
 void
-VirtMemMan_UnlockPageToUser(void *virtualAddress, 
+VirtMemMan_UnlockPageToUser(void *virtualAddress,
                             uint64_t key);
 
 
