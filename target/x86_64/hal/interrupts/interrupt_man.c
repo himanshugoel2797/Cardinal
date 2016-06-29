@@ -47,7 +47,7 @@ HandleInterruptNoReturn(uint32_t vector) {
 uint32_t
 RegisterInterruptHandler(uint32_t int_no,
                          InterruptHandler handler) {
-    if(int_no >= 256 || int_no <= 31)return -1;
+    if(int_no >= 256)return -1;
     intHandlers[int_no] = handler;
     IDT_RegisterHandler(int_no, ShadowInterruptHandler);
     return 0;

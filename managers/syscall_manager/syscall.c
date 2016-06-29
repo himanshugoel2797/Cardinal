@@ -1,6 +1,7 @@
 #include "syscall.h"
 #include "synchronization.h"
 #include "libs/libCardinal/include/syscall.h"
+#include "memory.h"
 
 static uint64_t free_syscall_index = 0;
 static Spinlock syscall_lock;
@@ -50,6 +51,8 @@ SyscallReceived(uint64_t instruction_pointer,
 
     if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
         return SyscallError_NoSyscall;
+
+    //Lock the page
 
     if(Syscalls[syscall_baseNum] != NULL)
         return Syscalls[syscall_baseNum](instruction_pointer,

@@ -5,12 +5,15 @@
 #include "kmalloc/kmalloc.h"
 #include "smp/smp.h"
 #include "synchronization.h"
+#include "debug_gfx.h"
 
 static Spinlock vmem_lock = NULL;
 
 void
 MemoryHAL_Initialize(void) {
     vmem_lock = CreateBootstrapSpinlock();
+    RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
+
 }
 
 void*
@@ -273,9 +276,15 @@ UnlockPageToUser(uint64_t virtualAddress,
 }
 
 void
-HandlePageFault(void *virtualAddress,
+HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error) {
-
+    //Check the current process's memory info table
+    virtualAddress = 0;
+    error = 0;
+    if(!ProcessSys_IsInitialized())
+    {
+        debug_gfx_writeLine("Error: Page Fault");
+    }
 }
 
 void

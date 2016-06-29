@@ -117,5 +117,8 @@ void
 VirtMemMan_UnlockPageToUser(void *virtualAddress,
                             uint64_t key);
 
+void
+VirtMemMan_HandlePageFault(uint32_t int_no,
+                           uint32_t err_code);
 
 #endif

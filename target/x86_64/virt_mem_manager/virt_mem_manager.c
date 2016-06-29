@@ -1009,6 +1009,7 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
 uint64_t
 VirtMemMan_LockPageToUser(void *virtualAddress) {
     uint64_t addr = (uint64_t)virtualAddress;
+    uint64_t *inst = (uint64_t*)VirtMemMan_GetCurrent();
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (addr >> 30) & 0x1FF;
@@ -1055,6 +1056,7 @@ void
 VirtMemMan_UnlockPageToUser(void *virtualAddress,
                             uint64_t key) {
     uint64_t addr = (uint64_t)virtualAddress;
+    uint64_t *inst = (uint64_t*)VirtMemMan_GetCurrent();
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (addr >> 30) & 0x1FF;
@@ -1092,4 +1094,21 @@ VirtMemMan_UnlockPageToUser(void *virtualAddress,
     pd_vaddr[pt_off] = key;
     __asm__ volatile("invlpg (%0)" :: "r"(addr));
     return;
+}
+
+void
+VirtMemMan_HandlePageFault(uint32_t int_no,
+                           uint32_t err_code)
+{
+    uint64_t addr = 0;
+    __asm__ volatile("movq %%cr2, %0" : "=r"(addr) ::);
+
+    MemoryAllocationFlags flags = 0;
+    flags |= (err_code & 1) ? MemoryAllocationFlags_Present : MemoryAllocationFlags_NotPresent;
+    flags |= (err_code & (1 << 1)) ? MemoryAllocationFlags_Write : MemoryAllocationFlags_Read;
+    flags |= (err_code & (1 << 2)) ? MemoryAllocationFlags_User : MemoryAllocationFlags_Kernel;
+    flags |= (err_code & (1 << 4)) ? MemoryAllocationFlags_Exec : MemoryAllocationFlags_NoExec;
+
+    HandlePageFault(addr,
+                    flags);
 }

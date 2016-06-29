@@ -4,7 +4,7 @@
 #include "common.h"
 
 static List *processes;
-static ProcessInformation *root;
+static ProcessInformation *root = NULL;
 
 void
 ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
@@ -22,6 +22,12 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
 
     processes = List_Create(CreateSpinlock());
     List_AddEntry(processes, root);
+}
+
+bool
+ProcessSys_IsInitialized(void)
+{
+    return !(root == NULL);
 }
 
 ProcessErrors

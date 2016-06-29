@@ -38,4 +38,7 @@ RegisterSignalHandler(UID 		pid,
 void
 ProcessSys_Initialize(MemoryAllocationsMap *allocMap);
 
+bool
+ProcessSys_IsInitialized(void);
+
 #endif

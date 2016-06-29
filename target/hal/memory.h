@@ -33,9 +33,12 @@ typedef enum {
 typedef enum {
     MemoryAllocationFlags_NoExec = (1 << 0),  ///<Execute Disable
     MemoryAllocationFlags_Exec = (1 << 1),    ///<Execute Enable
+    MemoryAllocationFlags_Read = 0,
     MemoryAllocationFlags_Write = (1 << 2),   ///<Write Enabled
     MemoryAllocationFlags_Kernel = 0,         ///<Kernel Access Permission
-    MemoryAllocationFlags_User = (1 << 3)     ///<User Access Permission
+    MemoryAllocationFlags_User = (1 << 3),    ///<User Access Permission
+    MemoryAllocationFlags_Present = (1 << 4),
+    MemoryAllocationFlags_NotPresent = 0
 } MemoryAllocationFlags;
 
 ///Memory Allocation Errors
@@ -124,7 +127,7 @@ UnlockPageToUser(uint64_t virtualAddress,
                  uint64_t lockKey);
 
 void
-HandlePageFault(void *virtualAddress,
+HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error);
 
 void
