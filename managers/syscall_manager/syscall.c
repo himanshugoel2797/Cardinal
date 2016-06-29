@@ -34,17 +34,28 @@ SyscallReceived(uint64_t instruction_pointer,
     if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
         return SyscallError_InvalidParameters;
 
+    SyscallData k_data;
+    memcpy(&k_data, data, sizeof(SyscallData));
+
+
     flags = 0;
-    CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)data->params, NULL, &flags);
+    CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)k_data.params, NULL, &flags);
 
     if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
         return SyscallError_InvalidParameters;
 
-    if(data->param_num > MAX_PARAM_COUNT)
+    if(k_data.param_num > MAX_PARAM_COUNT)
         return SyscallError_InvalidParameters;
 
-    if(data->size != sizeof(SyscallData))
+    if(k_data.size != sizeof(SyscallData))
         return SyscallError_InvalidParameters;
+
+
+    //Create a kernel side copy of the oarameters
+    uint64_t k_data_param[MAX_PARAM_COUNT];
+    for(uint64_t i = 0; i < k_data.param_num; i++)
+        k_data_param[i] = k_data.params[i];
+    k_data.params = k_data_param;
 
     uint32_t syscall_baseNum = (uint32_t)syscall_num;
     uint32_t syscall_functionNum = (uint32_t)(syscall_num >> 32);
@@ -55,25 +66,9 @@ SyscallReceived(uint64_t instruction_pointer,
 
     if(Syscalls[syscall_baseNum] != NULL)
     {
-        //Lock the page
-        uint64_t key0 = LockPageToUser((uint64_t)data);
-        uint64_t key1 = LockPageToUser((uint64_t)data->params);
-
-        uint64_t key2 = 0;
-        if( ((uint64_t)&data->params[data->param_num - 1])/PAGE_SIZE !=  ((uint64_t)data->params)/PAGE_SIZE)
-        {
-            key2 = LockPageToUser((uint64_t)&data->params[data->param_num - 1]);
-        }
-
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
                                                     syscall_functionNum,
-                                                    syscall_params);
-
-        if(key2 != 0)
-            UnlockPageToUser((uint64_t)&data->params[data->param_num - 1], key2);
-
-        UnlockPageToUser((uint64_t)data->params, key1);
-        UnlockPageToUser((uint64_t)data, key0);
+                                                    &k_data);
 
         return retVal;
     }
