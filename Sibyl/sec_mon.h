@@ -11,7 +11,7 @@ void
 SecMon_RegisterSyscall(uint64_t syscall_num,
                        SyscallHandler handler);
 
-void
+uint64_t
 SecMon_FilterUpdateSyscall(uint64_t ip,
                            uint64_t syscall_num,
                            uint64_t *param);

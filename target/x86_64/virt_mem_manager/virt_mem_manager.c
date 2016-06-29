@@ -1007,7 +1007,9 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
 }
 
 uint64_t
-VirtMemMan_LockPageToUser(void *virtualAddress) {
+VirtMemMan_LockPageToUser(void *virtualAddress, 
+                          uint64_t *pageSize) 
+{
     uint64_t addr = (uint64_t)virtualAddress;
     uint64_t *inst = (uint64_t*)VirtMemMan_GetCurrent();
 
@@ -1024,6 +1026,7 @@ VirtMemMan_LockPageToUser(void *virtualAddress) {
     if(GET_PSE(pdpt_paddr)) {
         uint64_t val = pml_vaddr[pdpt_off];
         MARK_READONLY(pml_vaddr[pdpt_off]);
+        if(pageSize != NULL)*pageSize = GiB(1);
         __asm__ volatile("invlpg (%0)" :: "r"(addr));
         return val;
     } else
@@ -1038,6 +1041,7 @@ VirtMemMan_LockPageToUser(void *virtualAddress) {
     if(GET_PSE(pd_paddr)) {
         uint64_t val = pdpt_vaddr[pd_off];
         MARK_READONLY(pdpt_vaddr[pd_off]);
+        if(pageSize != NULL)*pageSize = MiB(2);
         __asm__ volatile("invlpg (%0)" :: "r"(addr));
         return val;
     } else
@@ -1048,6 +1052,7 @@ VirtMemMan_LockPageToUser(void *virtualAddress) {
 
     uint64_t val = pd_vaddr[pt_off];
     MARK_READONLY(pd_vaddr[pt_off]);
+    if(pageSize != NULL)*pageSize = KiB(4);
     __asm__ volatile("invlpg (%0)" :: "r"(addr));
     return val;
 }
@@ -1097,7 +1102,7 @@ VirtMemMan_UnlockPageToUser(void *virtualAddress,
 }
 
 void
-VirtMemMan_HandlePageFault(uint32_t int_no,
+VirtMemMan_HandlePageFault(uint32_t UNUSED(int_no),
                            uint32_t err_code)
 {
     uint64_t addr = 0;

@@ -111,7 +111,8 @@ void
 VirtMemMan_FreePageTable(PML_Instance inst);
 
 uint64_t
-VirtMemMan_LockPageToUser(void *virtualAddress);
+VirtMemMan_LockPageToUser(void *virtualAddress,
+                          uint64_t *pageSize);
 
 void
 VirtMemMan_UnlockPageToUser(void *virtualAddress,

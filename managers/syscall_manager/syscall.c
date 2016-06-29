@@ -52,13 +52,31 @@ SyscallReceived(uint64_t instruction_pointer,
     if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
         return SyscallError_NoSyscall;
 
-    //Lock the page
 
     if(Syscalls[syscall_baseNum] != NULL)
-        return Syscalls[syscall_baseNum](instruction_pointer,
-                                         syscall_functionNum,
-                                         syscall_params);
+    {
+        //Lock the page
+        uint64_t key0 = LockPageToUser((uint64_t)data);
+        uint64_t key1 = LockPageToUser((uint64_t)data->params);
 
+        uint64_t key2 = 0;
+        if( ((uint64_t)&data->params[data->param_num - 1])/PAGE_SIZE !=  ((uint64_t)data->params)/PAGE_SIZE)
+        {
+            key2 = LockPageToUser((uint64_t)&data->params[data->param_num - 1]);
+        }
+
+        uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
+                                                    syscall_functionNum,
+                                                    syscall_params);
+
+        if(key2 != 0)
+            UnlockPageToUser((uint64_t)&data->params[data->param_num - 1], key2);
+
+        UnlockPageToUser((uint64_t)data->params, key1);
+        UnlockPageToUser((uint64_t)data, key0);
+
+        return retVal;
+    }
     return SyscallError_NoSyscall;
 }
 

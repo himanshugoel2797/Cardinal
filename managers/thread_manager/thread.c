@@ -464,7 +464,7 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
-static void
+void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
     err_code = 0;

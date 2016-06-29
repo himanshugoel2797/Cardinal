@@ -9,4 +9,5 @@ SOURCES=main.o \
 		managers/device_manager/device_manager.o \
 		managers/syscall_manager/syscall.o \
 		drivers/usb/controller.o \
-		drivers/usb/uhci/uhci_controller.o
+		drivers/usb/uhci/uhci_controller.o \
+		Sibyl/sec_mon.o

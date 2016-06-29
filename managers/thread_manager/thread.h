@@ -122,4 +122,8 @@ GetCurrentThreadUID(void);
 UID
 GetCurrentProcessUID(void);
 
+void
+TaskSwitch(uint32_t int_no,
+           uint32_t err_code);
+
 #endif

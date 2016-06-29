@@ -8,4 +8,4 @@ TARGET_SOURCES=boot.o bootstrap.o GDT/gdt.o IDT/idt.o CPUID/cpuid.o fpu/fpu.o rt
 				page_manager/phys_mem_manager.o virt_mem_manager/virt_mem_manager.o \
 				smp/smp.o \
 				pci/pci.o pci/pci_devices.o \
-				drivers/uhci/uhci.o 
+				drivers/uhci/uhci.o \
