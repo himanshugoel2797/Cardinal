@@ -23,13 +23,13 @@ typedef enum {
 
 typedef enum {
     ProcessPermissions_None = 0,
-    ProcessPermissions_NormalFileIO = (1 << 0),
-    ProcessPermissions_RootFileIO = (1 << 1),
-    ProcessPermissions_Kernel = (1 << 2),
-    ProcessPermissions_User = (1 << 3),
-    ProcessPermissions_SuperUser = (1 << 4),
-    ProcessPermissions_Network = (1 << 5)
+    ProcessPermissions_DeviceAccess = (1 << 0)
 } ProcessPermissions;
+
+typedef enum {
+    ProcessSyscallFlags_None = 0,
+    ProcessSyscallFlags_PermissionsLocked = (1 << 0)
+} ProcessSyscallFlags;
 
 typedef enum {
     ProcessErrors_None = 0,
@@ -77,6 +77,7 @@ typedef struct ProcessInformation {
     MemoryAllocationsMap        *AllocationMap;
     List                        *ThreadIDs;
     uint64_t                    TLSSize;
+    ProcessSyscallFlags         SyscallFlags;
     Spinlock                    lock;
 } ProcessInformation;
 

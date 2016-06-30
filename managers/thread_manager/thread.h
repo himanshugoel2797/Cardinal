@@ -79,6 +79,9 @@ GetThreadUserStack(UID id);
 void*
 GetThreadKernelStack(UID id);
 
+void*
+GetThreadCurrentStack(UID id);
+
 void
 SetThreadBasePriority(UID id,
                       ThreadPriority priority);

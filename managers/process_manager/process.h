@@ -31,6 +31,14 @@ SetTLSSize(UID pid,
            uint64_t tls_size);
 
 ProcessErrors
+SetProcessPermissions(UID pid,
+					  ProcessPermissions perms);
+
+ProcessErrors
+SetProcessSyscallStatus(UID pid,
+						ProcessSyscallFlags flags);
+
+ProcessErrors
 RegisterSignalHandler(UID 		pid,
                       ProcessSignals 	signals,
                       ProcessSignalHandler sigHandler);

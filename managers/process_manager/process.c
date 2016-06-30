@@ -93,6 +93,49 @@ GetProcessReference(UID           pid,
     return ProcessErrors_UIDNotFound;
 }
 
+
+ProcessErrors
+SetProcessPermissions(UID pid,
+                      ProcessPermissions perms)
+{
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            LockSpinlock(pInf->lock);
+            pInf->Permissions = perms;
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;    
+}
+
+ProcessErrors
+SetProcessSyscallStatus(UID pid,
+                        ProcessSyscallFlags flags)
+{
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            LockSpinlock(pInf->lock);
+            pInf->SyscallFlags = flags;
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}
+
 ProcessErrors
 KillProcess(UID pid) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {

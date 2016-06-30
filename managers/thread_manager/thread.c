@@ -308,6 +308,21 @@ GetThreadKernelStack(UID id) {
     return NULL;
 }
 
+void*
+GetThreadCurrentStack(UID id) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, current_stack);
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            return (void*)GET_PROPERTY_VAL(thd, current_stack);
+        }
+    }
+    return NULL;
+}
+
 void
 SetThreadBasePriority(UID id,
                       ThreadPriority priority) {
