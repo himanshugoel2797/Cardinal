@@ -6,6 +6,6 @@ TARGET_SOURCES=boot.o bootstrap.o GDT/gdt.o IDT/idt.o CPUID/cpuid.o fpu/fpu.o rt
 				apic/apic.o utils/native.o apic/io_apic/io_apic.o apic/apic_init.o \
 				trampoline.o \
 				page_manager/phys_mem_manager.o virt_mem_manager/virt_mem_manager.o \
-				smp/smp.o \
+				smp/smp.o syscalls/syscalls.o \
 				pci/pci.o pci/pci_devices.o \
 				drivers/uhci/uhci.o \

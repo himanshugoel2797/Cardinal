@@ -2,6 +2,7 @@
 #define _CARDINAL_LIB_SYSCALL_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 #define MAX_PARAM_COUNT 10
 
@@ -11,7 +12,8 @@ typedef enum {
     SyscallError_NoSyscall,
     SyscallError_NoSyscallFunction,
     SyscallError_TooManyParameters,
-    SyscallError_InvalidParameters
+    SyscallError_InvalidParameters,
+    SyscallError_NoPermissions
 } SyscallError;
 
 typedef enum {
@@ -22,14 +24,14 @@ typedef enum {
     Syscall_Thread = 3,
     Syscall_Signal = 4,
     Syscall_IO = 5,
-    Syscall_NumEnd = Syscall_IO
+    Syscall_Sibyl = 6,
+    Syscall_NumEnd = Syscall_Sibyl
 } SyscallsNumbers;
 
 typedef enum {
-    SyscallFunction_SecurityMonitor_PromiseSyscallParameters = 0,
     SyscallFunction_SecurityMonitor_RequestIOPermissions = 1,
     SyscallFunction_SecurityMonitor_RequestIRQPermissions = 2,
-    SyscallFunction_SecurityMonitor_RequestPCIDevice = 3,
+    SyscallFunction_SecurityMonitor_RequestSystemPermissions = 3,
 
     SyscallFunction_Memory_Sbrk = 0,
     SyscallFunction_Memory_MMap = 1,
@@ -57,7 +59,9 @@ typedef enum {
     SyscallFunction_DirStat = 7,
     SyscallFunction_IO_Remove = 8,
     SyscallFunction_IO_RemoveDir = 9,
-    SyscallFunction_IO_CreateDir = 10
+    SyscallFunction_IO_CreateDir = 10,
+
+    SyscallFunction_Sibyl_SubmitSyscallFilter = 0
 } SyscallFunctions;
 
 typedef struct {

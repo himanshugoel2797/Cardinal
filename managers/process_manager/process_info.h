@@ -23,7 +23,8 @@ typedef enum {
 
 typedef enum {
     ProcessPermissions_None = 0,
-    ProcessPermissions_DeviceAccess = (1 << 0)
+    ProcessPermissions_IRQAccess = (1 << 0),
+    ProcessPermissions_SystemPermissions = (1 << 1)
 } ProcessPermissions;
 
 typedef enum {

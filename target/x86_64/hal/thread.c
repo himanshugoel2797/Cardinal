@@ -74,15 +74,3 @@ void
 SetTLSBase(void *tlsBase) {
     wrmsr(0xC0000100, (uint64_t)tlsBase);
 }
-
-
-void
-ApplyProcessPermissions(ProcessPermissions perms)
-{
-    Registers *regs = GetThreadCurrentStack(GetCurrentThreadUID());
-
-    if(perms & ProcessPermissions_DeviceAccess)
-    {
-
-    }
-}

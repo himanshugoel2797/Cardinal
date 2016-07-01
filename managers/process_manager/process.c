@@ -13,7 +13,7 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     strcpy(root->Name, "Root Process");
     root->Status = ProcessStatus_Executing;
     root->Priority = ProcessPriority_High;
-    root->Permissions = ProcessPermissions_Kernel;
+    root->Permissions = ProcessPermissions_None;
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->AllocationMap = allocMap;
     root->ThreadIDs = List_Create(CreateSpinlock());

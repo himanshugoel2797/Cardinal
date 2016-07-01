@@ -70,6 +70,8 @@ kernel_main(void) {
 
     coreCount++;
     Syscall_Initialize();
+    SetupSecurityMonitor();
+    
     DeviceManager_Initialize();
     smp_lock = CreateSpinlock();
     smp_unlock_cores();

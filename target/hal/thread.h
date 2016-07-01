@@ -27,7 +27,4 @@ SaveFPUState(void *src);
 uint64_t
 GetFPUStateSize(void);
 
-void
-ApplyProcessPermissions(ProcessPermissions perms);
-
 #endif

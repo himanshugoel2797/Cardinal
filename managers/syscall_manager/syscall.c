@@ -2,6 +2,7 @@
 #include "synchronization.h"
 #include "libs/libCardinal/include/syscall.h"
 #include "memory.h"
+#include "common.h"
 
 static uint64_t free_syscall_index = 0;
 static Spinlock syscall_lock;
@@ -58,7 +59,6 @@ SyscallReceived(uint64_t instruction_pointer,
     k_data.params = k_data_param;
 
     uint32_t syscall_baseNum = (uint32_t)syscall_num;
-    uint32_t syscall_functionNum = (uint32_t)(syscall_num >> 32);
 
     if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
         return SyscallError_NoSyscall;
@@ -67,8 +67,8 @@ SyscallReceived(uint64_t instruction_pointer,
     if(Syscalls[syscall_baseNum] != NULL)
     {
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
-                                                    syscall_functionNum,
-                                                    &k_data);
+                                                    syscall_num,
+                                                    (uint64_t*)&k_data);
 
         return retVal;
     }

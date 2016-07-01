@@ -12,4 +12,7 @@ SwitchToUserMode(uint64_t pc, uint64_t sp);
 void
 SetKernelStack(void* stack);
 
+void
+SetupSecurityMonitor(void);
+
 #endif

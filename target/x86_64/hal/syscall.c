@@ -36,7 +36,6 @@ Syscall_Handler(void) {
         "popq %%rax\n\t"
         "movq (k_stack_info), %%r11\n\t"
         "movq +8(%%r11), %%r11\n\t"
-        //"cli\n\thlt\n\t"
         "sysretq\n\t" :::
     );
 }
@@ -61,6 +60,18 @@ SetKernelStack(void* stack) {
         k_stack_info = AllocateAPLSMemory(sizeof(k_stack_info));
 
     k_stack_info->k_stack = stack;
+}
+
+uint64_t
+GetRFLAGS(void)
+{
+    return k_stack_info->rflags;
+}
+
+void
+SetRFLAGS(uint64_t val)
+{
+    k_stack_info->rflags = val; 
 }
 
 void
