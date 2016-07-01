@@ -21,7 +21,7 @@ uint64_t
 SecMon_FilterUpdateSyscall(uint64_t UNUSED(ip),
                            uint64_t UNUSED(syscall_num),
                            uint64_t *UNUSED(param)) {
-	return 0;
+    return 0;
 }
 
 void

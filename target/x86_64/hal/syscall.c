@@ -63,15 +63,13 @@ SetKernelStack(void* stack) {
 }
 
 uint64_t
-GetRFLAGS(void)
-{
+GetRFLAGS(void) {
     return k_stack_info->rflags;
 }
 
 void
-SetRFLAGS(uint64_t val)
-{
-    k_stack_info->rflags = val; 
+SetRFLAGS(uint64_t val) {
+    k_stack_info->rflags = val;
 }
 
 void

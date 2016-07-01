@@ -1007,9 +1007,8 @@ VirtMemMan_FreePageTable(PML_Instance inst) {
 }
 
 uint64_t
-VirtMemMan_LockPageToUser(void *virtualAddress, 
-                          uint64_t *pageSize) 
-{
+VirtMemMan_LockPageToUser(void *virtualAddress,
+                          uint64_t *pageSize) {
     uint64_t addr = (uint64_t)virtualAddress;
     uint64_t *inst = (uint64_t*)VirtMemMan_GetCurrent();
 
@@ -1103,8 +1102,7 @@ VirtMemMan_UnlockPageToUser(void *virtualAddress,
 
 void
 VirtMemMan_HandlePageFault(uint32_t UNUSED(int_no),
-                           uint32_t err_code)
-{
+                           uint32_t err_code) {
     uint64_t addr = 0;
     __asm__ volatile("movq %%cr2, %0" : "=r"(addr) ::);
 

@@ -25,8 +25,7 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
 }
 
 bool
-ProcessSys_IsInitialized(void)
-{
+ProcessSys_IsInitialized(void) {
     return !(root == NULL);
 }
 
@@ -96,8 +95,7 @@ GetProcessReference(UID           pid,
 
 ProcessErrors
 SetProcessPermissions(UID pid,
-                      ProcessPermissions perms)
-{
+                      ProcessPermissions perms) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
@@ -112,13 +110,12 @@ SetProcessPermissions(UID pid,
             return ProcessErrors_None;
         }
     }
-    return ProcessErrors_UIDNotFound;    
+    return ProcessErrors_UIDNotFound;
 }
 
 ProcessErrors
 SetProcessSyscallStatus(UID pid,
-                        ProcessSyscallFlags flags)
-{
+                        ProcessSyscallFlags flags) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 

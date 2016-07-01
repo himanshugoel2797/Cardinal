@@ -64,11 +64,10 @@ SyscallReceived(uint64_t instruction_pointer,
         return SyscallError_NoSyscall;
 
 
-    if(Syscalls[syscall_baseNum] != NULL)
-    {
+    if(Syscalls[syscall_baseNum] != NULL) {
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
-                                                    syscall_num,
-                                                    (uint64_t*)&k_data);
+                          syscall_num,
+                          (uint64_t*)&k_data);
 
         return retVal;
     }

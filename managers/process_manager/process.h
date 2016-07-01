@@ -32,11 +32,11 @@ SetTLSSize(UID pid,
 
 ProcessErrors
 SetProcessPermissions(UID pid,
-					  ProcessPermissions perms);
+                      ProcessPermissions perms);
 
 ProcessErrors
 SetProcessSyscallStatus(UID pid,
-						ProcessSyscallFlags flags);
+                        ProcessSyscallFlags flags);
 
 ProcessErrors
 RegisterSignalHandler(UID 		pid,

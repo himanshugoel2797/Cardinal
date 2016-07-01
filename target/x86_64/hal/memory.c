@@ -271,16 +271,14 @@ LockPageToUser(uint64_t virtualAddress) {
 
     MemoryAllocationsMap *map = pInfo->AllocationMap;
 
-    while(map != NULL)
-    {
-        if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->Length + map->VirtualAddress))
-        {
+    while(map != NULL) {
+        if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->Length + map->VirtualAddress)) {
             map->AllocationType |= MemoryAllocationType_PageLocked;
             break;
         }
         map = map->next;
-    }    
-    
+    }
+
     UnlockSpinlock(vmem_lock);
     return val;
 }
@@ -296,10 +294,8 @@ UnlockPageToUser(uint64_t virtualAddress,
 
     MemoryAllocationsMap *map = pInfo->AllocationMap;
 
-    while(map != NULL)
-    {
-        if(map->AllocationType & MemoryAllocationType_PageLocked && virtualAddress >= map->VirtualAddress && virtualAddress <= (map->Length + map->VirtualAddress))
-        {
+    while(map != NULL) {
+        if(map->AllocationType & MemoryAllocationType_PageLocked && virtualAddress >= map->VirtualAddress && virtualAddress <= (map->Length + map->VirtualAddress)) {
             VirtMemMan_UnlockPageToUser((void*)virtualAddress, lockKey);
             map->AllocationType = map->AllocationType & ~MemoryAllocationType_PageLocked;
             break;
@@ -313,25 +309,21 @@ void
 HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error) {
     error = 0;
-    if(!ProcessSys_IsInitialized())
-    {
+    if(!ProcessSys_IsInitialized()) {
         while(1)debug_gfx_writeLine("Error: Page Fault");
-    }else{
+    } else {
         //Check the current process's memory info table
         ProcessInformation *procInfo = NULL;
         GetProcessReference(GetCurrentProcessUID(), &procInfo);
-        if(procInfo == NULL | procInfo->AllocationMap == NULL)
-        {
-            while(1)debug_gfx_writeLine("Error: Page Fault");  
+        if(procInfo == NULL | procInfo->AllocationMap == NULL) {
+            while(1)debug_gfx_writeLine("Error: Page Fault");
         }
 
         MemoryAllocationsMap *map = procInfo->AllocationMap;
-        do{
-            if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length))
-            {
+        do {
+            if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
                 //Found an entry that describes this fault
-                if(map->AllocationType & MemoryAllocationType_PageLocked)
-                {
+                if(map->AllocationType & MemoryAllocationType_PageLocked) {
                     //Yield the thread to the scheduler
                     TaskSwitch(0, 0);
                 }
@@ -341,7 +333,7 @@ HandlePageFault(uint64_t virtualAddress,
             }
 
             map = map->next;
-        }while(map != NULL);
+        } while(map != NULL);
 
     }
 }
