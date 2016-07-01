@@ -49,7 +49,7 @@ load_elf(void) {
 
     MemoryAllocationsMap *m = p_info.AllocationMap;
     ElfInformation elf_info;
-    Initrd_GetFile("build/test.elf", &elf_loc, &elf_size);
+    Initrd_GetFile("test.elf", &elf_loc, &elf_size);
     if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 
     //GetProcessInformation(0, &p_info);

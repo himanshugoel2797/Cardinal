@@ -70,7 +70,7 @@ typedef struct {
     uint64_t param_num;
 } SyscallData;
 
-inline SyscallError
+static inline SyscallError
 Syscall(uint32_t syscall_num,
         uint32_t syscall_func_num,
         const uint64_t *params,

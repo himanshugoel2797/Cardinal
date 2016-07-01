@@ -5,8 +5,7 @@ TARGET_ARCH=$(ARCH_x86_64)
 BUILD_DIR=$(HOME)/Documents/Cardinal
 INCLUDES=. common managers drivers kmalloc target/hal
 DEFINES=MULTIBOOT2 $(TARGET_ARCH)
-
-
+export DEFINES
 
 
 OUTDISK=sdb
@@ -14,14 +13,20 @@ OUTDISK=sdb
 
 
 BOOT_FS=EXT2
+export BOOT_FS
 
 CURRENT_YEAR=$(shell date +"%Y")
-
+export CURRENT_YEAR
 
 COM_ENABLED=1
 install:COM_ENABLED=0
+export COM_ENABLED
+
 
 CONF=DEBUG
+export CONF
+
+
 
 MKDIR=mkdir
 CP=cp
@@ -55,14 +60,20 @@ clean_output:
 	rm -rf build/$(CONF)/*
 	rm -rf ISO/*
 
+
+clean_initrd:
+	cd initrd && $(MAKE) clean
+
 # build
-build:$(SOURCES) clean_output
+build:$(SOURCES) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	mkdir -p build/$(CONF)
 	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES)) $(SOURCES) -mcmodel=kernel
-	cp test build/$(CONF)/initrd
+	cd initrd && $(MAKE) $(TARGET_MAKE)
+	cp initrd/initrd build/$(CONF)/initrd
+
 # clean
-clean:
+clean: clean_initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
 	rm -f $(SOURCES)
 	rm -f $(SOURCES:.o=.d)
