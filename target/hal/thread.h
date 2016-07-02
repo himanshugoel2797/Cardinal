@@ -1,6 +1,7 @@
 #ifndef _CARDINAL_HAL_THREAD_H_
 #define _CARDINAL_HAL_THREAD_H_
 
+#include "types.h"
 #include "managers.h"
 
 void

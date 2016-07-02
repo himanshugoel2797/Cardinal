@@ -27,6 +27,12 @@ typedef enum {
     ThreadState_Exiting
 } ThreadState;
 
+typedef enum {
+    ThreadWakeCondition_None,
+    ThreadWakeCondition_SleepEnd,
+    ThreadWakeCondition_Signal
+} ThreadWakeCondition;
+
 typedef void (*ThreadEntryPoint)(void);
 
 typedef struct ThreadInfo {
@@ -35,7 +41,10 @@ typedef struct ThreadInfo {
     ProcessInformation *ParentProcess;
     ThreadEntryPoint entry_point;
     ThreadState state;
+    ThreadWakeCondition wakeCondition;
     ThreadPriority priority;
+    uint64_t signal_mask0;
+    uint64_t signal_mask1;
     uint64_t interrupt_stack_base;
     uint64_t kernel_stack_base;
     uint64_t user_stack_base;
