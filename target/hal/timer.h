@@ -6,7 +6,4 @@
 void
 InitializeTimer(void);
 
-
-
-
 #endif

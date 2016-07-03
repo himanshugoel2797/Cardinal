@@ -15,6 +15,9 @@ typedef enum {
 
 typedef TimerContinue (*TimerEventHandler)(void *val);
 
+void
+Timer_Initialize(void);
+
 TimerError
 RegisterTimerHandler(TimerEventHandler handler, 
 					 void *param, 

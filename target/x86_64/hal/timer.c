@@ -11,7 +11,7 @@ InitializeTimer(void)
 
 	Timer_Initialize();
 
-	RegisterInterruptHandler(IRQ(1), TimerInterrupt);
+	RegisterInterruptHandler(IRQ(1), HandleTimer);
 	APIC_SetVector(APIC_TIMER, IRQ(1));
 	APIC_SetTimerValue(timerData->timer_frequency);
 	APIC_SetTimerMode(APIC_TIMER_PERIODIC);

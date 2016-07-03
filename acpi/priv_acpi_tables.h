@@ -71,29 +71,6 @@ typedef struct {
 bool
 ACPITables_ValidateChecksum(ACPISDTHeader *header);
 
-//TODO this should eventually go into the PCI base driver
-typedef struct pci_vendor {
-    uint16_t ven_id;
-    const char *ven_name;
-} pci_vendor_t;
-
-typedef struct pci_device {
-    uint16_t ven_id;
-    uint16_t dev_id;
-    const char *dev_name;
-} pci_device_t;
-
-typedef struct pci_baseclass {
-    uint8_t baseclass;
-    const char *name;
-} pci_baseclass_t;
-
-typedef struct pci_subclass {
-    uint8_t baseclass;
-    uint8_t subclass;
-    const char *name;
-} pci_subclass_t;
-
 /**@}*/
 
 #endif /* end of include guard: _PRIV_ACPI_TABLES_DRIVER_H_ */
