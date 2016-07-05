@@ -3,10 +3,10 @@
 
 #include "types.h"
 
-typedef enum{
-	HPETError_None,
-	HPETError_NotPresent
-}HPETError;
+typedef enum {
+    HPETError_None,
+    HPETError_NotPresent
+} HPETError;
 
 HPETError
 HPET_Initialize(void);
