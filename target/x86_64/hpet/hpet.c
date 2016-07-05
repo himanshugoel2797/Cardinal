@@ -13,7 +13,7 @@ HPET_Initialize(void) {
     if(hpet == NULL)return HPETError_NotPresent;
 
     hpet_regs = (HPET_Main*)GetVirtualAddress(CachingModeUncachable, (void*)hpet->Address.address);
-    
+
     HPET_SetCounterEnableStatus(DISABLE);
     HPET_SetCounterValue(0);
 
