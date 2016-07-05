@@ -12,7 +12,6 @@ typedef struct {
     uint8_t Rsv0 : 1;
     uint8_t LegacyReplacement : 1;
     uint16_t VendorID;
-    const char *VendorName;
     GenericAddressStructure Address;
     uint8_t HPETNumber;
     uint16_t MinimumTick;

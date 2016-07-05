@@ -508,6 +508,14 @@ TaskSwitch(uint32_t int_no,
 }
 
 void
+SetPeriodicPreemptVector(uint32_t irq,
+                         uint64_t frequency) {
+    RegisterInterruptHandler(irq, TaskSwitch);
+    preempt_vector = irq;
+    preempt_frequency = frequency;
+}
+
+void
 SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread(NULL);

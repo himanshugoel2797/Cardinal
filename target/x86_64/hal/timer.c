@@ -1,18 +1,35 @@
 #include "timer.h"
+#include "hpet/hpet.h"
 
 void
-InitializeTimer(void) {
-    if(timerData == NULL)
-        timerData = AllocateAPLSMemory(sizeof(CoreLocalTimerData));
+InitializeTimer(void) 
+{
+    if(HPET_Initialize() == HPETError_NotPresent)
+    {
+        __asm__ volatile("cli\n\thlt");
+    }
+}
 
-    timerData->timer_frequency = APIC_GetTimerFrequency()/1000;
-    timerData->timer_tick_count = 0;
+uint64_t
+GetTimerValue(void)
+{
+    return HPET_GetCounterValue();
+}
 
-    Timer_Initialize();
+void
+SetTimerValue(uint64_t val)
+{
+    HPET_SetCounterValue(val);
+}
 
-    RegisterInterruptHandler(IRQ(1), HandleTimer);
-    APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(timerData->timer_frequency);
-    APIC_SetTimerMode(APIC_TIMER_PERIODIC);
-    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
+void
+SetTimerEnableMode(bool enabled)
+{
+    HPET_SetCounterEnableStatus(enabled);
+}
+
+uint64_t
+GetTimerInterval_NS(uint64_t diff)
+{
+    return HPET_GetElapsedTime(diff);
 }

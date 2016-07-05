@@ -15,6 +15,9 @@ void
 HPET_SetCounterEnableStatus(bool enableStatus);
 
 uint64_t
+HPET_GetElapsedTime(uint64_t diff);
+
+uint64_t
 HPET_GetPeriod(void);
 
 uint64_t

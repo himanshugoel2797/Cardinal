@@ -1,6 +1,8 @@
 #include "acpi/acpi_tables.h"
 #include "acpi/hpet.h"
 #include "priv_hpet.h"
+#include "hpet.h"
+#include "memory.h"
 
 static
 HPET_Main* hpet_regs = NULL;
@@ -10,9 +12,12 @@ HPET_Initialize(void) {
     HPET *hpet = (HPET*)ACPITables_FindTable(HPET_SIG, 0);
     if(hpet == NULL)return HPETError_NotPresent;
 
-    hpet_regs = (HPET_Main*)hpet->Address.address;
+    hpet_regs = (HPET_Main*)GetVirtualAddress(CachingModeUncachable, (void*)hpet->Address.address);
+    
     HPET_SetCounterEnableStatus(DISABLE);
     HPET_SetCounterValue(0);
+
+    return HPETError_None;
 }
 
 void
@@ -22,12 +27,12 @@ HPET_SetCounterEnableStatus(bool enableStatus) {
 
 uint64_t
 HPET_GetElapsedTime(uint64_t diff) {
-    return (diff * HPET_GetPeriod())/1000000;
+    return (diff * (uint64_t)hpet_regs->Capabilities.ClockPeriod)/1000000;
 }
 
 uint64_t
 HPET_GetPeriod(void) {
-    return hpet_regs->Capabilities.ClockPeriod;
+    return hpet_regs->Capabilities.ClockPeriod/1000000;
 }
 
 uint64_t
