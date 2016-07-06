@@ -63,7 +63,7 @@ SyscallReceived(uint64_t instruction_pointer,
                           (uint64_t*)&k_data);
 
         return retVal;
-    }else __asm__ ("cli\n\thlt");
+    } else __asm__ ("cli\n\thlt");
 
     return ENOSYS;
 }

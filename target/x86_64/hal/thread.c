@@ -81,20 +81,17 @@ SetGSBase(void *base) {
 }
 
 void*
-GetFSBase(void)
-{
+GetFSBase(void) {
     return (void*)rdmsr(0xC0000100);
 }
 
 void*
-GetGSBase(void)
-{
+GetGSBase(void) {
     return (void*)rdmsr(0xC0000101);
 }
 
 void
-PerformArchSpecificTaskSave(ThreadInfo *tInfo)
-{
+PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
     uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
@@ -102,8 +99,7 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo)
 }
 
 void
-PerformArchSpecificTaskSwitch(ThreadInfo *tInfo)
-{
+PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
     uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);

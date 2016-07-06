@@ -175,7 +175,7 @@ Syscall0(uint32_t syscall_num) {
 
 static __inline uint64_t
 Syscall1(uint32_t syscall_num,
-        uint64_t p0) {
+         uint64_t p0) {
 
     uint64_t parameters[1];
     parameters[0] = p0;
@@ -197,8 +197,8 @@ Syscall1(uint32_t syscall_num,
 
 static __inline uint64_t
 Syscall2(uint32_t syscall_num,
-        uint64_t p0,
-        uint64_t p1) {
+         uint64_t p0,
+         uint64_t p1) {
 
     uint64_t parameters[2];
     parameters[0] = p0;
@@ -221,9 +221,9 @@ Syscall2(uint32_t syscall_num,
 
 static __inline uint64_t
 Syscall3(uint32_t syscall_num,
-        uint64_t p0,
-        uint64_t p1,
-        uint64_t p2) {
+         uint64_t p0,
+         uint64_t p1,
+         uint64_t p2) {
 
     uint64_t parameters[3];
     parameters[0] = p0;
@@ -247,10 +247,10 @@ Syscall3(uint32_t syscall_num,
 
 static __inline uint64_t
 Syscall4(uint32_t syscall_num,
-        uint64_t p0,
-        uint64_t p1,
-        uint64_t p2,
-        uint64_t p3) {
+         uint64_t p0,
+         uint64_t p1,
+         uint64_t p2,
+         uint64_t p3) {
 
     uint64_t parameters[4];
     parameters[0] = p0;
@@ -275,11 +275,11 @@ Syscall4(uint32_t syscall_num,
 
 static __inline uint64_t
 Syscall5(uint32_t syscall_num,
-        uint64_t p0,
-        uint64_t p1,
-        uint64_t p2,
-        uint64_t p3,
-        uint64_t p4) {
+         uint64_t p0,
+         uint64_t p1,
+         uint64_t p2,
+         uint64_t p3,
+         uint64_t p4) {
 
     uint64_t parameters[5];
     parameters[0] = p0;
@@ -305,12 +305,12 @@ Syscall5(uint32_t syscall_num,
 
 static __inline uint64_t
 Syscall6(uint32_t syscall_num,
-        uint64_t p0,
-        uint64_t p1,
-        uint64_t p2,
-        uint64_t p3,
-        uint64_t p4,
-        uint64_t p5) {
+         uint64_t p0,
+         uint64_t p1,
+         uint64_t p2,
+         uint64_t p3,
+         uint64_t p4,
+         uint64_t p5) {
 
     uint64_t parameters[6];
     parameters[0] = p0;

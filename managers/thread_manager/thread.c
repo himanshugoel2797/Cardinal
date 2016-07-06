@@ -193,7 +193,7 @@ CreateThread(UID parentProcess,
 
     //Update the thread list
     List_AddEntry(neutral, thd);
-    
+
     SET_PROPERTY_VAL(thd, ID, new_uid());
     List_AddEntry(pInfo->ThreadIDs, (void*)GET_PROPERTY_VAL(thd, ID));
     List_AddEntry(thds, thd);
@@ -442,16 +442,16 @@ GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Sleep:
             LockSpinlock(next_thread->lock);
             uint64_t cur_time = GetTimerValue();
-            if(next_thread->wakeCondition == ThreadWakeCondition_SleepEnd){
-            if(GetTimerInterval_NS(cur_time - next_thread->sleep_start_time) >= next_thread->sleep_duration_ns) {
-                next_thread->state = ThreadState_Running;
-                exit_loop = TRUE;
-                UnlockSpinlock(next_thread->lock);
+            if(next_thread->wakeCondition == ThreadWakeCondition_SleepEnd) {
+                if(GetTimerInterval_NS(cur_time - next_thread->sleep_start_time) >= next_thread->sleep_duration_ns) {
+                    next_thread->state = ThreadState_Running;
+                    exit_loop = TRUE;
+                    UnlockSpinlock(next_thread->lock);
+                } else {
+                    UnlockSpinlock(next_thread->lock);
+                    List_AddEntry(thds, next_thread);
+                }
             } else {
-                UnlockSpinlock(next_thread->lock);
-                List_AddEntry(thds, next_thread);
-            }
-            }else {
                 UnlockSpinlock(next_thread->lock);
                 List_AddEntry(thds, next_thread);
             }

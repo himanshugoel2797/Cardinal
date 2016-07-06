@@ -77,7 +77,7 @@ kernel_main(void) {
     coreCount++;
     SyscallMan_Initialize();
     Syscall_Initialize();
-    
+
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();
