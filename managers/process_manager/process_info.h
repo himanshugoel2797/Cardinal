@@ -77,7 +77,6 @@ typedef struct ProcessInformation {
     UID                         PageTable;
     MemoryAllocationsMap        *AllocationMap;
     List                        *ThreadIDs;
-    uint64_t                    TLSSize;
     ProcessSyscallFlags         SyscallFlags;
     Spinlock                    lock;
 } ProcessInformation;

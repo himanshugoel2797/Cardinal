@@ -17,7 +17,6 @@ ProcessSys_Initialize(MemoryAllocationsMap *allocMap) {
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->AllocationMap = allocMap;
     root->ThreadIDs = List_Create(CreateSpinlock());
-    root->TLSSize = 0;
     root->lock = CreateSpinlock();
 
     processes = List_Create(CreateSpinlock());
@@ -203,37 +202,6 @@ SleepProcess(UID pid) {
             pInf->Status = ProcessStatus_Sleeping;
             UnlockSpinlock(pInf->lock);
             return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-SetTLSSize(UID pid,
-           uint64_t tls_size) {
-    //Round up tls_size to nearest page boundary
-    if(tls_size % PAGE_SIZE != 0)tls_size += PAGE_SIZE - (tls_size % PAGE_SIZE);
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            uint64_t thread_cnt = List_Length(pInf->ThreadIDs);
-            UnlockSpinlock(pInf->lock);
-
-            if(tls_size == 0 | thread_cnt == 0) {
-                LockSpinlock(pInf->lock);
-                pInf->TLSSize = tls_size;
-                UnlockSpinlock(pInf->lock);
-
-                return ProcessErrors_None;
-            } else
-                return ProcessErrors_TLSAlreadySetup;
         }
     }
     return ProcessErrors_UIDNotFound;

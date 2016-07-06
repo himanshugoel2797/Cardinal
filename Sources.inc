@@ -8,6 +8,8 @@ SOURCES=main.o \
 		managers/power_manager/pwm.o \
 		managers/device_manager/device_manager.o \
 		managers/syscall_manager/syscall.o \
+		managers/syscall_manager/syscalls/syscall_main.o \
+		managers/syscall_manager/syscalls/time.o \
 		drivers/usb/controller.o \
 		drivers/usb/uhci/uhci_controller.o \
 		Sibyl/sec_mon.o

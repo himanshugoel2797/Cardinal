@@ -5,6 +5,7 @@
 #include "target/hal/thread.h"
 #include "target/hal/interrupts.h"
 #include "target/hal/syscall.h"
+#include "target/hal/timer.h"
 
 typedef struct CoreThreadState {
     ThreadInfo *cur_thread;
@@ -71,12 +72,12 @@ PROPERTY_GET_SET(UID, Parent, 0)
 PROPERTY_GET_SET(UID, ID, 0)
 PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 PROPERTY_PROC_GET(UID, ID, 0)
-PROPERTY_PROC_GET(uint64_t, TLSSize, 0)
 PROPERTY_PROC_GET(UID, PageTable, 0)
 PROPERTY_PROC_GET(MemoryAllocationsMap*, AllocationMap, NULL)
 
 PROPERTY_GET_SET(ThreadEntryPoint, entry_point, NULL)
 PROPERTY_GET_SET(ThreadState, state, 0)
+PROPERTY_GET_SET(ThreadWakeCondition, wakeCondition, 0)
 PROPERTY_GET_SET(ThreadPriority, priority, 0)
 PROPERTY_GET_SET(uint64_t, interrupt_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, interrupt_stack_aligned, 0)
@@ -84,10 +85,11 @@ PROPERTY_GET_SET(uint64_t, user_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_aligned, 0)
 PROPERTY_GET_SET(uint64_t, current_stack, 0)
-PROPERTY_GET_SET(void*, tls_base, NULL)
 PROPERTY_GET_SET(int, core_affinity, 0)
-PROPERTY_GET_SET(uint64_t, sleep_duration_ms, 0)
+PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
+PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
 PROPERTY_GET_SET(bool, cur_executing, FALSE)
+PROPERTY_GET_SET(void*, arch_specific_data, NULL)
 PROPERTY_GET_SET(void*, fpu_state, NULL)
 
 UID
@@ -127,20 +129,24 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
     SET_PROPERTY_VAL(thd, Parent, parentProcess);
-    SET_PROPERTY_VAL(thd, sleep_duration_ms, 0);
+    SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
     SET_PROPERTY_VAL(thd, cur_executing, FALSE);
     SET_PROPERTY_VAL(thd, interrupt_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
     SET_PROPERTY_VAL(thd, kernel_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
+    SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
 
+    //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base);
     kstack -= kstack % 16;
     SET_PROPERTY_VAL(thd, kernel_stack_aligned, kstack);
 
+    //Setup interrupt stack
     uint64_t istack = GET_PROPERTY_VAL(thd, interrupt_stack_base);
     istack -= istack % 16;
     SET_PROPERTY_VAL(thd, interrupt_stack_aligned, istack);
 
+    //Setup FPU state
     uint64_t fpu_state_tmp = (uint64_t)GET_PROPERTY_VAL(thd,fpu_state);
     if(fpu_state_tmp % 16 != 0)
         fpu_state_tmp += 16 - fpu_state_tmp % 16;
@@ -148,46 +154,15 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, fpu_state, (void*)fpu_state_tmp);
     SaveFPUState(GET_PROPERTY_VAL(thd, fpu_state));
 
+    //Get the process information
     ProcessInformation *pInfo = NULL;
-
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
         goto error_exit;
 
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
 
-    if(GET_PROPERTY_PROC_VAL(thd, TLSSize) != 0) {
-        uint64_t tls_base = 0;
-        FindFreeVirtualAddress(GET_PROPERTY_PROC_VAL(thd, PageTable),
-                               &tls_base,
-                               GET_PROPERTY_PROC_VAL(thd, TLSSize),
-                               MemoryAllocationType_Application,
-                               MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-                              );
 
-        if(tls_base != 0) {
-            MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
-            if(alloc == NULL)
-                goto error_exit;
-
-            MapPage(GET_PROPERTY_PROC_VAL(thd, PageTable),
-                    alloc,
-                    AllocatePhysicalPageCont(GET_PROPERTY_PROC_VAL(thd, TLSSize)/PAGE_SIZE),
-                    tls_base,
-                    GET_PROPERTY_PROC_VAL(thd, TLSSize),
-                    CachingModeWriteBack,
-                    MemoryAllocationType_Application,
-                    MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-                   );
-
-            alloc->next = GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next;
-            GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next = alloc;
-
-            thd->tls_base = (void*)tls_base;
-        } else goto error_exit;
-    }
-    SET_PROPERTY_VAL(thd, ID, new_uid());
-    List_AddEntry(pInfo->ThreadIDs, (void*)GET_PROPERTY_VAL(thd, ID));
-
+    //Setup the user stack
     uint64_t user_stack_base = 0;
 
     FindFreeVirtualAddress(
@@ -216,7 +191,11 @@ CreateThread(UID parentProcess,
     alloc_stack->next = GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next;
     GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next = alloc_stack;
 
+    //Update the thread list
     List_AddEntry(neutral, thd);
+    
+    SET_PROPERTY_VAL(thd, ID, new_uid());
+    List_AddEntry(pInfo->ThreadIDs, (void*)GET_PROPERTY_VAL(thd, ID));
     List_AddEntry(thds, thd);
 
     return GET_PROPERTY_VAL(thd, ID);
@@ -249,7 +228,10 @@ SleepThread(UID id,
             uint64_t duration_ms) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Sleep);
-        SET_PROPERTY_VAL(coreState->cur_thread, sleep_duration_ms, duration_ms);
+        SET_PROPERTY_VAL(coreState->cur_thread, wakeCondition, ThreadWakeCondition_SleepEnd);
+        SET_PROPERTY_VAL(coreState->cur_thread, sleep_start_time, GetTimerValue());
+        SET_PROPERTY_VAL(coreState->cur_thread, sleep_duration_ns, duration_ms);
+        YieldThread();
         return;
     }
 
@@ -257,7 +239,9 @@ SleepThread(UID id,
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             SET_PROPERTY_VAL(thd, state, ThreadState_Sleep);
-            SET_PROPERTY_VAL(thd, sleep_duration_ms, duration_ms);
+            SET_PROPERTY_VAL(thd, wakeCondition, ThreadWakeCondition_SleepEnd);
+            SET_PROPERTY_VAL(thd, sleep_start_time, GetTimerValue());
+            SET_PROPERTY_VAL(thd, sleep_duration_ns, duration_ms);
             return;
         }
     }
@@ -457,12 +441,17 @@ GetNextThread(ThreadInfo *prevThread) {
             break;
         case ThreadState_Sleep:
             LockSpinlock(next_thread->lock);
-            next_thread->sleep_duration_ms -= (next_thread->sleep_duration_ms > preempt_frequency/1000)?preempt_frequency/1000 : next_thread->sleep_duration_ms;
-            if(next_thread->sleep_duration_ms == 0) {
+            uint64_t cur_time = GetTimerValue();
+            if(next_thread->wakeCondition == ThreadWakeCondition_SleepEnd){
+            if(GetTimerInterval_NS(cur_time - next_thread->sleep_start_time) >= next_thread->sleep_duration_ns) {
                 next_thread->state = ThreadState_Running;
                 exit_loop = TRUE;
                 UnlockSpinlock(next_thread->lock);
             } else {
+                UnlockSpinlock(next_thread->lock);
+                List_AddEntry(thds, next_thread);
+            }
+            }else {
                 UnlockSpinlock(next_thread->lock);
                 List_AddEntry(thds, next_thread);
             }
@@ -485,15 +474,18 @@ TaskSwitch(uint32_t int_no,
     err_code = 0;
 
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
+    PerformArchSpecificTaskSave(coreState->cur_thread);
     SavePreviousThread(coreState->cur_thread);
+
 
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_aligned);
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_aligned);
-
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
+    PerformArchSpecificTaskSwitch(coreState->cur_thread);
+
 
     if(coreState->cur_thread->state == ThreadState_Running) {
         HandleInterruptNoReturn(int_no);
@@ -525,6 +517,8 @@ SwitchThread(void) {
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_aligned);
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
+    PerformArchSpecificTaskSwitch(coreState->cur_thread);
+
     //Resume execution of the thread
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Initialize) {
         SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Running);

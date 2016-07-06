@@ -4,6 +4,7 @@
 #include "kmalloc/kmalloc.h"
 #include "managers.h"
 #include "memory.h"
+#include "program.h"
 #include "syscall.h"
 #include "initrd.h"
 #include "elf.h"
@@ -32,6 +33,8 @@ kernel_main_init(void) {
     allocMap->next = NULL;
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
     InitializeTimer();
+    SetTimerValue(0);
+    SetTimerEnableMode(ENABLE);
 
     kmalloc_init (allocMap);
     ProcessSys_Initialize(allocMap);
@@ -56,6 +59,7 @@ load_elf(void) {
 
     //GetProcessInformation(0, &p_info);
     //__asm__("cli\n\thlt" :: "a"((uint64_t)elf_info.entry_point));
+    SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), 0, NULL, NULL, NULL, 0);
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
     while(1);
 }
@@ -71,7 +75,9 @@ kernel_main(void) {
     // Execute UI
 
     coreCount++;
+    SyscallMan_Initialize();
     Syscall_Initialize();
+    
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();

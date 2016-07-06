@@ -5,8 +5,6 @@
 #include "managers/process_manager/process_info.h"
 #include "synchronization.h"
 
-//TODO: Create threads, call HAL to handle context switching details
-//TODO: Write a separate schedule manager that dictates thread switching in a process aware manner
 //TODO: For the schedule manager, make sure to delete processes if their state suggests it
 
 typedef enum {
@@ -51,11 +49,12 @@ typedef struct ThreadInfo {
     uint64_t current_stack;
     uint64_t kernel_stack_aligned;
     uint64_t interrupt_stack_aligned;
-    void *tls_base;
     int core_affinity;
-    uint64_t sleep_duration_ms;
+    uint64_t sleep_duration_ns;
+    uint64_t sleep_start_time;
     bool cur_executing;
     void *fpu_state;
+    void *arch_specific_data;
     Spinlock lock;
 } ThreadInfo;
 
@@ -133,6 +132,9 @@ GetCurrentThreadUID(void);
 
 UID
 GetCurrentProcessUID(void);
+
+ThreadInfo*
+GetCurrentThreadInfo(void);
 
 void
 TaskSwitch(uint32_t int_no,

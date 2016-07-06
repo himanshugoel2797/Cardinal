@@ -6,48 +6,74 @@
 
 void
 SetupSecurityMonitor(void) {
-    RegisterSyscall(Syscall_SecurityMonitor, SecurityMonitor_SyscallReceived);
+    RegisterSyscall(Syscall_IOPL, SecurityMonitor_IOPL);
+    RegisterSyscall(Syscall_RequestIRQPermissions, SecurityMonitor_SyscallReceived);
+    RegisterSyscall(Syscall_RequestSystemPermissions, SecurityMonitor_SyscallReceived);
+}
+
+uint64_t
+SecurityMonitor_IOPL(uint64_t UNUSED(instruction_pointer),
+                     uint64_t syscall_num,
+                     uint64_t *syscall_params)
+{
+    SyscallData *syscall_data = (SyscallData*)syscall_params;
+
+    ProcessInformation *procInfo;
+    if(GetProcessReference(GetCurrentProcessUID(), &procInfo))
+        return ENOTSUP;
+
+    if(procInfo->SyscallFlags & ProcessSyscallFlags_PermissionsLocked)
+        return EACCES;
+
+    if(syscall_data->param_num != 1)
+        return EINVAL;
+
+    if(syscall_data->params[0] != 3 && syscall_data->params[0] != 0)
+        return EINVAL;
+
+    if(syscall_num == Syscall_IOPL){
+        uint64_t rflag = GetRFLAGS();
+        rflag = rflag & ~(3 << 12);
+
+        SetRFLAGS(rflag | (syscall_data->params[0] << 12));
+    }
+    else
+        return ENOSYS;
+
+    return 0;
 }
 
 uint64_t
 SecurityMonitor_SyscallReceived(uint64_t UNUSED(instruction_pointer),
                                 uint64_t syscall_num,
                                 uint64_t *syscall_params) {
-    syscall_num = syscall_num >> 32;
     SyscallData *syscall_data = (SyscallData*)syscall_params;
 
     ProcessInformation *procInfo;
     if(GetProcessReference(GetCurrentProcessUID(), &procInfo))
-        return SyscallError_Unknown;
+        return ENOTSUP;
 
     if(procInfo->SyscallFlags & ProcessSyscallFlags_PermissionsLocked)
-        return SyscallError_NoPermissions;
+        return EACCES;
 
     switch(syscall_num) {
-    case SyscallFunction_SecurityMonitor_RequestIOPermissions: {
+    case Syscall_RequestIRQPermissions: {
         if(syscall_data->param_num != 0)
-            return SyscallError_TooManyParameters;
-
-        SetRFLAGS(GetRFLAGS() | (3 << 12));
-    }
-    break;
-    case SyscallFunction_SecurityMonitor_RequestIRQPermissions: {
-        if(syscall_data->param_num != 0)
-            return SyscallError_TooManyParameters;
+            return EINVAL;
 
         procInfo->Permissions |= ProcessPermissions_IRQAccess;
     }
     break;
-    case SyscallFunction_SecurityMonitor_RequestSystemPermissions: {
+    case Syscall_RequestSystemPermissions: {
         if(syscall_data->param_num != 0)
-            return SyscallError_TooManyParameters;
+            return EINVAL;
 
         procInfo->Permissions |= ProcessPermissions_SystemPermissions;
     }
     break;
     default:
-        return SyscallError_NoSyscallFunction;
+        return ENOSYS;
         break;
     }
-    return SyscallError_None;
+    return 0;
 }

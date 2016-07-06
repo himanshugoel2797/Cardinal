@@ -71,6 +71,41 @@ SwitchToThread(ThreadInfo *dst) {
 }
 
 void
-SetTLSBase(void *tlsBase) {
-    wrmsr(0xC0000100, (uint64_t)tlsBase);
+SetFSBase(void *base) {
+    wrmsr(0xC0000100, (uint64_t)base);
+}
+
+void
+SetGSBase(void *base) {
+    wrmsr(0xC0000101, (uint64_t)base);
+}
+
+void*
+GetFSBase(void)
+{
+    return (void*)rdmsr(0xC0000100);
+}
+
+void*
+GetGSBase(void)
+{
+    return (void*)rdmsr(0xC0000101);
+}
+
+void
+PerformArchSpecificTaskSave(ThreadInfo *tInfo)
+{
+    uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
+
+    data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
+    data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();
+}
+
+void
+PerformArchSpecificTaskSwitch(ThreadInfo *tInfo)
+{
+    uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
+
+    SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
+    SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);
 }

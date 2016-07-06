@@ -3,6 +3,8 @@
 #include "managers.h"
 #include "common/common.h"
 
+#include <pthread.h>
+
 typedef struct CoreKernelStackInfo {
     uint8_t *k_stack;
     uint64_t rflags;
@@ -16,8 +18,6 @@ Syscall_Handler(void) {
     //Setup the environment to move into the OS syscall handler
     __asm__ volatile
     (
-        //   "cli\n\t"
-        "sysretq\n\t"
         "pushq %%rax\n\t"
         "movq %%rsp, %%rax\n\t"
         "movq (k_stack_info), %%rsp\n\t"
@@ -25,11 +25,9 @@ Syscall_Handler(void) {
         "movq (%%rsp), %%rsp\n\t"
         "pushq %%rax\n\t"
         "pushq %%rcx\n\t"
-        "pushq %%rdi\n\t"
-        "movq %%rcx, %%rdi\n\t"
+        "xchg %%rcx, %%rdi\n\t"
         "callq (SyscallReceived)\n\t"
         "movq %%rax, %%rsi\n\t"
-        "popq %%rdi\n\t"
         "popq %%rcx\n\t"
         "popq %%rax\n\t"
         "movq %%rax, %%rsp\n\t"
