@@ -81,8 +81,7 @@ LoadElf64(void *loc,
     elfData->phdr_ent_size = hdr->e_phentsize;
 
     Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
-    for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize))
-    {
+    for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize)) {
         if(phdr->p_type == PT_TLS)
             __asm__ ("cli\n\thlt" :: "a"(phdr->p_memsz));
     }
@@ -143,11 +142,11 @@ LoadElf64(void *loc,
                     *map = alloc;
                 }
             }
-            
-                if(aligned_addr > sh_addr) {
-                    sh_aligned = aligned_addr;
-                    sh_pg_offset = 0;
-                }
+
+            if(aligned_addr > sh_addr) {
+                sh_aligned = aligned_addr;
+                sh_pg_offset = 0;
+            }
 
             //Get the section type
             switch(shdr->sh_type) {
