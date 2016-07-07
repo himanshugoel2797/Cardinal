@@ -29,7 +29,6 @@ SyscallReceived(uint64_t instruction_pointer,
     Copy the parameters over to a kernel buffer, then disable the protection.
     Now function only with the kernel buffer
     */
-    if(syscall_cnt == 3)__asm__("cli\n\thlt");
     syscall_cnt++;
 
 
@@ -63,7 +62,7 @@ SyscallReceived(uint64_t instruction_pointer,
                           (uint64_t*)&k_data);
 
         return retVal;
-    } else __asm__ ("cli\n\thlt");
+    } else __asm__ ("cli\n\thlt" :: "a"(syscall_num));
 
     return ENOSYS;
 }

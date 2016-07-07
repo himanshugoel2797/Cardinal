@@ -210,9 +210,8 @@ error_exit:
 
 
 void
-Thread_SetChildTIDAddress(UID id, 
-                          void *address)
-{
+Thread_SetChildTIDAddress(UID id,
+                          void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, set_child_tid, address);
         return;
@@ -230,8 +229,7 @@ Thread_SetChildTIDAddress(UID id,
 
 void
 Thread_SetClearChildTIDAddress(UID id,
-                               void *address)
-{
+                               void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid, address);
         return;

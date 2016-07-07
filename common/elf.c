@@ -87,20 +87,18 @@ LoadElf64(void *loc,
     int sh_cnt = hdr->e_shnum;
     for(int i = 0; i < sh_cnt; i++,
             shdr = (Elf64_Shdr*)(hdr->e_shentsize + (uint64_t)shdr)) {
-        //Get the section flags
+
         if(shdr->sh_type == SHT_NULL)continue;
+
+        //Get the section flags
         MemoryAllocationFlags flags = MemoryAllocationFlags_User;
         if(shdr->sh_flags & SHF_EXECINSTR)flags |= MemoryAllocationFlags_Exec;
         if(shdr->sh_flags & SHF_WRITE)flags |= MemoryAllocationFlags_Write;
-
 
         uint64_t sh_addr = (uint64_t)shdr->sh_addr;
         uint64_t sh_size = (uint64_t)shdr->sh_size;
         uint64_t sh_aligned = sh_addr - sh_addr % PAGE_SIZE;
         uint64_t sh_pg_offset = sh_addr % PAGE_SIZE;
-
-
-        MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
 
         uint64_t v_tmp_addr = 0;
         FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
@@ -109,12 +107,12 @@ LoadElf64(void *loc,
                                MemoryAllocationType_Heap,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
-
+        uint64_t phys_addr = 0;
         for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_addr + sh_size; aligned_addr += PAGE_SIZE) {
-            if(GetPhysicalAddressUID(pageTable, (void*)sh_addr) == NULL) {
 
-
-                uint64_t phys_addr = AllocatePhysicalPage();
+            if(GetPhysicalAddressUID(pageTable, (void*)aligned_addr) == NULL) {
+                MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
+                phys_addr = AllocatePhysicalPage();
 
                 if(aligned_addr > sh_addr) {
                     sh_aligned = aligned_addr;
@@ -135,79 +133,78 @@ LoadElf64(void *loc,
                     alloc->next = *map;
                     *map = alloc;
                 }
+            }
 
+            //Get the section type
+            switch(shdr->sh_type) {
+            case SHT_NULL:
+                break;
+            case SHT_FINI_ARRAY:
+            case SHT_INIT_ARRAY:
+            case SHT_PROGBITS:
+                //Setup the mapping and copy over the related data
+                MapPage(GetActiveVirtualMemoryInstance(),
+                        NULL,
+                        phys_addr,
+                        v_tmp_addr,
+                        PAGE_SIZE,
+                        CachingModeWriteBack,
+                        MemoryAllocationType_Heap,
+                        MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
-                //Get the section type
-                switch(shdr->sh_type) {
-                case SHT_NULL:
-                    break;
-                case SHT_FINI_ARRAY:
-                case SHT_INIT_ARRAY:
-                case SHT_PROGBITS:
-                    //Setup the mapping and copy over the related data
-                    MapPage(GetActiveVirtualMemoryInstance(),
-                            NULL,
-                            phys_addr,
-                            v_tmp_addr,
-                            PAGE_SIZE,
-                            CachingModeWriteBack,
-                            MemoryAllocationType_Heap,
-                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+                memcpy((void*)(v_tmp_addr + sh_pg_offset),
+                       (uint8_t*)loc + sh_pg_offset + (aligned_addr - sh_aligned),
+                       PAGE_SIZE - sh_pg_offset);
 
-                    memcpy((void*)(v_tmp_addr + sh_pg_offset),
-                           (uint8_t*)loc + shdr->sh_offset,
-                           PAGE_SIZE - sh_pg_offset);
+                UnmapPage(GetActiveVirtualMemoryInstance(),
+                          v_tmp_addr,
+                          PAGE_SIZE);
+                break;
+            case SHT_SYMTAB:
+                break;
+            case SHT_STRTAB:
+                break;
+            case SHT_RELA:
+                break;
+            case SHT_HASH:
+                break;
+            case SHT_DYNAMIC:
+                break;
+            case SHT_NOTE:
+                break;
+            case SHT_NOBITS:
+                //Setup the mapping and clear the related area
+                MapPage(GetActiveVirtualMemoryInstance(),
+                        NULL,
+                        phys_addr,
+                        v_tmp_addr,
+                        PAGE_SIZE,
+                        CachingModeWriteBack,
+                        MemoryAllocationType_Heap,
+                        MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
-                    UnmapPage(GetActiveVirtualMemoryInstance(),
-                              v_tmp_addr,
-                              PAGE_SIZE);
-                    break;
-                case SHT_SYMTAB:
-                    break;
-                case SHT_STRTAB:
-                    break;
-                case SHT_RELA:
-                    break;
-                case SHT_HASH:
-                    break;
-                case SHT_DYNAMIC:
-                    break;
-                case SHT_NOTE:
-                    break;
-                case SHT_NOBITS:
-                    //Setup the mapping and clear the related area
-                    MapPage(GetActiveVirtualMemoryInstance(),
-                            NULL,
-                            phys_addr,
-                            v_tmp_addr,
-                            PAGE_SIZE,
-                            CachingModeWriteBack,
-                            MemoryAllocationType_Heap,
-                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+                memset((void*)(v_tmp_addr + sh_pg_offset),
+                       0,
+                       PAGE_SIZE - sh_pg_offset);
 
-                    memset((void*)(v_tmp_addr + sh_pg_offset),
-                           0,
-                           PAGE_SIZE - sh_pg_offset);
-
-                    UnmapPage(GetActiveVirtualMemoryInstance(),
-                              v_tmp_addr,
-                              PAGE_SIZE);
-                    break;
-                case SHT_REL:
-                    break;
-                case SHT_SHLIB:
-                    break;
-                case SHT_DYNSYM:
-                    break;
-                case SHT_PREINIT_ARRAY:
-                    break;
-                case SHT_GROUP:
-                    break;
-                case SHT_SYMTAB_SHNDX:
-                    break;
-                default:
-                    break;
-                }
+                UnmapPage(GetActiveVirtualMemoryInstance(),
+                          v_tmp_addr,
+                          PAGE_SIZE);
+                break;
+            case SHT_REL:
+                break;
+            case SHT_SHLIB:
+                break;
+            case SHT_DYNSYM:
+                break;
+            case SHT_PREINIT_ARRAY:
+                break;
+            case SHT_GROUP:
+                break;
+            case SHT_SYMTAB_SHNDX:
+                break;
+            default:
+                break;
             }
 
         }

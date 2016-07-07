@@ -42,6 +42,13 @@ typedef struct {
     } a_un;
 } AUXVector;
 
+void
+LoadAndStartApplication(void *elfLoc,
+                        uint64_t elf_Size,
+                        const char **argv,
+                        uint32_t argc,
+                        const char **envp);
+
 void*
 SetupApplicationStack(void *sp,
                       uint32_t argc,

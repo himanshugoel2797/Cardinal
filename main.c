@@ -1,13 +1,11 @@
 #include "main.h"
 #include "types.h"
-#include "multiboot.h"
-#include "kmalloc/kmalloc.h"
+#include "kmalloc.h"
 #include "managers.h"
 #include "memory.h"
 #include "program.h"
 #include "syscall.h"
 #include "initrd.h"
-#include "elf.h"
 #include "synchronization.h"
 #include "timer.h"
 
@@ -49,48 +47,10 @@ load_elf(void) {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
-    ProcessInformation p_info;
-    GetProcessInformation(GetCurrentProcessUID(), &p_info);
-
-    MemoryAllocationsMap *m = p_info.AllocationMap;
-    ElfInformation elf_info;
     Initrd_GetFile("test.elf", &elf_loc, &elf_size);
-    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
+    const char *argv[] = {"test.elf"};
 
-    //GetProcessInformation(0, &p_info);
-    //__asm__("cli\n\thlt" :: "a"((uint64_t)elf_info.entry_point));
-    const char *program_full_name = "test";
-    const char *program_name = "test";
-    const char *args[2] = {program_name, program_full_name};
-
-    uint32_t auxv_cnt = 0;
-    AUXVector auxv[14];
-    auxv[auxv_cnt].a_type = AUXVectorType_PGSZ;
-    auxv[auxv_cnt++].a_un.a_val = 4096;
-
-    auxv[auxv_cnt].a_type = AUXVectorType_UID;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
-
-    auxv[auxv_cnt].a_type = AUXVectorType_EUID;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
-
-    auxv[auxv_cnt].a_type = AUXVectorType_GID;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
-
-    auxv[auxv_cnt].a_type = AUXVectorType_EGID;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
-
-    //auxv[auxv_cnt].a_type = AUXVectorType_RANDOM;
-    //auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
-
-    auxv[auxv_cnt].a_type = AUXVectorType_ENTRY;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
-
-    //auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
-    //auxv[auxv_cnt++].a_un.a_val = (int64_t)0xBFEBFBFF;
-
-    void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), 1, args, NULL, auxv, auxv_cnt);
-    SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)sp);
+    LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
 }
 

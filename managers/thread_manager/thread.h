@@ -68,7 +68,7 @@ void
 Thread_Initialize(void);
 
 void
-Thread_SetChildTIDAddress(UID id, 
+Thread_SetChildTIDAddress(UID id,
                           void *address);
 
 void

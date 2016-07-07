@@ -2,6 +2,53 @@
 #include "common.h"
 #include "memory.h"
 #include "kmalloc.h"
+#include "elf.h"
+#include "managers.h"
+#include "syscall.h"
+
+
+void
+LoadAndStartApplication(void *elf_loc,
+                        uint64_t elf_size,
+                        const char **argv,
+                        uint32_t argc,
+                        const char **envp) {
+    ProcessInformation p_info;
+    GetProcessInformation(GetCurrentProcessUID(), &p_info);
+
+    MemoryAllocationsMap *m = p_info.AllocationMap;
+    ElfInformation elf_info;
+    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
+
+    uint32_t auxv_cnt = 0;
+    AUXVector auxv[14];
+    auxv[auxv_cnt].a_type = AUXVectorType_PGSZ;
+    auxv[auxv_cnt++].a_un.a_val = 4096;
+
+    auxv[auxv_cnt].a_type = AUXVectorType_UID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_EUID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_GID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_EGID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_RANDOM;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
+
+    auxv[auxv_cnt].a_type = AUXVectorType_ENTRY;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
+
+    auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)0xBFEBFBFF;
+
+    void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt);
+    SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)sp);
+}
 
 void*
 SetupApplicationStack(void *sp,
@@ -15,7 +62,7 @@ SetupApplicationStack(void *sp,
 
     //calculate needed space
     uint64_t size = 0;
-    if(envp)for(;envp[size]; size++);
+    if(envp)for(; envp[size]; size++);
     size += argc + 1 + (auxv_cnt * sizeof(AUXVector))/sizeof(uint64_t);
 
     stack -= size;
@@ -39,13 +86,12 @@ SetupApplicationStack(void *sp,
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-            );
+           );
 
     uint8_t *args = (uint8_t*)v_tmp_addr;
     uint64_t off = 0;
 
-    for(uint32_t i = 0; i < argc; i++)
-    {
+    for(uint32_t i = 0; i < argc; i++) {
         stack[i + 1] = (uint64_t)&args[off];
         strcpy((char*)&args[off], argv[i]);
         off += strlen(argv[i]);
@@ -63,15 +109,14 @@ SetupApplicationStack(void *sp,
     stack[offset++] = 0;
 
     AUXVector *auxv = (AUXVector*)&stack[offset];
-    
-    for(uint32_t i = 0; i < auxv_cnt; i++)
-    {
-      auxv->a_type = aux_vectors[i].a_type;
-      auxv->a_un.a_val = aux_vectors[i].a_un.a_val;
 
-      auxv++;
+    for(uint32_t i = 0; i < auxv_cnt; i++) {
+        auxv->a_type = aux_vectors[i].a_type;
+        auxv->a_un.a_val = aux_vectors[i].a_un.a_val;
+
+        auxv++;
     }
-    
+
     auxv->a_type = AUXVectorType_NULL;
 
     //__asm__("cli\n\thlt" :: "a"(&stack[0]));
