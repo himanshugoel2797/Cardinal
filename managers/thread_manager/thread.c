@@ -88,9 +88,10 @@ PROPERTY_GET_SET(uint64_t, current_stack, 0)
 PROPERTY_GET_SET(int, core_affinity, 0)
 PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
 PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
-PROPERTY_GET_SET(bool, cur_executing, FALSE)
 PROPERTY_GET_SET(void*, arch_specific_data, NULL)
 PROPERTY_GET_SET(void*, fpu_state, NULL)
+PROPERTY_GET_SET(void*, set_child_tid, NULL)
+PROPERTY_GET_SET(void*, clear_child_tid, NULL)
 
 UID
 GetCurrentThreadUID(void) {
@@ -131,10 +132,11 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, Parent, parentProcess);
     SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
-    SET_PROPERTY_VAL(thd, cur_executing, FALSE);
     SET_PROPERTY_VAL(thd, interrupt_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
     SET_PROPERTY_VAL(thd, kernel_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
     SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
+    SET_PROPERTY_VAL(thd, clear_child_tid, NULL);
+    SET_PROPERTY_VAL(thd, set_child_tid, NULL);
 
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base);
@@ -204,6 +206,45 @@ error_exit:
     FreeSpinlock(thd->lock);
     kfree(thd);
     return -1;
+}
+
+
+void
+Thread_SetChildTIDAddress(UID id, 
+                          void *address)
+{
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        SET_PROPERTY_VAL(coreState->cur_thread, set_child_tid, address);
+        return;
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            SET_PROPERTY_VAL(thd, set_child_tid, address);
+            return;
+        }
+    }
+
+}
+
+void
+Thread_SetClearChildTIDAddress(UID id,
+                               void *address)
+{
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        SET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid, address);
+        return;
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            SET_PROPERTY_VAL(thd, clear_child_tid, address);
+            return;
+        }
+    }
+
 }
 
 void
@@ -390,7 +431,6 @@ GetNextThread(ThreadInfo *prevThread) {
     */
 
     if(prevThread != NULL) {
-        SET_PROPERTY_VAL(prevThread, cur_executing, FALSE);
         List_AddEntry(thds, prevThread);
     }
 
@@ -457,7 +497,6 @@ GetNextThread(ThreadInfo *prevThread) {
             }
             break;
         default:
-            SET_PROPERTY_VAL(next_thread, cur_executing, TRUE);
             exit_loop = TRUE;
             break;
         }

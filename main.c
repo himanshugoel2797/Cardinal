@@ -59,8 +59,38 @@ load_elf(void) {
 
     //GetProcessInformation(0, &p_info);
     //__asm__("cli\n\thlt" :: "a"((uint64_t)elf_info.entry_point));
-    SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), 0, NULL, NULL, NULL, 0);
-    SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)GetThreadUserStack(GetCurrentThreadUID()));
+    const char *program_full_name = "test";
+    const char *program_name = "test";
+    const char *args[2] = {program_name, program_full_name};
+
+    uint32_t auxv_cnt = 0;
+    AUXVector auxv[14];
+    auxv[auxv_cnt].a_type = AUXVectorType_PGSZ;
+    auxv[auxv_cnt++].a_un.a_val = 4096;
+
+    auxv[auxv_cnt].a_type = AUXVectorType_UID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_EUID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_GID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
+
+    auxv[auxv_cnt].a_type = AUXVectorType_EGID;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
+
+    //auxv[auxv_cnt].a_type = AUXVectorType_RANDOM;
+    //auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
+
+    auxv[auxv_cnt].a_type = AUXVectorType_ENTRY;
+    auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
+
+    //auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
+    //auxv[auxv_cnt++].a_un.a_val = (int64_t)0xBFEBFBFF;
+
+    void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), 1, args, NULL, auxv, auxv_cnt);
+    SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)sp);
     while(1);
 }
 

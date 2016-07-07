@@ -35,6 +35,7 @@ ArchPrctl_Syscall(uint64_t UNUSED(instruction_pointer),
         if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
             return EINVAL;
 
+
         uint64_t* fs_base_target = (uint64_t*)data->params[1];
         *fs_base_target = (uint64_t)GetFSBase();
     }

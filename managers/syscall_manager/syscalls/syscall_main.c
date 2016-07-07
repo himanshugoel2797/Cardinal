@@ -6,4 +6,5 @@ void
 RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);
     RegisterSyscall(Syscall_ArchPrctl, ArchPrctl_Syscall);
+    RegisterSyscall(Syscall_SetTidAddress, SetTidAddress_Syscall);
 }

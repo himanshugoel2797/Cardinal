@@ -52,7 +52,8 @@ typedef struct ThreadInfo {
     int core_affinity;
     uint64_t sleep_duration_ns;
     uint64_t sleep_start_time;
-    bool cur_executing;
+    void *set_child_tid;
+    void *clear_child_tid;
     void *fpu_state;
     void *arch_specific_data;
     Spinlock lock;
@@ -65,6 +66,14 @@ typedef struct CoreInfo {
 
 void
 Thread_Initialize(void);
+
+void
+Thread_SetChildTIDAddress(UID id, 
+                          void *address);
+
+void
+Thread_SetClearChildTIDAddress(UID id,
+                               void *address);
 
 UID
 CreateThread(UID parentProcess,

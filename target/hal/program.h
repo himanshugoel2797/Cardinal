@@ -18,7 +18,19 @@ typedef enum {
     AUXVectorType_UID,
     AUXVectorType_EUID,
     AUXVectorType_GID,
-    AUXVectorType_EGID
+    AUXVectorType_EGID,
+    AUXVectorType_PLATFORM,
+    AUXVectorType_HWCAP,
+    AUXVectorType_CLKTCK,
+    AUXVectorType_FPUCW,
+    AUXVectorType_DCACHEBSIZE,
+    AUXVectorType_ICACHEBSIZE,
+    AUXVectorType_UCACHEBSIZE,
+    AUXVectorType_IGNOREPPC,
+    AUXVectorType_SECURE,
+    AUXVectorType_BASEPLATFORM,
+    AUXVectorType_RANDOM,
+    AUXVectorType_EXECFN = 31
 } AUXVectorType;
 
 typedef struct {
@@ -30,7 +42,7 @@ typedef struct {
     } a_un;
 } AUXVector;
 
-void
+void*
 SetupApplicationStack(void *sp,
                       uint32_t argc,
                       const char **argv,

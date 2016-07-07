@@ -141,6 +141,8 @@ LoadElf64(void *loc,
                 switch(shdr->sh_type) {
                 case SHT_NULL:
                     break;
+                case SHT_FINI_ARRAY:
+                case SHT_INIT_ARRAY:
                 case SHT_PROGBITS:
                     //Setup the mapping and copy over the related data
                     MapPage(GetActiveVirtualMemoryInstance(),
@@ -196,10 +198,6 @@ LoadElf64(void *loc,
                 case SHT_SHLIB:
                     break;
                 case SHT_DYNSYM:
-                    break;
-                case SHT_INIT_ARRAY:
-                    break;
-                case SHT_FINI_ARRAY:
                     break;
                 case SHT_PREINIT_ARRAY:
                     break;

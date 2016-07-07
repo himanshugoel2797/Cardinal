@@ -29,7 +29,7 @@ SyscallReceived(uint64_t instruction_pointer,
     Copy the parameters over to a kernel buffer, then disable the protection.
     Now function only with the kernel buffer
     */
-    if(syscall_cnt == 1)__asm__("cli\n\thlt");
+    if(syscall_cnt == 3)__asm__("cli\n\thlt");
     syscall_cnt++;
 
 

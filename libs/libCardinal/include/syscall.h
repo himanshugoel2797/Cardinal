@@ -148,6 +148,7 @@ typedef enum {
     Syscall_RequestSystemPermissions,
     Syscall_Nanosleep,
     Syscall_ArchPrctl = 158,
+    Syscall_SetTidAddress = 218,
     Syscall_IOPL,
     Syscall_NumEnd = Syscall_IOPL,
 } SyscallFunctions;
