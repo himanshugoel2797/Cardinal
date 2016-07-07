@@ -118,7 +118,7 @@ Thread_Initialize(void) {
     sync_lock = CreateSpinlock();
 }
 
-#define STACK_SIZE KiB(8)
+#define STACK_SIZE KiB(16)
 
 UID
 CreateThread(UID parentProcess,

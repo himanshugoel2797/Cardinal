@@ -11,6 +11,7 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/syscall_main.o \
 		managers/syscall_manager/syscalls/time.o \
 		managers/syscall_manager/syscalls/thread.o \
+		managers/syscall_manager/syscalls/memory.o \
 		drivers/usb/controller.o \
 		drivers/usb/uhci/uhci_controller.o \
 		Sibyl/sec_mon.o

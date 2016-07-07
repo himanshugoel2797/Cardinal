@@ -17,8 +17,6 @@ SyscallMan_Initialize(void) {
     RegisterAllSyscalls();
 }
 
-int syscall_cnt = 0;
-
 uint64_t
 SyscallReceived(uint64_t instruction_pointer,
                 uint64_t syscall_num,
@@ -26,11 +24,8 @@ SyscallReceived(uint64_t instruction_pointer,
                 uint64_t syscall_param_cnt) {
 
     /*
-    Copy the parameters over to a kernel buffer, then disable the protection.
-    Now function only with the kernel buffer
+    Copy the parameters over to a kernel buffer, Now function only with the kernel buffer
     */
-    syscall_cnt++;
-
 
     MemoryAllocationFlags flags = 0;
     CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags);
@@ -62,7 +57,7 @@ SyscallReceived(uint64_t instruction_pointer,
                           (uint64_t*)&k_data);
 
         return retVal;
-    } else __asm__ ("cli\n\thlt" :: "a"(syscall_num));
+    } else __asm__ ("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
 
     return ENOSYS;
 }

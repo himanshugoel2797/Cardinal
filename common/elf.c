@@ -76,7 +76,18 @@ LoadElf64(void *loc,
 
     elfData->entry_point = (void*)hdr->e_entry;
 
-    //Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
+    elfData->phdr_data = (void*)(hdr->e_phoff + (uint64_t)loc);
+    elfData->phdr_num = hdr->e_phnum;
+    elfData->phdr_ent_size = hdr->e_phentsize;
+
+    Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
+    for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize))
+    {
+        if(phdr->p_type == PT_TLS)
+            __asm__ ("cli\n\thlt" :: "a"(phdr->p_memsz));
+    }
+
+
     Elf64_Shdr *shdr = (Elf64_Shdr*)(hdr->e_shoff + (uint64_t)loc);
 
     elfData->shdr_data_size = (hdr->e_shentsize * hdr->e_shnum);
@@ -99,6 +110,8 @@ LoadElf64(void *loc,
         uint64_t sh_size = (uint64_t)shdr->sh_size;
         uint64_t sh_aligned = sh_addr - sh_addr % PAGE_SIZE;
         uint64_t sh_pg_offset = sh_addr % PAGE_SIZE;
+        uint64_t elf_offset = shdr->sh_offset;
+        uint64_t elf_size = sh_size;
 
         uint64_t v_tmp_addr = 0;
         FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
@@ -108,16 +121,12 @@ LoadElf64(void *loc,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
         uint64_t phys_addr = 0;
-        for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_addr + sh_size; aligned_addr += PAGE_SIZE) {
+        for(uint64_t aligned_addr = sh_aligned; aligned_addr < sh_addr + sh_size; aligned_addr += PAGE_SIZE, elf_offset += PAGE_SIZE - sh_pg_offset, elf_size -= PAGE_SIZE) {
 
             if(GetPhysicalAddressUID(pageTable, (void*)aligned_addr) == NULL) {
                 MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
                 phys_addr = AllocatePhysicalPage();
 
-                if(aligned_addr > sh_addr) {
-                    sh_aligned = aligned_addr;
-                    sh_pg_offset = 0;
-                }
 
                 MapPage(pageTable,
                         alloc,
@@ -134,6 +143,11 @@ LoadElf64(void *loc,
                     *map = alloc;
                 }
             }
+            
+                if(aligned_addr > sh_addr) {
+                    sh_aligned = aligned_addr;
+                    sh_pg_offset = 0;
+                }
 
             //Get the section type
             switch(shdr->sh_type) {
@@ -153,8 +167,8 @@ LoadElf64(void *loc,
                         MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
                 memcpy((void*)(v_tmp_addr + sh_pg_offset),
-                       (uint8_t*)loc + sh_pg_offset + (aligned_addr - sh_aligned),
-                       PAGE_SIZE - sh_pg_offset);
+                       (uint8_t*)loc + elf_offset,
+                       (elf_size > PAGE_SIZE - sh_pg_offset) ? PAGE_SIZE - sh_pg_offset : elf_size);
 
                 UnmapPage(GetActiveVirtualMemoryInstance(),
                           v_tmp_addr,
@@ -185,7 +199,7 @@ LoadElf64(void *loc,
 
                 memset((void*)(v_tmp_addr + sh_pg_offset),
                        0,
-                       PAGE_SIZE - sh_pg_offset);
+                       (elf_size > PAGE_SIZE - sh_pg_offset) ? PAGE_SIZE - sh_pg_offset : elf_size);
 
                 UnmapPage(GetActiveVirtualMemoryInstance(),
                           v_tmp_addr,

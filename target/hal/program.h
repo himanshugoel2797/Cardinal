@@ -2,6 +2,7 @@
 #define _CARDINAL_HAL_PROGRAM_H_
 
 #include "types.h"
+#include "elf.h"
 
 typedef enum {
     AUXVectorType_NULL = 0,
@@ -55,6 +56,7 @@ SetupApplicationStack(void *sp,
                       const char **argv,
                       const char **envp,
                       const AUXVector *aux_vectors,
-                      uint32_t auxv_cnt);
+                      uint32_t auxv_cnt,
+                      ElfInformation *elf);
 
 #endif

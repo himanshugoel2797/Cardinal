@@ -21,9 +21,9 @@ LoadAndStartApplication(void *elf_loc,
     if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 
     uint32_t auxv_cnt = 0;
-    AUXVector auxv[14];
+    AUXVector auxv[8];
     auxv[auxv_cnt].a_type = AUXVectorType_PGSZ;
-    auxv[auxv_cnt++].a_un.a_val = 4096;
+    auxv[auxv_cnt++].a_un.a_val = PAGE_SIZE;
 
     auxv[auxv_cnt].a_type = AUXVectorType_UID;
     auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentThreadUID();
@@ -46,7 +46,7 @@ LoadAndStartApplication(void *elf_loc,
     auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
     auxv[auxv_cnt++].a_un.a_val = (int64_t)0xBFEBFBFF;
 
-    void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt);
+    void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt, &elf_info);
     SwitchToUserMode((uint64_t)elf_info.entry_point, (uint64_t)sp);
 }
 
@@ -56,14 +56,15 @@ SetupApplicationStack(void *sp,
                       const char **argv,
                       const char **envp,
                       const AUXVector *aux_vectors,
-                      uint32_t auxv_cnt) {
+                      uint32_t auxv_cnt,
+                      ElfInformation *elf) {
 
     uint64_t *stack = (uint64_t*)sp;
 
     //calculate needed space
     uint64_t size = 0;
     if(envp)for(; envp[size]; size++);
-    size += argc + 1 + (auxv_cnt * sizeof(AUXVector))/sizeof(uint64_t);
+    size += argc + 2 + ((auxv_cnt + 4) * sizeof(AUXVector))/sizeof(uint64_t);
 
     stack -= size;
 
@@ -117,7 +118,22 @@ SetupApplicationStack(void *sp,
         auxv++;
     }
 
+    memcpy(&args[off], elf->phdr_data, elf->phdr_num * elf->phdr_ent_size);
+
+    auxv->a_type = AUXVectorType_PHDR;
+    auxv->a_un.a_val = (int64_t)&args[off];
+    auxv++;
+
+    auxv->a_type = AUXVectorType_PHNUM;
+    auxv->a_un.a_val = (int64_t)elf->phdr_num;
+    auxv++;
+
+    auxv->a_type = AUXVectorType_PHENT;
+    auxv->a_un.a_val = (int64_t)elf->phdr_ent_size;
+    auxv++;
+
     auxv->a_type = AUXVectorType_NULL;
+    auxv->a_un.a_val = 0;
 
     //__asm__("cli\n\thlt" :: "a"(&stack[0]));
     return (void*)stack;

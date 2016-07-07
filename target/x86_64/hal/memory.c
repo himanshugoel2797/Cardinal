@@ -326,6 +326,8 @@ HandlePageFault(uint64_t virtualAddress,
                 if(map->AllocationType & MemoryAllocationType_PageLocked) {
                     //Yield the thread to the scheduler
                     TaskSwitch(0, 0);
+                }else if(map->AllocationType & MemoryAllocationType_Application) {
+                    __asm__("cli\n\thlt");
                 }
 
 

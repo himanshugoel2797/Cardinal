@@ -786,9 +786,11 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 #define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
 
     int pml_base = 256;
+    int pdpt_base = 0;
 
     switch(allocType) {
     case MemoryAllocationType_Heap:
+    case MemoryAllocationType_HeapLo:
         pml_base = 511;
         break;
     default:
@@ -807,6 +809,10 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
             break;
         case MemoryAllocationType_Stack:
             pml_base = 2;
+            break;
+        case MemoryAllocationType_HeapLo:
+            pml_base = 1;
+            pdpt_base = 1;
             break;
         default:
             pml_base = 0;
@@ -828,7 +834,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
             //Reset the score if a block was skipped to keep the allocation continuous
             if(cur_score > 0 && pml_i != 0 && (pml_i - 1) != prev_val)cur_score = 0;
 
-            for(uint64_t pdpt_i = 0; pdpt_i < 512 && cur_score < needed_score; ++pdpt_i) {
+            for(uint64_t pdpt_i = pdpt_base; pdpt_i < 512 && cur_score < needed_score; ++pdpt_i) {
 
                 if(((pdpt[pdpt_i] & 1) == 0)) {
                     //Check the pdpt table if more than 1GiB of space is requested
