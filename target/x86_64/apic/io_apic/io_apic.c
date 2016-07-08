@@ -3,19 +3,19 @@
 #include "managers.h"
 #include "common.h"
 
-IOAPIC_Desc ioapics[MAX_IOAPIC_COUNT];
-uint32_t curIOAPIC_index = 0;
+static volatile IOAPIC_Desc ioapics[MAX_IOAPIC_COUNT];
+static volatile uint32_t curIOAPIC_index = 0;
 
-IOAPIC_InterruptMapEntry ioapic_interruptMap[256];
+static volatile IOAPIC_InterruptMapEntry ioapic_interruptMap[256];
 
 uint8_t
 IOAPIC_Initialize(uint64_t baseAddr,
                   uint32_t global_int_base) {
     if(curIOAPIC_index >= MAX_IOAPIC_COUNT) return -1;
-    ioapics[curIOAPIC_index].baseAddr = (uint32_t*)baseAddr;
+    ioapics[curIOAPIC_index].baseAddr = (uint32_t volatile *)baseAddr;
     ioapics[curIOAPIC_index].global_int_base = global_int_base;
-    ioapics[curIOAPIC_index].ID = (IOAPIC_Read((uint32_t*)baseAddr, 0x0) >> 24) & 0xF;
-    ioapics[curIOAPIC_index].entry_count = (IOAPIC_Read((uint32_t*)baseAddr, 0x01) >> 16) & 0xFF;
+    ioapics[curIOAPIC_index].ID = (IOAPIC_Read((uint32_t volatile *)baseAddr, 0x0) >> 24) & 0xF;
+    ioapics[curIOAPIC_index].entry_count = (IOAPIC_Read((uint32_t volatile *)baseAddr, 0x01) >> 16) & 0xFF;
 
 
     curIOAPIC_index++;
@@ -24,14 +24,14 @@ IOAPIC_Initialize(uint64_t baseAddr,
 }
 
 uint32_t
-IOAPIC_Read(uint32_t* io_apic_baseAddr,
+IOAPIC_Read(uint32_t volatile* io_apic_baseAddr,
             uint32_t index) {
     io_apic_baseAddr[0] = index;
     return io_apic_baseAddr[4];
 }
 
 void
-IOAPIC_Write(uint32_t* io_apic_baseAddr,
+IOAPIC_Write(uint32_t volatile* io_apic_baseAddr,
              uint32_t index,
              uint32_t val) {
     io_apic_baseAddr[0] = index;

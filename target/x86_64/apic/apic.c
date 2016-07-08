@@ -11,7 +11,7 @@
 #include "managers.h"
 
 typedef struct APIC_APLS_Data {
-    uint32_t *apic_base_addr;
+    uint32_t volatile *apic_base_addr;
     uint64_t apic_frequency;
 } APIC_APLS_Data;
 static volatile APIC_APLS_Data* apic_data = NULL;
@@ -140,12 +140,12 @@ APIC_GetTimerFrequency(void) {
 void
 APIC_Write(uint32_t reg,
            uint32_t val) {
-    apic_data->apic_base_addr[reg/4] = val;
+    apic_data->apic_base_addr[reg/sizeof(uint32_t)] = val;
 }
 
 uint32_t
 APIC_Read(uint32_t reg) {
-    return apic_data->apic_base_addr[reg/4];
+    return apic_data->apic_base_addr[reg/sizeof(uint32_t)];
 }
 
 void

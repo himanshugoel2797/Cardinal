@@ -12,7 +12,7 @@ AS=x86_64-elf-as
 	rm -f $(?:.c=.s)
 
 all:$(SOURCES)
-	musl-gcc -static -o $(TARGET) -O0 $(SOURCES)
+	musl-gcc -static -o $(TARGET) -O2 $(SOURCES)
 
 clean:
 	rm -rf $(SOURCES)

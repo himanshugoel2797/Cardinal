@@ -42,7 +42,7 @@ typedef struct GDT_CoreData {
     GDTPtr gdt_table;
     tss_struct sys_tss; //Define the TSS as a global structure
 } GDT_CoreData;
-static GDT_CoreData *coreLocalData;
+static volatile GDT_CoreData *coreLocalData;
 
 void
 GDT_Bootstrap(void) {
@@ -64,9 +64,9 @@ GDT_Bootstrap(void) {
     GDT_SetEntry(5, 0, 0xFFFFFFFF, 0xFB, 0xA0); // User mode code segment (64bit)
     GDT_SetTSS(6, (uint64_t)&coreLocalData->sys_tss, sizeof(tss_struct), 0xE9);
 
-    __asm__ ("lgdt (%0)" :: "r" (&coreLocalData->gdt_table));
+    __asm__ volatile ("lgdt (%0)" :: "r" (&coreLocalData->gdt_table));
 
-    __asm__ (
+    __asm__ volatile (
         "pushq %rax\n\t"
         "mov $flush_gdt_btstrp, %rax\n\t"
         "pushq %rax\n\t"
@@ -97,7 +97,7 @@ void GDT_Initialize() {
     //Make sure interrupts are disabled
     __asm__ ("cli");
 
-    memset(coreLocalData, 0, sizeof(GDT_CoreData));
+    memset((void*)coreLocalData, 0, sizeof(GDT_CoreData));
 
 
     coreLocalData->sys_tss.iomap = sizeof(tss_struct);
@@ -114,9 +114,9 @@ void GDT_Initialize() {
     GDT_SetEntry(5, 0, 0xFFFFFFFF, 0xFB, 0xA0); // User mode code segment (64bit)
     GDT_SetTSS(6, (uint64_t)&coreLocalData->sys_tss, sizeof(tss_struct), 0xE9);
 
-    __asm__ ("lgdt (%0)" :: "r" (&coreLocalData->gdt_table));
+    __asm__ volatile ("lgdt (%0)" :: "r" (&coreLocalData->gdt_table));
 
-    __asm__ (
+    __asm__ volatile (
         "pushq %rax\n\t"
         "mov $flush, %rax\n\t"
         "pushq %rax\n\t"

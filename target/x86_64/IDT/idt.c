@@ -27,7 +27,7 @@ typedef struct {
 } __attribute__((packed)) IDTPtr;
 
 
-static IDTEntry
+static volatile IDTEntry
 idt_entries[IDT_ENTRY_COUNT];
 
 static IDTPtr
@@ -37,7 +37,7 @@ static char
 idt_handlers[IDT_ENTRY_COUNT][IDT_ENTRY_HANDLER_SIZE];
 
 static void
-(*idt_handler_calls[IDT_ENTRY_COUNT]) (Registers*);
+(*volatile idt_handler_calls[IDT_ENTRY_COUNT]) (Registers*);
 
 static uint8_t
 int_insts[4];
