@@ -13,7 +13,6 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
         return ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
-    __asm__("cli\n\thlt" :: "a"((size_t)data->params[1]));
 
     if(data->param_num != 6)
         return ENOSYS;

@@ -91,6 +91,8 @@ LoadElf64(void *loc,
     Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize)) {
         
+        if(phdr->p_type != PT_LOAD)continue;
+
         MemoryAllocationFlags flags = MemoryAllocationFlags_User;
         if(phdr->p_flags & PF_X)flags |= MemoryAllocationFlags_Exec;
         if(phdr->p_flags & PF_W)flags |= MemoryAllocationFlags_Write;
@@ -107,14 +109,17 @@ LoadElf64(void *loc,
         for(uint32_t j = 0; j < page_count; j++)
         {
 
+            uint64_t mem_clr_sz = p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz;
+            uint64_t mem_cpy_sz = p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz;
+
             MemoryAllocationsMap *alloc = NULL;
-            if(map != NULL && *map != NULL)alloc = kmalloc(sizeof(MemoryAllocationsMap));
+            if(map != NULL)alloc = kmalloc(sizeof(MemoryAllocationsMap));
             
             p_addr = AllocatePhysicalPage();
             MapPage(pageTable,
                     alloc,
                     p_addr,
-                    p_vaddr - p_vaddr % PAGE_SIZE,
+                    p_vaddr,
                     PAGE_SIZE,
                     CachingModeWriteBack,
                     MemoryAllocationType_Application,
@@ -133,8 +138,8 @@ LoadElf64(void *loc,
             switch(phdr->p_type)
             {
                 case PT_LOAD:
-                memset((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, 0, p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz);
-                memcpy((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, (uint8_t*)loc + p_offset, p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz);
+                memset((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, 0, mem_clr_sz);
+                memcpy((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, (uint8_t*)loc + p_offset, mem_cpy_sz);
                 break;
             }
 
@@ -142,16 +147,16 @@ LoadElf64(void *loc,
                       v_tmp_addr,
                       PAGE_SIZE);
 
-            if(map != NULL && *map != NULL)
+            if(map != NULL)
             {
                 alloc->next = *map;
                 *map = alloc;
             }
 
-            p_vaddr += PAGE_SIZE;
-            p_offset += PAGE_SIZE;
-            p_memsz -= (PAGE_SIZE - p_vaddr % PAGE_SIZE);
-            p_filesz -= (PAGE_SIZE - p_vaddr % PAGE_SIZE);
+            p_memsz -= mem_clr_sz;
+            p_filesz -= mem_cpy_sz;
+            p_vaddr += (mem_cpy_sz > mem_clr_sz)?mem_cpy_sz : mem_clr_sz;
+            p_offset += mem_cpy_sz;
         }
     }
 
