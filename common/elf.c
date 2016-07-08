@@ -82,15 +82,15 @@ LoadElf64(void *loc,
 
     uint64_t v_tmp_addr = 0;
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
-        &v_tmp_addr,
-        PAGE_SIZE,
-        MemoryAllocationType_Heap,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+                           &v_tmp_addr,
+                           PAGE_SIZE,
+                           MemoryAllocationType_Heap,
+                           MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
 
     Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize)) {
-        
+
         if(phdr->p_type != PT_LOAD)continue;
 
         MemoryAllocationFlags flags = MemoryAllocationFlags_User;
@@ -106,15 +106,14 @@ LoadElf64(void *loc,
         uint64_t p_filesz = phdr->p_filesz;
         uint64_t p_offset = phdr->p_offset;
 
-        for(uint32_t j = 0; j < page_count; j++)
-        {
+        for(uint32_t j = 0; j < page_count; j++) {
 
             uint64_t mem_clr_sz = p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz;
             uint64_t mem_cpy_sz = p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz;
 
             MemoryAllocationsMap *alloc = NULL;
             if(map != NULL)alloc = kmalloc(sizeof(MemoryAllocationsMap));
-            
+
             p_addr = AllocatePhysicalPage();
             MapPage(pageTable,
                     alloc,
@@ -135,9 +134,8 @@ LoadElf64(void *loc,
                     MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
 
-            switch(phdr->p_type)
-            {
-                case PT_LOAD:
+            switch(phdr->p_type) {
+            case PT_LOAD:
                 memset((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, 0, mem_clr_sz);
                 memcpy((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, (uint8_t*)loc + p_offset, mem_cpy_sz);
                 break;
@@ -147,8 +145,7 @@ LoadElf64(void *loc,
                       v_tmp_addr,
                       PAGE_SIZE);
 
-            if(map != NULL)
-            {
+            if(map != NULL) {
                 alloc->next = *map;
                 *map = alloc;
             }
