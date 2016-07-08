@@ -1,0 +1,466 @@
+; ModuleID = 'bootstrap.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.CardinalBootInfo = type { i64, i32, i32, i32, i32, i32, i32, i64, i64, i64, i64, %struct.CardinalMemMap*, i64, i32, i32, i32, i8 }
+%struct.CardinalMemMap = type { i64, i64, i8 }
+%struct.Registers = type { i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64 }
+
+@smp_sync_base = internal global i32 0, align 4
+
+; Function Attrs: noredzone nounwind uwtable
+define void @bootstrap_render(i32 %color) #0 {
+  %1 = tail call %struct.CardinalBootInfo* @GetBootInfo() #4
+  %2 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 15
+  %3 = load i32, i32* %2, align 4, !tbaa !1
+  %4 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 13
+  %5 = load i32, i32* %4, align 4, !tbaa !8
+  %6 = mul i32 %5, %3
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %._crit_edge, label %.lr.ph
+
+.lr.ph:                                           ; preds = %0
+  %8 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 12
+  %9 = load i64, i64* %8, align 8, !tbaa !9
+  br label %10
+
+._crit_edge.loopexit:                             ; preds = %10
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %0
+  ret void
+
+; <label>:10                                      ; preds = %.lr.ph, %10
+  %y.01 = phi i32 [ 0, %.lr.ph ], [ %14, %10 ]
+  %11 = zext i32 %y.01 to i64
+  %12 = add i64 %9, %11
+  %13 = inttoptr i64 %12 to i32*
+  store i32 %color, i32* %13, align 4, !tbaa !10
+  %14 = add i32 %y.01, 4
+  %15 = load i32, i32* %2, align 4, !tbaa !1
+  %16 = load i32, i32* %4, align 4, !tbaa !8
+  %17 = mul i32 %16, %15
+  %18 = icmp ult i32 %14, %17
+  br i1 %18, label %10, label %._crit_edge.loopexit
+}
+
+; Function Attrs: noredzone
+declare %struct.CardinalBootInfo* @GetBootInfo() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @bootstrap_pagefault_handler(%struct.Registers* nocapture %regs) #0 {
+  %1 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 16
+  %2 = load i64, i64* %1, align 1, !tbaa !11
+  %3 = shl i64 %2, 4
+  store i64 %3, i64* %1, align 1, !tbaa !11
+  %4 = trunc i64 %3 to i32
+  %5 = tail call %struct.CardinalBootInfo* @GetBootInfo() #4
+  %6 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %5, i64 0, i32 15
+  %7 = load i32, i32* %6, align 4, !tbaa !1
+  %8 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %5, i64 0, i32 13
+  %9 = load i32, i32* %8, align 4, !tbaa !8
+  %10 = mul i32 %9, %7
+  %11 = icmp eq i32 %10, 0
+  br i1 %11, label %bootstrap_render.exit, label %.lr.ph.i
+
+.lr.ph.i:                                         ; preds = %0
+  %12 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %5, i64 0, i32 12
+  %13 = load i64, i64* %12, align 8, !tbaa !9
+  br label %14
+
+; <label>:14                                      ; preds = %14, %.lr.ph.i
+  %y.01.i = phi i32 [ 0, %.lr.ph.i ], [ %18, %14 ]
+  %15 = zext i32 %y.01.i to i64
+  %16 = add i64 %15, %13
+  %17 = inttoptr i64 %16 to i32*
+  store i32 %4, i32* %17, align 4, !tbaa !10
+  %18 = add i32 %y.01.i, 4
+  %19 = load i32, i32* %6, align 4, !tbaa !1
+  %20 = load i32, i32* %8, align 4, !tbaa !8
+  %21 = mul i32 %20, %19
+  %22 = icmp ult i32 %18, %21
+  br i1 %22, label %14, label %bootstrap_render.exit.loopexit
+
+bootstrap_render.exit.loopexit:                   ; preds = %14
+  br label %bootstrap_render.exit
+
+bootstrap_render.exit:                            ; preds = %bootstrap_render.exit.loopexit, %0
+  %23 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 18
+  %24 = load i64, i64* %23, align 1, !tbaa !13
+  %25 = load i64, i64* %1, align 1, !tbaa !11
+  %26 = lshr i64 %25, 4
+  %27 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 17
+  %28 = load i64, i64* %27, align 1, !tbaa !14
+  %29 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 11
+  %30 = load i64, i64* %29, align 1, !tbaa !15
+  %31 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 21
+  %32 = load i64, i64* %31, align 1, !tbaa !16
+  %33 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 0
+  %34 = load i64, i64* %33, align 1, !tbaa !17
+  tail call void asm sideeffect "cli\0A\09hlt", "{ax},{bx},{cx},{dx},{si},{di},~{dirflag},~{fpsr},~{flags}"(i64 %24, i64 %26, i64 %28, i64 %30, i64 %32, i64 %34) #5, !srcloc !18
+  ret void
+}
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @bootstrap_kernel_panic(i8 zeroext %severity) #2 {
+  %1 = zext i8 %severity to i32
+  %2 = xor i32 %1, 16711935
+  br label %bootstrap_render.exit
+
+bootstrap_render.exit.loopexit:                   ; preds = %12
+  br label %bootstrap_render.exit.backedge
+
+bootstrap_render.exit:                            ; preds = %bootstrap_render.exit.backedge, %0
+  %3 = tail call %struct.CardinalBootInfo* @GetBootInfo() #4
+  %4 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %3, i64 0, i32 15
+  %5 = load i32, i32* %4, align 4, !tbaa !1
+  %6 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %3, i64 0, i32 13
+  %7 = load i32, i32* %6, align 4, !tbaa !8
+  %8 = mul i32 %7, %5
+  %9 = icmp eq i32 %8, 0
+  br i1 %9, label %bootstrap_render.exit.backedge, label %.lr.ph.i
+
+bootstrap_render.exit.backedge:                   ; preds = %bootstrap_render.exit, %bootstrap_render.exit.loopexit
+  br label %bootstrap_render.exit
+
+.lr.ph.i:                                         ; preds = %bootstrap_render.exit
+  %10 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %3, i64 0, i32 12
+  %11 = load i64, i64* %10, align 8, !tbaa !9
+  br label %12
+
+; <label>:12                                      ; preds = %12, %.lr.ph.i
+  %y.01.i = phi i32 [ 0, %.lr.ph.i ], [ %16, %12 ]
+  %13 = zext i32 %y.01.i to i64
+  %14 = add i64 %13, %11
+  %15 = inttoptr i64 %14 to i32*
+  store i32 %2, i32* %15, align 4, !tbaa !10
+  %16 = add i32 %y.01.i, 4
+  %17 = load i32, i32* %4, align 4, !tbaa !1
+  %18 = load i32, i32* %6, align 4, !tbaa !8
+  %19 = mul i32 %18, %17
+  %20 = icmp ult i32 %16, %19
+  br i1 %20, label %12, label %bootstrap_render.exit.loopexit
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @bootstrap_kernel(i8* %param, i64 %magic) #0 section ".entry_point" {
+  tail call void @VirtMemMan_InitializeBootstrap() #4
+  tail call void @ParseAndSaveBootInformation(i8* %param) #4
+  %1 = tail call %struct.CardinalBootInfo* @GetBootInfo() #4
+  %2 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 12
+  %3 = bitcast i64* %2 to i8**
+  %4 = load i8*, i8** %3, align 8, !tbaa !9
+  %5 = tail call i8* @GetVirtualAddress(i32 0, i8* %4) #4
+  %6 = ptrtoint i8* %5 to i64
+  store i64 %6, i64* %2, align 8, !tbaa !9
+  %7 = icmp eq i64 %magic, 920085129
+  br i1 %7, label %9, label %8
+
+; <label>:8                                       ; preds = %0
+  tail call void @bootstrap_kernel_panic(i8 zeroext -1) #6
+  unreachable
+
+; <label>:9                                       ; preds = %0
+  tail call void @GDT_Bootstrap() #4
+  tail call void @IDT_Initialize() #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 0, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 1, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 2, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 3, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 4, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 5, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 6, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 7, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 8, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 9, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 10, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 11, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 12, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 13, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 14, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 15, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 16, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 17, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 18, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 19, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 20, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 21, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 22, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 23, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 24, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 25, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 26, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 27, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 28, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 29, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 30, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @IDT_RegisterHandler(i8 zeroext 31, void (%struct.Registers*)* nonnull @bootstrap_pagefault_handler) #4
+  tail call void @FPU_Initialize() #4
+  %10 = tail call i32 @MemMan_Initialize() #4
+  tail call void @VirtMemMan_Initialize() #4
+  tail call void @MemoryHAL_Initialize() #4
+  tail call void @GDT_InitializeMP() #4
+  tail call void (...) @GDT_Initialize() #4
+  %11 = tail call i8* @bootstrap_malloc(i64 16384) #4
+  %12 = ptrtoint i8* %11 to i64
+  %13 = add i64 %12, 16256
+  %14 = inttoptr i64 %13 to i8*
+  tail call void @SetInterruptStack(i8* %14) #4
+  %15 = tail call i8* @bootstrap_malloc(i64 4096) #4
+  %16 = ptrtoint i8* %15 to i64
+  tail call void @GDT_SetIST(i8 zeroext 1, i64 %16) #4
+  tail call void @IDT_ChangeEntry(i8 zeroext 8, i16 zeroext 8, i8 zeroext -114, i8 zeroext 1) #4
+  %17 = tail call i8* @bootstrap_malloc(i64 4096) #4
+  %18 = ptrtoint i8* %17 to i64
+  tail call void @GDT_SetIST(i8 zeroext 2, i64 %18) #4
+  tail call void @IDT_ChangeEntry(i8 zeroext 18, i16 zeroext 8, i8 zeroext -114, i8 zeroext 2) #4
+  %19 = tail call zeroext i8 @ACPITables_Initialize() #4
+  tail call void @SMP_IncrementCoreCount() #4
+  tail call void @RTC_Initialize() #4
+  %20 = load i8*, i8** %3, align 8, !tbaa !9
+  %21 = tail call i8* @GetPhysicalAddress(i8* %20) #4
+  %22 = ptrtoint i8* %21 to i64
+  store i64 %22, i64* %2, align 8, !tbaa !9
+  %23 = tail call i8* @GetVirtualAddress(i32 2, i8* %21) #4
+  %24 = ptrtoint i8* %23 to i64
+  store i64 %24, i64* %2, align 8, !tbaa !9
+  %25 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 9
+  %26 = bitcast i64* %25 to i8**
+  %27 = load i8*, i8** %26, align 8, !tbaa !19
+  %28 = tail call i8* @GetVirtualAddress(i32 0, i8* %27) #4
+  %29 = ptrtoint i8* %28 to i64
+  store i64 %29, i64* %25, align 8, !tbaa !19
+  store volatile i32 1, i32* @smp_sync_base, align 4, !tbaa !10
+  %30 = tail call i32 @APIC_Initialize() #4
+  br label %32
+
+; <label>:31                                      ; preds = %32
+  tail call void @kernel_main_init() #4
+  tail call void asm sideeffect "cli\0A\09hlt\0A\09", "~{dirflag},~{fpsr},~{flags}"() #5, !srcloc !20
+  ret void
+
+; <label>:32                                      ; preds = %32, %9
+  %i1.02 = phi i32 [ 0, %9 ], [ %34, %32 ]
+  %33 = trunc i32 %i1.02 to i8
+  tail call void @IDT_ChangeEntry(i8 zeroext %33, i16 zeroext 8, i8 zeroext -114, i8 zeroext 2) #4
+  %34 = add nuw nsw i32 %i1.02, 1
+  %exitcond = icmp eq i32 %34, 32
+  br i1 %exitcond, label %31, label %32
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_InitializeBootstrap() #1
+
+; Function Attrs: noredzone
+declare void @ParseAndSaveBootInformation(i8*) #1
+
+; Function Attrs: noredzone
+declare i8* @GetVirtualAddress(i32, i8*) #1
+
+; Function Attrs: noredzone
+declare void @GDT_Bootstrap() #1
+
+; Function Attrs: noredzone
+declare void @IDT_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @IDT_RegisterHandler(i8 zeroext, void (%struct.Registers*)*) #1
+
+; Function Attrs: noredzone
+declare void @FPU_Initialize() #1
+
+; Function Attrs: noredzone
+declare i32 @MemMan_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @MemoryHAL_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @GDT_InitializeMP() #1
+
+; Function Attrs: noredzone
+declare void @GDT_Initialize(...) #1
+
+; Function Attrs: noredzone
+declare void @SetInterruptStack(i8*) #1
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #1
+
+; Function Attrs: noredzone
+declare void @GDT_SetIST(i8 zeroext, i64) #1
+
+; Function Attrs: noredzone
+declare void @IDT_ChangeEntry(i8 zeroext, i16 zeroext, i8 zeroext, i8 zeroext) #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @ACPITables_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @SMP_IncrementCoreCount() #1
+
+; Function Attrs: noredzone
+declare void @RTC_Initialize() #1
+
+; Function Attrs: noredzone
+declare i8* @GetPhysicalAddress(i8*) #1
+
+; Function Attrs: noredzone
+declare i32 @APIC_Initialize() #1
+
+; Function Attrs: noredzone
+declare void @kernel_main_init() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @setup_preemption() #0 {
+  %1 = tail call i64 @APIC_GetTimerFrequency() #4
+  %2 = udiv i64 %1, 1000
+  tail call void @SetPeriodicPreemptVector(i32 33, i64 %2) #4
+  tail call void @APIC_SetVector(i32 800, i8 zeroext 33) #4
+  %3 = tail call i64 @APIC_GetTimerFrequency() #4
+  %4 = udiv i64 %3, 1000
+  %5 = trunc i64 %4 to i32
+  tail call void @APIC_SetTimerValue(i32 %5) #4
+  tail call void @APIC_SetTimerMode(i8 zeroext 1) #4
+  tail call void asm sideeffect "sti", "~{dirflag},~{fpsr},~{flags}"() #5, !srcloc !21
+  tail call void @APIC_SetEnableInterrupt(i32 800, i32 1) #4
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @SetPeriodicPreemptVector(i32, i64) #1
+
+; Function Attrs: noredzone
+declare i64 @APIC_GetTimerFrequency() #1
+
+; Function Attrs: noredzone
+declare void @APIC_SetVector(i32, i8 zeroext) #1
+
+; Function Attrs: noredzone
+declare void @APIC_SetTimerValue(i32) #1
+
+; Function Attrs: noredzone
+declare void @APIC_SetTimerMode(i8 zeroext) #1
+
+; Function Attrs: noredzone
+declare void @APIC_SetEnableInterrupt(i32, i32) #1
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define void @target_device_setup() #3 {
+  ret void
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i32 @get_perf_counter() #3 {
+  ret i32 0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @smp_unlock_cores() #0 {
+  store volatile i32 0, i32* @smp_sync_base, align 4, !tbaa !10
+  ret void
+}
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @smp_bootstrap() #2 section ".tramp_handler" {
+  tail call void @SMP_LockTrampoline() #4
+  %1 = tail call i8* @bootstrap_malloc(i64 16384) #4
+  %2 = ptrtoint i8* %1 to i64
+  %3 = add i64 %2, 16384
+  tail call void asm sideeffect "mov $0, %rsp", "r,~{dirflag},~{fpsr},~{flags}"(i64 %3) #5, !srcloc !22
+  tail call void @IDT_Initialize() #4
+  tail call void @FPU_Initialize() #4
+  tail call void @VirtMemMan_InitializeBootstrap() #4
+  tail call void @VirtMemMan_Initialize() #4
+  tail call void (...) @GDT_Initialize() #4
+  %4 = tail call i8* @bootstrap_malloc(i64 16384) #4
+  %5 = ptrtoint i8* %4 to i64
+  %6 = add i64 %5, 16256
+  %7 = inttoptr i64 %6 to i8*
+  tail call void @SetInterruptStack(i8* %7) #4
+  %8 = tail call i8* @bootstrap_malloc(i64 4096) #4
+  %9 = ptrtoint i8* %8 to i64
+  tail call void @GDT_SetIST(i8 zeroext 1, i64 %9) #4
+  tail call void @IDT_ChangeEntry(i8 zeroext 8, i16 zeroext 8, i8 zeroext -114, i8 zeroext 1) #4
+  %10 = tail call i8* @bootstrap_malloc(i64 4096) #4
+  %11 = ptrtoint i8* %10 to i64
+  tail call void @GDT_SetIST(i8 zeroext 2, i64 %11) #4
+  tail call void @IDT_ChangeEntry(i8 zeroext 18, i16 zeroext 8, i8 zeroext -114, i8 zeroext 2) #4
+  %12 = tail call zeroext i8 @APIC_LocalInitialize() #4
+  tail call void asm sideeffect "sti", "~{dirflag},~{fpsr},~{flags}"() #5, !srcloc !23
+  tail call void @APIC_CallibrateTimer() #4
+  tail call void asm sideeffect "cli", "~{dirflag},~{fpsr},~{flags}"() #5, !srcloc !24
+  tail call void @SMP_IncrementCoreCount() #4
+  %13 = tail call i32 @SMP_GetCoreCount() #4
+  tail call void @SMP_UnlockTrampoline() #4
+  br label %14
+
+; <label>:14                                      ; preds = %14, %0
+  %15 = load volatile i32, i32* @smp_sync_base, align 4, !tbaa !10
+  %16 = icmp eq i32 %15, 0
+  br i1 %16, label %17, label %14
+
+; <label>:17                                      ; preds = %14
+  tail call void @smp_core_main(i32 %13, i32 ()* nonnull @get_perf_counter) #4
+  br label %18
+
+; <label>:18                                      ; preds = %17, %18
+  br label %18
+}
+
+; Function Attrs: noredzone
+declare void @SMP_LockTrampoline() #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @APIC_LocalInitialize() #1
+
+; Function Attrs: noredzone
+declare void @APIC_CallibrateTimer() #1
+
+; Function Attrs: noredzone
+declare i32 @SMP_GetCoreCount() #1
+
+; Function Attrs: noredzone
+declare void @SMP_UnlockTrampoline() #1
+
+; Function Attrs: noredzone
+declare void @smp_core_main(i32, i32 ()*) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone noreturn nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { noredzone nounwind readnone uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { nobuiltin noredzone nounwind }
+attributes #5 = { nounwind }
+attributes #6 = { nobuiltin noredzone }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !6, i64 88}
+!2 = !{!"", !3, i64 0, !6, i64 8, !6, i64 12, !6, i64 16, !6, i64 20, !6, i64 24, !6, i64 28, !3, i64 32, !3, i64 40, !3, i64 48, !3, i64 56, !7, i64 64, !3, i64 72, !6, i64 80, !6, i64 84, !6, i64 88, !4, i64 92}
+!3 = !{!"long", !4, i64 0}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}
+!6 = !{!"int", !4, i64 0}
+!7 = !{!"any pointer", !4, i64 0}
+!8 = !{!2, !6, i64 80}
+!9 = !{!2, !3, i64 72}
+!10 = !{!6, !6, i64 0}
+!11 = !{!12, !3, i64 128}
+!12 = !{!"", !3, i64 0, !3, i64 8, !3, i64 16, !3, i64 24, !3, i64 32, !3, i64 40, !3, i64 48, !3, i64 56, !3, i64 64, !3, i64 72, !3, i64 80, !3, i64 88, !3, i64 96, !3, i64 104, !3, i64 112, !3, i64 120, !3, i64 128, !3, i64 136, !3, i64 144, !3, i64 152, !3, i64 160, !3, i64 168, !3, i64 176}
+!13 = !{!12, !3, i64 144}
+!14 = !{!12, !3, i64 136}
+!15 = !{!12, !3, i64 88}
+!16 = !{!12, !3, i64 168}
+!17 = !{!12, !3, i64 0}
+!18 = !{i32 1108, i32 1114}
+!19 = !{!2, !3, i64 48}
+!20 = !{i32 4095, i32 4101, i32 4108}
+!21 = !{i32 4514}
+!22 = !{i32 5197}
+!23 = !{i32 5883}
+!24 = !{i32 5940}

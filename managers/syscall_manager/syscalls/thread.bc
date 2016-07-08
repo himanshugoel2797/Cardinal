@@ -1,0 +1,51 @@
+; ModuleID = 'managers/syscall_manager/syscalls/thread.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @SetTidAddress_Syscall(i64 %UNUSED_instruction_pointer, i64 %syscall_num, i64* nocapture readonly %syscall_params) #0 {
+  %1 = icmp eq i64 %syscall_num, 218
+  br i1 %1, label %2, label %13
+
+; <label>:2                                       ; preds = %0
+  %3 = getelementptr inbounds i64, i64* %syscall_params, i64 2
+  %4 = load i64, i64* %3, align 8, !tbaa !1
+  %5 = icmp eq i64 %4, 1
+  br i1 %5, label %6, label %13
+
+; <label>:6                                       ; preds = %2
+  %7 = tail call i64 @GetCurrentThreadUID() #2
+  %8 = getelementptr inbounds i64, i64* %syscall_params, i64 1
+  %9 = bitcast i64* %8 to i8***
+  %10 = load i8**, i8*** %9, align 8, !tbaa !7
+  %11 = load i8*, i8** %10, align 8, !tbaa !8
+  tail call void @Thread_SetClearChildTIDAddress(i64 %7, i8* %11) #2
+  %12 = tail call i64 @GetCurrentThreadUID() #2
+  br label %13
+
+; <label>:13                                      ; preds = %6, %2, %0
+  %.1 = phi i64 [ 38, %0 ], [ %12, %6 ], [ 22, %2 ]
+  ret i64 %.1
+}
+
+; Function Attrs: noredzone
+declare void @Thread_SetClearChildTIDAddress(i64, i8*) #1
+
+; Function Attrs: noredzone
+declare i64 @GetCurrentThreadUID() #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !3, i64 16}
+!2 = !{!"", !3, i64 0, !6, i64 8, !3, i64 16}
+!3 = !{!"long", !4, i64 0}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}
+!6 = !{!"any pointer", !4, i64 0}
+!7 = !{!2, !6, i64 8}
+!8 = !{!3, !3, i64 0}

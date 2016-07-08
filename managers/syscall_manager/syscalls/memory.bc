@@ -1,0 +1,134 @@
+; ModuleID = 'managers/syscall_manager/syscalls/memory.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.MemoryAllocationsMap = type { i32, i64, i64, i64, i32, i32, i64, i64, %struct.MemoryAllocationsMap* }
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @MMap_Syscall(i64 %UNUSED_instruction_pointer, i64 %syscall_num, i64* nocapture readonly %syscall_params) #0 {
+  %addr = alloca i64, align 8
+  %1 = icmp eq i64 %syscall_num, 9
+  br i1 %1, label %2, label %52
+
+; <label>:2                                       ; preds = %0
+  %3 = getelementptr inbounds i64, i64* %syscall_params, i64 2
+  %4 = load i64, i64* %3, align 8, !tbaa !1
+  %5 = icmp eq i64 %4, 6
+  br i1 %5, label %6, label %52
+
+; <label>:6                                       ; preds = %2
+  %7 = bitcast i64* %addr to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %7) #1
+  %8 = getelementptr inbounds i64, i64* %syscall_params, i64 1
+  %9 = bitcast i64* %8 to i64**
+  %10 = load i64*, i64** %9, align 8, !tbaa !7
+  %11 = load i64, i64* %10, align 8, !tbaa !8
+  store i64 %11, i64* %addr, align 8, !tbaa !8
+  %12 = getelementptr inbounds i64, i64* %10, i64 1
+  %13 = load i64, i64* %12, align 8, !tbaa !8
+  %14 = getelementptr inbounds i64, i64* %10, i64 2
+  %15 = load i64, i64* %14, align 8, !tbaa !8
+  %16 = getelementptr inbounds i64, i64* %10, i64 3
+  %17 = load i64, i64* %16, align 8, !tbaa !8
+  %18 = and i64 %17, 32
+  %19 = icmp eq i64 %18, 0
+  br i1 %19, label %20, label %21
+
+; <label>:20                                      ; preds = %6
+  tail call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #1, !srcloc !9
+  br label %21
+
+; <label>:21                                      ; preds = %20, %6
+  %22 = and i64 %17, 16
+  %23 = icmp eq i64 %22, 0
+  br i1 %23, label %25, label %24
+
+; <label>:24                                      ; preds = %21
+  tail call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #1, !srcloc !10
+  br label %25
+
+; <label>:25                                      ; preds = %21, %24
+  %.tr1 = trunc i64 %15 to i32
+  %26 = lshr i32 %.tr1, 1
+  %27 = and i32 %26, 2
+  %28 = shl i32 %.tr1, 1
+  %29 = and i32 %28, 4
+  %30 = or i32 %29, %27
+  %allocFlags.2 = or i32 %30, 8
+  %.tr = trunc i64 %17 to i32
+  %31 = shl i32 %.tr, 2
+  %32 = and i32 %31, 256
+  %33 = tail call i64 @GetActiveVirtualMemoryInstance() #3
+  %34 = call i32 @FindFreeVirtualAddress(i64 %33, i64* nonnull %addr, i64 %13, i32 %32, i32 %allocFlags.2) #3
+  br i1 %19, label %51, label %35
+
+; <label>:35                                      ; preds = %25
+  %36 = and i64 %13, 4095
+  %37 = icmp eq i64 %36, 0
+  %38 = sub nsw i64 4096, %36
+  %39 = select i1 %37, i64 0, i64 %38
+  %target_len.0 = add i64 %39, %13
+  %40 = lshr i64 %target_len.0, 12
+  %41 = trunc i64 %40 to i32
+  %42 = call i64 @AllocatePhysicalPageCont(i32 %41) #3
+  %43 = icmp eq i64 %42, 0
+  br i1 %43, label %51, label %44
+
+; <label>:44                                      ; preds = %35
+  %45 = call i8* @kmalloc(i64 64) #3
+  %46 = bitcast i8* %45 to %struct.MemoryAllocationsMap*
+  %47 = call i64 @GetActiveVirtualMemoryInstance() #3
+  %48 = load i64, i64* %addr, align 8, !tbaa !8
+  %49 = call i32 @MapPage(i64 %47, %struct.MemoryAllocationsMap* %46, i64 %42, i64 %48, i64 %target_len.0, i32 0, i32 %32, i32 %allocFlags.2) #3
+  %50 = load i64, i64* %addr, align 8, !tbaa !8
+  br label %51
+
+; <label>:51                                      ; preds = %25, %44, %35
+  %.1 = phi i64 [ %50, %44 ], [ 12, %35 ], [ 22, %25 ]
+  call void @llvm.lifetime.end(i64 8, i8* %7) #1
+  br label %52
+
+; <label>:52                                      ; preds = %51, %2, %0
+  %.3 = phi i64 [ 38, %0 ], [ %.1, %51 ], [ 38, %2 ]
+  ret i64 %.3
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #1
+
+; Function Attrs: noredzone
+declare i32 @FindFreeVirtualAddress(i64, i64*, i64, i32, i32) #2
+
+; Function Attrs: noredzone
+declare i64 @GetActiveVirtualMemoryInstance() #2
+
+; Function Attrs: noredzone
+declare i64 @AllocatePhysicalPageCont(i32) #2
+
+; Function Attrs: noredzone
+declare i8* @kmalloc(i64) #2
+
+; Function Attrs: noredzone
+declare i32 @MapPage(i64, %struct.MemoryAllocationsMap*, i64, i64, i64, i32, i32, i32) #2
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind }
+attributes #2 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !3, i64 16}
+!2 = !{!"", !3, i64 0, !6, i64 8, !3, i64 16}
+!3 = !{!"long", !4, i64 0}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}
+!6 = !{!"any pointer", !4, i64 0}
+!7 = !{!2, !6, i64 8}
+!8 = !{!3, !3, i64 0}
+!9 = !{i32 800, i32 806}
+!10 = !{i32 867, i32 873}

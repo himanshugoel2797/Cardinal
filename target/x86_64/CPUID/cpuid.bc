@@ -1,0 +1,97 @@
+; ModuleID = 'CPUID/cpuid.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+@ebx = internal unnamed_addr global i32 0, align 4
+@edx = internal unnamed_addr global i32 0, align 4
+
+; Function Attrs: noredzone nounwind uwtable
+define void @CPUID_RequestInfo(i32 %eax, i32 %ecx) #0 {
+  %1 = tail call { i32, i32, i32, i32 } asm sideeffect "cpuid\0A\09", "={ax},={bx},={cx},={dx},{ax},{cx},~{dirflag},~{fpsr},~{flags}"(i32 %eax, i32 %ecx) #2, !srcloc !1
+  %2 = extractvalue { i32, i32, i32, i32 } %1, 1
+  %3 = extractvalue { i32, i32, i32, i32 } %1, 3
+  store i32 %2, i32* @ebx, align 4, !tbaa !2
+  store i32 %3, i32* @edx, align 4, !tbaa !2
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @CPUID_GetCacheLineSize() #0 {
+  %1 = tail call { i32, i32, i32, i32 } asm sideeffect "cpuid\0A\09", "={ax},={bx},={cx},={dx},{ax},{cx},~{dirflag},~{fpsr},~{flags}"(i32 -2147483642, i32 0) #2, !srcloc !1
+  %2 = extractvalue { i32, i32, i32, i32 } %1, 1
+  %3 = extractvalue { i32, i32, i32, i32 } %1, 3
+  store i32 %2, i32* @ebx, align 4, !tbaa !2
+  store i32 %3, i32* @edx, align 4, !tbaa !2
+  ret i32 64
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define zeroext i8 @CPUID_FeatureIsAvailable(i32 %cpuid_register, i32 %feature) #1 {
+  switch i32 %cpuid_register, label %17 [
+    i32 0, label %1
+    i32 1, label %4
+    i32 2, label %9
+    i32 3, label %12
+  ]
+
+; <label>:1                                       ; preds = %0
+  %2 = icmp eq i32 %feature, 0
+  %3 = zext i1 %2 to i8
+  br label %17
+
+; <label>:4                                       ; preds = %0
+  %5 = load i32, i32* @ebx, align 4, !tbaa !2
+  %6 = and i32 %5, %feature
+  %7 = icmp eq i32 %6, %feature
+  %8 = zext i1 %7 to i8
+  br label %17
+
+; <label>:9                                       ; preds = %0
+  %10 = icmp eq i32 %feature, 0
+  %11 = zext i1 %10 to i8
+  br label %17
+
+; <label>:12                                      ; preds = %0
+  %13 = load i32, i32* @edx, align 4, !tbaa !2
+  %14 = and i32 %13, %feature
+  %15 = icmp eq i32 %14, %feature
+  %16 = zext i1 %15 to i8
+  br label %17
+
+; <label>:17                                      ; preds = %0, %12, %9, %4, %1
+  %.0 = phi i8 [ %16, %12 ], [ %11, %9 ], [ %8, %4 ], [ %3, %1 ], [ 0, %0 ]
+  ret i8 %.0
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i32 @CPUID_GetValue(i32 %cpuid_register) #1 {
+  switch i32 %cpuid_register, label %5 [
+    i32 3, label %3
+    i32 1, label %1
+  ]
+
+; <label>:1                                       ; preds = %0
+  %2 = load i32, i32* @ebx, align 4, !tbaa !2
+  br label %5
+
+; <label>:3                                       ; preds = %0
+  %4 = load i32, i32* @edx, align 4, !tbaa !2
+  br label %5
+
+; <label>:5                                       ; preds = %0, %3, %1
+  %.0 = phi i32 [ %4, %3 ], [ %2, %1 ], [ 0, %0 ]
+  ret i32 %.0
+}
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone nounwind readonly uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{i32 189, i32 197}
+!2 = !{!3, !3, i64 0}
+!3 = !{!"int", !4, i64 0}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}

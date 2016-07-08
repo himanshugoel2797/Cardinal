@@ -1,0 +1,139 @@
+; ModuleID = 'debug_gfx.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.__va_list_tag = type { i32, i32, i8*, i8* }
+%struct.CardinalBootInfo = type { i64, i32, i32, i32, i32, i32, i32, i64, i64, i64, i64, %struct.CardinalMemMap*, i64, i32, i32, i32, i8 }
+%struct.CardinalMemMap = type { i64, i64, i8 }
+
+@letters = global [95 x [13 x i8]] [[13 x i8] zeroinitializer, [13 x i8] c"\00\00\18\18\00\00\18\18\18\18\18\18\18", [13 x i8] c"\00\00\00\00\00\00\00\00\006666", [13 x i8] c"\00\00\00ff\FFff\FFff\00\00", [13 x i8] c"\00\00\18~\FF\1B\1F~\F8\D8\FF~\18", [13 x i8] c"\00\00\0E\1B\DBn0\18\0Cv\DB\D8p", [13 x i8] c"\00\00\7F\C6\CF\D8pp\D8\CC\CCl8", [13 x i8] c"\00\00\00\00\00\00\00\00\00\18\1C\0C\0E", [13 x i8] c"\00\00\0C\180000000\18\0C", [13 x i8] c"\00\000\18\0C\0C\0C\0C\0C\0C\0C\180", [13 x i8] c"\00\00\00\00\99Z<\FF<Z\99\00\00", [13 x i8] c"\00\00\00\18\18\18\FF\FF\18\18\18\00\00", [13 x i8] c"\00\000\18\1C\1C\00\00\00\00\00\00\00", [13 x i8] c"\00\00\00\00\00\00\FF\FF\00\00\00\00\00", [13 x i8] c"\00\00\0088\00\00\00\00\00\00\00\00", [13 x i8] c"\00``00\18\18\0C\0C\06\06\03\03", [13 x i8] c"\00\00<f\C3\E3\F3\DB\CF\C7\C3f<", [13 x i8] c"\00\00~\18\18\18\18\18\18\18x8\18", [13 x i8] c"\00\00\FF\C0\C0`0\18\0C\06\03\E7~", [13 x i8] c"\00\00~\E7\03\03\07~\07\03\03\E7~", [13 x i8] c"\00\00\0C\0C\0C\0C\0C\FF\CCl<\1C\0C", [13 x i8] c"\00\00~\E7\03\03\07\FE\C0\C0\C0\C0\FF", [13 x i8] c"\00\00~\E7\C3\C3\C7\FE\C0\C0\C0\E7~", [13 x i8] c"\00\000000\18\0C\06\03\03\03\FF", [13 x i8] c"\00\00~\E7\C3\C3\E7~\E7\C3\C3\E7~", [13 x i8] c"\00\00~\E7\03\03\03\7F\E7\C3\C3\E7~", [13 x i8] c"\00\00\0088\00\0088\00\00\00\00", [13 x i8] c"\00\000\18\1C\1C\00\00\1C\1C\00\00\00", [13 x i8] c"\00\00\06\0C\180`\C0`0\18\0C\06", [13 x i8] c"\00\00\00\00\FF\FF\00\FF\FF\00\00\00\00", [13 x i8] c"\00\00`0\18\0C\06\03\06\0C\180`", [13 x i8] c"\00\00\18\00\00\18\18\0C\06\03\C3\C3~", [13 x i8] c"\00\00?`\CF\DB\D3\DD\C3~\00\00\00", [13 x i8] c"\00\00\C3\C3\C3\C3\FF\C3\C3\C3f<\18", [13 x i8] c"\00\00\FE\C7\C3\C3\C7\FE\C7\C3\C3\C7\FE", [13 x i8] c"\00\00~\E7\C0\C0\C0\C0\C0\C0\C0\E7~", [13 x i8] c"\00\00\FC\CE\C7\C3\C3\C3\C3\C3\C7\CE\FC", [13 x i8] c"\00\00\FF\C0\C0\C0\C0\FC\C0\C0\C0\C0\FF", [13 x i8] c"\00\00\C0\C0\C0\C0\C0\C0\FC\C0\C0\C0\FF", [13 x i8] c"\00\00~\E7\C3\C3\CF\C0\C0\C0\C0\E7~", [13 x i8] c"\00\00\C3\C3\C3\C3\C3\FF\C3\C3\C3\C3\C3", [13 x i8] c"\00\00~\18\18\18\18\18\18\18\18\18~", [13 x i8] c"\00\00|\EE\C6\06\06\06\06\06\06\06\06", [13 x i8] c"\00\00\C3\C6\CC\D8\F0\E0\F0\D8\CC\C6\C3", [13 x i8] c"\00\00\FF\C0\C0\C0\C0\C0\C0\C0\C0\C0\C0", [13 x i8] c"\00\00\C3\C3\C3\C3\C3\C3\DB\FF\FF\E7\C3", [13 x i8] c"\00\00\C7\C7\CF\CF\DF\DB\FB\F3\F3\E3\E3", [13 x i8] c"\00\00~\E7\C3\C3\C3\C3\C3\C3\C3\E7~", [13 x i8] c"\00\00\C0\C0\C0\C0\C0\FE\C7\C3\C3\C7\FE", [13 x i8] c"\00\00?n\DF\DB\C3\C3\C3\C3\C3f<", [13 x i8] c"\00\00\C3\C6\CC\D8\F0\FE\C7\C3\C3\C7\FE", [13 x i8] c"\00\00~\E7\03\03\07~\E0\C0\C0\E7~", [13 x i8] c"\00\00\18\18\18\18\18\18\18\18\18\18\FF", [13 x i8] c"\00\00~\E7\C3\C3\C3\C3\C3\C3\C3\C3\C3", [13 x i8] c"\00\00\18<<ff\C3\C3\C3\C3\C3\C3", [13 x i8] c"\00\00\C3\E7\FF\FF\DB\DB\C3\C3\C3\C3\C3", [13 x i8] c"\00\00\C3ff<<\18<<ff\C3", [13 x i8] c"\00\00\18\18\18\18\18\18<<ff\C3", [13 x i8] c"\00\00\FF\C0\C0`0~\0C\06\03\03\FF", [13 x i8] c"\00\00<000000000<", [13 x i8] c"\00\03\03\06\06\0C\0C\18\1800``", [13 x i8] c"\00\00<\0C\0C\0C\0C\0C\0C\0C\0C\0C<", [13 x i8] c"\00\00\00\00\00\00\00\00\00\C3f<\18", [13 x i8] c"\FF\FF\00\00\00\00\00\00\00\00\00\00\00", [13 x i8] c"\00\00\00\00\00\00\00\00\00\1880p", [13 x i8] c"\00\00\7F\C3\C3\7F\03\C3~\00\00\00\00", [13 x i8] c"\00\00\FE\C3\C3\C3\C3\FE\C0\C0\C0\C0\C0", [13 x i8] c"\00\00~\C3\C0\C0\C0\C3~\00\00\00\00", [13 x i8] c"\00\00\7F\C3\C3\C3\C3\7F\03\03\03\03\03", [13 x i8] c"\00\00\7F\C0\C0\FE\C3\C3~\00\00\00\00", [13 x i8] c"\00\0000000\FC0003\1E", [13 x i8] c"~\C3\03\03\7F\C3\C3\C3~\00\00\00\00", [13 x i8] c"\00\00\C3\C3\C3\C3\C3\C3\FE\C0\C0\C0\C0", [13 x i8] c"\00\00\18\18\18\18\18\18\18\00\00\18\00", [13 x i8] c"8l\0C\0C\0C\0C\0C\0C\0C\00\00\0C\00", [13 x i8] c"\00\00\C6\CC\F8\F0\D8\CC\C6\C0\C0\C0\C0", [13 x i8] c"\00\00~\18\18\18\18\18\18\18\18\18x", [13 x i8] c"\00\00\DB\DB\DB\DB\DB\DB\FE\00\00\00\00", [13 x i8] c"\00\00\C6\C6\C6\C6\C6\C6\FC\00\00\00\00", [13 x i8] c"\00\00|\C6\C6\C6\C6\C6|\00\00\00\00", [13 x i8] c"\C0\C0\C0\FE\C3\C3\C3\C3\FE\00\00\00\00", [13 x i8] c"\03\03\03\7F\C3\C3\C3\C3\7F\00\00\00\00", [13 x i8] c"\00\00\C0\C0\C0\C0\C0\E0\FE\00\00\00\00", [13 x i8] c"\00\00\FE\03\03~\C0\C0\7F\00\00\00\00", [13 x i8] c"\00\00\1C60000\FC000\00", [13 x i8] c"\00\00~\C6\C6\C6\C6\C6\C6\00\00\00\00", [13 x i8] c"\00\00\18<<ff\C3\C3\00\00\00\00", [13 x i8] c"\00\00\C3\E7\FF\DB\C3\C3\C3\00\00\00\00", [13 x i8] c"\00\00\C3f<\18<f\C3\00\00\00\00", [13 x i8] c"\C0``0\18<ff\C3\00\00\00\00", [13 x i8] c"\00\00\FF`0\18\0C\06\FF\00\00\00\00", [13 x i8] c"\00\00\0F\18\18\188\F08\18\18\18\0F", [13 x i8] c"\18\18\18\18\18\18\18\18\18\18\18\18\18", [13 x i8] c"\00\00\F0\18\18\18\1C\0F\1C\18\18\18\F0", [13 x i8] c"\00\00\00\00\00\00\06\8F\F1`\00\00\00"], align 16
+@yPos = internal unnamed_addr global i32 0, align 4
+
+; Function Attrs: noredzone nounwind uwtable
+define void @debug_gfx_writeLine(i8* %fmt, ...) #0 {
+  %str = alloca [256 x i8], align 16
+  %vl = alloca [1 x %struct.__va_list_tag], align 16
+  %1 = getelementptr inbounds [256 x i8], [256 x i8]* %str, i64 0, i64 0
+  call void @llvm.lifetime.start(i64 256, i8* %1) #1
+  %2 = call i8* @memset(i8* %1, i32 0, i64 256) #3
+  %3 = bitcast [1 x %struct.__va_list_tag]* %vl to i8*
+  call void @llvm.lifetime.start(i64 24, i8* %3) #1
+  %4 = getelementptr inbounds [1 x %struct.__va_list_tag], [1 x %struct.__va_list_tag]* %vl, i64 0, i64 0
+  call void @llvm.va_start(i8* %3)
+  %5 = call i32 @vsnprintf(i8* %1, i8* %fmt, %struct.__va_list_tag* %4) #3
+  call void @llvm.va_end(i8* %3)
+  %6 = call %struct.CardinalBootInfo* @GetBootInfo() #3
+  %7 = load i32, i32* @yPos, align 4, !tbaa !1
+  %8 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %6, i64 0, i32 12
+  %9 = bitcast i64* %8 to i32**
+  %10 = load i32*, i32** %9, align 8, !tbaa !5
+  %11 = load i8, i8* %1, align 16, !tbaa !9
+  %12 = icmp eq i8 %11, 0
+  br i1 %12, label %._crit_edge, label %.preheader2.lr.ph
+
+.preheader2.lr.ph:                                ; preds = %0
+  %13 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %6, i64 0, i32 13
+  %14 = load i32, i32* %13, align 4, !tbaa !10
+  %15 = sext i32 %14 to i64
+  br label %.preheader2
+
+.preheader2:                                      ; preds = %.preheader2.lr.ph, %19
+  %indvars.iv9 = phi i64 [ 0, %.preheader2.lr.ph ], [ %indvars.iv.next10, %19 ]
+  %16 = phi i8* [ %1, %.preheader2.lr.ph ], [ %21, %19 ]
+  %yOff.06 = phi i32 [ %7, %.preheader2.lr.ph ], [ %20, %19 ]
+  br label %.preheader
+
+._crit_edge.loopexit:                             ; preds = %19
+  %.lcssa = phi i32 [ %20, %19 ]
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %0
+  %yOff.0.lcssa = phi i32 [ %7, %0 ], [ %.lcssa, %._crit_edge.loopexit ]
+  store i32 %yOff.0.lcssa, i32* @yPos, align 4, !tbaa !1
+  call void @llvm.lifetime.end(i64 24, i8* %3) #1
+  call void @llvm.lifetime.end(i64 256, i8* %1) #1
+  ret void
+
+.preheader:                                       ; preds = %24, %.preheader2
+  %b1.05 = phi i32 [ 0, %.preheader2 ], [ %25, %24 ]
+  %yOff.14 = phi i32 [ %yOff.06, %.preheader2 ], [ %17, %24 ]
+  %17 = add nsw i32 %yOff.14, 8
+  %18 = sub i32 %17, %b1.05
+  br label %26
+
+; <label>:19                                      ; preds = %24
+  %20 = add i32 %yOff.06, 64
+  %indvars.iv.next10 = add nuw nsw i64 %indvars.iv9, 1
+  %21 = getelementptr inbounds [256 x i8], [256 x i8]* %str, i64 0, i64 %indvars.iv.next10
+  %22 = load i8, i8* %21, align 1, !tbaa !9
+  %23 = icmp eq i8 %22, 0
+  br i1 %23, label %._crit_edge.loopexit, label %.preheader2
+
+; <label>:24                                      ; preds = %26
+  %25 = add nuw nsw i32 %b1.05, 1
+  %exitcond8 = icmp eq i32 %25, 8
+  br i1 %exitcond8, label %19, label %.preheader
+
+; <label>:26                                      ; preds = %26, %.preheader
+  %indvars.iv = phi i64 [ 0, %.preheader ], [ %indvars.iv.next, %26 ]
+  %27 = sub nuw nsw i64 13, %indvars.iv
+  %28 = load i8, i8* %16, align 1, !tbaa !9
+  %29 = sext i8 %28 to i64
+  %30 = add nsw i64 %29, -32
+  %31 = getelementptr inbounds [95 x [13 x i8]], [95 x [13 x i8]]* @letters, i64 0, i64 %30, i64 %27
+  %32 = load i8, i8* %31, align 1, !tbaa !9
+  %33 = zext i8 %32 to i32
+  %34 = lshr i32 %33, %b1.05
+  %35 = and i32 %34, 1
+  %36 = sub nsw i32 0, %35
+  %37 = and i32 %36, -572662307
+  %38 = mul nsw i64 %indvars.iv, %15
+  %39 = trunc i64 %38 to i32
+  %40 = add i32 %18, %39
+  %41 = sext i32 %40 to i64
+  %42 = getelementptr inbounds i32, i32* %10, i64 %41
+  store i32 %37, i32* %42, align 4, !tbaa !1
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %exitcond = icmp eq i64 %indvars.iv.next, 13
+  br i1 %exitcond, label %24, label %26
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #1
+
+; Function Attrs: noredzone
+declare i8* @memset(i8*, i32, i64) #2
+
+; Function Attrs: nounwind
+declare void @llvm.va_start(i8*) #1
+
+; Function Attrs: noredzone
+declare i32 @vsnprintf(i8*, i8*, %struct.__va_list_tag*) #2
+
+; Function Attrs: nounwind
+declare void @llvm.va_end(i8*) #1
+
+; Function Attrs: noredzone
+declare %struct.CardinalBootInfo* @GetBootInfo() #2
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { nounwind }
+attributes #2 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"int", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !7, i64 72}
+!6 = !{!"", !7, i64 0, !2, i64 8, !2, i64 12, !2, i64 16, !2, i64 20, !2, i64 24, !2, i64 28, !7, i64 32, !7, i64 40, !7, i64 48, !7, i64 56, !8, i64 64, !7, i64 72, !2, i64 80, !2, i64 84, !2, i64 88, !3, i64 92}
+!7 = !{!"long", !3, i64 0}
+!8 = !{!"any pointer", !3, i64 0}
+!9 = !{!3, !3, i64 0}
+!10 = !{!6, !2, i64 80}

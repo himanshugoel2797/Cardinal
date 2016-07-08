@@ -1,0 +1,167 @@
+; ModuleID = 'syscalls/syscalls.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.ProcessInformation = type { i64, [256 x i8], i32, i32, i32, [22 x void (i32)*], i64, %struct.MemoryAllocationsMap*, %struct.List*, i32, i64* }
+%struct.MemoryAllocationsMap = type { i32, i64, i64, i64, i32, i32, i64, i64, %struct.MemoryAllocationsMap* }
+%struct.List = type opaque
+
+; Function Attrs: noredzone nounwind uwtable
+define void @SetupSecurityMonitor() #0 {
+  tail call void @RegisterSyscall(i64 219, i64 (i64, i64, i64*)* nonnull @SecurityMonitor_IOPL) #3
+  tail call void @RegisterSyscall(i64 2, i64 (i64, i64, i64*)* nonnull @SecurityMonitor_SyscallReceived) #3
+  tail call void @RegisterSyscall(i64 3, i64 (i64, i64, i64*)* nonnull @SecurityMonitor_SyscallReceived) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @RegisterSyscall(i64, i64 (i64, i64, i64*)*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @SecurityMonitor_IOPL(i64 %UNUSED_instruction_pointer, i64 %syscall_num, i64* nocapture readonly %syscall_params) #0 {
+  %procInfo = alloca %struct.ProcessInformation*, align 8
+  %1 = bitcast %struct.ProcessInformation** %procInfo to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %1) #2
+  %2 = tail call i64 @GetCurrentProcessUID() #3
+  %3 = call i32 @GetProcessReference(i64 %2, %struct.ProcessInformation** nonnull %procInfo) #3
+  %4 = icmp eq i32 %3, 0
+  br i1 %4, label %5, label %29
+
+; <label>:5                                       ; preds = %0
+  %6 = load %struct.ProcessInformation*, %struct.ProcessInformation** %procInfo, align 8, !tbaa !1
+  %7 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %6, i64 0, i32 9
+  %8 = load i32, i32* %7, align 4, !tbaa !5
+  %9 = and i32 %8, 1
+  %10 = icmp eq i32 %9, 0
+  br i1 %10, label %11, label %29
+
+; <label>:11                                      ; preds = %5
+  %12 = getelementptr inbounds i64, i64* %syscall_params, i64 2
+  %13 = load i64, i64* %12, align 8, !tbaa !8
+  %14 = icmp eq i64 %13, 1
+  br i1 %14, label %15, label %29
+
+; <label>:15                                      ; preds = %11
+  %16 = getelementptr inbounds i64, i64* %syscall_params, i64 1
+  %17 = bitcast i64* %16 to i64**
+  %18 = load i64*, i64** %17, align 8, !tbaa !10
+  %19 = load i64, i64* %18, align 8, !tbaa !11
+  switch i64 %19, label %29 [
+    i64 3, label %20
+    i64 0, label %20
+  ]
+
+; <label>:20                                      ; preds = %15, %15
+  %21 = icmp eq i64 %syscall_num, 219
+  br i1 %21, label %22, label %29
+
+; <label>:22                                      ; preds = %20
+  %23 = call i64 @GetRFLAGS() #3
+  %24 = and i64 %23, -12289
+  %25 = load i64*, i64** %17, align 8, !tbaa !10
+  %26 = load i64, i64* %25, align 8, !tbaa !11
+  %27 = shl i64 %26, 12
+  %28 = or i64 %27, %24
+  call void @SetRFLAGS(i64 %28) #3
+  br label %29
+
+; <label>:29                                      ; preds = %20, %15, %11, %5, %0, %22
+  %.0 = phi i64 [ 0, %22 ], [ 95, %0 ], [ 13, %5 ], [ 22, %11 ], [ 22, %15 ], [ 38, %20 ]
+  call void @llvm.lifetime.end(i64 8, i8* %1) #2
+  ret i64 %.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @SecurityMonitor_SyscallReceived(i64 %UNUSED_instruction_pointer, i64 %syscall_num, i64* nocapture readonly %syscall_params) #0 {
+  %procInfo = alloca %struct.ProcessInformation*, align 8
+  %1 = bitcast %struct.ProcessInformation** %procInfo to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %1) #2
+  %2 = tail call i64 @GetCurrentProcessUID() #3
+  %3 = call i32 @GetProcessReference(i64 %2, %struct.ProcessInformation** nonnull %procInfo) #3
+  %4 = icmp eq i32 %3, 0
+  br i1 %4, label %5, label %28
+
+; <label>:5                                       ; preds = %0
+  %6 = load %struct.ProcessInformation*, %struct.ProcessInformation** %procInfo, align 8, !tbaa !1
+  %7 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %6, i64 0, i32 9
+  %8 = load i32, i32* %7, align 4, !tbaa !5
+  %9 = and i32 %8, 1
+  %10 = icmp eq i32 %9, 0
+  br i1 %10, label %11, label %28
+
+; <label>:11                                      ; preds = %5
+  switch i64 %syscall_num, label %28 [
+    i64 2, label %12
+    i64 3, label %20
+  ]
+
+; <label>:12                                      ; preds = %11
+  %13 = getelementptr inbounds i64, i64* %syscall_params, i64 2
+  %14 = load i64, i64* %13, align 8, !tbaa !8
+  %15 = icmp eq i64 %14, 0
+  br i1 %15, label %16, label %28
+
+; <label>:16                                      ; preds = %12
+  %17 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %6, i64 0, i32 4
+  %18 = load i32, i32* %17, align 4, !tbaa !12
+  %19 = or i32 %18, 1
+  store i32 %19, i32* %17, align 4, !tbaa !12
+  br label %28
+
+; <label>:20                                      ; preds = %11
+  %21 = getelementptr inbounds i64, i64* %syscall_params, i64 2
+  %22 = load i64, i64* %21, align 8, !tbaa !8
+  %23 = icmp eq i64 %22, 0
+  br i1 %23, label %24, label %28
+
+; <label>:24                                      ; preds = %20
+  %25 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %6, i64 0, i32 4
+  %26 = load i32, i32* %25, align 4, !tbaa !12
+  %27 = or i32 %26, 2
+  store i32 %27, i32* %25, align 4, !tbaa !12
+  br label %28
+
+; <label>:28                                      ; preds = %16, %24, %11, %20, %12, %5, %0
+  %.0 = phi i64 [ 95, %0 ], [ 13, %5 ], [ 22, %12 ], [ 22, %20 ], [ 38, %11 ], [ 0, %24 ], [ 0, %16 ]
+  call void @llvm.lifetime.end(i64 8, i8* %1) #2
+  ret i64 %.0
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #2
+
+; Function Attrs: noredzone
+declare i32 @GetProcessReference(i64, %struct.ProcessInformation**) #1
+
+; Function Attrs: noredzone
+declare i64 @GetCurrentProcessUID() #1
+
+; Function Attrs: noredzone
+declare i64 @GetRFLAGS() #1
+
+; Function Attrs: noredzone
+declare void @SetRFLAGS(i64) #1
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #2
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !3, i64 480}
+!6 = !{!"ProcessInformation", !7, i64 0, !3, i64 8, !3, i64 264, !3, i64 268, !3, i64 272, !3, i64 280, !7, i64 456, !2, i64 464, !2, i64 472, !3, i64 480, !2, i64 488}
+!7 = !{!"long", !3, i64 0}
+!8 = !{!9, !7, i64 16}
+!9 = !{!"", !7, i64 0, !2, i64 8, !7, i64 16}
+!10 = !{!9, !2, i64 8}
+!11 = !{!7, !7, i64 0}
+!12 = !{!6, !3, i64 272}

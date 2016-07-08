@@ -1,0 +1,282 @@
+; ModuleID = 'common/initrd.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.CardinalBootInfo = type { i64, i32, i32, i32, i32, i32, i32, i64, i64, i64, i64, %struct.CardinalMemMap*, i64, i32, i32, i32, i8 }
+%struct.CardinalMemMap = type { i64, i64, i8 }
+%struct.TARHeader = type { [100 x i8], [8 x i8], [8 x i8], [8 x i8], [12 x i8], [12 x i8], [8 x i8], [1 x i8] }
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i32 @getsize(i8* nocapture readonly %in) #0 {
+  %1 = getelementptr inbounds i8, i8* %in, i64 10
+  %2 = load i8, i8* %1, align 1, !tbaa !1
+  %3 = sext i8 %2 to i32
+  %4 = getelementptr inbounds i8, i8* %in, i64 9
+  %5 = load i8, i8* %4, align 1, !tbaa !1
+  %6 = sext i8 %5 to i32
+  %7 = shl nsw i32 %6, 3
+  %8 = add nsw i32 %7, %3
+  %9 = getelementptr inbounds i8, i8* %in, i64 8
+  %10 = load i8, i8* %9, align 1, !tbaa !1
+  %11 = sext i8 %10 to i32
+  %12 = shl nsw i32 %11, 6
+  %13 = add nsw i32 %12, %8
+  %14 = getelementptr inbounds i8, i8* %in, i64 7
+  %15 = load i8, i8* %14, align 1, !tbaa !1
+  %16 = sext i8 %15 to i32
+  %17 = shl nsw i32 %16, 9
+  %18 = add nsw i32 %17, %13
+  %19 = getelementptr inbounds i8, i8* %in, i64 6
+  %20 = load i8, i8* %19, align 1, !tbaa !1
+  %21 = sext i8 %20 to i32
+  %22 = shl nsw i32 %21, 12
+  %23 = add nsw i32 %22, %18
+  %24 = getelementptr inbounds i8, i8* %in, i64 5
+  %25 = load i8, i8* %24, align 1, !tbaa !1
+  %26 = sext i8 %25 to i32
+  %27 = shl nsw i32 %26, 15
+  %28 = add nsw i32 %27, %23
+  %29 = getelementptr inbounds i8, i8* %in, i64 4
+  %30 = load i8, i8* %29, align 1, !tbaa !1
+  %31 = sext i8 %30 to i32
+  %32 = shl nsw i32 %31, 18
+  %33 = add i32 %32, %28
+  %34 = getelementptr inbounds i8, i8* %in, i64 3
+  %35 = load i8, i8* %34, align 1, !tbaa !1
+  %36 = sext i8 %35 to i32
+  %37 = shl nsw i32 %36, 21
+  %38 = add i32 %37, %33
+  %39 = getelementptr inbounds i8, i8* %in, i64 2
+  %40 = load i8, i8* %39, align 1, !tbaa !1
+  %41 = zext i8 %40 to i32
+  %42 = shl nuw i32 %41, 24
+  %43 = add i32 %42, %38
+  %44 = add i32 %43, -920350128
+  %45 = getelementptr inbounds i8, i8* %in, i64 1
+  %46 = load i8, i8* %45, align 1, !tbaa !1
+  %47 = zext i8 %46 to i32
+  %48 = shl i32 %47, 27
+  %49 = xor i32 %48, -2147483648
+  %50 = add i32 %49, %44
+  %51 = load i8, i8* %in, align 1, !tbaa !1
+  %52 = zext i8 %51 to i32
+  %53 = shl i32 %52, 30
+  %54 = add i32 %53, %50
+  ret i32 %54
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define zeroext i8 @Initrd_GetFile(i8* %file, i8** nocapture %loc, i64* nocapture %size) #1 {
+  %1 = tail call %struct.CardinalBootInfo* @GetBootInfo() #3
+  %2 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 9
+  %3 = load i64, i64* %2, align 8, !tbaa !4
+  %4 = icmp eq i64 %3, 0
+  %5 = zext i1 %4 to i32
+  %6 = getelementptr inbounds %struct.CardinalBootInfo, %struct.CardinalBootInfo* %1, i64 0, i32 10
+  %7 = load i64, i64* %6, align 8, !tbaa !9
+  %8 = icmp eq i64 %7, 0
+  %9 = zext i1 %8 to i32
+  %10 = or i32 %9, %5
+  %11 = icmp eq i32 %10, 0
+  br i1 %11, label %12, label %152
+
+; <label>:12                                      ; preds = %0
+  store i8* null, i8** %loc, align 8, !tbaa !10
+  store i64 0, i64* %size, align 8, !tbaa !11
+  %13 = bitcast i64* %2 to %struct.TARHeader**
+  %14 = load %struct.TARHeader*, %struct.TARHeader** %13, align 8, !tbaa !4
+  %15 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %14, i64 0, i32 0, i64 0
+  %16 = load i8, i8* %15, align 1, !tbaa !1
+  %17 = icmp eq i8 %16, 0
+  br i1 %17, label %150, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %12
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph.preheader, %86
+  %18 = phi i8* [ %147, %86 ], [ %15, %.lr.ph.preheader ]
+  %file_entry.01 = phi %struct.TARHeader* [ %146, %86 ], [ %14, %.lr.ph.preheader ]
+  %19 = tail call i64 @strlen(i8* %18) #3
+  %20 = tail call i64 @strlen(i8* %file) #3
+  %21 = and i64 %19, 4294967295
+  %22 = icmp eq i64 %20, %21
+  br i1 %22, label %23, label %86
+
+; <label>:23                                      ; preds = %.lr.ph
+  %24 = tail call i32 @strncmp(i8* %18, i8* %file, i64 %20) #3
+  %25 = icmp eq i32 %24, 0
+  br i1 %25, label %26, label %86
+
+; <label>:26                                      ; preds = %23
+  %27 = ptrtoint %struct.TARHeader* %file_entry.01 to i64
+  %28 = add i64 %27, 512
+  %29 = inttoptr i64 %28 to i8*
+  store i8* %29, i8** %loc, align 8, !tbaa !10
+  %30 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 0
+  %31 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 10
+  %32 = load i8, i8* %31, align 1, !tbaa !1
+  %33 = sext i8 %32 to i64
+  %34 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 9
+  %35 = load i8, i8* %34, align 1, !tbaa !1
+  %36 = sext i8 %35 to i64
+  %37 = shl nsw i64 %36, 3
+  %38 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 8
+  %39 = load i8, i8* %38, align 1, !tbaa !1
+  %40 = sext i8 %39 to i64
+  %41 = shl nsw i64 %40, 6
+  %42 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 7
+  %43 = load i8, i8* %42, align 1, !tbaa !1
+  %44 = sext i8 %43 to i64
+  %45 = shl nsw i64 %44, 9
+  %46 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 6
+  %47 = load i8, i8* %46, align 1, !tbaa !1
+  %48 = sext i8 %47 to i64
+  %49 = shl nsw i64 %48, 12
+  %50 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 5
+  %51 = load i8, i8* %50, align 1, !tbaa !1
+  %52 = sext i8 %51 to i64
+  %53 = shl nsw i64 %52, 15
+  %54 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 4
+  %55 = load i8, i8* %54, align 1, !tbaa !1
+  %56 = sext i8 %55 to i64
+  %57 = shl nsw i64 %56, 18
+  %58 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 3
+  %59 = load i8, i8* %58, align 1, !tbaa !1
+  %60 = sext i8 %59 to i64
+  %61 = shl nsw i64 %60, 21
+  %62 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 2
+  %63 = load i8, i8* %62, align 1, !tbaa !1
+  %64 = zext i8 %63 to i64
+  %65 = shl nuw nsw i64 %64, 24
+  %66 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 1
+  %67 = load i8, i8* %66, align 1, !tbaa !1
+  %68 = zext i8 %67 to i64
+  %69 = shl nuw nsw i64 %68, 27
+  %70 = xor i64 %69, 2147483648
+  %71 = load i8, i8* %30, align 1, !tbaa !1
+  %72 = zext i8 %71 to i64
+  %73 = shl nuw nsw i64 %72, 30
+  %74 = add nsw i64 %33, 3374617168
+  %75 = add nsw i64 %74, %37
+  %76 = add nsw i64 %75, %41
+  %77 = add nsw i64 %76, %45
+  %78 = add nsw i64 %77, %49
+  %79 = add nsw i64 %78, %53
+  %80 = add i64 %79, %57
+  %81 = add i64 %80, %61
+  %82 = add i64 %81, %65
+  %83 = add i64 %82, %70
+  %84 = add i64 %83, %73
+  %85 = and i64 %84, 4294967295
+  store i64 %85, i64* %size, align 8, !tbaa !11
+  br label %86
+
+; <label>:86                                      ; preds = %26, %23, %.lr.ph
+  %87 = ptrtoint %struct.TARHeader* %file_entry.01 to i64
+  %88 = add i64 %87, 512
+  %89 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 0
+  %90 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 10
+  %91 = load i8, i8* %90, align 1, !tbaa !1
+  %92 = sext i8 %91 to i64
+  %93 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 9
+  %94 = load i8, i8* %93, align 1, !tbaa !1
+  %95 = sext i8 %94 to i64
+  %96 = shl nsw i64 %95, 3
+  %97 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 8
+  %98 = load i8, i8* %97, align 1, !tbaa !1
+  %99 = sext i8 %98 to i64
+  %100 = shl nsw i64 %99, 6
+  %101 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 7
+  %102 = load i8, i8* %101, align 1, !tbaa !1
+  %103 = sext i8 %102 to i64
+  %104 = shl nsw i64 %103, 9
+  %105 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 6
+  %106 = load i8, i8* %105, align 1, !tbaa !1
+  %107 = sext i8 %106 to i64
+  %108 = shl nsw i64 %107, 12
+  %109 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 5
+  %110 = load i8, i8* %109, align 1, !tbaa !1
+  %111 = sext i8 %110 to i64
+  %112 = shl nsw i64 %111, 15
+  %113 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 4
+  %114 = load i8, i8* %113, align 1, !tbaa !1
+  %115 = sext i8 %114 to i64
+  %116 = shl nsw i64 %115, 18
+  %117 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 3
+  %118 = load i8, i8* %117, align 1, !tbaa !1
+  %119 = sext i8 %118 to i64
+  %120 = shl nsw i64 %119, 21
+  %121 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 2
+  %122 = load i8, i8* %121, align 1, !tbaa !1
+  %123 = zext i8 %122 to i64
+  %124 = shl nuw nsw i64 %123, 24
+  %125 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %file_entry.01, i64 0, i32 4, i64 1
+  %126 = load i8, i8* %125, align 1, !tbaa !1
+  %127 = zext i8 %126 to i64
+  %128 = shl nuw nsw i64 %127, 27
+  %129 = xor i64 %128, 2147483648
+  %130 = load i8, i8* %89, align 1, !tbaa !1
+  %131 = zext i8 %130 to i64
+  %132 = shl nuw nsw i64 %131, 30
+  %133 = add nsw i64 %92, 3374617168
+  %134 = add nsw i64 %133, %96
+  %135 = add nsw i64 %134, %100
+  %136 = add nsw i64 %135, %104
+  %137 = add nsw i64 %136, %108
+  %138 = add nsw i64 %137, %112
+  %139 = add i64 %138, %116
+  %140 = add i64 %139, %120
+  %141 = add i64 %140, %124
+  %142 = add i64 %141, %129
+  %143 = add i64 %142, %132
+  %144 = and i64 %143, 4294967295
+  %145 = add i64 %88, %144
+  %146 = inttoptr i64 %145 to %struct.TARHeader*
+  %147 = getelementptr inbounds %struct.TARHeader, %struct.TARHeader* %146, i64 0, i32 0, i64 0
+  %148 = load i8, i8* %147, align 1, !tbaa !1
+  %149 = icmp eq i8 %148, 0
+  br i1 %149, label %._crit_edge, label %.lr.ph
+
+._crit_edge:                                      ; preds = %86
+  %.pre = load i8*, i8** %loc, align 8, !tbaa !10
+  %phitmp = icmp ne i8* %.pre, null
+  br label %150
+
+; <label>:150                                     ; preds = %._crit_edge, %12
+  %151 = phi i1 [ %phitmp, %._crit_edge ], [ false, %12 ]
+  %. = zext i1 %151 to i8
+  br label %152
+
+; <label>:152                                     ; preds = %0, %150
+  %.1 = phi i8 [ %., %150 ], [ 0, %0 ]
+  ret i8 %.1
+}
+
+; Function Attrs: noredzone
+declare %struct.CardinalBootInfo* @GetBootInfo() #2
+
+; Function Attrs: noredzone
+declare i64 @strlen(i8*) #2
+
+; Function Attrs: noredzone
+declare i32 @strncmp(i8*, i8*, i64) #2
+
+attributes #0 = { noredzone nounwind readonly uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"omnipotent char", !3, i64 0}
+!3 = !{!"Simple C/C++ TBAA"}
+!4 = !{!5, !6, i64 48}
+!5 = !{!"", !6, i64 0, !7, i64 8, !7, i64 12, !7, i64 16, !7, i64 20, !7, i64 24, !7, i64 28, !6, i64 32, !6, i64 40, !6, i64 48, !6, i64 56, !8, i64 64, !6, i64 72, !7, i64 80, !7, i64 84, !7, i64 88, !2, i64 92}
+!6 = !{!"long", !2, i64 0}
+!7 = !{!"int", !2, i64 0}
+!8 = !{!"any pointer", !2, i64 0}
+!9 = !{!5, !6, i64 56}
+!10 = !{!8, !8, i64 0}
+!11 = !{!6, !6, i64 0}

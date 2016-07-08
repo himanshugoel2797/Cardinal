@@ -1,0 +1,268 @@
+; ModuleID = 'main.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.MemoryAllocationsMap = type { i32, i64, i64, i64, i32, i32, i64, i64, %struct.MemoryAllocationsMap* }
+%struct.ProcessInformation = type { i64, [256 x i8], i32, i32, i32, [22 x void (i32)*], i64, %struct.MemoryAllocationsMap*, %struct.List*, i32, i64* }
+%struct.List = type opaque
+
+@.str = private unnamed_addr constant [9 x i8] c"test.elf\00", align 1
+@coreCount = global i32 0, align 4
+@smp_lock = common global i64* null, align 8
+
+; Function Attrs: noredzone nounwind uwtable
+define void @sleep_kernel() #0 {
+  tail call void asm sideeffect "cli\0A\09hlt", "{ax},~{dirflag},~{fpsr},~{flags}"(i32 -559041729) #2, !srcloc !1
+  ret void
+}
+
+; Function Attrs: noredzone noreturn nounwind readnone uwtable
+define void @hlt_kernel() #1 {
+  br label %1
+
+; <label>:1                                       ; preds = %0, %1
+  br label %1
+}
+
+; Function Attrs: noredzone noreturn nounwind readnone uwtable
+define void @hlt2_kernel() #1 {
+  br label %1
+
+; <label>:1                                       ; preds = %0, %1
+  br label %1
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @kernel_main_init() #0 {
+  %1 = tail call i8* @bootstrap_malloc(i64 64) #5
+  %2 = bitcast i8* %1 to %struct.MemoryAllocationsMap*
+  %3 = getelementptr inbounds i8, i8* %1, i64 56
+  %4 = bitcast i8* %3 to %struct.MemoryAllocationsMap**
+  store %struct.MemoryAllocationsMap* null, %struct.MemoryAllocationsMap** %4, align 8, !tbaa !2
+  tail call void @InitializeTimer() #5
+  tail call void @SetTimerValue(i64 0) #5
+  tail call void @SetTimerEnableMode(i8 zeroext 1) #5
+  tail call void @kmalloc_init(%struct.MemoryAllocationsMap* %2) #5
+  tail call void @ProcessSys_Initialize(%struct.MemoryAllocationsMap* %2) #5
+  tail call void @Thread_Initialize() #5
+  tail call void @RegisterCore(i32 0, i32 ()* null) #5
+  %5 = tail call i64 @CreateThread(i64 0, void ()* nonnull @kernel_main) #5
+  tail call void (...) @CoreUpdate() #5
+  ret void
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #2
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #3
+
+; Function Attrs: noredzone
+declare void @InitializeTimer() #3
+
+; Function Attrs: noredzone
+declare void @SetTimerValue(i64) #3
+
+; Function Attrs: noredzone
+declare void @SetTimerEnableMode(i8 zeroext) #3
+
+; Function Attrs: noredzone
+declare void @kmalloc_init(%struct.MemoryAllocationsMap*) #3
+
+; Function Attrs: noredzone
+declare void @ProcessSys_Initialize(%struct.MemoryAllocationsMap*) #3
+
+; Function Attrs: noredzone
+declare void @Thread_Initialize() #3
+
+; Function Attrs: noredzone
+declare void @RegisterCore(i32, i32 ()*) #3
+
+; Function Attrs: noredzone
+declare i64 @CreateThread(i64, void ()*) #3
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @kernel_main() #4 {
+  %p_info = alloca %struct.ProcessInformation, align 8
+  %elf_proc = alloca %struct.ProcessInformation*, align 8
+  %1 = load i32, i32* @coreCount, align 4, !tbaa !8
+  %2 = add nsw i32 %1, 1
+  store i32 %2, i32* @coreCount, align 4, !tbaa !8
+  tail call void @SyscallMan_Initialize() #5
+  tail call void @Syscall_Initialize() #5
+  tail call void @SetupSecurityMonitor() #5
+  tail call void @DeviceManager_Initialize() #5
+  %3 = tail call i64* @CreateSpinlock() #5
+  store i64* %3, i64** @smp_lock, align 8, !tbaa !10
+  tail call void @smp_unlock_cores() #5
+  br label %4
+
+; <label>:4                                       ; preds = %4, %0
+  %5 = load i32, i32* @coreCount, align 4, !tbaa !8
+  %6 = tail call i32 @GetCoreCount() #5
+  %7 = icmp eq i32 %5, %6
+  br i1 %7, label %8, label %4
+
+; <label>:8                                       ; preds = %4
+  tail call void @setup_preemption() #5
+  tail call void @target_device_setup() #5
+  %9 = bitcast %struct.ProcessInformation* %p_info to i8*
+  call void @llvm.lifetime.start(i64 496, i8* %9) #2
+  %10 = call i32 @GetProcessInformation(i64 0, %struct.ProcessInformation* nonnull %p_info) #5
+  %11 = bitcast %struct.ProcessInformation** %elf_proc to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %11) #2
+  %12 = call i32 @ForkProcess(%struct.ProcessInformation* nonnull %p_info, %struct.ProcessInformation** nonnull %elf_proc) #5
+  %13 = load %struct.ProcessInformation*, %struct.ProcessInformation** %elf_proc, align 8, !tbaa !10
+  %14 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %13, i64 0, i32 0
+  %15 = load i64, i64* %14, align 8, !tbaa !11
+  %16 = call i64 @CreateThread(i64 %15, void ()* nonnull @load_elf) #5
+  %17 = icmp eq i64 %16, 0
+  br i1 %17, label %18, label %19
+
+; <label>:18                                      ; preds = %8
+  call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #2, !srcloc !13
+  br label %19
+
+; <label>:19                                      ; preds = %8, %18
+  %20 = call i64 @GetCurrentThreadUID() #5
+  call void @FreeThread(i64 %20) #5
+  br label %21
+
+; <label>:21                                      ; preds = %19, %21
+  br label %21
+}
+
+; Function Attrs: noredzone
+declare void @CoreUpdate(...) #3
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @load_elf() #4 {
+  %elf_loc = alloca i8*, align 8
+  %elf_size = alloca i64, align 8
+  %argv = alloca [1 x i8*], align 8
+  %1 = bitcast i8** %elf_loc to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %1) #2
+  store i8* null, i8** %elf_loc, align 8, !tbaa !10
+  %2 = bitcast i64* %elf_size to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %2) #2
+  store i64 0, i64* %elf_size, align 8, !tbaa !14
+  %3 = call zeroext i8 @Initrd_GetFile(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str, i64 0, i64 0), i8** nonnull %elf_loc, i64* nonnull %elf_size) #5
+  %4 = bitcast [1 x i8*]* %argv to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %4) #2
+  %5 = getelementptr inbounds [1 x i8*], [1 x i8*]* %argv, i64 0, i64 0
+  store i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str, i64 0, i64 0), i8** %5, align 8
+  %6 = load i8*, i8** %elf_loc, align 8, !tbaa !10
+  %7 = load i64, i64* %elf_size, align 8, !tbaa !14
+  call void @LoadAndStartApplication(i8* %6, i64 %7, i8** %5, i32 1, i8** null) #5
+  br label %8
+
+; <label>:8                                       ; preds = %0, %8
+  br label %8
+}
+
+; Function Attrs: noredzone
+declare zeroext i8 @Initrd_GetFile(i8*, i8**, i64*) #3
+
+; Function Attrs: noredzone
+declare void @LoadAndStartApplication(i8*, i64, i8**, i32, i8**) #3
+
+; Function Attrs: noredzone
+declare void @SyscallMan_Initialize() #3
+
+; Function Attrs: noredzone
+declare void @Syscall_Initialize() #3
+
+; Function Attrs: noredzone
+declare void @SetupSecurityMonitor() #3
+
+; Function Attrs: noredzone
+declare void @DeviceManager_Initialize() #3
+
+; Function Attrs: noredzone
+declare i64* @CreateSpinlock() #3
+
+; Function Attrs: noredzone
+declare void @smp_unlock_cores() #3
+
+; Function Attrs: noredzone
+declare i32 @GetCoreCount() #3
+
+; Function Attrs: noredzone
+declare void @setup_preemption() #3
+
+; Function Attrs: noredzone
+declare void @target_device_setup() #3
+
+; Function Attrs: noredzone
+declare i32 @GetProcessInformation(i64, %struct.ProcessInformation*) #3
+
+; Function Attrs: noredzone
+declare i32 @ForkProcess(%struct.ProcessInformation*, %struct.ProcessInformation**) #3
+
+; Function Attrs: noredzone
+declare void @FreeThread(i64) #3
+
+; Function Attrs: noredzone
+declare i64 @GetCurrentThreadUID() #3
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @smp_main() #4 {
+  %1 = load i64*, i64** @smp_lock, align 8, !tbaa !10
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #5
+  %3 = load i32, i32* @coreCount, align 4, !tbaa !8
+  %4 = add nsw i32 %3, 1
+  store i32 %4, i32* @coreCount, align 4, !tbaa !8
+  %5 = load i64*, i64** @smp_lock, align 8, !tbaa !10
+  %6 = tail call zeroext i8 @UnlockSpinlock(i64* %5) #5
+  tail call void @setup_preemption() #5
+  %7 = tail call i64 @CreateThread(i64 0, void ()* nonnull @hlt_kernel) #5
+  %8 = tail call i64 @GetCurrentThreadUID() #5
+  tail call void @FreeThread(i64 %8) #5
+  br label %9
+
+; <label>:9                                       ; preds = %0, %9
+  br label %9
+}
+
+; Function Attrs: noredzone
+declare zeroext i8 @LockSpinlock(i64*) #3
+
+; Function Attrs: noredzone
+declare zeroext i8 @UnlockSpinlock(i64*) #3
+
+; Function Attrs: noredzone noreturn nounwind uwtable
+define void @smp_core_main(i32 %coreID, i32 ()* nocapture readnone %getCoreData) #4 {
+  tail call void @Syscall_Initialize() #5
+  tail call void @RegisterCore(i32 %coreID, i32 ()* null) #5
+  %1 = tail call i64 @CreateThread(i64 0, void ()* nonnull @smp_main) #5
+  tail call void (...) @CoreUpdate() #5
+  br label %2
+
+; <label>:2                                       ; preds = %0, %2
+  br label %2
+}
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone noreturn nounwind readnone uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
+attributes #3 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { noredzone noreturn nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #5 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{i32 271, i32 277}
+!2 = !{!3, !7, i64 56}
+!3 = !{!"MemoryAllocationsMap", !4, i64 0, !6, i64 8, !6, i64 16, !6, i64 24, !4, i64 32, !4, i64 36, !6, i64 40, !6, i64 48, !7, i64 56}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}
+!6 = !{!"long", !4, i64 0}
+!7 = !{!"any pointer", !4, i64 0}
+!8 = !{!9, !9, i64 0}
+!9 = !{!"int", !4, i64 0}
+!10 = !{!7, !7, i64 0}
+!11 = !{!12, !6, i64 0}
+!12 = !{!"ProcessInformation", !6, i64 0, !4, i64 8, !4, i64 264, !4, i64 268, !4, i64 272, !4, i64 280, !6, i64 456, !7, i64 464, !7, i64 472, !4, i64 480, !7, i64 488}
+!13 = !{i32 1872, i32 1878}
+!14 = !{!6, !6, i64 0}

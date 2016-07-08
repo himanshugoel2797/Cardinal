@@ -1,0 +1,229 @@
+; ModuleID = 'hal/interrupts/interrupt_man.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.Registers = type { i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64 }
+
+@intHandlers = internal unnamed_addr global [256 x void (i32, i32)*] zeroinitializer, align 16
+@regs_saved = internal unnamed_addr global %struct.Registers* null, align 8
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i32 @RequestInterruptVectorBlock(i32 %vectorCount) #0 {
+  br label %1
+
+; <label>:1                                       ; preds = %0, %15
+  %indvars.iv = phi i64 [ 0, %0 ], [ %indvars.iv.next, %15 ]
+  %i.02 = phi i32 [ 0, %0 ], [ %16, %15 ]
+  %score.01 = phi i32 [ 0, %0 ], [ %.score.1, %15 ]
+  %2 = icmp sgt i64 %indvars.iv, 0
+  br i1 %2, label %3, label %8
+
+; <label>:3                                       ; preds = %1
+  %4 = add nsw i64 %indvars.iv, -1
+  %5 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %4
+  %6 = load void (i32, i32)*, void (i32, i32)** %5, align 8, !tbaa !1
+  %7 = icmp eq void (i32, i32)* %6, null
+  %score.0. = select i1 %7, i32 %score.01, i32 0
+  br label %8
+
+; <label>:8                                       ; preds = %3, %1
+  %score.1 = phi i32 [ %score.01, %1 ], [ %score.0., %3 ]
+  %9 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %indvars.iv
+  %10 = load void (i32, i32)*, void (i32, i32)** %9, align 8, !tbaa !1
+  %11 = icmp eq void (i32, i32)* %10, null
+  %12 = zext i1 %11 to i32
+  %.score.1 = add i32 %12, %score.1
+  %13 = icmp eq i32 %.score.1, %vectorCount
+  %14 = trunc i64 %indvars.iv to i32
+  br i1 %13, label %18, label %15
+
+; <label>:15                                      ; preds = %8
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %16 = add nuw nsw i32 %i.02, 1
+  %17 = icmp slt i64 %indvars.iv.next, 256
+  br i1 %17, label %1, label %18
+
+; <label>:18                                      ; preds = %8, %15
+  %i.0.lcssa = phi i32 [ %14, %8 ], [ %16, %15 ]
+  %19 = add i32 %i.0.lcssa, %vectorCount
+  %20 = icmp ugt i32 %19, 255
+  %.i.0 = select i1 %20, i32 -1, i32 %i.0.lcssa
+  ret i32 %.i.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @ShadowInterruptHandler(%struct.Registers* %regs) #1 {
+  %1 = load %struct.Registers*, %struct.Registers** @regs_saved, align 8, !tbaa !1
+  %2 = icmp eq %struct.Registers* %1, null
+  %3 = bitcast %struct.Registers* %1 to i8*
+  br i1 %2, label %4, label %6
+
+; <label>:4                                       ; preds = %0
+  %5 = tail call i8* @AllocateAPLSMemory(i64 184) #3
+  store i8* %5, i8** bitcast (%struct.Registers** @regs_saved to i8**), align 8, !tbaa !1
+  br label %6
+
+; <label>:6                                       ; preds = %4, %0
+  %7 = phi i8* [ %5, %4 ], [ %3, %0 ]
+  %8 = bitcast %struct.Registers* %regs to i8*
+  %9 = tail call i8* @memcpy(i8* %7, i8* %8, i64 184) #3
+  %10 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 16
+  %11 = load i64, i64* %10, align 1, !tbaa !5
+  %12 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %11
+  %13 = load void (i32, i32)*, void (i32, i32)** %12, align 8, !tbaa !1
+  %14 = icmp eq void (i32, i32)* %13, null
+  br i1 %14, label %20, label %15
+
+; <label>:15                                      ; preds = %6
+  %16 = trunc i64 %11 to i32
+  %17 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 17
+  %18 = load i64, i64* %17, align 1, !tbaa !8
+  %19 = trunc i64 %18 to i32
+  tail call void %13(i32 %16, i32 %19) #3
+  br label %20
+
+; <label>:20                                      ; preds = %6, %15
+  %21 = load i8*, i8** bitcast (%struct.Registers** @regs_saved to i8**), align 8, !tbaa !1
+  %22 = tail call i8* @memset(i8* %21, i32 0, i64 184) #3
+  %23 = load i64, i64* %10, align 1, !tbaa !5
+  %24 = icmp ugt i64 %23, 31
+  br i1 %24, label %25, label %27
+
+; <label>:25                                      ; preds = %20
+  %26 = trunc i64 %23 to i8
+  tail call void @APIC_SendEOI(i8 zeroext %26) #3
+  br label %27
+
+; <label>:27                                      ; preds = %25, %20
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i8* @AllocateAPLSMemory(i64) #2
+
+; Function Attrs: noredzone
+declare i8* @memcpy(i8*, i8*, i64) #2
+
+; Function Attrs: noredzone
+declare i8* @memset(i8*, i32, i64) #2
+
+; Function Attrs: noredzone
+declare void @APIC_SendEOI(i8 zeroext) #2
+
+; Function Attrs: noredzone nounwind uwtable
+define void @HandleInterruptNoReturn(i32 %vector) #1 {
+  %1 = load i8*, i8** bitcast (%struct.Registers** @regs_saved to i8**), align 8, !tbaa !1
+  %2 = tail call i8* @memset(i8* %1, i32 0, i64 184) #3
+  %3 = icmp ugt i32 %vector, 31
+  br i1 %3, label %4, label %6
+
+; <label>:4                                       ; preds = %0
+  %5 = trunc i32 %vector to i8
+  tail call void @APIC_SendEOI(i8 zeroext %5) #3
+  br label %6
+
+; <label>:6                                       ; preds = %4, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @RegisterInterruptHandler(i32 %int_no, void (i32, i32)* %handler) #1 {
+  %1 = icmp ugt i32 %int_no, 255
+  br i1 %1, label %6, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = zext i32 %int_no to i64
+  %4 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %3
+  store void (i32, i32)* %handler, void (i32, i32)** %4, align 8, !tbaa !1
+  %5 = trunc i32 %int_no to i8
+  tail call void @IDT_RegisterHandler(i8 zeroext %5, void (%struct.Registers*)* nonnull @ShadowInterruptHandler) #3
+  br label %6
+
+; <label>:6                                       ; preds = %0, %2
+  %.0 = phi i32 [ 0, %2 ], [ -1, %0 ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone
+declare void @IDT_RegisterHandler(i8 zeroext, void (%struct.Registers*)*) #2
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @GetInterruptHandler(i32 %int_no, void (i32, i32)** %handler) #1 {
+  %1 = icmp ugt i32 %int_no, 255
+  br i1 %1, label %10, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = icmp eq void (i32, i32)** %handler, null
+  br i1 %3, label %10, label %4
+
+; <label>:4                                       ; preds = %2
+  %5 = zext i32 %int_no to i64
+  %6 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %5
+  %7 = bitcast void (i32, i32)** %6 to i64*
+  %8 = load i64, i64* %7, align 8, !tbaa !1
+  %9 = bitcast void (i32, i32)** %handler to i64*
+  store i64 %8, i64* %9, align 8, !tbaa !1
+  br label %10
+
+; <label>:10                                      ; preds = %4, %2, %0
+  %.0 = phi i32 [ -1, %0 ], [ 0, %2 ], [ 0, %4 ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @RemoveInterruptHandler(i32 %id) #1 {
+  %id.off = add i32 %id, -32
+  %1 = icmp ult i32 %id.off, 224
+  br i1 %1, label %2, label %5
+
+; <label>:2                                       ; preds = %0
+  %3 = zext i32 %id to i64
+  %4 = getelementptr inbounds [256 x void (i32, i32)*], [256 x void (i32, i32)*]* @intHandlers, i64 0, i64 %3
+  store void (i32, i32)* null, void (i32, i32)** %4, align 8, !tbaa !1
+  br label %5
+
+; <label>:5                                       ; preds = %2, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @SetInterruptEnableMode(i32 %vector, i8 zeroext %enableMode) #1 {
+  %1 = trunc i32 %vector to i8
+  tail call void @IOAPIC_SetEnableMode(i8 zeroext %1, i8 zeroext %enableMode) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @IOAPIC_SetEnableMode(i8 zeroext, i8 zeroext) #2
+
+; Function Attrs: noredzone nounwind uwtable
+define void @RaiseInterrupt(i32 %int_no) #1 {
+  tail call void @IDT_RaiseInterrupt(i32 %int_no) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @IDT_RaiseInterrupt(i32) #2
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i8* @GetSavedInterruptState() #0 {
+  %1 = load i8*, i8** bitcast (%struct.Registers** @regs_saved to i8**), align 8, !tbaa !1
+  ret i8* %1
+}
+
+attributes #0 = { noredzone nounwind readonly uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !7, i64 128}
+!6 = !{!"", !7, i64 0, !7, i64 8, !7, i64 16, !7, i64 24, !7, i64 32, !7, i64 40, !7, i64 48, !7, i64 56, !7, i64 64, !7, i64 72, !7, i64 80, !7, i64 88, !7, i64 96, !7, i64 104, !7, i64 112, !7, i64 120, !7, i64 128, !7, i64 136, !7, i64 144, !7, i64 152, !7, i64 160, !7, i64 168, !7, i64 176}
+!7 = !{!"long", !3, i64 0}
+!8 = !{!6, !7, i64 136}

@@ -1,0 +1,94 @@
+; ModuleID = 'managers/power_manager/pwm.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.List = type opaque
+
+@pwm_data = internal unnamed_addr global %struct.List* null, align 8
+
+; Function Attrs: noredzone nounwind uwtable
+define void @PWM_Initialize() #0 {
+  %1 = tail call i64* @CreateSpinlock() #2
+  %2 = tail call %struct.List* @List_Create(i64* %1) #2
+  store %struct.List* %2, %struct.List** @pwm_data, align 8, !tbaa !1
+  ret void
+}
+
+; Function Attrs: noredzone
+declare %struct.List* @List_Create(i64*) #1
+
+; Function Attrs: noredzone
+declare i64* @CreateSpinlock() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @PWM_RegisterStateChangeHandler(void (i32, i32)* %handler) #0 {
+  %1 = load %struct.List*, %struct.List** @pwm_data, align 8, !tbaa !1
+  %2 = bitcast void (i32, i32)* %handler to i8*
+  %3 = tail call i32 @List_AddEntry(%struct.List* %1, i8* %2) #2
+  %4 = icmp eq i32 %3, 0
+  %. = zext i1 %4 to i32
+  ret i32 %.
+}
+
+; Function Attrs: noredzone
+declare i32 @List_AddEntry(%struct.List*, i8*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @PWM_UnregisterHandler(void (i32, i32)* readnone %handler) #0 {
+  %1 = load %struct.List*, %struct.List** @pwm_data, align 8, !tbaa !1
+  %2 = tail call i64 @List_Length(%struct.List* %1) #2
+  %3 = icmp eq i64 %2, 0
+  br i1 %3, label %._crit_edge, label %.lr.ph
+
+.lr.ph:                                           ; preds = %0
+  %4 = bitcast void (i32, i32)* %handler to i8*
+  br label %5
+
+._crit_edge.loopexit:                             ; preds = %12
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %0
+  ret void
+
+; <label>:5                                       ; preds = %.lr.ph, %12
+  %i.01 = phi i64 [ 0, %.lr.ph ], [ %13, %12 ]
+  %6 = load %struct.List*, %struct.List** @pwm_data, align 8, !tbaa !1
+  %7 = tail call i8* @List_EntryAt(%struct.List* %6, i64 %i.01) #2
+  %8 = icmp eq i8* %7, %4
+  br i1 %8, label %9, label %12
+
+; <label>:9                                       ; preds = %5
+  %10 = load %struct.List*, %struct.List** @pwm_data, align 8, !tbaa !1
+  tail call void @List_Remove(%struct.List* %10, i64 %i.01) #2
+  %11 = add i64 %i.01, -1
+  br label %12
+
+; <label>:12                                      ; preds = %5, %9
+  %i.1 = phi i64 [ %11, %9 ], [ %i.01, %5 ]
+  %13 = add i64 %i.1, 1
+  %14 = load %struct.List*, %struct.List** @pwm_data, align 8, !tbaa !1
+  %15 = tail call i64 @List_Length(%struct.List* %14) #2
+  %16 = icmp ult i64 %13, %15
+  br i1 %16, label %5, label %._crit_edge.loopexit
+}
+
+; Function Attrs: noredzone
+declare i64 @List_Length(%struct.List*) #1
+
+; Function Attrs: noredzone
+declare i8* @List_EntryAt(%struct.List*, i64) #1
+
+; Function Attrs: noredzone
+declare void @List_Remove(%struct.List*, i64) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}

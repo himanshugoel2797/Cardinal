@@ -1,0 +1,278 @@
+; ModuleID = 'apic/apic_init.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.APIC_SMPThreads = type { i32, i32, %struct.APIC_SMPThreads* }
+
+@smp_threads = internal unnamed_addr global %struct.APIC_SMPThreads* null, align 8
+@.str = private unnamed_addr constant [5 x i8] c"APIC\00", align 1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @APIC_Initialize() #0 {
+  tail call void @CPUID_RequestInfo(i32 1, i32 0) #2
+  %1 = tail call zeroext i8 @CPUID_FeatureIsAvailable(i32 3, i32 512) #2
+  %2 = icmp eq i8 %1, 0
+  br i1 %2, label %97, label %3
+
+; <label>:3                                       ; preds = %0
+  store %struct.APIC_SMPThreads* null, %struct.APIC_SMPThreads** @smp_threads, align 8, !tbaa !1
+  tail call void @APIC_LockPIC() #2
+  %4 = tail call zeroext i8 @APIC_LocalInitialize() #2
+  %5 = tail call i8* @ACPITables_FindTable(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str, i64 0, i64 0), i32 0) #2
+  tail call void @PIT_Initialize() #2
+  %6 = icmp eq i8* %5, null
+  br i1 %6, label %96, label %7
+
+; <label>:7                                       ; preds = %3
+  %8 = getelementptr inbounds i8, i8* %5, i64 4
+  %9 = bitcast i8* %8 to i32*
+  %10 = load i32, i32* %9, align 1, !tbaa !5
+  %11 = add i32 %10, -44
+  %12 = icmp eq i32 %11, 0
+  %13 = getelementptr inbounds i8, i8* %5, i64 44
+  br label %.preheader
+
+.preheader:                                       ; preds = %._crit_edge, %7
+  %passNum.04 = phi i32 [ 0, %7 ], [ %17, %._crit_edge ]
+  br i1 %12, label %._crit_edge, label %.lr.ph
+
+.lr.ph:                                           ; preds = %.preheader
+  %14 = icmp eq i32 %passNum.04, 0
+  %15 = icmp eq i32 %passNum.04, 2
+  %16 = icmp eq i32 %passNum.04, 1
+  br label %18
+
+._crit_edge.loopexit:                             ; preds = %.loopexit
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %.preheader
+  %17 = add nuw nsw i32 %passNum.04, 1
+  %exitcond5 = icmp eq i32 %17, 3
+  br i1 %exitcond5, label %95, label %.preheader
+
+; <label>:18                                      ; preds = %.lr.ph, %.loopexit
+  %i.03 = phi i32 [ 0, %.lr.ph ], [ %., %.loopexit ]
+  %19 = zext i32 %i.03 to i64
+  %20 = getelementptr inbounds i8, i8* %13, i64 %19
+  %21 = load i8, i8* %20, align 1, !tbaa !9
+  %22 = zext i8 %21 to i32
+  switch i32 %22, label %.loopexit [
+    i32 0, label %23
+    i32 1, label %48
+    i32 2, label %68
+  ]
+
+; <label>:23                                      ; preds = %18
+  br i1 %14, label %24, label %38
+
+; <label>:24                                      ; preds = %23
+  %25 = tail call i8* @bootstrap_malloc(i64 16) #2
+  %26 = getelementptr inbounds i8, i8* %20, i64 3
+  %27 = load i8, i8* %26, align 1, !tbaa !11
+  %28 = zext i8 %27 to i32
+  %29 = bitcast i8* %25 to i32*
+  store i32 %28, i32* %29, align 4, !tbaa !13
+  %30 = getelementptr inbounds i8, i8* %20, i64 2
+  %31 = load i8, i8* %30, align 1, !tbaa !15
+  %32 = zext i8 %31 to i32
+  %33 = getelementptr inbounds i8, i8* %25, i64 4
+  %34 = bitcast i8* %33 to i32*
+  store i32 %32, i32* %34, align 4, !tbaa !16
+  %35 = load i64, i64* bitcast (%struct.APIC_SMPThreads** @smp_threads to i64*), align 8, !tbaa !1
+  %36 = getelementptr inbounds i8, i8* %25, i64 8
+  %37 = bitcast i8* %36 to i64*
+  store i64 %35, i64* %37, align 8, !tbaa !17
+  store i8* %25, i8** bitcast (%struct.APIC_SMPThreads** @smp_threads to i8**), align 8, !tbaa !1
+  br label %.loopexit
+
+; <label>:38                                      ; preds = %23
+  %39 = getelementptr inbounds i8, i8* %20, i64 3
+  %40 = load i8, i8* %39, align 1, !tbaa !11
+  %41 = tail call zeroext i8 @APIC_GetID() #2
+  %42 = icmp ne i8 %40, %41
+  %or.cond = and i1 %15, %42
+  br i1 %or.cond, label %43, label %.loopexit
+
+; <label>:43                                      ; preds = %38
+  %44 = load i8, i8* %39, align 1, !tbaa !11
+  %45 = zext i8 %44 to i32
+  tail call void @APIC_SendIPI(i32 %45, i8 zeroext 0, i8 zeroext 5) #2
+  tail call void @PIT_Sleep(i32 10) #2
+  %46 = load i8, i8* %39, align 1, !tbaa !11
+  %47 = zext i8 %46 to i32
+  tail call void @APIC_SendIPI(i32 %47, i8 zeroext 15, i8 zeroext 6) #2
+  tail call void @SMP_WaitForCoreCountIncrement() #2
+  br label %.loopexit
+
+; <label>:48                                      ; preds = %18
+  br i1 %14, label %49, label %.loopexit
+
+; <label>:49                                      ; preds = %48
+  %50 = getelementptr inbounds i8, i8* %20, i64 4
+  %51 = bitcast i8* %50 to i32*
+  %52 = load i32, i32* %51, align 4, !tbaa !18
+  %53 = zext i32 %52 to i64
+  %54 = inttoptr i64 %53 to i8*
+  %55 = tail call i8* @GetVirtualAddress(i32 1, i8* %54) #2
+  %56 = ptrtoint i8* %55 to i64
+  %57 = getelementptr inbounds i8, i8* %20, i64 8
+  %58 = bitcast i8* %57 to i32*
+  %59 = load i32, i32* %58, align 4, !tbaa !20
+  %60 = tail call zeroext i8 @IOAPIC_Initialize(i64 %56, i32 %59) #2
+  br label %61
+
+; <label>:61                                      ; preds = %61, %49
+  %j.02 = phi i32 [ 0, %49 ], [ %67, %61 ]
+  %62 = trunc i32 %j.02 to i8
+  %63 = add nuw nsw i32 %j.02, 32
+  %64 = trunc i32 %63 to i8
+  %65 = tail call zeroext i8 @APIC_GetID() #2
+  %66 = zext i8 %65 to i64
+  tail call void @IOAPIC_MapIRQ(i8 zeroext %62, i8 zeroext %64, i64 %66, i8 zeroext 0, i8 zeroext 0, i8 zeroext 0) #2
+  %67 = add nuw nsw i32 %j.02, 1
+  %exitcond = icmp eq i32 %67, 16
+  br i1 %exitcond, label %.loopexit.loopexit, label %61
+
+; <label>:68                                      ; preds = %18
+  br i1 %16, label %69, label %.loopexit
+
+; <label>:69                                      ; preds = %68
+  %70 = getelementptr inbounds i8, i8* %20, i64 8
+  %71 = bitcast i8* %70 to i16*
+  %72 = load i16, i16* %71, align 2, !tbaa !21
+  %73 = getelementptr inbounds i8, i8* %20, i64 3
+  %74 = load i8, i8* %73, align 1, !tbaa !24
+  %75 = icmp eq i8 %74, 0
+  %76 = getelementptr inbounds i8, i8* %20, i64 4
+  %77 = bitcast i8* %76 to i32*
+  %78 = load i32, i32* %77, align 4, !tbaa !25
+  %79 = trunc i32 %78 to i8
+  %80 = tail call zeroext i8 @APIC_GetID() #2
+  %81 = zext i8 %80 to i64
+  %82 = lshr i16 %72, 3
+  %.tr = trunc i16 %82 to i8
+  %83 = and i8 %.tr, 1
+  %84 = lshr i16 %72, 1
+  %.tr6 = trunc i16 %84 to i8
+  %85 = and i8 %.tr6, 1
+  br i1 %75, label %86, label %87
+
+; <label>:86                                      ; preds = %69
+  tail call void @IOAPIC_MapIRQ(i8 zeroext %79, i8 zeroext 32, i64 %81, i8 zeroext %83, i8 zeroext %85, i8 zeroext 0) #2
+  br label %.loopexit
+
+; <label>:87                                      ; preds = %69
+  tail call void @IOAPIC_MapIRQ(i8 zeroext %79, i8 zeroext %74, i64 %81, i8 zeroext %83, i8 zeroext %85, i8 zeroext 0) #2
+  br label %.loopexit
+
+.loopexit.loopexit:                               ; preds = %61
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %86, %87, %24, %43, %38, %48, %68, %18
+  %88 = getelementptr inbounds i8, i8* %20, i64 1
+  %89 = load i8, i8* %88, align 1, !tbaa !26
+  %90 = zext i8 %89 to i32
+  %91 = add i32 %90, %i.03
+  %92 = icmp eq i8 %89, 0
+  %93 = add i32 %91, 8
+  %. = select i1 %92, i32 %93, i32 %91
+  %94 = icmp ult i32 %., %11
+  br i1 %94, label %18, label %._crit_edge.loopexit
+
+; <label>:95                                      ; preds = %._crit_edge
+  tail call void asm sideeffect "sti", "~{dirflag},~{fpsr},~{flags}"() #3, !srcloc !27
+  tail call void @APIC_CallibrateTimer() #2
+  br label %97
+
+; <label>:96                                      ; preds = %3
+  tail call void @bootstrap_kernel_panic(i8 zeroext -1) #2
+  br label %97
+
+; <label>:97                                      ; preds = %96, %95, %0
+  %.1 = phi i32 [ -1, %0 ], [ 0, %95 ], [ -1, %96 ]
+  ret i32 %.1
+}
+
+; Function Attrs: noredzone
+declare void @CPUID_RequestInfo(i32, i32) #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @CPUID_FeatureIsAvailable(i32, i32) #1
+
+; Function Attrs: noredzone
+declare void @APIC_LockPIC() #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @APIC_LocalInitialize() #1
+
+; Function Attrs: noredzone
+declare i8* @ACPITables_FindTable(i8*, i32) #1
+
+; Function Attrs: noredzone
+declare void @PIT_Initialize() #1
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @APIC_GetID() #1
+
+; Function Attrs: noredzone
+declare void @APIC_SendIPI(i32, i8 zeroext, i8 zeroext) #1
+
+; Function Attrs: noredzone
+declare void @PIT_Sleep(i32) #1
+
+; Function Attrs: noredzone
+declare void @SMP_WaitForCoreCountIncrement() #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @IOAPIC_Initialize(i64, i32) #1
+
+; Function Attrs: noredzone
+declare i8* @GetVirtualAddress(i32, i8*) #1
+
+; Function Attrs: noredzone
+declare void @IOAPIC_MapIRQ(i8 zeroext, i8 zeroext, i64, i8 zeroext, i8 zeroext, i8 zeroext) #1
+
+; Function Attrs: noredzone
+declare void @APIC_CallibrateTimer() #1
+
+; Function Attrs: noredzone
+declare void @bootstrap_kernel_panic(i8 zeroext) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nobuiltin noredzone nounwind }
+attributes #3 = { nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !8, i64 4}
+!6 = !{!"", !7, i64 0, !8, i64 36, !8, i64 40, !3, i64 44}
+!7 = !{!"", !3, i64 0, !8, i64 4, !3, i64 8, !3, i64 9, !3, i64 10, !3, i64 16, !8, i64 24, !8, i64 28, !8, i64 32}
+!8 = !{!"int", !3, i64 0}
+!9 = !{!10, !3, i64 0}
+!10 = !{!"", !3, i64 0, !3, i64 1}
+!11 = !{!12, !3, i64 3}
+!12 = !{!"", !10, i64 0, !3, i64 2, !3, i64 3, !8, i64 4}
+!13 = !{!14, !8, i64 0}
+!14 = !{!"APIC_SMPThreads", !8, i64 0, !8, i64 4, !2, i64 8}
+!15 = !{!12, !3, i64 2}
+!16 = !{!14, !8, i64 4}
+!17 = !{!14, !2, i64 8}
+!18 = !{!19, !8, i64 4}
+!19 = !{!"", !10, i64 0, !3, i64 2, !3, i64 3, !8, i64 4, !8, i64 8}
+!20 = !{!19, !8, i64 8}
+!21 = !{!22, !23, i64 8}
+!22 = !{!"", !10, i64 0, !3, i64 2, !3, i64 3, !8, i64 4, !23, i64 8}
+!23 = !{!"short", !3, i64 0}
+!24 = !{!22, !3, i64 3}
+!25 = !{!22, !8, i64 4}
+!26 = !{!10, !3, i64 1}
+!27 = !{i32 3879}

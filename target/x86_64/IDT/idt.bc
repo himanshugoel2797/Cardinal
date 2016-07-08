@@ -1,0 +1,379 @@
+; ModuleID = 'IDT/idt.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.IDTPtr = type <{ i16, i8* }>
+%struct.IDTEntry = type { i16, i16, i8, i8, i16, i32, i32 }
+%struct.Registers = type { i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64, i64 }
+
+@idt_table = internal global %struct.IDTPtr zeroinitializer, align 2
+@idt_entries = internal global [256 x %struct.IDTEntry] zeroinitializer, align 16
+@table_initialized = internal unnamed_addr global i1 false
+@idt_handler_calls = internal global [256 x void (%struct.Registers*)*] zeroinitializer, align 16
+@idt_handlers = internal global [256 x [32 x i8]] zeroinitializer, align 16
+@int_insts = internal unnamed_addr global [4 x i8] zeroinitializer, align 1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_Initialize() #0 {
+  store i16 4095, i16* getelementptr inbounds (%struct.IDTPtr, %struct.IDTPtr* @idt_table, i64 0, i32 0), align 2, !tbaa !1
+  store i8* bitcast ([256 x %struct.IDTEntry]* @idt_entries to i8*), i8** getelementptr inbounds (%struct.IDTPtr, %struct.IDTPtr* @idt_table, i64 0, i32 1), align 2, !tbaa !7
+  tail call void asm sideeffect "cli", "~{dirflag},~{fpsr},~{flags}"() #2, !srcloc !8
+  tail call void asm sideeffect "lidt (%rax)", "{ax},~{dirflag},~{fpsr},~{flags}"(i64 ptrtoint (%struct.IDTPtr* @idt_table to i64)) #2, !srcloc !9
+  %.b = load i1, i1* @table_initialized, align 1
+  br i1 %.b, label %.loopexit, label %1
+
+; <label>:1                                       ; preds = %0
+  store i1 true, i1* @table_initialized, align 1
+  br label %2
+
+; <label>:2                                       ; preds = %2, %1
+  %indvars.iv7 = phi i64 [ 0, %1 ], [ %indvars.iv.next8.1, %2 ]
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 0), align 16, !tbaa !10
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 4), align 2, !tbaa !13
+  store volatile i32 0, i32* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 5), align 8, !tbaa !14
+  store volatile i8 0, i8* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 3), align 1, !tbaa !15
+  store volatile i8 0, i8* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 2), align 4, !tbaa !16
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 1), align 2, !tbaa !17
+  %3 = getelementptr inbounds [256 x void (%struct.Registers*)*], [256 x void (%struct.Registers*)*]* @idt_handler_calls, i64 0, i64 %indvars.iv7
+  store volatile void (%struct.Registers*)* null, void (%struct.Registers*)** %3, align 16, !tbaa !18
+  %indvars.iv.next8 = or i64 %indvars.iv7, 1
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 0), align 16, !tbaa !10
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 4), align 2, !tbaa !13
+  store volatile i32 0, i32* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 5), align 8, !tbaa !14
+  store volatile i8 0, i8* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 3), align 1, !tbaa !15
+  store volatile i8 0, i8* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 2), align 4, !tbaa !16
+  store volatile i16 0, i16* getelementptr inbounds ([256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 0, i32 1), align 2, !tbaa !17
+  %4 = getelementptr inbounds [256 x void (%struct.Registers*)*], [256 x void (%struct.Registers*)*]* @idt_handler_calls, i64 0, i64 %indvars.iv.next8
+  store volatile void (%struct.Registers*)* null, void (%struct.Registers*)** %4, align 8, !tbaa !18
+  %indvars.iv.next8.1 = add nsw i64 %indvars.iv7, 2
+  %exitcond9.1 = icmp eq i64 %indvars.iv.next8.1, 256
+  br i1 %exitcond9.1, label %.preheader.preheader, label %2
+
+.preheader.preheader:                             ; preds = %2
+  br label %.preheader
+
+.preheader:                                       ; preds = %.preheader.preheader, %IDT_FillSWInterruptHandler.exit
+  %indvars.iv = phi i64 [ %indvars.iv.next, %IDT_FillSWInterruptHandler.exit ], [ 0, %.preheader.preheader ]
+  %i1.04 = phi i32 [ %72, %IDT_FillSWInterruptHandler.exit ], [ 0, %.preheader.preheader ]
+  %5 = icmp eq i64 %indvars.iv, 8
+  %6 = trunc i64 %indvars.iv to i32
+  %i1.0.off = add nsw i32 %6, -10
+  %7 = icmp ult i32 %i1.0.off, 5
+  %or.cond = or i1 %5, %7
+  %8 = zext i1 %or.cond to i8
+  %pushesToStack.1 = xor i8 %8, 1
+  %sext = shl i64 %indvars.iv, 32
+  %9 = ashr exact i64 %sext, 32
+  %10 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 0
+  %11 = trunc i32 %i1.04 to i8
+  %switch.tableidx = add nsw i32 %6, -8
+  %12 = icmp ult i32 %switch.tableidx, 7
+  br i1 %12, label %switch.hole_check, label %13
+
+; <label>:13                                      ; preds = %switch.hole_check, %.preheader
+  store i8 106, i8* %10, align 16, !tbaa !19
+  %14 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 1
+  store i8 %pushesToStack.1, i8* %14, align 1, !tbaa !19
+  br label %IDT_FillSWInterruptHandler.exit
+
+switch.hole_check:                                ; preds = %.preheader
+  %switch.maskindex = trunc i32 %switch.tableidx to i8
+  %switch.shifted = lshr i8 125, %switch.maskindex
+  %15 = and i8 %switch.shifted, 1
+  %switch.lobit = icmp eq i8 %15, 0
+  br i1 %switch.lobit, label %13, label %IDT_FillSWInterruptHandler.exit
+
+IDT_FillSWInterruptHandler.exit:                  ; preds = %switch.hole_check, %13
+  %index.0.i = phi i32 [ 2, %13 ], [ 0, %switch.hole_check ]
+  %16 = or i32 %index.0.i, 1
+  %17 = zext i32 %index.0.i to i64
+  %18 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %17
+  store i8 106, i8* %18, align 2, !tbaa !19
+  %19 = add nuw nsw i32 %16, 1
+  %20 = zext i32 %16 to i64
+  %21 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %20
+  store i8 %11, i8* %21, align 1, !tbaa !19
+  %22 = add nuw nsw i32 %16, 2
+  %23 = zext i32 %19 to i64
+  %24 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %23
+  store i8 80, i8* %24, align 2, !tbaa !19
+  %25 = add nuw nsw i32 %16, 3
+  %26 = zext i32 %22 to i64
+  %27 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %26
+  store i8 72, i8* %27, align 1, !tbaa !19
+  %28 = or i32 %index.0.i, 5
+  %29 = zext i32 %25 to i64
+  %30 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %29
+  store i8 -72, i8* %30, align 2, !tbaa !19
+  %31 = add nuw nsw i32 %28, 1
+  %32 = zext i32 %28 to i64
+  %33 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %32
+  store i8 trunc (i64 and (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 255) to i8), i8* %33, align 1, !tbaa !19
+  %34 = add nuw nsw i32 %28, 2
+  %35 = zext i32 %31 to i64
+  %36 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %35
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 8), i64 255) to i8), i8* %36, align 2, !tbaa !19
+  %37 = add nuw nsw i32 %28, 3
+  %38 = zext i32 %34 to i64
+  %39 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %38
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 16), i64 255) to i8), i8* %39, align 1, !tbaa !19
+  %40 = add nuw nsw i32 %28, 4
+  %41 = zext i32 %37 to i64
+  %42 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %41
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 24), i64 255) to i8), i8* %42, align 2, !tbaa !19
+  %43 = add nuw nsw i32 %28, 5
+  %44 = zext i32 %40 to i64
+  %45 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %44
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 32), i64 255) to i8), i8* %45, align 1, !tbaa !19
+  %46 = add nuw nsw i32 %28, 6
+  %47 = zext i32 %43 to i64
+  %48 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %47
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 40), i64 255) to i8), i8* %48, align 2, !tbaa !19
+  %49 = add nuw nsw i32 %28, 7
+  %50 = zext i32 %46 to i64
+  %51 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %50
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 48), i64 255) to i8), i8* %51, align 1, !tbaa !19
+  %52 = or i32 %index.0.i, 13
+  %53 = zext i32 %49 to i64
+  %54 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %53
+  store i8 trunc (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 56) to i8), i8* %54, align 2, !tbaa !19
+  %55 = add nuw nsw i32 %52, 1
+  %56 = zext i32 %52 to i64
+  %57 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %56
+  store i8 80, i8* %57, align 1, !tbaa !19
+  %58 = zext i32 %55 to i64
+  %59 = getelementptr inbounds [256 x [32 x i8]], [256 x [32 x i8]]* @idt_handlers, i64 0, i64 %9, i64 %58
+  store i8 -61, i8* %59, align 2, !tbaa !19
+  %60 = ptrtoint i8* %10 to i64
+  %61 = trunc i64 %60 to i16
+  %62 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 0
+  store volatile i16 %61, i16* %62, align 16, !tbaa !10
+  %63 = lshr i64 %60, 16
+  %64 = trunc i64 %63 to i16
+  %65 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 4
+  store volatile i16 %64, i16* %65, align 2, !tbaa !13
+  %66 = lshr i64 %60, 32
+  %67 = trunc i64 %66 to i32
+  %68 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 5
+  store volatile i32 %67, i32* %68, align 8, !tbaa !14
+  %69 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 3
+  store volatile i8 -114, i8* %69, align 1, !tbaa !15
+  %70 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 2
+  store volatile i8 0, i8* %70, align 4, !tbaa !16
+  %71 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %indvars.iv, i32 1
+  store volatile i16 8, i16* %71, align 2, !tbaa !17
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %72 = add nuw nsw i32 %i1.04, 1
+  %exitcond = icmp eq i64 %indvars.iv.next, 256
+  br i1 %exitcond, label %.loopexit.loopexit, label %.preheader
+
+.loopexit.loopexit:                               ; preds = %IDT_FillSWInterruptHandler.exit
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_SetEntry(i8 zeroext %index, i64 %base, i16 zeroext %selector, i8 zeroext %flags, i8 zeroext %ist) #0 {
+  %1 = trunc i64 %base to i16
+  %2 = zext i8 %index to i64
+  %3 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 0
+  store volatile i16 %1, i16* %3, align 16, !tbaa !10
+  %4 = lshr i64 %base, 16
+  %5 = trunc i64 %4 to i16
+  %6 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 4
+  store volatile i16 %5, i16* %6, align 2, !tbaa !13
+  %7 = lshr i64 %base, 32
+  %8 = trunc i64 %7 to i32
+  %9 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 5
+  store volatile i32 %8, i32* %9, align 8, !tbaa !14
+  %10 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 3
+  store volatile i8 %flags, i8* %10, align 1, !tbaa !15
+  %11 = and i8 %ist, 7
+  %12 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 2
+  store volatile i8 %11, i8* %12, align 4, !tbaa !16
+  %13 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %2, i32 1
+  store volatile i16 %selector, i16* %13, align 2, !tbaa !17
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_FillSWInterruptHandler(i8* nocapture %idt_handler, i8 zeroext %intNum, i8 zeroext %pushToStack) #0 {
+  %1 = icmp eq i8 %pushToStack, 0
+  br i1 %1, label %4, label %2
+
+; <label>:2                                       ; preds = %0
+  store i8 106, i8* %idt_handler, align 1, !tbaa !19
+  %3 = getelementptr inbounds i8, i8* %idt_handler, i64 1
+  store i8 %pushToStack, i8* %3, align 1, !tbaa !19
+  br label %4
+
+; <label>:4                                       ; preds = %0, %2
+  %index.0 = phi i32 [ 2, %2 ], [ 0, %0 ]
+  %5 = or i32 %index.0, 1
+  %6 = zext i32 %index.0 to i64
+  %7 = getelementptr inbounds i8, i8* %idt_handler, i64 %6
+  store i8 106, i8* %7, align 1, !tbaa !19
+  %8 = add nuw nsw i32 %5, 1
+  %9 = zext i32 %5 to i64
+  %10 = getelementptr inbounds i8, i8* %idt_handler, i64 %9
+  store i8 %intNum, i8* %10, align 1, !tbaa !19
+  %11 = add nuw nsw i32 %5, 2
+  %12 = zext i32 %8 to i64
+  %13 = getelementptr inbounds i8, i8* %idt_handler, i64 %12
+  store i8 80, i8* %13, align 1, !tbaa !19
+  %14 = add nuw nsw i32 %5, 3
+  %15 = zext i32 %11 to i64
+  %16 = getelementptr inbounds i8, i8* %idt_handler, i64 %15
+  store i8 72, i8* %16, align 1, !tbaa !19
+  %17 = or i32 %index.0, 5
+  %18 = zext i32 %14 to i64
+  %19 = getelementptr inbounds i8, i8* %idt_handler, i64 %18
+  store i8 -72, i8* %19, align 1, !tbaa !19
+  %20 = add nuw nsw i32 %17, 1
+  %21 = zext i32 %17 to i64
+  %22 = getelementptr inbounds i8, i8* %idt_handler, i64 %21
+  store i8 trunc (i64 and (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 255) to i8), i8* %22, align 1, !tbaa !19
+  %23 = add nuw nsw i32 %17, 2
+  %24 = zext i32 %20 to i64
+  %25 = getelementptr inbounds i8, i8* %idt_handler, i64 %24
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 8), i64 255) to i8), i8* %25, align 1, !tbaa !19
+  %26 = add nuw nsw i32 %17, 3
+  %27 = zext i32 %23 to i64
+  %28 = getelementptr inbounds i8, i8* %idt_handler, i64 %27
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 16), i64 255) to i8), i8* %28, align 1, !tbaa !19
+  %29 = add nuw nsw i32 %17, 4
+  %30 = zext i32 %26 to i64
+  %31 = getelementptr inbounds i8, i8* %idt_handler, i64 %30
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 24), i64 255) to i8), i8* %31, align 1, !tbaa !19
+  %32 = add nuw nsw i32 %17, 5
+  %33 = zext i32 %29 to i64
+  %34 = getelementptr inbounds i8, i8* %idt_handler, i64 %33
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 32), i64 255) to i8), i8* %34, align 1, !tbaa !19
+  %35 = add nuw nsw i32 %17, 6
+  %36 = zext i32 %32 to i64
+  %37 = getelementptr inbounds i8, i8* %idt_handler, i64 %36
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 40), i64 255) to i8), i8* %37, align 1, !tbaa !19
+  %38 = add nuw nsw i32 %17, 7
+  %39 = zext i32 %35 to i64
+  %40 = getelementptr inbounds i8, i8* %idt_handler, i64 %39
+  store i8 trunc (i64 and (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 48), i64 255) to i8), i8* %40, align 1, !tbaa !19
+  %41 = or i32 %index.0, 13
+  %42 = zext i32 %38 to i64
+  %43 = getelementptr inbounds i8, i8* %idt_handler, i64 %42
+  store i8 trunc (i64 lshr (i64 ptrtoint (void ()* @IDT_DefaultHandler to i64), i64 56) to i8), i8* %43, align 1, !tbaa !19
+  %44 = add nuw nsw i32 %41, 1
+  %45 = zext i32 %41 to i64
+  %46 = getelementptr inbounds i8, i8* %idt_handler, i64 %45
+  store i8 80, i8* %46, align 1, !tbaa !19
+  %47 = zext i32 %44 to i64
+  %48 = getelementptr inbounds i8, i8* %idt_handler, i64 %47
+  store i8 -61, i8* %48, align 1, !tbaa !19
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_ChangeEntry(i8 zeroext %index, i16 zeroext %selector, i8 zeroext %flags, i8 zeroext %ist) #0 {
+  %1 = zext i8 %index to i64
+  %2 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %1, i32 3
+  store volatile i8 %flags, i8* %2, align 1, !tbaa !15
+  %3 = and i8 %ist, 7
+  %4 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %1, i32 2
+  store volatile i8 %3, i8* %4, align 4, !tbaa !16
+  %5 = getelementptr inbounds [256 x %struct.IDTEntry], [256 x %struct.IDTEntry]* @idt_entries, i64 0, i64 %1, i32 1
+  store volatile i16 %selector, i16* %5, align 2, !tbaa !17
+  ret void
+}
+
+; Function Attrs: naked noinline noredzone nounwind uwtable
+define void @IDT_DefaultHandler() #1 {
+  tail call void asm sideeffect "pushq %rbx\0A\09pushq %rcx\0A\09pushq %rdx\0A\09pushq %rbp\0A\09pushq %rsi\0A\09pushq %rdi\0A\09pushq %r8\0A\09pushq %r9\0A\09pushq %r10\0A\09pushq %r11\0A\09pushq %r12\0A\09pushq %r13\0A\09pushq %r14\0A\09pushq %r15\0A\09movq %rsp, %rdi\0A\09pushq %rdi\0A\09movq %rsp, %rdi\0A\09callq IDT_MainHandler\0A\09popq %rdi\0A\09popq %r15\0A\09popq %r14\0A\09popq %r13\0A\09popq %r12\0A\09popq %r11\0A\09popq %r10\0A\09popq %r9\0A\09popq %r8\0A\09popq %rdi\0A\09popq %rsi\0A\09popq %rbp\0A\09popq %rdx\0A\09popq %rcx\0A\09popq %rbx\0A\09popq %rax\0A\09add $$16, %rsp\0A\09iretq\0A\09", "~{dirflag},~{fpsr},~{flags}"() #2, !srcloc !20
+  unreachable
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_MainHandler(%struct.Registers* %regs) #0 {
+  %1 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 16
+  %2 = load i64, i64* %1, align 1, !tbaa !21
+  %3 = getelementptr inbounds [256 x void (%struct.Registers*)*], [256 x void (%struct.Registers*)*]* @idt_handler_calls, i64 0, i64 %2
+  %4 = load volatile void (%struct.Registers*)*, void (%struct.Registers*)** %3, align 8, !tbaa !18
+  %5 = icmp eq void (%struct.Registers*)* %4, null
+  br i1 %5, label %8, label %6
+
+; <label>:6                                       ; preds = %0
+  %7 = load volatile void (%struct.Registers*)*, void (%struct.Registers*)** %3, align 8, !tbaa !18
+  tail call void %7(%struct.Registers* %regs) #3
+  br label %13
+
+; <label>:8                                       ; preds = %0
+  %9 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 17
+  %10 = load i64, i64* %9, align 1, !tbaa !24
+  %11 = getelementptr inbounds %struct.Registers, %struct.Registers* %regs, i64 0, i32 18
+  %12 = load i64, i64* %11, align 1, !tbaa !25
+  tail call void asm sideeffect "hlt", "{ax},{bx},{cx},~{dirflag},~{fpsr},~{flags}"(i64 %2, i64 %10, i64 %12) #2, !srcloc !26
+  br label %13
+
+; <label>:13                                      ; preds = %8, %6
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_RegisterHandler(i8 zeroext %intNum, void (%struct.Registers*)* %handler) #0 {
+  %1 = zext i8 %intNum to i64
+  %2 = getelementptr inbounds [256 x void (%struct.Registers*)*], [256 x void (%struct.Registers*)*]* @idt_handler_calls, i64 0, i64 %1
+  store volatile void (%struct.Registers*)* %handler, void (%struct.Registers*)** %2, align 8, !tbaa !18
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @IDT_RaiseInterrupt(i32 %int_no) #0 {
+  %1 = icmp ugt i32 %int_no, 255
+  br i1 %1, label %4, label %2
+
+; <label>:2                                       ; preds = %0
+  store i8 -51, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @int_insts, i64 0, i64 0), align 1, !tbaa !19
+  %3 = trunc i32 %int_no to i8
+  store i8 %3, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @int_insts, i64 0, i64 1), align 1, !tbaa !19
+  store i8 -61, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @int_insts, i64 0, i64 2), align 1, !tbaa !19
+  tail call void bitcast ([4 x i8]* @int_insts to void ()*)() #3
+  br label %4
+
+; <label>:4                                       ; preds = %0, %2
+  ret void
+}
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { naked noinline noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !3, i64 0}
+!2 = !{!"", !3, i64 0, !6, i64 2}
+!3 = !{!"short", !4, i64 0}
+!4 = !{!"omnipotent char", !5, i64 0}
+!5 = !{!"Simple C/C++ TBAA"}
+!6 = !{!"any pointer", !4, i64 0}
+!7 = !{!2, !6, i64 2}
+!8 = !{i32 1307}
+!9 = !{i32 1336}
+!10 = !{!11, !3, i64 0}
+!11 = !{!"", !3, i64 0, !3, i64 2, !4, i64 4, !4, i64 5, !3, i64 6, !12, i64 8, !12, i64 12}
+!12 = !{!"int", !4, i64 0}
+!13 = !{!11, !3, i64 6}
+!14 = !{!11, !12, i64 8}
+!15 = !{!11, !4, i64 5}
+!16 = !{!11, !4, i64 4}
+!17 = !{!11, !3, i64 2}
+!18 = !{!6, !6, i64 0}
+!19 = !{!4, !4, i64 0}
+!20 = !{i32 4163, i32 4176, i32 4201, i32 4226, i32 4251, i32 4276, i32 4301, i32 4325, i32 4349, i32 4374, i32 4399, i32 4424, i32 4449, i32 4474, i32 4499, i32 4529, i32 4554, i32 4584, i32 4620, i32 4644, i32 4668, i32 4692, i32 4716, i32 4740, i32 4764, i32 4788, i32 4811, i32 4834, i32 4858, i32 4882, i32 4906, i32 4930, i32 4954, i32 4978, i32 5002, i32 5030, i32 5050}
+!21 = !{!22, !23, i64 128}
+!22 = !{!"", !23, i64 0, !23, i64 8, !23, i64 16, !23, i64 24, !23, i64 32, !23, i64 40, !23, i64 48, !23, i64 56, !23, i64 64, !23, i64 72, !23, i64 80, !23, i64 88, !23, i64 96, !23, i64 104, !23, i64 112, !23, i64 120, !23, i64 128, !23, i64 136, !23, i64 144, !23, i64 152, !23, i64 160, !23, i64 168, !23, i64 176}
+!23 = !{!"long", !4, i64 0}
+!24 = !{!22, !23, i64 136}
+!25 = !{!22, !23, i64 144}
+!26 = !{i32 5271}

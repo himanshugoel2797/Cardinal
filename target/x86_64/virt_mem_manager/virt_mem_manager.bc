@@ -1,0 +1,3347 @@
+; ModuleID = 'virt_mem_manager/virt_mem_manager.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.VirtMemManData = type { i64*, i64*, i8, i64* }
+
+@virtMemData = internal unnamed_addr global %struct.VirtMemManData* null, align 8
+@tmp_corePML = internal unnamed_addr global i64* null, align 8
+@kernel_pdpt = internal unnamed_addr global i64* null, align 8
+@kernel_pdpt_paddr = internal unnamed_addr global i64* null, align 8
+@coreLocalSpace = internal unnamed_addr global i64 0, align 8
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_InitializeBootstrap() #0 {
+  %1 = tail call i8* @bootstrap_malloc(i64 32) #3
+  store i8* %1, i8** bitcast (%struct.VirtMemManData** @virtMemData to i8**), align 8, !tbaa !1
+  %2 = getelementptr inbounds i8, i8* %1, i64 8
+  %3 = bitcast i8* %2 to i64**
+  store volatile i64* inttoptr (i64 -8589930496 to i64*), i64** %3, align 8, !tbaa !5
+  %4 = load i64*, i64** @tmp_corePML, align 8, !tbaa !1
+  %5 = icmp eq i64* %4, null
+  %6 = ptrtoint i64* %4 to i64
+  br i1 %5, label %7, label %16
+
+; <label>:7                                       ; preds = %0
+  %8 = tail call i8* @bootstrap_malloc(i64 8096) #3
+  store i8* %8, i8** bitcast (i64** @tmp_corePML to i8**), align 8, !tbaa !1
+  %9 = ptrtoint i8* %8 to i64
+  %10 = and i64 %9, 4095
+  %11 = icmp eq i64 %10, 0
+  br i1 %11, label %16, label %12
+
+; <label>:12                                      ; preds = %7
+  %13 = add i64 %9, 4096
+  %14 = sub i64 %13, %10
+  %15 = inttoptr i64 %14 to i64*
+  store i64* %15, i64** @tmp_corePML, align 8, !tbaa !1
+  br label %16
+
+; <label>:16                                      ; preds = %7, %12, %0
+  %17 = phi i64 [ %9, %7 ], [ %14, %12 ], [ %6, %0 ]
+  %18 = load i64*, i64** bitcast (%struct.VirtMemManData** @virtMemData to i64**), align 8, !tbaa !1
+  store i64 %17, i64* %18, align 8, !tbaa !7
+  %19 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %20 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %19, i64 0, i32 2
+  store volatile i8 0, i8* %20, align 1, !tbaa !8
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_Initialize() #0 {
+  tail call void @CPUID_RequestInfo(i32 -2147483647, i32 0) #3
+  %1 = tail call zeroext i8 @CPUID_FeatureIsAvailable(i32 3, i32 67108864) #3
+  %2 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %3 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %2, i64 0, i32 2
+  store volatile i8 %1, i8* %3, align 1, !tbaa !8
+  tail call void asm sideeffect "wrmsr", "{ax},{dx},{cx},~{dirflag},~{fpsr},~{flags}"(i32 16778246, i32 0, i32 631) #4, !srcloc !9
+  %4 = tail call i64 @MemMan_Alloc() #3
+  %5 = inttoptr i64 %4 to i8*
+  %6 = tail call i8* @GetVirtualAddress(i32 0, i8* %5) #3
+  %7 = bitcast i8* %6 to i64*
+  %8 = tail call i8* @memset(i8* %6, i32 0, i64 4096) #3
+  %9 = load i64*, i64** @kernel_pdpt, align 8, !tbaa !1
+  %10 = icmp eq i64* %9, null
+  br i1 %10, label %11, label %614
+
+; <label>:11                                      ; preds = %0
+  %12 = tail call i64 @MemMan_Alloc() #3
+  %13 = inttoptr i64 %12 to i8*
+  %14 = inttoptr i64 %12 to i64*
+  store i64* %14, i64** @kernel_pdpt_paddr, align 8, !tbaa !1
+  %15 = tail call i8* @GetVirtualAddress(i32 0, i8* %13) #3
+  store i8* %15, i8** bitcast (i64** @kernel_pdpt to i8**), align 8, !tbaa !1
+  %16 = getelementptr inbounds i8, i8* %6, i64 4088
+  %17 = bitcast i8* %16 to i64*
+  %18 = or i64 %12, 3
+  store i64 %18, i64* %17, align 8, !tbaa !10
+  %19 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %20 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %19, i64 0, i32 2
+  %21 = load volatile i8, i8* %20, align 1, !tbaa !8
+  %22 = icmp eq i8 %21, 0
+  br i1 %22, label %.preheader.i.preheader, label %27
+
+.preheader.i.preheader:                           ; preds = %11
+  br label %.preheader.i
+
+.preheader.i:                                     ; preds = %.preheader.i.preheader, %.preheader.i
+  %i.05.i = phi i64 [ %26, %.preheader.i ], [ 0, %.preheader.i.preheader ]
+  %23 = shl i64 %i.05.i, 21
+  %24 = add nuw nsw i64 %23, -1073741824
+  %25 = add nuw nsw i64 %23, 1073741824
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %24, i64 %25, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %26 = add nuw nsw i64 %i.05.i, 1
+  %exitcond.i = icmp eq i64 %26, 512
+  br i1 %exitcond.i, label %VirtMemMan_MapHPage.exit.loopexit, label %.preheader.i
+
+; <label>:27                                      ; preds = %11
+  %28 = and i64 %12, 1152921504606842880
+  %29 = icmp eq i64 %28, 0
+  br i1 %29, label %30, label %VirtMemMan_SetupPDPTEntry.exit.i
+
+; <label>:30                                      ; preds = %27
+  %31 = tail call i64 @MemMan_Alloc() #3
+  %32 = or i64 %31, 7
+  store i64 %32, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i
+
+VirtMemMan_SetupPDPTEntry.exit.i:                 ; preds = %30, %27
+  %33 = phi i64 [ %18, %27 ], [ %32, %30 ]
+  %34 = and i64 %33, 1152921504606842880
+  %35 = inttoptr i64 %34 to i8*
+  %36 = tail call i8* @GetVirtualAddress(i32 0, i8* %35) #3
+  %37 = getelementptr inbounds i8, i8* %36, i64 4088
+  %38 = bitcast i8* %37 to i64*
+  store i64 1073741955, i64* %38, align 8, !tbaa !10
+  %39 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %40 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %39, i64 0, i32 1
+  %41 = load volatile i64*, i64** %40, align 8, !tbaa !5
+  %42 = icmp eq i64* %41, %7
+  br i1 %42, label %43, label %VirtMemMan_MapHPage.exit
+
+; <label>:43                                      ; preds = %VirtMemMan_SetupPDPTEntry.exit.i
+  %44 = load i64, i64* %17, align 8, !tbaa !10
+  %45 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %39, i64 0, i32 0
+  %46 = load volatile i64*, i64** %45, align 8, !tbaa !7
+  %47 = getelementptr inbounds i64, i64* %46, i64 511
+  store i64 %44, i64* %47, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -1073741824) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit
+
+VirtMemMan_MapHPage.exit.loopexit:                ; preds = %.preheader.i
+  br label %VirtMemMan_MapHPage.exit
+
+VirtMemMan_MapHPage.exit:                         ; preds = %VirtMemMan_MapHPage.exit.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i, %43
+  %48 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %49 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %48, i64 0, i32 2
+  %50 = load volatile i8, i8* %49, align 1, !tbaa !8
+  %51 = icmp eq i8 %50, 0
+  br i1 %51, label %.preheader.i.3.preheader, label %55
+
+.preheader.i.3.preheader:                         ; preds = %VirtMemMan_MapHPage.exit
+  br label %.preheader.i.3
+
+.preheader.i.3:                                   ; preds = %.preheader.i.3.preheader, %.preheader.i.3
+  %i.05.i.1 = phi i64 [ %54, %.preheader.i.3 ], [ 0, %.preheader.i.3.preheader ]
+  %52 = shl i64 %i.05.i.1, 21
+  %53 = add nuw nsw i64 %52, -2147483648
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %53, i64 %52, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %54 = add nuw nsw i64 %i.05.i.1, 1
+  %exitcond.i.2 = icmp eq i64 %54, 512
+  br i1 %exitcond.i.2, label %VirtMemMan_MapHPage.exit5.loopexit, label %.preheader.i.3
+
+; <label>:55                                      ; preds = %VirtMemMan_MapHPage.exit
+  %56 = load i64, i64* %17, align 8, !tbaa !10
+  %57 = and i64 %56, 1152921504606842880
+  %58 = icmp eq i64 %57, 0
+  br i1 %58, label %59, label %VirtMemMan_SetupPDPTEntry.exit.i.4
+
+; <label>:59                                      ; preds = %55
+  %60 = tail call i64 @MemMan_Alloc() #3
+  %61 = or i64 %60, 7
+  store i64 %61, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.4
+
+VirtMemMan_SetupPDPTEntry.exit.i.4:               ; preds = %59, %55
+  %62 = phi i64 [ %56, %55 ], [ %61, %59 ]
+  %63 = and i64 %62, 1152921504606842880
+  %64 = inttoptr i64 %63 to i8*
+  %65 = tail call i8* @GetVirtualAddress(i32 0, i8* %64) #3
+  %66 = getelementptr inbounds i8, i8* %65, i64 4080
+  %67 = bitcast i8* %66 to i64*
+  store i64 131, i64* %67, align 8, !tbaa !10
+  %68 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %69 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %68, i64 0, i32 1
+  %70 = load volatile i64*, i64** %69, align 8, !tbaa !5
+  %71 = icmp eq i64* %70, %7
+  br i1 %71, label %72, label %VirtMemMan_MapHPage.exit5
+
+; <label>:72                                      ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.4
+  %73 = load i64, i64* %17, align 8, !tbaa !10
+  %74 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %68, i64 0, i32 0
+  %75 = load volatile i64*, i64** %74, align 8, !tbaa !7
+  %76 = getelementptr inbounds i64, i64* %75, i64 511
+  store i64 %73, i64* %76, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -2147483648) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit5
+
+VirtMemMan_MapHPage.exit5.loopexit:               ; preds = %.preheader.i.3
+  br label %VirtMemMan_MapHPage.exit5
+
+VirtMemMan_MapHPage.exit5:                        ; preds = %VirtMemMan_MapHPage.exit5.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.4, %72
+  %77 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %78 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %77, i64 0, i32 2
+  %79 = load volatile i8, i8* %78, align 1, !tbaa !8
+  %80 = icmp eq i8 %79, 0
+  br i1 %80, label %.preheader.i.8.preheader, label %85
+
+.preheader.i.8.preheader:                         ; preds = %VirtMemMan_MapHPage.exit5
+  br label %.preheader.i.8
+
+.preheader.i.8:                                   ; preds = %.preheader.i.8.preheader, %.preheader.i.8
+  %i.05.i.6 = phi i64 [ %84, %.preheader.i.8 ], [ 0, %.preheader.i.8.preheader ]
+  %81 = shl i64 %i.05.i.6, 21
+  %82 = add nuw nsw i64 %81, -3221225472
+  %83 = add nuw nsw i64 %81, 3221225472
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %82, i64 %83, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %84 = add nuw nsw i64 %i.05.i.6, 1
+  %exitcond.i.7 = icmp eq i64 %84, 512
+  br i1 %exitcond.i.7, label %VirtMemMan_MapHPage.exit10.loopexit, label %.preheader.i.8
+
+; <label>:85                                      ; preds = %VirtMemMan_MapHPage.exit5
+  %86 = load i64, i64* %17, align 8, !tbaa !10
+  %87 = and i64 %86, 1152921504606842880
+  %88 = icmp eq i64 %87, 0
+  br i1 %88, label %89, label %VirtMemMan_SetupPDPTEntry.exit.i.9
+
+; <label>:89                                      ; preds = %85
+  %90 = tail call i64 @MemMan_Alloc() #3
+  %91 = or i64 %90, 7
+  store i64 %91, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.9
+
+VirtMemMan_SetupPDPTEntry.exit.i.9:               ; preds = %89, %85
+  %92 = phi i64 [ %86, %85 ], [ %91, %89 ]
+  %93 = and i64 %92, 1152921504606842880
+  %94 = inttoptr i64 %93 to i8*
+  %95 = tail call i8* @GetVirtualAddress(i32 0, i8* %94) #3
+  %96 = getelementptr inbounds i8, i8* %95, i64 4072
+  %97 = bitcast i8* %96 to i64*
+  store i64 3221225603, i64* %97, align 8, !tbaa !10
+  %98 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %99 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %98, i64 0, i32 1
+  %100 = load volatile i64*, i64** %99, align 8, !tbaa !5
+  %101 = icmp eq i64* %100, %7
+  br i1 %101, label %102, label %VirtMemMan_MapHPage.exit10
+
+; <label>:102                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.9
+  %103 = load i64, i64* %17, align 8, !tbaa !10
+  %104 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %98, i64 0, i32 0
+  %105 = load volatile i64*, i64** %104, align 8, !tbaa !7
+  %106 = getelementptr inbounds i64, i64* %105, i64 511
+  store i64 %103, i64* %106, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -3221225472) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit10
+
+VirtMemMan_MapHPage.exit10.loopexit:              ; preds = %.preheader.i.8
+  br label %VirtMemMan_MapHPage.exit10
+
+VirtMemMan_MapHPage.exit10:                       ; preds = %VirtMemMan_MapHPage.exit10.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.9, %102
+  %107 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %108 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %107, i64 0, i32 2
+  %109 = load volatile i8, i8* %108, align 1, !tbaa !8
+  %110 = icmp eq i8 %109, 0
+  br i1 %110, label %.preheader.i.13.preheader, label %115
+
+.preheader.i.13.preheader:                        ; preds = %VirtMemMan_MapHPage.exit10
+  br label %.preheader.i.13
+
+.preheader.i.13:                                  ; preds = %.preheader.i.13.preheader, %.preheader.i.13
+  %i.05.i.11 = phi i64 [ %114, %.preheader.i.13 ], [ 0, %.preheader.i.13.preheader ]
+  %111 = shl i64 %i.05.i.11, 21
+  %112 = add nuw nsw i64 %111, -4294967296
+  %113 = add nuw nsw i64 %111, 2147483648
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %112, i64 %113, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %114 = add nuw nsw i64 %i.05.i.11, 1
+  %exitcond.i.12 = icmp eq i64 %114, 512
+  br i1 %exitcond.i.12, label %VirtMemMan_MapHPage.exit15.loopexit, label %.preheader.i.13
+
+; <label>:115                                     ; preds = %VirtMemMan_MapHPage.exit10
+  %116 = load i64, i64* %17, align 8, !tbaa !10
+  %117 = and i64 %116, 1152921504606842880
+  %118 = icmp eq i64 %117, 0
+  br i1 %118, label %119, label %VirtMemMan_SetupPDPTEntry.exit.i.14
+
+; <label>:119                                     ; preds = %115
+  %120 = tail call i64 @MemMan_Alloc() #3
+  %121 = or i64 %120, 7
+  store i64 %121, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.14
+
+VirtMemMan_SetupPDPTEntry.exit.i.14:              ; preds = %119, %115
+  %122 = phi i64 [ %116, %115 ], [ %121, %119 ]
+  %123 = and i64 %122, 1152921504606842880
+  %124 = inttoptr i64 %123 to i8*
+  %125 = tail call i8* @GetVirtualAddress(i32 0, i8* %124) #3
+  %126 = getelementptr inbounds i8, i8* %125, i64 4064
+  %127 = bitcast i8* %126 to i64*
+  store i64 2147483779, i64* %127, align 8, !tbaa !10
+  %128 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %129 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %128, i64 0, i32 1
+  %130 = load volatile i64*, i64** %129, align 8, !tbaa !5
+  %131 = icmp eq i64* %130, %7
+  br i1 %131, label %132, label %VirtMemMan_MapHPage.exit15
+
+; <label>:132                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.14
+  %133 = load i64, i64* %17, align 8, !tbaa !10
+  %134 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %128, i64 0, i32 0
+  %135 = load volatile i64*, i64** %134, align 8, !tbaa !7
+  %136 = getelementptr inbounds i64, i64* %135, i64 511
+  store i64 %133, i64* %136, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -4294967296) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit15
+
+VirtMemMan_MapHPage.exit15.loopexit:              ; preds = %.preheader.i.13
+  br label %VirtMemMan_MapHPage.exit15
+
+VirtMemMan_MapHPage.exit15:                       ; preds = %VirtMemMan_MapHPage.exit15.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.14, %132
+  %137 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %138 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %137, i64 0, i32 2
+  %139 = load volatile i8, i8* %138, align 1, !tbaa !8
+  %140 = icmp eq i8 %139, 0
+  br i1 %140, label %.preheader.i.18.preheader, label %145
+
+.preheader.i.18.preheader:                        ; preds = %VirtMemMan_MapHPage.exit15
+  br label %.preheader.i.18
+
+.preheader.i.18:                                  ; preds = %.preheader.i.18.preheader, %.preheader.i.18
+  %i.05.i.16 = phi i64 [ %144, %.preheader.i.18 ], [ 0, %.preheader.i.18.preheader ]
+  %141 = shl i64 %i.05.i.16, 21
+  %142 = add nuw nsw i64 %141, -9663676416
+  %143 = add nuw nsw i64 %141, 7516192768
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %142, i64 %143, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %144 = add nuw nsw i64 %i.05.i.16, 1
+  %exitcond.i.17 = icmp eq i64 %144, 512
+  br i1 %exitcond.i.17, label %VirtMemMan_MapHPage.exit20.loopexit, label %.preheader.i.18
+
+; <label>:145                                     ; preds = %VirtMemMan_MapHPage.exit15
+  %146 = load i64, i64* %17, align 8, !tbaa !10
+  %147 = and i64 %146, 1152921504606842880
+  %148 = icmp eq i64 %147, 0
+  br i1 %148, label %149, label %VirtMemMan_SetupPDPTEntry.exit.i.19
+
+; <label>:149                                     ; preds = %145
+  %150 = tail call i64 @MemMan_Alloc() #3
+  %151 = or i64 %150, 7
+  store i64 %151, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.19
+
+VirtMemMan_SetupPDPTEntry.exit.i.19:              ; preds = %149, %145
+  %152 = phi i64 [ %146, %145 ], [ %151, %149 ]
+  %153 = and i64 %152, 1152921504606842880
+  %154 = inttoptr i64 %153 to i8*
+  %155 = tail call i8* @GetVirtualAddress(i32 0, i8* %154) #3
+  %156 = getelementptr inbounds i8, i8* %155, i64 4024
+  %157 = bitcast i8* %156 to i64*
+  store i64 7516192899, i64* %157, align 8, !tbaa !10
+  %158 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %159 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %158, i64 0, i32 1
+  %160 = load volatile i64*, i64** %159, align 8, !tbaa !5
+  %161 = icmp eq i64* %160, %7
+  br i1 %161, label %162, label %VirtMemMan_MapHPage.exit20
+
+; <label>:162                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.19
+  %163 = load i64, i64* %17, align 8, !tbaa !10
+  %164 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %158, i64 0, i32 0
+  %165 = load volatile i64*, i64** %164, align 8, !tbaa !7
+  %166 = getelementptr inbounds i64, i64* %165, i64 511
+  store i64 %163, i64* %166, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -9663676416) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit20
+
+VirtMemMan_MapHPage.exit20.loopexit:              ; preds = %.preheader.i.18
+  br label %VirtMemMan_MapHPage.exit20
+
+VirtMemMan_MapHPage.exit20:                       ; preds = %VirtMemMan_MapHPage.exit20.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.19, %162
+  %167 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %168 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %167, i64 0, i32 2
+  %169 = load volatile i8, i8* %168, align 1, !tbaa !8
+  %170 = icmp eq i8 %169, 0
+  br i1 %170, label %.preheader.i.23.preheader, label %175
+
+.preheader.i.23.preheader:                        ; preds = %VirtMemMan_MapHPage.exit20
+  br label %.preheader.i.23
+
+.preheader.i.23:                                  ; preds = %.preheader.i.23.preheader, %.preheader.i.23
+  %i.05.i.21 = phi i64 [ %174, %.preheader.i.23 ], [ 0, %.preheader.i.23.preheader ]
+  %171 = shl i64 %i.05.i.21, 21
+  %172 = add nuw nsw i64 %171, -10737418240
+  %173 = add nuw nsw i64 %171, 6442450944
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %172, i64 %173, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %174 = add nuw nsw i64 %i.05.i.21, 1
+  %exitcond.i.22 = icmp eq i64 %174, 512
+  br i1 %exitcond.i.22, label %VirtMemMan_MapHPage.exit25.loopexit, label %.preheader.i.23
+
+; <label>:175                                     ; preds = %VirtMemMan_MapHPage.exit20
+  %176 = load i64, i64* %17, align 8, !tbaa !10
+  %177 = and i64 %176, 1152921504606842880
+  %178 = icmp eq i64 %177, 0
+  br i1 %178, label %179, label %VirtMemMan_SetupPDPTEntry.exit.i.24
+
+; <label>:179                                     ; preds = %175
+  %180 = tail call i64 @MemMan_Alloc() #3
+  %181 = or i64 %180, 7
+  store i64 %181, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.24
+
+VirtMemMan_SetupPDPTEntry.exit.i.24:              ; preds = %179, %175
+  %182 = phi i64 [ %176, %175 ], [ %181, %179 ]
+  %183 = and i64 %182, 1152921504606842880
+  %184 = inttoptr i64 %183 to i8*
+  %185 = tail call i8* @GetVirtualAddress(i32 0, i8* %184) #3
+  %186 = getelementptr inbounds i8, i8* %185, i64 4016
+  %187 = bitcast i8* %186 to i64*
+  store i64 6442451075, i64* %187, align 8, !tbaa !10
+  %188 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %189 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %188, i64 0, i32 1
+  %190 = load volatile i64*, i64** %189, align 8, !tbaa !5
+  %191 = icmp eq i64* %190, %7
+  br i1 %191, label %192, label %VirtMemMan_MapHPage.exit25
+
+; <label>:192                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.24
+  %193 = load i64, i64* %17, align 8, !tbaa !10
+  %194 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %188, i64 0, i32 0
+  %195 = load volatile i64*, i64** %194, align 8, !tbaa !7
+  %196 = getelementptr inbounds i64, i64* %195, i64 511
+  store i64 %193, i64* %196, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -10737418240) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit25
+
+VirtMemMan_MapHPage.exit25.loopexit:              ; preds = %.preheader.i.23
+  br label %VirtMemMan_MapHPage.exit25
+
+VirtMemMan_MapHPage.exit25:                       ; preds = %VirtMemMan_MapHPage.exit25.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.24, %192
+  %197 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %198 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %197, i64 0, i32 2
+  %199 = load volatile i8, i8* %198, align 1, !tbaa !8
+  %200 = icmp eq i8 %199, 0
+  br i1 %200, label %.preheader.i.28.preheader, label %205
+
+.preheader.i.28.preheader:                        ; preds = %VirtMemMan_MapHPage.exit25
+  br label %.preheader.i.28
+
+.preheader.i.28:                                  ; preds = %.preheader.i.28.preheader, %.preheader.i.28
+  %i.05.i.26 = phi i64 [ %204, %.preheader.i.28 ], [ 0, %.preheader.i.28.preheader ]
+  %201 = shl i64 %i.05.i.26, 21
+  %202 = add nuw nsw i64 %201, -11811160064
+  %203 = add nuw nsw i64 %201, 5368709120
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %202, i64 %203, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %204 = add nuw nsw i64 %i.05.i.26, 1
+  %exitcond.i.27 = icmp eq i64 %204, 512
+  br i1 %exitcond.i.27, label %VirtMemMan_MapHPage.exit30.loopexit, label %.preheader.i.28
+
+; <label>:205                                     ; preds = %VirtMemMan_MapHPage.exit25
+  %206 = load i64, i64* %17, align 8, !tbaa !10
+  %207 = and i64 %206, 1152921504606842880
+  %208 = icmp eq i64 %207, 0
+  br i1 %208, label %209, label %VirtMemMan_SetupPDPTEntry.exit.i.29
+
+; <label>:209                                     ; preds = %205
+  %210 = tail call i64 @MemMan_Alloc() #3
+  %211 = or i64 %210, 7
+  store i64 %211, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.29
+
+VirtMemMan_SetupPDPTEntry.exit.i.29:              ; preds = %209, %205
+  %212 = phi i64 [ %206, %205 ], [ %211, %209 ]
+  %213 = and i64 %212, 1152921504606842880
+  %214 = inttoptr i64 %213 to i8*
+  %215 = tail call i8* @GetVirtualAddress(i32 0, i8* %214) #3
+  %216 = getelementptr inbounds i8, i8* %215, i64 4008
+  %217 = bitcast i8* %216 to i64*
+  store i64 5368709251, i64* %217, align 8, !tbaa !10
+  %218 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %219 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %218, i64 0, i32 1
+  %220 = load volatile i64*, i64** %219, align 8, !tbaa !5
+  %221 = icmp eq i64* %220, %7
+  br i1 %221, label %222, label %VirtMemMan_MapHPage.exit30
+
+; <label>:222                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.29
+  %223 = load i64, i64* %17, align 8, !tbaa !10
+  %224 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %218, i64 0, i32 0
+  %225 = load volatile i64*, i64** %224, align 8, !tbaa !7
+  %226 = getelementptr inbounds i64, i64* %225, i64 511
+  store i64 %223, i64* %226, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -11811160064) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit30
+
+VirtMemMan_MapHPage.exit30.loopexit:              ; preds = %.preheader.i.28
+  br label %VirtMemMan_MapHPage.exit30
+
+VirtMemMan_MapHPage.exit30:                       ; preds = %VirtMemMan_MapHPage.exit30.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.29, %222
+  %227 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %228 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %227, i64 0, i32 2
+  %229 = load volatile i8, i8* %228, align 1, !tbaa !8
+  %230 = icmp eq i8 %229, 0
+  br i1 %230, label %.preheader.i.33.preheader, label %235
+
+.preheader.i.33.preheader:                        ; preds = %VirtMemMan_MapHPage.exit30
+  br label %.preheader.i.33
+
+.preheader.i.33:                                  ; preds = %.preheader.i.33.preheader, %.preheader.i.33
+  %i.05.i.31 = phi i64 [ %234, %.preheader.i.33 ], [ 0, %.preheader.i.33.preheader ]
+  %231 = shl i64 %i.05.i.31, 21
+  %232 = add nuw nsw i64 %231, -12884901888
+  %233 = add nuw nsw i64 %231, 4294967296
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %232, i64 %233, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %234 = add nuw nsw i64 %i.05.i.31, 1
+  %exitcond.i.32 = icmp eq i64 %234, 512
+  br i1 %exitcond.i.32, label %VirtMemMan_MapHPage.exit35.loopexit, label %.preheader.i.33
+
+; <label>:235                                     ; preds = %VirtMemMan_MapHPage.exit30
+  %236 = load i64, i64* %17, align 8, !tbaa !10
+  %237 = and i64 %236, 1152921504606842880
+  %238 = icmp eq i64 %237, 0
+  br i1 %238, label %239, label %VirtMemMan_SetupPDPTEntry.exit.i.34
+
+; <label>:239                                     ; preds = %235
+  %240 = tail call i64 @MemMan_Alloc() #3
+  %241 = or i64 %240, 7
+  store i64 %241, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.34
+
+VirtMemMan_SetupPDPTEntry.exit.i.34:              ; preds = %239, %235
+  %242 = phi i64 [ %236, %235 ], [ %241, %239 ]
+  %243 = and i64 %242, 1152921504606842880
+  %244 = inttoptr i64 %243 to i8*
+  %245 = tail call i8* @GetVirtualAddress(i32 0, i8* %244) #3
+  %246 = getelementptr inbounds i8, i8* %245, i64 4000
+  %247 = bitcast i8* %246 to i64*
+  store i64 4294967427, i64* %247, align 8, !tbaa !10
+  %248 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %249 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %248, i64 0, i32 1
+  %250 = load volatile i64*, i64** %249, align 8, !tbaa !5
+  %251 = icmp eq i64* %250, %7
+  br i1 %251, label %252, label %VirtMemMan_MapHPage.exit35
+
+; <label>:252                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.34
+  %253 = load i64, i64* %17, align 8, !tbaa !10
+  %254 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %248, i64 0, i32 0
+  %255 = load volatile i64*, i64** %254, align 8, !tbaa !7
+  %256 = getelementptr inbounds i64, i64* %255, i64 511
+  store i64 %253, i64* %256, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -12884901888) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit35
+
+VirtMemMan_MapHPage.exit35.loopexit:              ; preds = %.preheader.i.33
+  br label %VirtMemMan_MapHPage.exit35
+
+VirtMemMan_MapHPage.exit35:                       ; preds = %VirtMemMan_MapHPage.exit35.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.34, %252
+  %257 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %258 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %257, i64 0, i32 2
+  %259 = load volatile i8, i8* %258, align 1, !tbaa !8
+  %260 = icmp eq i8 %259, 0
+  br i1 %260, label %.preheader.i.38.preheader, label %265
+
+.preheader.i.38.preheader:                        ; preds = %VirtMemMan_MapHPage.exit35
+  br label %.preheader.i.38
+
+.preheader.i.38:                                  ; preds = %.preheader.i.38.preheader, %.preheader.i.38
+  %i.05.i.36 = phi i64 [ %264, %.preheader.i.38 ], [ 0, %.preheader.i.38.preheader ]
+  %261 = shl i64 %i.05.i.36, 21
+  %262 = add nuw nsw i64 %261, -5368709120
+  %263 = add nuw nsw i64 %261, 3221225472
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %262, i64 %263, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %264 = add nuw nsw i64 %i.05.i.36, 1
+  %exitcond.i.37 = icmp eq i64 %264, 512
+  br i1 %exitcond.i.37, label %VirtMemMan_MapHPage.exit40.loopexit, label %.preheader.i.38
+
+; <label>:265                                     ; preds = %VirtMemMan_MapHPage.exit35
+  %266 = load i64, i64* %17, align 8, !tbaa !10
+  %267 = and i64 %266, 1152921504606842880
+  %268 = icmp eq i64 %267, 0
+  br i1 %268, label %269, label %VirtMemMan_SetupPDPTEntry.exit.i.39
+
+; <label>:269                                     ; preds = %265
+  %270 = tail call i64 @MemMan_Alloc() #3
+  %271 = or i64 %270, 7
+  store i64 %271, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.39
+
+VirtMemMan_SetupPDPTEntry.exit.i.39:              ; preds = %269, %265
+  %272 = phi i64 [ %266, %265 ], [ %271, %269 ]
+  %273 = and i64 %272, 1152921504606842880
+  %274 = inttoptr i64 %273 to i8*
+  %275 = tail call i8* @GetVirtualAddress(i32 0, i8* %274) #3
+  %276 = getelementptr inbounds i8, i8* %275, i64 4056
+  %277 = bitcast i8* %276 to i64*
+  store i64 3221225603, i64* %277, align 8, !tbaa !10
+  %278 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %279 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %278, i64 0, i32 1
+  %280 = load volatile i64*, i64** %279, align 8, !tbaa !5
+  %281 = icmp eq i64* %280, %7
+  br i1 %281, label %282, label %VirtMemMan_MapHPage.exit40
+
+; <label>:282                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.39
+  %283 = load i64, i64* %17, align 8, !tbaa !10
+  %284 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %278, i64 0, i32 0
+  %285 = load volatile i64*, i64** %284, align 8, !tbaa !7
+  %286 = getelementptr inbounds i64, i64* %285, i64 511
+  store i64 %283, i64* %286, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -5368709120) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit40
+
+VirtMemMan_MapHPage.exit40.loopexit:              ; preds = %.preheader.i.38
+  br label %VirtMemMan_MapHPage.exit40
+
+VirtMemMan_MapHPage.exit40:                       ; preds = %VirtMemMan_MapHPage.exit40.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.39, %282
+  %287 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %288 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %287, i64 0, i32 2
+  %289 = load volatile i8, i8* %288, align 1, !tbaa !8
+  %290 = icmp eq i8 %289, 0
+  br i1 %290, label %.preheader.i.43.preheader, label %295
+
+.preheader.i.43.preheader:                        ; preds = %VirtMemMan_MapHPage.exit40
+  br label %.preheader.i.43
+
+.preheader.i.43:                                  ; preds = %.preheader.i.43.preheader, %.preheader.i.43
+  %i.05.i.41 = phi i64 [ %294, %.preheader.i.43 ], [ 0, %.preheader.i.43.preheader ]
+  %291 = shl i64 %i.05.i.41, 21
+  %292 = add nuw nsw i64 %291, -6442450944
+  %293 = add nuw nsw i64 %291, 2147483648
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %292, i64 %293, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %294 = add nuw nsw i64 %i.05.i.41, 1
+  %exitcond.i.42 = icmp eq i64 %294, 512
+  br i1 %exitcond.i.42, label %VirtMemMan_MapHPage.exit45.loopexit, label %.preheader.i.43
+
+; <label>:295                                     ; preds = %VirtMemMan_MapHPage.exit40
+  %296 = load i64, i64* %17, align 8, !tbaa !10
+  %297 = and i64 %296, 1152921504606842880
+  %298 = icmp eq i64 %297, 0
+  br i1 %298, label %299, label %VirtMemMan_SetupPDPTEntry.exit.i.44
+
+; <label>:299                                     ; preds = %295
+  %300 = tail call i64 @MemMan_Alloc() #3
+  %301 = or i64 %300, 7
+  store i64 %301, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.44
+
+VirtMemMan_SetupPDPTEntry.exit.i.44:              ; preds = %299, %295
+  %302 = phi i64 [ %296, %295 ], [ %301, %299 ]
+  %303 = and i64 %302, 1152921504606842880
+  %304 = inttoptr i64 %303 to i8*
+  %305 = tail call i8* @GetVirtualAddress(i32 0, i8* %304) #3
+  %306 = getelementptr inbounds i8, i8* %305, i64 4048
+  %307 = bitcast i8* %306 to i64*
+  store i64 2147483779, i64* %307, align 8, !tbaa !10
+  %308 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %309 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %308, i64 0, i32 1
+  %310 = load volatile i64*, i64** %309, align 8, !tbaa !5
+  %311 = icmp eq i64* %310, %7
+  br i1 %311, label %312, label %VirtMemMan_MapHPage.exit45
+
+; <label>:312                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.44
+  %313 = load i64, i64* %17, align 8, !tbaa !10
+  %314 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %308, i64 0, i32 0
+  %315 = load volatile i64*, i64** %314, align 8, !tbaa !7
+  %316 = getelementptr inbounds i64, i64* %315, i64 511
+  store i64 %313, i64* %316, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -6442450944) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit45
+
+VirtMemMan_MapHPage.exit45.loopexit:              ; preds = %.preheader.i.43
+  br label %VirtMemMan_MapHPage.exit45
+
+VirtMemMan_MapHPage.exit45:                       ; preds = %VirtMemMan_MapHPage.exit45.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.44, %312
+  %317 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %318 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %317, i64 0, i32 2
+  %319 = load volatile i8, i8* %318, align 1, !tbaa !8
+  %320 = icmp eq i8 %319, 0
+  br i1 %320, label %.preheader.i.48.preheader, label %325
+
+.preheader.i.48.preheader:                        ; preds = %VirtMemMan_MapHPage.exit45
+  br label %.preheader.i.48
+
+.preheader.i.48:                                  ; preds = %.preheader.i.48.preheader, %.preheader.i.48
+  %i.05.i.46 = phi i64 [ %324, %.preheader.i.48 ], [ 0, %.preheader.i.48.preheader ]
+  %321 = shl i64 %i.05.i.46, 21
+  %322 = add nuw nsw i64 %321, -7516192768
+  %323 = add nuw nsw i64 %321, 1073741824
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %322, i64 %323, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %324 = add nuw nsw i64 %i.05.i.46, 1
+  %exitcond.i.47 = icmp eq i64 %324, 512
+  br i1 %exitcond.i.47, label %VirtMemMan_MapHPage.exit50.loopexit, label %.preheader.i.48
+
+; <label>:325                                     ; preds = %VirtMemMan_MapHPage.exit45
+  %326 = load i64, i64* %17, align 8, !tbaa !10
+  %327 = and i64 %326, 1152921504606842880
+  %328 = icmp eq i64 %327, 0
+  br i1 %328, label %329, label %VirtMemMan_SetupPDPTEntry.exit.i.49
+
+; <label>:329                                     ; preds = %325
+  %330 = tail call i64 @MemMan_Alloc() #3
+  %331 = or i64 %330, 7
+  store i64 %331, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.49
+
+VirtMemMan_SetupPDPTEntry.exit.i.49:              ; preds = %329, %325
+  %332 = phi i64 [ %326, %325 ], [ %331, %329 ]
+  %333 = and i64 %332, 1152921504606842880
+  %334 = inttoptr i64 %333 to i8*
+  %335 = tail call i8* @GetVirtualAddress(i32 0, i8* %334) #3
+  %336 = getelementptr inbounds i8, i8* %335, i64 4040
+  %337 = bitcast i8* %336 to i64*
+  store i64 1073741955, i64* %337, align 8, !tbaa !10
+  %338 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %339 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %338, i64 0, i32 1
+  %340 = load volatile i64*, i64** %339, align 8, !tbaa !5
+  %341 = icmp eq i64* %340, %7
+  br i1 %341, label %342, label %VirtMemMan_MapHPage.exit50
+
+; <label>:342                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.49
+  %343 = load i64, i64* %17, align 8, !tbaa !10
+  %344 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %338, i64 0, i32 0
+  %345 = load volatile i64*, i64** %344, align 8, !tbaa !7
+  %346 = getelementptr inbounds i64, i64* %345, i64 511
+  store i64 %343, i64* %346, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -7516192768) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit50
+
+VirtMemMan_MapHPage.exit50.loopexit:              ; preds = %.preheader.i.48
+  br label %VirtMemMan_MapHPage.exit50
+
+VirtMemMan_MapHPage.exit50:                       ; preds = %VirtMemMan_MapHPage.exit50.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.49, %342
+  %347 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %348 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %347, i64 0, i32 2
+  %349 = load volatile i8, i8* %348, align 1, !tbaa !8
+  %350 = icmp eq i8 %349, 0
+  br i1 %350, label %.preheader.i.53.preheader, label %354
+
+.preheader.i.53.preheader:                        ; preds = %VirtMemMan_MapHPage.exit50
+  br label %.preheader.i.53
+
+.preheader.i.53:                                  ; preds = %.preheader.i.53.preheader, %.preheader.i.53
+  %i.05.i.51 = phi i64 [ %353, %.preheader.i.53 ], [ 0, %.preheader.i.53.preheader ]
+  %351 = shl i64 %i.05.i.51, 21
+  %352 = add nuw nsw i64 %351, -8589934592
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %352, i64 %351, i8 zeroext 1, i32 0, i32 7, i32 0) #3
+  %353 = add nuw nsw i64 %i.05.i.51, 1
+  %exitcond.i.52 = icmp eq i64 %353, 512
+  br i1 %exitcond.i.52, label %VirtMemMan_MapHPage.exit55.loopexit, label %.preheader.i.53
+
+; <label>:354                                     ; preds = %VirtMemMan_MapHPage.exit50
+  %355 = load i64, i64* %17, align 8, !tbaa !10
+  %356 = and i64 %355, 1152921504606842880
+  %357 = icmp eq i64 %356, 0
+  br i1 %357, label %358, label %VirtMemMan_SetupPDPTEntry.exit.i.54
+
+; <label>:358                                     ; preds = %354
+  %359 = tail call i64 @MemMan_Alloc() #3
+  %360 = or i64 %359, 7
+  store i64 %360, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.54
+
+VirtMemMan_SetupPDPTEntry.exit.i.54:              ; preds = %358, %354
+  %361 = phi i64 [ %355, %354 ], [ %360, %358 ]
+  %362 = and i64 %361, 1152921504606842880
+  %363 = inttoptr i64 %362 to i8*
+  %364 = tail call i8* @GetVirtualAddress(i32 0, i8* %363) #3
+  %365 = getelementptr inbounds i8, i8* %364, i64 4032
+  %366 = bitcast i8* %365 to i64*
+  store i64 131, i64* %366, align 8, !tbaa !10
+  %367 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %368 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %367, i64 0, i32 1
+  %369 = load volatile i64*, i64** %368, align 8, !tbaa !5
+  %370 = icmp eq i64* %369, %7
+  br i1 %370, label %371, label %VirtMemMan_MapHPage.exit55
+
+; <label>:371                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.54
+  %372 = load i64, i64* %17, align 8, !tbaa !10
+  %373 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %367, i64 0, i32 0
+  %374 = load volatile i64*, i64** %373, align 8, !tbaa !7
+  %375 = getelementptr inbounds i64, i64* %374, i64 511
+  store i64 %372, i64* %375, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -8589934592) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit55
+
+VirtMemMan_MapHPage.exit55.loopexit:              ; preds = %.preheader.i.53
+  br label %VirtMemMan_MapHPage.exit55
+
+VirtMemMan_MapHPage.exit55:                       ; preds = %VirtMemMan_MapHPage.exit55.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.54, %371
+  %376 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %377 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %376, i64 0, i32 2
+  %378 = load volatile i8, i8* %377, align 1, !tbaa !8
+  %379 = icmp eq i8 %378, 0
+  br i1 %379, label %.preheader.i.58.preheader, label %383
+
+.preheader.i.58.preheader:                        ; preds = %VirtMemMan_MapHPage.exit55
+  br label %.preheader.i.58
+
+.preheader.i.58:                                  ; preds = %.preheader.i.58.preheader, %.preheader.i.58
+  %i.05.i.56 = phi i64 [ %382, %.preheader.i.58 ], [ 0, %.preheader.i.58.preheader ]
+  %380 = shl i64 %i.05.i.56, 21
+  %381 = add nuw nsw i64 %380, -21474836480
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %381, i64 %380, i8 zeroext 1, i32 2, i32 7, i32 0) #3
+  %382 = add nuw nsw i64 %i.05.i.56, 1
+  %exitcond.i.57 = icmp eq i64 %382, 512
+  br i1 %exitcond.i.57, label %VirtMemMan_MapHPage.exit60.loopexit, label %.preheader.i.58
+
+; <label>:383                                     ; preds = %VirtMemMan_MapHPage.exit55
+  %384 = load i64, i64* %17, align 8, !tbaa !10
+  %385 = and i64 %384, 1152921504606842880
+  %386 = icmp eq i64 %385, 0
+  br i1 %386, label %387, label %VirtMemMan_SetupPDPTEntry.exit.i.59
+
+; <label>:387                                     ; preds = %383
+  %388 = tail call i64 @MemMan_Alloc() #3
+  %389 = or i64 %388, 7
+  store i64 %389, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.59
+
+VirtMemMan_SetupPDPTEntry.exit.i.59:              ; preds = %387, %383
+  %390 = phi i64 [ %384, %383 ], [ %389, %387 ]
+  %391 = and i64 %390, 1152921504606842880
+  %392 = inttoptr i64 %391 to i8*
+  %393 = tail call i8* @GetVirtualAddress(i32 0, i8* %392) #3
+  %394 = getelementptr inbounds i8, i8* %393, i64 3936
+  %395 = bitcast i8* %394 to i64*
+  store i64 147, i64* %395, align 8, !tbaa !10
+  %396 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %397 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %396, i64 0, i32 1
+  %398 = load volatile i64*, i64** %397, align 8, !tbaa !5
+  %399 = icmp eq i64* %398, %7
+  br i1 %399, label %400, label %VirtMemMan_MapHPage.exit60
+
+; <label>:400                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.59
+  %401 = load i64, i64* %17, align 8, !tbaa !10
+  %402 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %396, i64 0, i32 0
+  %403 = load volatile i64*, i64** %402, align 8, !tbaa !7
+  %404 = getelementptr inbounds i64, i64* %403, i64 511
+  store i64 %401, i64* %404, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -21474836480) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit60
+
+VirtMemMan_MapHPage.exit60.loopexit:              ; preds = %.preheader.i.58
+  br label %VirtMemMan_MapHPage.exit60
+
+VirtMemMan_MapHPage.exit60:                       ; preds = %VirtMemMan_MapHPage.exit60.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.59, %400
+  %405 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %406 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %405, i64 0, i32 2
+  %407 = load volatile i8, i8* %406, align 1, !tbaa !8
+  %408 = icmp eq i8 %407, 0
+  br i1 %408, label %.preheader.i.63.preheader, label %413
+
+.preheader.i.63.preheader:                        ; preds = %VirtMemMan_MapHPage.exit60
+  br label %.preheader.i.63
+
+.preheader.i.63:                                  ; preds = %.preheader.i.63.preheader, %.preheader.i.63
+  %i.05.i.61 = phi i64 [ %412, %.preheader.i.63 ], [ 0, %.preheader.i.63.preheader ]
+  %409 = shl i64 %i.05.i.61, 21
+  %410 = add nuw nsw i64 %409, -20401094656
+  %411 = add nuw nsw i64 %409, 1073741824
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %410, i64 %411, i8 zeroext 1, i32 2, i32 7, i32 0) #3
+  %412 = add nuw nsw i64 %i.05.i.61, 1
+  %exitcond.i.62 = icmp eq i64 %412, 512
+  br i1 %exitcond.i.62, label %VirtMemMan_MapHPage.exit65.loopexit, label %.preheader.i.63
+
+; <label>:413                                     ; preds = %VirtMemMan_MapHPage.exit60
+  %414 = load i64, i64* %17, align 8, !tbaa !10
+  %415 = and i64 %414, 1152921504606842880
+  %416 = icmp eq i64 %415, 0
+  br i1 %416, label %417, label %VirtMemMan_SetupPDPTEntry.exit.i.64
+
+; <label>:417                                     ; preds = %413
+  %418 = tail call i64 @MemMan_Alloc() #3
+  %419 = or i64 %418, 7
+  store i64 %419, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.64
+
+VirtMemMan_SetupPDPTEntry.exit.i.64:              ; preds = %417, %413
+  %420 = phi i64 [ %414, %413 ], [ %419, %417 ]
+  %421 = and i64 %420, 1152921504606842880
+  %422 = inttoptr i64 %421 to i8*
+  %423 = tail call i8* @GetVirtualAddress(i32 0, i8* %422) #3
+  %424 = getelementptr inbounds i8, i8* %423, i64 3944
+  %425 = bitcast i8* %424 to i64*
+  store i64 1073741971, i64* %425, align 8, !tbaa !10
+  %426 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %427 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %426, i64 0, i32 1
+  %428 = load volatile i64*, i64** %427, align 8, !tbaa !5
+  %429 = icmp eq i64* %428, %7
+  br i1 %429, label %430, label %VirtMemMan_MapHPage.exit65
+
+; <label>:430                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.64
+  %431 = load i64, i64* %17, align 8, !tbaa !10
+  %432 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %426, i64 0, i32 0
+  %433 = load volatile i64*, i64** %432, align 8, !tbaa !7
+  %434 = getelementptr inbounds i64, i64* %433, i64 511
+  store i64 %431, i64* %434, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -20401094656) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit65
+
+VirtMemMan_MapHPage.exit65.loopexit:              ; preds = %.preheader.i.63
+  br label %VirtMemMan_MapHPage.exit65
+
+VirtMemMan_MapHPage.exit65:                       ; preds = %VirtMemMan_MapHPage.exit65.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.64, %430
+  %435 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %436 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %435, i64 0, i32 2
+  %437 = load volatile i8, i8* %436, align 1, !tbaa !8
+  %438 = icmp eq i8 %437, 0
+  br i1 %438, label %.preheader.i.68.preheader, label %443
+
+.preheader.i.68.preheader:                        ; preds = %VirtMemMan_MapHPage.exit65
+  br label %.preheader.i.68
+
+.preheader.i.68:                                  ; preds = %.preheader.i.68.preheader, %.preheader.i.68
+  %i.05.i.66 = phi i64 [ %442, %.preheader.i.68 ], [ 0, %.preheader.i.68.preheader ]
+  %439 = shl i64 %i.05.i.66, 21
+  %440 = add nuw nsw i64 %439, -19327352832
+  %441 = add nuw nsw i64 %439, 2147483648
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %440, i64 %441, i8 zeroext 1, i32 2, i32 7, i32 0) #3
+  %442 = add nuw nsw i64 %i.05.i.66, 1
+  %exitcond.i.67 = icmp eq i64 %442, 512
+  br i1 %exitcond.i.67, label %VirtMemMan_MapHPage.exit70.loopexit, label %.preheader.i.68
+
+; <label>:443                                     ; preds = %VirtMemMan_MapHPage.exit65
+  %444 = load i64, i64* %17, align 8, !tbaa !10
+  %445 = and i64 %444, 1152921504606842880
+  %446 = icmp eq i64 %445, 0
+  br i1 %446, label %447, label %VirtMemMan_SetupPDPTEntry.exit.i.69
+
+; <label>:447                                     ; preds = %443
+  %448 = tail call i64 @MemMan_Alloc() #3
+  %449 = or i64 %448, 7
+  store i64 %449, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.69
+
+VirtMemMan_SetupPDPTEntry.exit.i.69:              ; preds = %447, %443
+  %450 = phi i64 [ %444, %443 ], [ %449, %447 ]
+  %451 = and i64 %450, 1152921504606842880
+  %452 = inttoptr i64 %451 to i8*
+  %453 = tail call i8* @GetVirtualAddress(i32 0, i8* %452) #3
+  %454 = getelementptr inbounds i8, i8* %453, i64 3952
+  %455 = bitcast i8* %454 to i64*
+  store i64 2147483795, i64* %455, align 8, !tbaa !10
+  %456 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %457 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %456, i64 0, i32 1
+  %458 = load volatile i64*, i64** %457, align 8, !tbaa !5
+  %459 = icmp eq i64* %458, %7
+  br i1 %459, label %460, label %VirtMemMan_MapHPage.exit70
+
+; <label>:460                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.69
+  %461 = load i64, i64* %17, align 8, !tbaa !10
+  %462 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %456, i64 0, i32 0
+  %463 = load volatile i64*, i64** %462, align 8, !tbaa !7
+  %464 = getelementptr inbounds i64, i64* %463, i64 511
+  store i64 %461, i64* %464, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -19327352832) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit70
+
+VirtMemMan_MapHPage.exit70.loopexit:              ; preds = %.preheader.i.68
+  br label %VirtMemMan_MapHPage.exit70
+
+VirtMemMan_MapHPage.exit70:                       ; preds = %VirtMemMan_MapHPage.exit70.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.69, %460
+  %465 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %466 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %465, i64 0, i32 2
+  %467 = load volatile i8, i8* %466, align 1, !tbaa !8
+  %468 = icmp eq i8 %467, 0
+  br i1 %468, label %.preheader.i.73.preheader, label %473
+
+.preheader.i.73.preheader:                        ; preds = %VirtMemMan_MapHPage.exit70
+  br label %.preheader.i.73
+
+.preheader.i.73:                                  ; preds = %.preheader.i.73.preheader, %.preheader.i.73
+  %i.05.i.71 = phi i64 [ %472, %.preheader.i.73 ], [ 0, %.preheader.i.73.preheader ]
+  %469 = shl i64 %i.05.i.71, 21
+  %470 = add nuw nsw i64 %469, -18253611008
+  %471 = add nuw nsw i64 %469, 3221225472
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %470, i64 %471, i8 zeroext 1, i32 2, i32 7, i32 0) #3
+  %472 = add nuw nsw i64 %i.05.i.71, 1
+  %exitcond.i.72 = icmp eq i64 %472, 512
+  br i1 %exitcond.i.72, label %VirtMemMan_MapHPage.exit75.loopexit, label %.preheader.i.73
+
+; <label>:473                                     ; preds = %VirtMemMan_MapHPage.exit70
+  %474 = load i64, i64* %17, align 8, !tbaa !10
+  %475 = and i64 %474, 1152921504606842880
+  %476 = icmp eq i64 %475, 0
+  br i1 %476, label %477, label %VirtMemMan_SetupPDPTEntry.exit.i.74
+
+; <label>:477                                     ; preds = %473
+  %478 = tail call i64 @MemMan_Alloc() #3
+  %479 = or i64 %478, 7
+  store i64 %479, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.74
+
+VirtMemMan_SetupPDPTEntry.exit.i.74:              ; preds = %477, %473
+  %480 = phi i64 [ %474, %473 ], [ %479, %477 ]
+  %481 = and i64 %480, 1152921504606842880
+  %482 = inttoptr i64 %481 to i8*
+  %483 = tail call i8* @GetVirtualAddress(i32 0, i8* %482) #3
+  %484 = getelementptr inbounds i8, i8* %483, i64 3960
+  %485 = bitcast i8* %484 to i64*
+  store i64 3221225619, i64* %485, align 8, !tbaa !10
+  %486 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %487 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %486, i64 0, i32 1
+  %488 = load volatile i64*, i64** %487, align 8, !tbaa !5
+  %489 = icmp eq i64* %488, %7
+  br i1 %489, label %490, label %VirtMemMan_MapHPage.exit75
+
+; <label>:490                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.74
+  %491 = load i64, i64* %17, align 8, !tbaa !10
+  %492 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %486, i64 0, i32 0
+  %493 = load volatile i64*, i64** %492, align 8, !tbaa !7
+  %494 = getelementptr inbounds i64, i64* %493, i64 511
+  store i64 %491, i64* %494, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -18253611008) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit75
+
+VirtMemMan_MapHPage.exit75.loopexit:              ; preds = %.preheader.i.73
+  br label %VirtMemMan_MapHPage.exit75
+
+VirtMemMan_MapHPage.exit75:                       ; preds = %VirtMemMan_MapHPage.exit75.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.74, %490
+  %495 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %496 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %495, i64 0, i32 2
+  %497 = load volatile i8, i8* %496, align 1, !tbaa !8
+  %498 = icmp eq i8 %497, 0
+  br i1 %498, label %.preheader.i.78.preheader, label %502
+
+.preheader.i.78.preheader:                        ; preds = %VirtMemMan_MapHPage.exit75
+  br label %.preheader.i.78
+
+.preheader.i.78:                                  ; preds = %.preheader.i.78.preheader, %.preheader.i.78
+  %i.05.i.76 = phi i64 [ %501, %.preheader.i.78 ], [ 0, %.preheader.i.78.preheader ]
+  %499 = shl i64 %i.05.i.76, 21
+  %500 = add nuw nsw i64 %499, -17179869184
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %500, i64 %499, i8 zeroext 1, i32 1, i32 7, i32 0) #3
+  %501 = add nuw nsw i64 %i.05.i.76, 1
+  %exitcond.i.77 = icmp eq i64 %501, 512
+  br i1 %exitcond.i.77, label %VirtMemMan_MapHPage.exit80.loopexit, label %.preheader.i.78
+
+; <label>:502                                     ; preds = %VirtMemMan_MapHPage.exit75
+  %503 = load i64, i64* %17, align 8, !tbaa !10
+  %504 = and i64 %503, 1152921504606842880
+  %505 = icmp eq i64 %504, 0
+  br i1 %505, label %506, label %VirtMemMan_SetupPDPTEntry.exit.i.79
+
+; <label>:506                                     ; preds = %502
+  %507 = tail call i64 @MemMan_Alloc() #3
+  %508 = or i64 %507, 7
+  store i64 %508, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.79
+
+VirtMemMan_SetupPDPTEntry.exit.i.79:              ; preds = %506, %502
+  %509 = phi i64 [ %503, %502 ], [ %508, %506 ]
+  %510 = and i64 %509, 1152921504606842880
+  %511 = inttoptr i64 %510 to i8*
+  %512 = tail call i8* @GetVirtualAddress(i32 0, i8* %511) #3
+  %513 = getelementptr inbounds i8, i8* %512, i64 3968
+  %514 = bitcast i8* %513 to i64*
+  store i64 139, i64* %514, align 8, !tbaa !10
+  %515 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %516 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %515, i64 0, i32 1
+  %517 = load volatile i64*, i64** %516, align 8, !tbaa !5
+  %518 = icmp eq i64* %517, %7
+  br i1 %518, label %519, label %VirtMemMan_MapHPage.exit80
+
+; <label>:519                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.79
+  %520 = load i64, i64* %17, align 8, !tbaa !10
+  %521 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %515, i64 0, i32 0
+  %522 = load volatile i64*, i64** %521, align 8, !tbaa !7
+  %523 = getelementptr inbounds i64, i64* %522, i64 511
+  store i64 %520, i64* %523, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -17179869184) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit80
+
+VirtMemMan_MapHPage.exit80.loopexit:              ; preds = %.preheader.i.78
+  br label %VirtMemMan_MapHPage.exit80
+
+VirtMemMan_MapHPage.exit80:                       ; preds = %VirtMemMan_MapHPage.exit80.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.79, %519
+  %524 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %525 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %524, i64 0, i32 2
+  %526 = load volatile i8, i8* %525, align 1, !tbaa !8
+  %527 = icmp eq i8 %526, 0
+  br i1 %527, label %.preheader.i.83.preheader, label %532
+
+.preheader.i.83.preheader:                        ; preds = %VirtMemMan_MapHPage.exit80
+  br label %.preheader.i.83
+
+.preheader.i.83:                                  ; preds = %.preheader.i.83.preheader, %.preheader.i.83
+  %i.05.i.81 = phi i64 [ %531, %.preheader.i.83 ], [ 0, %.preheader.i.83.preheader ]
+  %528 = shl i64 %i.05.i.81, 21
+  %529 = add nuw nsw i64 %528, -16106127360
+  %530 = add nuw nsw i64 %528, 1073741824
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %529, i64 %530, i8 zeroext 1, i32 1, i32 7, i32 0) #3
+  %531 = add nuw nsw i64 %i.05.i.81, 1
+  %exitcond.i.82 = icmp eq i64 %531, 512
+  br i1 %exitcond.i.82, label %VirtMemMan_MapHPage.exit85.loopexit, label %.preheader.i.83
+
+; <label>:532                                     ; preds = %VirtMemMan_MapHPage.exit80
+  %533 = load i64, i64* %17, align 8, !tbaa !10
+  %534 = and i64 %533, 1152921504606842880
+  %535 = icmp eq i64 %534, 0
+  br i1 %535, label %536, label %VirtMemMan_SetupPDPTEntry.exit.i.84
+
+; <label>:536                                     ; preds = %532
+  %537 = tail call i64 @MemMan_Alloc() #3
+  %538 = or i64 %537, 7
+  store i64 %538, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.84
+
+VirtMemMan_SetupPDPTEntry.exit.i.84:              ; preds = %536, %532
+  %539 = phi i64 [ %533, %532 ], [ %538, %536 ]
+  %540 = and i64 %539, 1152921504606842880
+  %541 = inttoptr i64 %540 to i8*
+  %542 = tail call i8* @GetVirtualAddress(i32 0, i8* %541) #3
+  %543 = getelementptr inbounds i8, i8* %542, i64 3976
+  %544 = bitcast i8* %543 to i64*
+  store i64 1073741963, i64* %544, align 8, !tbaa !10
+  %545 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %546 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %545, i64 0, i32 1
+  %547 = load volatile i64*, i64** %546, align 8, !tbaa !5
+  %548 = icmp eq i64* %547, %7
+  br i1 %548, label %549, label %VirtMemMan_MapHPage.exit85
+
+; <label>:549                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.84
+  %550 = load i64, i64* %17, align 8, !tbaa !10
+  %551 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %545, i64 0, i32 0
+  %552 = load volatile i64*, i64** %551, align 8, !tbaa !7
+  %553 = getelementptr inbounds i64, i64* %552, i64 511
+  store i64 %550, i64* %553, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -16106127360) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit85
+
+VirtMemMan_MapHPage.exit85.loopexit:              ; preds = %.preheader.i.83
+  br label %VirtMemMan_MapHPage.exit85
+
+VirtMemMan_MapHPage.exit85:                       ; preds = %VirtMemMan_MapHPage.exit85.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.84, %549
+  %554 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %555 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %554, i64 0, i32 2
+  %556 = load volatile i8, i8* %555, align 1, !tbaa !8
+  %557 = icmp eq i8 %556, 0
+  br i1 %557, label %.preheader.i.88.preheader, label %562
+
+.preheader.i.88.preheader:                        ; preds = %VirtMemMan_MapHPage.exit85
+  br label %.preheader.i.88
+
+.preheader.i.88:                                  ; preds = %.preheader.i.88.preheader, %.preheader.i.88
+  %i.05.i.86 = phi i64 [ %561, %.preheader.i.88 ], [ 0, %.preheader.i.88.preheader ]
+  %558 = shl i64 %i.05.i.86, 21
+  %559 = add nuw nsw i64 %558, -15032385536
+  %560 = add nuw nsw i64 %558, 2147483648
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %559, i64 %560, i8 zeroext 1, i32 1, i32 7, i32 0) #3
+  %561 = add nuw nsw i64 %i.05.i.86, 1
+  %exitcond.i.87 = icmp eq i64 %561, 512
+  br i1 %exitcond.i.87, label %VirtMemMan_MapHPage.exit90.loopexit, label %.preheader.i.88
+
+; <label>:562                                     ; preds = %VirtMemMan_MapHPage.exit85
+  %563 = load i64, i64* %17, align 8, !tbaa !10
+  %564 = and i64 %563, 1152921504606842880
+  %565 = icmp eq i64 %564, 0
+  br i1 %565, label %566, label %VirtMemMan_SetupPDPTEntry.exit.i.89
+
+; <label>:566                                     ; preds = %562
+  %567 = tail call i64 @MemMan_Alloc() #3
+  %568 = or i64 %567, 7
+  store i64 %568, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.89
+
+VirtMemMan_SetupPDPTEntry.exit.i.89:              ; preds = %566, %562
+  %569 = phi i64 [ %563, %562 ], [ %568, %566 ]
+  %570 = and i64 %569, 1152921504606842880
+  %571 = inttoptr i64 %570 to i8*
+  %572 = tail call i8* @GetVirtualAddress(i32 0, i8* %571) #3
+  %573 = getelementptr inbounds i8, i8* %572, i64 3984
+  %574 = bitcast i8* %573 to i64*
+  store i64 2147483787, i64* %574, align 8, !tbaa !10
+  %575 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %576 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %575, i64 0, i32 1
+  %577 = load volatile i64*, i64** %576, align 8, !tbaa !5
+  %578 = icmp eq i64* %577, %7
+  br i1 %578, label %579, label %VirtMemMan_MapHPage.exit90
+
+; <label>:579                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.89
+  %580 = load i64, i64* %17, align 8, !tbaa !10
+  %581 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %575, i64 0, i32 0
+  %582 = load volatile i64*, i64** %581, align 8, !tbaa !7
+  %583 = getelementptr inbounds i64, i64* %582, i64 511
+  store i64 %580, i64* %583, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -15032385536) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit90
+
+VirtMemMan_MapHPage.exit90.loopexit:              ; preds = %.preheader.i.88
+  br label %VirtMemMan_MapHPage.exit90
+
+VirtMemMan_MapHPage.exit90:                       ; preds = %VirtMemMan_MapHPage.exit90.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.89, %579
+  %584 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %585 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %584, i64 0, i32 2
+  %586 = load volatile i8, i8* %585, align 1, !tbaa !8
+  %587 = icmp eq i8 %586, 0
+  br i1 %587, label %.preheader.i.93.preheader, label %592
+
+.preheader.i.93.preheader:                        ; preds = %VirtMemMan_MapHPage.exit90
+  br label %.preheader.i.93
+
+.preheader.i.93:                                  ; preds = %.preheader.i.93.preheader, %.preheader.i.93
+  %i.05.i.91 = phi i64 [ %591, %.preheader.i.93 ], [ 0, %.preheader.i.93.preheader ]
+  %588 = shl i64 %i.05.i.91, 21
+  %589 = add nuw nsw i64 %588, -13958643712
+  %590 = add nuw nsw i64 %588, 3221225472
+  tail call void @VirtMemMan_MapLPage(i64* %7, i64 %589, i64 %590, i8 zeroext 1, i32 1, i32 7, i32 0) #3
+  %591 = add nuw nsw i64 %i.05.i.91, 1
+  %exitcond.i.92 = icmp eq i64 %591, 512
+  br i1 %exitcond.i.92, label %VirtMemMan_MapHPage.exit95.loopexit, label %.preheader.i.93
+
+; <label>:592                                     ; preds = %VirtMemMan_MapHPage.exit90
+  %593 = load i64, i64* %17, align 8, !tbaa !10
+  %594 = and i64 %593, 1152921504606842880
+  %595 = icmp eq i64 %594, 0
+  br i1 %595, label %596, label %VirtMemMan_SetupPDPTEntry.exit.i.94
+
+; <label>:596                                     ; preds = %592
+  %597 = tail call i64 @MemMan_Alloc() #3
+  %598 = or i64 %597, 7
+  store i64 %598, i64* %17, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.94
+
+VirtMemMan_SetupPDPTEntry.exit.i.94:              ; preds = %596, %592
+  %599 = phi i64 [ %593, %592 ], [ %598, %596 ]
+  %600 = and i64 %599, 1152921504606842880
+  %601 = inttoptr i64 %600 to i8*
+  %602 = tail call i8* @GetVirtualAddress(i32 0, i8* %601) #3
+  %603 = getelementptr inbounds i8, i8* %602, i64 3992
+  %604 = bitcast i8* %603 to i64*
+  store i64 3221225611, i64* %604, align 8, !tbaa !10
+  %605 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %606 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %605, i64 0, i32 1
+  %607 = load volatile i64*, i64** %606, align 8, !tbaa !5
+  %608 = icmp eq i64* %607, %7
+  br i1 %608, label %609, label %VirtMemMan_MapHPage.exit95
+
+; <label>:609                                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.94
+  %610 = load i64, i64* %17, align 8, !tbaa !10
+  %611 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %605, i64 0, i32 0
+  %612 = load volatile i64*, i64** %611, align 8, !tbaa !7
+  %613 = getelementptr inbounds i64, i64* %612, i64 511
+  store i64 %610, i64* %613, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 -13958643712) #4, !srcloc !12
+  br label %VirtMemMan_MapHPage.exit95
+
+VirtMemMan_MapHPage.exit95.loopexit:              ; preds = %.preheader.i.93
+  br label %VirtMemMan_MapHPage.exit95
+
+VirtMemMan_MapHPage.exit95:                       ; preds = %VirtMemMan_MapHPage.exit95.loopexit, %VirtMemMan_SetupPDPTEntry.exit.i.94, %609
+  store i64 8160, i64* @coreLocalSpace, align 8, !tbaa !10
+  br label %619
+
+; <label>:614                                     ; preds = %0
+  %615 = load i64, i64* bitcast (i64** @kernel_pdpt_paddr to i64*), align 8, !tbaa !1
+  %616 = getelementptr inbounds i8, i8* %6, i64 4088
+  %617 = bitcast i8* %616 to i64*
+  %618 = or i64 %615, 3
+  store i64 %618, i64* %617, align 8, !tbaa !10
+  br label %619
+
+; <label>:619                                     ; preds = %614, %VirtMemMan_MapHPage.exit95
+  %620 = tail call i64 @MemMan_Alloc4KiBPageCont(i32 2) #3
+  tail call void @VirtMemMan_Map(i64* %7, i64 -1099511627776, i64 %620, i64 8192, i8 zeroext 1, i32 0, i32 6, i32 0) #5
+  %621 = tail call { i32, i32 } asm sideeffect "rdmsr", "={ax},={dx},{cx},~{dirflag},~{fpsr},~{flags}"(i32 -1073741696) #4, !srcloc !13
+  %622 = extractvalue { i32, i32 } %621, 0
+  %623 = extractvalue { i32, i32 } %621, 1
+  %624 = or i32 %622, 2048
+  tail call void asm sideeffect "wrmsr", "{ax},{dx},{cx},~{dirflag},~{fpsr},~{flags}"(i32 %624, i32 %623, i32 -1073741696) #4, !srcloc !9
+  %625 = getelementptr inbounds i8, i8* %6, i64 4080
+  %626 = bitcast i8* %625 to i64*
+  %627 = load i64, i64* %626, align 8, !tbaa !10
+  %628 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %629 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %628, i64 0, i32 3
+  %630 = bitcast i64** %629 to i64*
+  store i64 %627, i64* %630, align 8, !tbaa !14
+  %631 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %632 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %631, i64 0, i32 3
+  %633 = load volatile i64*, i64** %632, align 8, !tbaa !14
+  %634 = ptrtoint i64* %633 to i64
+  %635 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %631, i64 0, i32 0
+  %636 = load volatile i64*, i64** %635, align 8, !tbaa !7
+  %637 = getelementptr inbounds i64, i64* %636, i64 510
+  store i64 %634, i64* %637, align 8, !tbaa !10
+  %638 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %631, i64 0, i32 1
+  %639 = load volatile i64*, i64** %638, align 8, !tbaa !5
+  %640 = icmp eq i8* %6, null
+  br i1 %640, label %641, label %.preheader.i.96
+
+; <label>:641                                     ; preds = %619
+  tail call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #4, !srcloc !15
+  %.pre.i = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  br label %.preheader.i.96
+
+.preheader.i.96:                                  ; preds = %641, %619
+  %642 = phi %struct.VirtMemManData* [ %631, %619 ], [ %.pre.i, %641 ]
+  %643 = icmp eq i64* %639, inttoptr (i64 -8589930496 to i64*)
+  %644 = icmp eq i64* %639, %7
+  %or.cond.i = or i1 %643, %644
+  %645 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %642, i64 0, i32 0
+  br i1 %or.cond.i, label %.preheader.split.us.i.preheader, label %.preheader..preheader.split_crit_edge.i.preheader
+
+.preheader..preheader.split_crit_edge.i.preheader: ; preds = %.preheader.i.96
+  br label %.preheader..preheader.split_crit_edge.i
+
+.preheader.split.us.i.preheader:                  ; preds = %.preheader.i.96
+  br label %.preheader.split.us.i
+
+.preheader.split.us.i:                            ; preds = %747, %.preheader.split.us.i.preheader
+  %indvars.iv2.i = phi i64 [ 0, %.preheader.split.us.i.preheader ], [ %indvars.iv.next3.i.1, %747 ]
+  %646 = trunc i64 %indvars.iv2.i to i32
+  %647 = icmp eq i32 %646, 510
+  br i1 %647, label %.preheader.split.us.i.1119, label %648
+
+; <label>:648                                     ; preds = %.preheader.split.us.i
+  %649 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv2.i
+  %650 = load i64, i64* %649, align 8, !tbaa !10
+  %651 = load volatile i64*, i64** %645, align 8, !tbaa !7
+  %652 = getelementptr inbounds i64, i64* %651, i64 %indvars.iv2.i
+  store i64 %650, i64* %652, align 8, !tbaa !10
+  br label %.preheader.split.us.i.1119
+
+.preheader.split.us.i.1119:                       ; preds = %648, %.preheader.split.us.i
+  %indvars.iv.next3.i = or i64 %indvars.iv2.i, 1
+  br i1 false, label %747, label %742
+
+.preheader..preheader.split_crit_edge.i:          ; preds = %.preheader..preheader.split_crit_edge.i.preheader, %664
+  %indvars.iv.i = phi i64 [ %indvars.iv.next.i, %664 ], [ 0, %.preheader..preheader.split_crit_edge.i.preheader ]
+  %653 = trunc i64 %indvars.iv.i to i32
+  %654 = icmp eq i32 %653, 510
+  br i1 %654, label %664, label %655
+
+; <label>:655                                     ; preds = %.preheader..preheader.split_crit_edge.i
+  %656 = load volatile i64*, i64** %645, align 8, !tbaa !7
+  %657 = getelementptr inbounds i64, i64* %656, i64 %indvars.iv.i
+  %658 = load i64, i64* %657, align 8, !tbaa !10
+  %659 = getelementptr inbounds i64, i64* %639, i64 %indvars.iv.i
+  store i64 %658, i64* %659, align 8, !tbaa !10
+  %660 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv.i
+  %661 = load i64, i64* %660, align 8, !tbaa !10
+  %662 = load volatile i64*, i64** %645, align 8, !tbaa !7
+  %663 = getelementptr inbounds i64, i64* %662, i64 %indvars.iv.i
+  store i64 %661, i64* %663, align 8, !tbaa !10
+  br label %664
+
+; <label>:664                                     ; preds = %655, %.preheader..preheader.split_crit_edge.i
+  %indvars.iv.next.i = add nuw nsw i64 %indvars.iv.i, 1
+  %exitcond.i.97 = icmp eq i64 %indvars.iv.next.i, 512
+  br i1 %exitcond.i.97, label %VirtMemMan_SetCurrent.exit.loopexit117, label %.preheader..preheader.split_crit_edge.i
+
+VirtMemMan_SetCurrent.exit.loopexit:              ; preds = %747
+  br label %VirtMemMan_SetCurrent.exit
+
+VirtMemMan_SetCurrent.exit.loopexit117:           ; preds = %664
+  br label %VirtMemMan_SetCurrent.exit
+
+VirtMemMan_SetCurrent.exit:                       ; preds = %VirtMemMan_SetCurrent.exit.loopexit117, %VirtMemMan_SetCurrent.exit.loopexit
+  %665 = load volatile i64*, i64** %645, align 8, !tbaa !7
+  %666 = bitcast i64* %665 to i8*
+  %667 = tail call i8* @GetPhysicalAddress(i8* %666) #3
+  tail call void asm sideeffect "mov $0, %cr3", "r,~{dirflag},~{fpsr},~{flags}"(i8* %667) #4, !srcloc !16
+  %668 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %669 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %668, i64 0, i32 1
+  store volatile i64* %7, i64** %669, align 8, !tbaa !5
+  %670 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  store %struct.VirtMemManData* inttoptr (i64 -1099511627776 to %struct.VirtMemManData*), %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %671 = load i64, i64* %626, align 8, !tbaa !10
+  store i64 %671, i64* inttoptr (i64 -1099511627752 to i64*), align 8, !tbaa !14
+  %672 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %670, i64 0, i32 1
+  %673 = bitcast i64** %672 to i64*
+  %674 = load i64, i64* %673, align 8, !tbaa !5
+  %675 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %676 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %675, i64 0, i32 1
+  %677 = bitcast i64** %676 to i64*
+  store i64 %674, i64* %677, align 8, !tbaa !5
+  %678 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %670, i64 0, i32 2
+  %679 = load i8, i8* %678, align 1, !tbaa !8
+  %680 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %681 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %680, i64 0, i32 2
+  store volatile i8 %679, i8* %681, align 1, !tbaa !8
+  %682 = tail call i8* @bootstrap_malloc(i64 8096) #3
+  %683 = bitcast i8* %682 to i64*
+  %684 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %685 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %684, i64 0, i32 0
+  store volatile i64* %683, i64** %685, align 8, !tbaa !7
+  %686 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %687 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %686, i64 0, i32 0
+  %688 = load volatile i64*, i64** %687, align 8, !tbaa !7
+  %689 = ptrtoint i64* %688 to i64
+  %690 = and i64 %689, 4095
+  %691 = icmp eq i64 %690, 0
+  br i1 %691, label %.preheader.i.100, label %692
+
+; <label>:692                                     ; preds = %VirtMemMan_SetCurrent.exit
+  %693 = load volatile i64*, i64** %687, align 8, !tbaa !7
+  %694 = ptrtoint i64* %693 to i64
+  %695 = add i64 %694, 4096
+  %696 = load volatile i64*, i64** %687, align 8, !tbaa !7
+  %697 = ptrtoint i64* %696 to i64
+  %698 = and i64 %697, 4095
+  %699 = sub i64 %695, %698
+  %700 = inttoptr i64 %699 to i64*
+  store volatile i64* %700, i64** %687, align 8, !tbaa !7
+  %.pre = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  br label %.preheader.i.100
+
+.preheader.i.100:                                 ; preds = %692, %VirtMemMan_SetCurrent.exit
+  %701 = phi %struct.VirtMemManData* [ %.pre, %692 ], [ %686, %VirtMemMan_SetCurrent.exit ]
+  %702 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %701, i64 0, i32 3
+  %703 = load volatile i64*, i64** %702, align 8, !tbaa !14
+  %704 = ptrtoint i64* %703 to i64
+  %705 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %701, i64 0, i32 0
+  %706 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %707 = getelementptr inbounds i64, i64* %706, i64 510
+  store i64 %704, i64* %707, align 8, !tbaa !10
+  %708 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %701, i64 0, i32 1
+  %709 = load volatile i64*, i64** %708, align 8, !tbaa !5
+  %710 = icmp eq i64* %709, inttoptr (i64 -8589930496 to i64*)
+  %711 = icmp eq i64* %709, %7
+  %or.cond.i.99 = or i1 %710, %711
+  br i1 %or.cond.i.99, label %.preheader.split.us.i.102.preheader, label %.preheader..preheader.split_crit_edge.i.106.preheader
+
+.preheader..preheader.split_crit_edge.i.106.preheader: ; preds = %.preheader.i.100
+  br label %.preheader..preheader.split_crit_edge.i.106
+
+.preheader.split.us.i.102.preheader:              ; preds = %.preheader.i.100
+  br label %.preheader.split.us.i.102
+
+.preheader.split.us.i.102:                        ; preds = %741, %.preheader.split.us.i.102.preheader
+  %indvars.iv2.i.101 = phi i64 [ 0, %.preheader.split.us.i.102.preheader ], [ %indvars.iv.next3.i.103.1, %741 ]
+  %712 = trunc i64 %indvars.iv2.i.101 to i32
+  %713 = icmp eq i32 %712, 510
+  br i1 %713, label %.preheader.split.us.i.102.1118, label %714
+
+; <label>:714                                     ; preds = %.preheader.split.us.i.102
+  %715 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv2.i.101
+  %716 = load i64, i64* %715, align 8, !tbaa !10
+  %717 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %718 = getelementptr inbounds i64, i64* %717, i64 %indvars.iv2.i.101
+  store i64 %716, i64* %718, align 8, !tbaa !10
+  br label %.preheader.split.us.i.102.1118
+
+.preheader.split.us.i.102.1118:                   ; preds = %714, %.preheader.split.us.i.102
+  %indvars.iv.next3.i.103 = or i64 %indvars.iv2.i.101, 1
+  br i1 false, label %741, label %736
+
+.preheader..preheader.split_crit_edge.i.106:      ; preds = %.preheader..preheader.split_crit_edge.i.106.preheader, %730
+  %indvars.iv.i.105 = phi i64 [ %indvars.iv.next.i.107, %730 ], [ 0, %.preheader..preheader.split_crit_edge.i.106.preheader ]
+  %719 = trunc i64 %indvars.iv.i.105 to i32
+  %720 = icmp eq i32 %719, 510
+  br i1 %720, label %730, label %721
+
+; <label>:721                                     ; preds = %.preheader..preheader.split_crit_edge.i.106
+  %722 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %723 = getelementptr inbounds i64, i64* %722, i64 %indvars.iv.i.105
+  %724 = load i64, i64* %723, align 8, !tbaa !10
+  %725 = getelementptr inbounds i64, i64* %709, i64 %indvars.iv.i.105
+  store i64 %724, i64* %725, align 8, !tbaa !10
+  %726 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv.i.105
+  %727 = load i64, i64* %726, align 8, !tbaa !10
+  %728 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %729 = getelementptr inbounds i64, i64* %728, i64 %indvars.iv.i.105
+  store i64 %727, i64* %729, align 8, !tbaa !10
+  br label %730
+
+; <label>:730                                     ; preds = %721, %.preheader..preheader.split_crit_edge.i.106
+  %indvars.iv.next.i.107 = add nuw nsw i64 %indvars.iv.i.105, 1
+  %exitcond.i.108 = icmp eq i64 %indvars.iv.next.i.107, 512
+  br i1 %exitcond.i.108, label %VirtMemMan_SetCurrent.exit109.loopexit116, label %.preheader..preheader.split_crit_edge.i.106
+
+VirtMemMan_SetCurrent.exit109.loopexit:           ; preds = %741
+  br label %VirtMemMan_SetCurrent.exit109
+
+VirtMemMan_SetCurrent.exit109.loopexit116:        ; preds = %730
+  br label %VirtMemMan_SetCurrent.exit109
+
+VirtMemMan_SetCurrent.exit109:                    ; preds = %VirtMemMan_SetCurrent.exit109.loopexit116, %VirtMemMan_SetCurrent.exit109.loopexit
+  %731 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %732 = bitcast i64* %731 to i8*
+  %733 = tail call i8* @GetPhysicalAddress(i8* %732) #3
+  tail call void asm sideeffect "mov $0, %cr3", "r,~{dirflag},~{fpsr},~{flags}"(i8* %733) #4, !srcloc !16
+  %734 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %735 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %734, i64 0, i32 1
+  store volatile i64* %7, i64** %735, align 8, !tbaa !5
+  ret void
+
+; <label>:736                                     ; preds = %.preheader.split.us.i.102.1118
+  %737 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv.next3.i.103
+  %738 = load i64, i64* %737, align 8, !tbaa !10
+  %739 = load volatile i64*, i64** %705, align 8, !tbaa !7
+  %740 = getelementptr inbounds i64, i64* %739, i64 %indvars.iv.next3.i.103
+  store i64 %738, i64* %740, align 8, !tbaa !10
+  br label %741
+
+; <label>:741                                     ; preds = %736, %.preheader.split.us.i.102.1118
+  %indvars.iv.next3.i.103.1 = add nsw i64 %indvars.iv2.i.101, 2
+  %exitcond4.i.104.1 = icmp eq i64 %indvars.iv.next3.i.103.1, 512
+  br i1 %exitcond4.i.104.1, label %VirtMemMan_SetCurrent.exit109.loopexit, label %.preheader.split.us.i.102
+
+; <label>:742                                     ; preds = %.preheader.split.us.i.1119
+  %743 = getelementptr inbounds i64, i64* %7, i64 %indvars.iv.next3.i
+  %744 = load i64, i64* %743, align 8, !tbaa !10
+  %745 = load volatile i64*, i64** %645, align 8, !tbaa !7
+  %746 = getelementptr inbounds i64, i64* %745, i64 %indvars.iv.next3.i
+  store i64 %744, i64* %746, align 8, !tbaa !10
+  br label %747
+
+; <label>:747                                     ; preds = %742, %.preheader.split.us.i.1119
+  %indvars.iv.next3.i.1 = add nsw i64 %indvars.iv2.i, 2
+  %exitcond4.i.1 = icmp eq i64 %indvars.iv.next3.i.1, 512
+  br i1 %exitcond4.i.1, label %VirtMemMan_SetCurrent.exit.loopexit, label %.preheader.split.us.i
+}
+
+; Function Attrs: noredzone
+declare void @CPUID_RequestInfo(i32, i32) #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @CPUID_FeatureIsAvailable(i32, i32) #1
+
+; Function Attrs: noredzone
+declare i64 @MemMan_Alloc() #1
+
+; Function Attrs: noredzone
+declare i8* @GetVirtualAddress(i32, i8*) #1
+
+; Function Attrs: noredzone
+declare i8* @memset(i8*, i32, i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_MapHPage(i64* %inst, i64 %virt_addr, i64 %phys_addr, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #0 {
+  %1 = and i64 %phys_addr, -1073741824
+  %2 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %3 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %2, i64 0, i32 2
+  %4 = load volatile i8, i8* %3, align 1, !tbaa !8
+  %5 = icmp eq i8 %4, 0
+  br i1 %5, label %.preheader.preheader, label %10
+
+.preheader.preheader:                             ; preds = %0
+  br label %.preheader
+
+.preheader:                                       ; preds = %.preheader.preheader, %.preheader
+  %i.05 = phi i64 [ %9, %.preheader ], [ 0, %.preheader.preheader ]
+  %6 = shl i64 %i.05, 21
+  %7 = add i64 %6, %virt_addr
+  %8 = add nsw i64 %6, %1
+  tail call void @VirtMemMan_MapLPage(i64* %inst, i64 %7, i64 %8, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  %9 = add nuw nsw i64 %i.05, 1
+  %exitcond = icmp eq i64 %9, 512
+  br i1 %exitcond, label %.loopexit.loopexit, label %.preheader
+
+; <label>:10                                      ; preds = %0
+  %11 = lshr i64 %virt_addr, 39
+  %12 = and i64 %11, 511
+  %13 = lshr i64 %virt_addr, 30
+  %14 = and i64 %13, 511
+  %15 = getelementptr inbounds i64, i64* %inst, i64 %12
+  %16 = load i64, i64* %15, align 8, !tbaa !10
+  %17 = and i64 %16, 1152921504606842880
+  %18 = icmp eq i64 %17, 0
+  br i1 %18, label %19, label %VirtMemMan_SetupPDPTEntry.exit
+
+; <label>:19                                      ; preds = %10
+  %20 = tail call i64 @MemMan_Alloc() #3
+  %21 = or i64 %20, 7
+  store i64 %21, i64* %15, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit
+
+VirtMemMan_SetupPDPTEntry.exit:                   ; preds = %10, %19
+  %22 = phi i64 [ %16, %10 ], [ %21, %19 ]
+  %23 = and i64 %22, 1152921504606842880
+  %24 = inttoptr i64 %23 to i8*
+  %25 = tail call i8* @GetVirtualAddress(i32 0, i8* %24) #3
+  %26 = bitcast i8* %25 to i64*
+  %27 = getelementptr inbounds i64, i64* %26, i64 %14
+  %not. = icmp ne i8 %present, 0
+  %28 = zext i1 %not. to i64
+  %29 = shl i32 %cache, 3
+  %30 = zext i32 %29 to i64
+  %31 = and i32 %access_perm, 2
+  %32 = zext i32 %31 to i64
+  %33 = or i64 %1, %28
+  %. = or i64 %33, %30
+  %34 = or i64 %., %32
+  %35 = and i32 %access_perm, 1
+  %36 = icmp eq i32 %35, 0
+  %37 = or i64 %34, -9223372036854775680
+  %storemerge.2 = and i64 %34, 9223372036854775675
+  %38 = or i64 %storemerge.2, 128
+  %storemerge = select i1 %36, i64 %37, i64 %38
+  %39 = and i32 %sec_perms, 1
+  %40 = zext i32 %39 to i64
+  %41 = shl nuw nsw i64 %40, 2
+  %42 = or i64 %41, %storemerge
+  store i64 %42, i64* %27, align 8, !tbaa !10
+  %43 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %44 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %43, i64 0, i32 1
+  %45 = load volatile i64*, i64** %44, align 8, !tbaa !5
+  %46 = icmp eq i64* %45, %inst
+  br i1 %46, label %47, label %.loopexit
+
+; <label>:47                                      ; preds = %VirtMemMan_SetupPDPTEntry.exit
+  %48 = load i64, i64* %15, align 8, !tbaa !10
+  %49 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %43, i64 0, i32 0
+  %50 = load volatile i64*, i64** %49, align 8, !tbaa !7
+  %51 = getelementptr inbounds i64, i64* %50, i64 %12
+  store i64 %48, i64* %51, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !12
+  br label %.loopexit
+
+.loopexit.loopexit:                               ; preds = %.preheader
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %VirtMemMan_SetupPDPTEntry.exit, %47
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_Map(i64* %inst, i64 %virt_addr, i64 %phys_addr, i64 %size, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #0 {
+  br label %.outer
+
+.outer:                                           ; preds = %.outer.backedge, %0
+  %.02.ph = phi i64 [ %size, %0 ], [ %.02.ph.be, %.outer.backedge ]
+  %.01.ph = phi i64 [ %phys_addr, %0 ], [ %.01.ph.be, %.outer.backedge ]
+  %.0.ph = phi i64 [ %virt_addr, %0 ], [ %.0.ph.be, %.outer.backedge ]
+  br label %.backedge
+
+.backedge:                                        ; preds = %.backedge.backedge, %.outer
+  %.02 = phi i64 [ %.02.ph, %.outer ], [ 0, %.backedge.backedge ]
+  switch i64 %.02, label %4 [
+    i64 0, label %.loopexit.loopexit
+    i64 4096, label %1
+    i64 2097152, label %2
+    i64 1073741824, label %3
+  ]
+
+; <label>:1                                       ; preds = %.backedge
+  tail call void @VirtMemMan_MapSPage(i64* %inst, i64 %.0.ph, i64 %.01.ph, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  br label %.backedge.backedge
+
+; <label>:2                                       ; preds = %.backedge
+  tail call void @VirtMemMan_MapLPage(i64* %inst, i64 %.0.ph, i64 %.01.ph, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  br label %.backedge.backedge
+
+.backedge.backedge:                               ; preds = %2, %3, %1
+  br label %.backedge
+
+; <label>:3                                       ; preds = %.backedge
+  tail call void @VirtMemMan_MapHPage(i64* %inst, i64 %.0.ph, i64 %.01.ph, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  br label %.backedge.backedge
+
+; <label>:4                                       ; preds = %.backedge
+  %.02.lcssa = phi i64 [ %.02, %.backedge ]
+  %5 = icmp ugt i64 %.02.lcssa, 1073741823
+  %6 = or i64 %.0.ph, %.01.ph
+  %7 = and i64 %6, 1073741823
+  %8 = icmp eq i64 %7, 0
+  %9 = and i1 %5, %8
+  br i1 %9, label %10, label %14
+
+; <label>:10                                      ; preds = %4
+  %11 = add i64 %.02.lcssa, -1073741824
+  tail call void @VirtMemMan_Map(i64* %inst, i64 %.0.ph, i64 %.01.ph, i64 1073741824, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  %12 = add i64 %.0.ph, 1073741824
+  %13 = add i64 %.01.ph, 1073741824
+  br label %.outer.backedge
+
+.outer.backedge:                                  ; preds = %10, %19, %28
+  %.02.ph.be = phi i64 [ %29, %28 ], [ %20, %19 ], [ %11, %10 ]
+  %.01.ph.be = phi i64 [ %31, %28 ], [ %22, %19 ], [ %13, %10 ]
+  %.0.ph.be = phi i64 [ %30, %28 ], [ %21, %19 ], [ %12, %10 ]
+  br label %.outer
+
+; <label>:14                                      ; preds = %4
+  %15 = icmp ugt i64 %.02.lcssa, 2097151
+  %16 = and i64 %6, 2097151
+  %17 = icmp eq i64 %16, 0
+  %18 = and i1 %15, %17
+  br i1 %18, label %19, label %23
+
+; <label>:19                                      ; preds = %14
+  %20 = add i64 %.02.lcssa, -2097152
+  tail call void @VirtMemMan_Map(i64* %inst, i64 %.0.ph, i64 %.01.ph, i64 2097152, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  %21 = add i64 %.0.ph, 2097152
+  %22 = add i64 %.01.ph, 2097152
+  br label %.outer.backedge
+
+; <label>:23                                      ; preds = %14
+  %24 = icmp ugt i64 %.02.lcssa, 4095
+  %25 = and i64 %6, 4095
+  %26 = icmp eq i64 %25, 0
+  %27 = and i1 %24, %26
+  br i1 %27, label %28, label %.loopexit.loopexit21
+
+; <label>:28                                      ; preds = %23
+  %29 = add i64 %.02.lcssa, -4096
+  tail call void @VirtMemMan_Map(i64* %inst, i64 %.0.ph, i64 %.01.ph, i64 4096, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #5
+  %30 = add i64 %.0.ph, 4096
+  %31 = add i64 %.01.ph, 4096
+  br label %.outer.backedge
+
+.loopexit.loopexit:                               ; preds = %.backedge
+  br label %.loopexit
+
+.loopexit.loopexit21:                             ; preds = %23
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit21, %.loopexit.loopexit
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i64 @MemMan_Alloc4KiBPageCont(i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64* @VirtMemMan_SetCurrent(i64* %instance) #0 {
+  %1 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %2 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %1, i64 0, i32 1
+  %3 = load volatile i64*, i64** %2, align 8, !tbaa !5
+  %4 = icmp eq i64* %instance, null
+  br i1 %4, label %5, label %.preheader
+
+; <label>:5                                       ; preds = %0
+  tail call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #4, !srcloc !15
+  %.pre = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  br label %.preheader
+
+.preheader:                                       ; preds = %0, %5
+  %6 = phi %struct.VirtMemManData* [ %1, %0 ], [ %.pre, %5 ]
+  %7 = icmp eq i64* %3, inttoptr (i64 -8589930496 to i64*)
+  %8 = icmp eq i64* %3, %instance
+  %or.cond = or i1 %7, %8
+  %9 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %6, i64 0, i32 0
+  br i1 %or.cond, label %.preheader.split.us.preheader, label %.preheader..preheader.split_crit_edge.preheader
+
+.preheader..preheader.split_crit_edge.preheader:  ; preds = %.preheader
+  br label %.preheader..preheader.split_crit_edge
+
+.preheader.split.us.preheader:                    ; preds = %.preheader
+  br label %.preheader.split.us
+
+.preheader.split.us:                              ; preds = %39, %.preheader.split.us.preheader
+  %indvars.iv2 = phi i64 [ 0, %.preheader.split.us.preheader ], [ %indvars.iv.next3.1, %39 ]
+  %10 = trunc i64 %indvars.iv2 to i32
+  %11 = icmp eq i32 %10, 510
+  br i1 %11, label %.preheader.split.us.18, label %12
+
+; <label>:12                                      ; preds = %.preheader.split.us
+  %13 = getelementptr inbounds i64, i64* %instance, i64 %indvars.iv2
+  %14 = load i64, i64* %13, align 8, !tbaa !10
+  %15 = load volatile i64*, i64** %9, align 8, !tbaa !7
+  %16 = getelementptr inbounds i64, i64* %15, i64 %indvars.iv2
+  store i64 %14, i64* %16, align 8, !tbaa !10
+  br label %.preheader.split.us.18
+
+.preheader.split.us.18:                           ; preds = %12, %.preheader.split.us
+  %indvars.iv.next3 = or i64 %indvars.iv2, 1
+  br i1 false, label %39, label %34
+
+.us-lcssa.us.loopexit:                            ; preds = %39
+  br label %.us-lcssa.us
+
+.us-lcssa.us.loopexit7:                           ; preds = %33
+  br label %.us-lcssa.us
+
+.us-lcssa.us:                                     ; preds = %.us-lcssa.us.loopexit7, %.us-lcssa.us.loopexit
+  %17 = load volatile i64*, i64** %9, align 8, !tbaa !7
+  %18 = bitcast i64* %17 to i8*
+  %19 = tail call i8* @GetPhysicalAddress(i8* %18) #3
+  tail call void asm sideeffect "mov $0, %cr3", "r,~{dirflag},~{fpsr},~{flags}"(i8* %19) #4, !srcloc !16
+  %20 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %21 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %20, i64 0, i32 1
+  store volatile i64* %instance, i64** %21, align 8, !tbaa !5
+  ret i64* %3
+
+.preheader..preheader.split_crit_edge:            ; preds = %.preheader..preheader.split_crit_edge.preheader, %33
+  %indvars.iv = phi i64 [ %indvars.iv.next, %33 ], [ 0, %.preheader..preheader.split_crit_edge.preheader ]
+  %22 = trunc i64 %indvars.iv to i32
+  %23 = icmp eq i32 %22, 510
+  br i1 %23, label %33, label %24
+
+; <label>:24                                      ; preds = %.preheader..preheader.split_crit_edge
+  %25 = load volatile i64*, i64** %9, align 8, !tbaa !7
+  %26 = getelementptr inbounds i64, i64* %25, i64 %indvars.iv
+  %27 = load i64, i64* %26, align 8, !tbaa !10
+  %28 = getelementptr inbounds i64, i64* %3, i64 %indvars.iv
+  store i64 %27, i64* %28, align 8, !tbaa !10
+  %29 = getelementptr inbounds i64, i64* %instance, i64 %indvars.iv
+  %30 = load i64, i64* %29, align 8, !tbaa !10
+  %31 = load volatile i64*, i64** %9, align 8, !tbaa !7
+  %32 = getelementptr inbounds i64, i64* %31, i64 %indvars.iv
+  store i64 %30, i64* %32, align 8, !tbaa !10
+  br label %33
+
+; <label>:33                                      ; preds = %.preheader..preheader.split_crit_edge, %24
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %exitcond = icmp eq i64 %indvars.iv.next, 512
+  br i1 %exitcond, label %.us-lcssa.us.loopexit7, label %.preheader..preheader.split_crit_edge
+
+; <label>:34                                      ; preds = %.preheader.split.us.18
+  %35 = getelementptr inbounds i64, i64* %instance, i64 %indvars.iv.next3
+  %36 = load i64, i64* %35, align 8, !tbaa !10
+  %37 = load volatile i64*, i64** %9, align 8, !tbaa !7
+  %38 = getelementptr inbounds i64, i64* %37, i64 %indvars.iv.next3
+  store i64 %36, i64* %38, align 8, !tbaa !10
+  br label %39
+
+; <label>:39                                      ; preds = %34, %.preheader.split.us.18
+  %indvars.iv.next3.1 = add nsw i64 %indvars.iv2, 2
+  %exitcond4.1 = icmp eq i64 %indvars.iv.next3.1, 512
+  br i1 %exitcond4.1, label %.us-lcssa.us.loopexit, label %.preheader.split.us
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @VirtMemMan_AllocCoreLocalData(i64 %size) #0 {
+  %1 = load i64, i64* @coreLocalSpace, align 8, !tbaa !10
+  %2 = icmp uge i64 %1, %size
+  %3 = icmp ne i64 %1, 0
+  %or.cond = and i1 %2, %3
+  br i1 %or.cond, label %4, label %10
+
+; <label>:4                                       ; preds = %0
+  %5 = load i64, i64* bitcast (%struct.VirtMemManData** @virtMemData to i64*), align 8, !tbaa !1
+  %6 = sub i64 8192, %1
+  %7 = add i64 %6, %5
+  %8 = sub i64 %1, %size
+  store i64 %8, i64* @coreLocalSpace, align 8, !tbaa !10
+  %9 = inttoptr i64 %7 to i8*
+  br label %10
+
+; <label>:10                                      ; preds = %0, %4
+  %.0 = phi i8* [ %9, %4 ], [ null, %0 ]
+  ret i8* %.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i64* @VirtMemMan_CreateInstance() #0 {
+  %1 = tail call i64 @MemMan_Alloc() #3
+  %2 = inttoptr i64 %1 to i8*
+  %3 = tail call i8* @GetVirtualAddress(i32 0, i8* %2) #3
+  %4 = bitcast i8* %3 to i64*
+  %5 = tail call i8* @memset(i8* %3, i32 0, i64 4096) #3
+  %6 = load i64, i64* bitcast (i64** @kernel_pdpt_paddr to i64*), align 8, !tbaa !1
+  %7 = getelementptr inbounds i8, i8* %3, i64 4088
+  %8 = bitcast i8* %7 to i64*
+  %9 = or i64 %6, 3
+  store i64 %9, i64* %8, align 8, !tbaa !10
+  ret i64* %4
+}
+
+; Function Attrs: noredzone
+declare i8* @GetPhysicalAddress(i8*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64* @VirtMemMan_GetCurrent() #0 {
+  %1 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %2 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %1, i64 0, i32 1
+  %3 = load volatile i64*, i64** %2, align 8, !tbaa !5
+  ret i64* %3
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_MapLPage(i64* %inst, i64 %virt_addr, i64 %phys_addr, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #0 {
+  %1 = and i64 %phys_addr, -2097152
+  %2 = lshr i64 %virt_addr, 39
+  %3 = and i64 %2, 511
+  %4 = lshr i64 %virt_addr, 30
+  %5 = and i64 %4, 511
+  %6 = lshr i64 %virt_addr, 21
+  %7 = and i64 %6, 511
+  %8 = getelementptr inbounds i64, i64* %inst, i64 %3
+  %9 = load i64, i64* %8, align 8, !tbaa !10
+  %10 = and i64 %9, 1152921504606842880
+  %11 = icmp eq i64 %10, 0
+  br i1 %11, label %12, label %VirtMemMan_SetupPDPTEntry.exit.i
+
+; <label>:12                                      ; preds = %0
+  %13 = tail call i64 @MemMan_Alloc() #3
+  %14 = or i64 %13, 7
+  store i64 %14, i64* %8, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i
+
+VirtMemMan_SetupPDPTEntry.exit.i:                 ; preds = %12, %0
+  %15 = phi i64 [ %9, %0 ], [ %14, %12 ]
+  %16 = and i64 %15, 1152921504606842880
+  %17 = inttoptr i64 %16 to i8*
+  %18 = tail call i8* @GetVirtualAddress(i32 0, i8* %17) #3
+  %19 = bitcast i8* %18 to i64*
+  %20 = getelementptr inbounds i64, i64* %19, i64 %5
+  %21 = load i64, i64* %20, align 8, !tbaa !10
+  %22 = and i64 %21, 1152921504606842880
+  %23 = icmp eq i64 %22, 0
+  br i1 %23, label %24, label %VirtMemMan_SetupPDEntry.exit
+
+; <label>:24                                      ; preds = %VirtMemMan_SetupPDPTEntry.exit.i
+  %25 = tail call i64 @MemMan_Alloc() #3
+  %26 = or i64 %25, 7
+  store i64 %26, i64* %20, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDEntry.exit
+
+VirtMemMan_SetupPDEntry.exit:                     ; preds = %VirtMemMan_SetupPDPTEntry.exit.i, %24
+  %27 = load i64, i64* %8, align 8, !tbaa !10
+  %28 = and i64 %27, 1152921504606842880
+  %29 = inttoptr i64 %28 to i8*
+  %30 = tail call i8* @GetVirtualAddress(i32 0, i8* %29) #3
+  %31 = bitcast i8* %30 to i64*
+  %32 = getelementptr inbounds i64, i64* %31, i64 %5
+  %33 = load i64, i64* %32, align 8, !tbaa !10
+  %34 = and i64 %33, 1152921504606842880
+  %35 = inttoptr i64 %34 to i8*
+  %36 = tail call i8* @GetVirtualAddress(i32 0, i8* %35) #3
+  %37 = bitcast i8* %36 to i64*
+  %38 = getelementptr inbounds i64, i64* %37, i64 %7
+  %not. = icmp ne i8 %present, 0
+  %39 = zext i1 %not. to i64
+  %40 = shl i32 %cache, 3
+  %41 = zext i32 %40 to i64
+  %42 = and i32 %access_perm, 2
+  %43 = zext i32 %42 to i64
+  %44 = or i64 %1, %39
+  %. = or i64 %44, %41
+  %45 = or i64 %., %43
+  %46 = and i32 %access_perm, 1
+  %47 = icmp eq i32 %46, 0
+  %48 = or i64 %45, -9223372036854775680
+  %storemerge.3 = and i64 %45, 9223372036854775675
+  %49 = or i64 %storemerge.3, 128
+  %storemerge = select i1 %47, i64 %48, i64 %49
+  %50 = and i32 %sec_perms, 1
+  %51 = zext i32 %50 to i64
+  %52 = shl nuw nsw i64 %51, 2
+  %53 = or i64 %52, %storemerge
+  store i64 %53, i64* %38, align 8, !tbaa !10
+  %54 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %55 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %54, i64 0, i32 1
+  %56 = load volatile i64*, i64** %55, align 8, !tbaa !5
+  %57 = icmp eq i64* %56, %inst
+  br i1 %57, label %58, label %63
+
+; <label>:58                                      ; preds = %VirtMemMan_SetupPDEntry.exit
+  %59 = load i64, i64* %8, align 8, !tbaa !10
+  %60 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %54, i64 0, i32 0
+  %61 = load volatile i64*, i64** %60, align 8, !tbaa !7
+  %62 = getelementptr inbounds i64, i64* %61, i64 %3
+  store i64 %59, i64* %62, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !17
+  br label %63
+
+; <label>:63                                      ; preds = %58, %VirtMemMan_SetupPDEntry.exit
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_MapSPage(i64* %inst, i64 %virt_addr, i64 %phys_addr, i8 zeroext %present, i32 %cache, i32 %access_perm, i32 %sec_perms) #0 {
+  %1 = and i64 %phys_addr, -4096
+  %2 = lshr i64 %virt_addr, 39
+  %3 = and i64 %2, 511
+  %4 = lshr i64 %virt_addr, 30
+  %5 = and i64 %4, 511
+  %6 = lshr i64 %virt_addr, 21
+  %7 = and i64 %6, 511
+  %8 = lshr i64 %virt_addr, 12
+  %9 = and i64 %8, 511
+  %10 = getelementptr inbounds i64, i64* %inst, i64 %3
+  %11 = load i64, i64* %10, align 8, !tbaa !10
+  %12 = and i64 %11, 1152921504606842880
+  %13 = icmp eq i64 %12, 0
+  br i1 %13, label %14, label %VirtMemMan_SetupPDPTEntry.exit.i.i
+
+; <label>:14                                      ; preds = %0
+  %15 = tail call i64 @MemMan_Alloc() #3
+  %16 = or i64 %15, 7
+  store i64 %16, i64* %10, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDPTEntry.exit.i.i
+
+VirtMemMan_SetupPDPTEntry.exit.i.i:               ; preds = %14, %0
+  %17 = phi i64 [ %11, %0 ], [ %16, %14 ]
+  %18 = and i64 %17, 1152921504606842880
+  %19 = inttoptr i64 %18 to i8*
+  %20 = tail call i8* @GetVirtualAddress(i32 0, i8* %19) #3
+  %21 = bitcast i8* %20 to i64*
+  %22 = getelementptr inbounds i64, i64* %21, i64 %5
+  %23 = load i64, i64* %22, align 8, !tbaa !10
+  %24 = and i64 %23, 1152921504606842880
+  %25 = icmp eq i64 %24, 0
+  br i1 %25, label %26, label %VirtMemMan_SetupPDEntry.exit.i
+
+; <label>:26                                      ; preds = %VirtMemMan_SetupPDPTEntry.exit.i.i
+  %27 = tail call i64 @MemMan_Alloc() #3
+  %28 = or i64 %27, 7
+  store i64 %28, i64* %22, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPDEntry.exit.i
+
+VirtMemMan_SetupPDEntry.exit.i:                   ; preds = %26, %VirtMemMan_SetupPDPTEntry.exit.i.i
+  %29 = load i64, i64* %10, align 8, !tbaa !10
+  %30 = and i64 %29, 1152921504606842880
+  %31 = inttoptr i64 %30 to i8*
+  %32 = tail call i8* @GetVirtualAddress(i32 0, i8* %31) #3
+  %33 = bitcast i8* %32 to i64*
+  %34 = getelementptr inbounds i64, i64* %33, i64 %5
+  %35 = load i64, i64* %34, align 8, !tbaa !10
+  %36 = and i64 %35, 1152921504606842880
+  %37 = inttoptr i64 %36 to i8*
+  %38 = tail call i8* @GetVirtualAddress(i32 0, i8* %37) #3
+  %39 = bitcast i8* %38 to i64*
+  %40 = getelementptr inbounds i64, i64* %39, i64 %7
+  %41 = load i64, i64* %40, align 8, !tbaa !10
+  %42 = and i64 %41, 1152921504606842880
+  %43 = icmp eq i64 %42, 0
+  br i1 %43, label %44, label %VirtMemMan_SetupPTEntry.exit
+
+; <label>:44                                      ; preds = %VirtMemMan_SetupPDEntry.exit.i
+  %45 = tail call i64 @MemMan_Alloc() #3
+  %46 = or i64 %45, 7
+  store i64 %46, i64* %40, align 8, !tbaa !10
+  br label %VirtMemMan_SetupPTEntry.exit
+
+VirtMemMan_SetupPTEntry.exit:                     ; preds = %VirtMemMan_SetupPDEntry.exit.i, %44
+  %47 = load i64, i64* %10, align 8, !tbaa !10
+  %48 = and i64 %47, 1152921504606842880
+  %49 = inttoptr i64 %48 to i8*
+  %50 = tail call i8* @GetVirtualAddress(i32 0, i8* %49) #3
+  %51 = bitcast i8* %50 to i64*
+  %52 = getelementptr inbounds i64, i64* %51, i64 %5
+  %53 = load i64, i64* %52, align 8, !tbaa !10
+  %54 = and i64 %53, 1152921504606842880
+  %55 = inttoptr i64 %54 to i8*
+  %56 = tail call i8* @GetVirtualAddress(i32 0, i8* %55) #3
+  %57 = bitcast i8* %56 to i64*
+  %58 = getelementptr inbounds i64, i64* %57, i64 %7
+  %59 = load i64, i64* %58, align 8, !tbaa !10
+  %60 = and i64 %59, 1152921504606842880
+  %61 = inttoptr i64 %60 to i8*
+  %62 = tail call i8* @GetVirtualAddress(i32 0, i8* %61) #3
+  %63 = bitcast i8* %62 to i64*
+  %64 = getelementptr inbounds i64, i64* %63, i64 %9
+  %not. = icmp ne i8 %present, 0
+  %65 = zext i1 %not. to i64
+  %. = or i64 %65, %1
+  %66 = shl i32 %cache, 3
+  %67 = zext i32 %66 to i64
+  %68 = or i64 %., %67
+  %69 = and i32 %access_perm, 2
+  %70 = zext i32 %69 to i64
+  %71 = or i64 %68, %70
+  %72 = and i32 %access_perm, 1
+  %73 = icmp eq i32 %72, 0
+  %74 = or i64 %71, -9223372036854775808
+  %75 = and i64 %71, 9223372036854775803
+  %storemerge = select i1 %73, i64 %74, i64 %75
+  %76 = and i32 %sec_perms, 1
+  %77 = zext i32 %76 to i64
+  %78 = shl nuw nsw i64 %77, 2
+  %79 = or i64 %78, %storemerge
+  store i64 %79, i64* %64, align 8, !tbaa !10
+  %80 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %81 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %80, i64 0, i32 1
+  %82 = load volatile i64*, i64** %81, align 8, !tbaa !5
+  %83 = icmp eq i64* %82, %inst
+  br i1 %83, label %84, label %89
+
+; <label>:84                                      ; preds = %VirtMemMan_SetupPTEntry.exit
+  %85 = load i64, i64* %10, align 8, !tbaa !10
+  %86 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %80, i64 0, i32 0
+  %87 = load volatile i64*, i64** %86, align 8, !tbaa !7
+  %88 = getelementptr inbounds i64, i64* %87, i64 %3
+  store i64 %85, i64* %88, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !18
+  br label %89
+
+; <label>:89                                      ; preds = %84, %VirtMemMan_SetupPTEntry.exit
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_UnmapSPage(i64* readonly %inst, i64 %virt_addr) #0 {
+  %1 = lshr i64 %virt_addr, 39
+  %2 = and i64 %1, 511
+  %3 = lshr i64 %virt_addr, 21
+  %4 = and i64 %3, 511
+  %5 = lshr i64 %virt_addr, 12
+  %6 = and i64 %5, 511
+  %7 = getelementptr inbounds i64, i64* %inst, i64 %2
+  %8 = load i64, i64* %7, align 8, !tbaa !10
+  %9 = and i64 %8, 1152921504606842880
+  %10 = icmp eq i64 %9, 0
+  br i1 %10, label %43, label %11
+
+; <label>:11                                      ; preds = %0
+  %12 = lshr i64 %virt_addr, 30
+  %13 = and i64 %12, 511
+  %14 = inttoptr i64 %9 to i8*
+  %15 = tail call i8* @GetVirtualAddress(i32 0, i8* %14) #3
+  %16 = bitcast i8* %15 to i64*
+  %17 = getelementptr inbounds i64, i64* %16, i64 %13
+  %18 = load i64, i64* %17, align 8, !tbaa !10
+  %19 = and i64 %18, 1152921504606842880
+  %20 = icmp eq i64 %19, 0
+  br i1 %20, label %43, label %21
+
+; <label>:21                                      ; preds = %11
+  %22 = inttoptr i64 %19 to i8*
+  %23 = tail call i8* @GetVirtualAddress(i32 0, i8* %22) #3
+  %24 = bitcast i8* %23 to i64*
+  %25 = getelementptr inbounds i64, i64* %24, i64 %4
+  %26 = load i64, i64* %25, align 8, !tbaa !10
+  %27 = and i64 %26, 1152921504606842880
+  %28 = icmp eq i64 %27, 0
+  br i1 %28, label %43, label %29
+
+; <label>:29                                      ; preds = %21
+  %30 = inttoptr i64 %27 to i8*
+  %31 = tail call i8* @GetVirtualAddress(i32 0, i8* %30) #3
+  %32 = bitcast i8* %31 to i64*
+  %33 = getelementptr inbounds i64, i64* %32, i64 %6
+  store i64 0, i64* %33, align 8, !tbaa !10
+  %34 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %35 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %34, i64 0, i32 1
+  %36 = load volatile i64*, i64** %35, align 8, !tbaa !5
+  %37 = icmp eq i64* %36, %inst
+  br i1 %37, label %38, label %43
+
+; <label>:38                                      ; preds = %29
+  %39 = load i64, i64* %7, align 8, !tbaa !10
+  %40 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %34, i64 0, i32 0
+  %41 = load volatile i64*, i64** %40, align 8, !tbaa !7
+  %42 = getelementptr inbounds i64, i64* %41, i64 %2
+  store i64 %39, i64* %42, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !19
+  br label %43
+
+; <label>:43                                      ; preds = %11, %29, %38, %21, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_UnmapLPage(i64* readonly %inst, i64 %virt_addr) #0 {
+  %1 = lshr i64 %virt_addr, 39
+  %2 = and i64 %1, 511
+  %3 = lshr i64 %virt_addr, 21
+  %4 = and i64 %3, 511
+  %5 = getelementptr inbounds i64, i64* %inst, i64 %2
+  %6 = load i64, i64* %5, align 8, !tbaa !10
+  %7 = and i64 %6, 1152921504606842880
+  %8 = icmp eq i64 %7, 0
+  br i1 %8, label %33, label %9
+
+; <label>:9                                       ; preds = %0
+  %10 = lshr i64 %virt_addr, 30
+  %11 = and i64 %10, 511
+  %12 = inttoptr i64 %7 to i8*
+  %13 = tail call i8* @GetVirtualAddress(i32 0, i8* %12) #3
+  %14 = bitcast i8* %13 to i64*
+  %15 = getelementptr inbounds i64, i64* %14, i64 %11
+  %16 = load i64, i64* %15, align 8, !tbaa !10
+  %17 = and i64 %16, 1152921504606842880
+  %18 = icmp eq i64 %17, 0
+  br i1 %18, label %33, label %19
+
+; <label>:19                                      ; preds = %9
+  %20 = inttoptr i64 %17 to i8*
+  %21 = tail call i8* @GetVirtualAddress(i32 0, i8* %20) #3
+  %22 = bitcast i8* %21 to i64*
+  %23 = getelementptr inbounds i64, i64* %22, i64 %4
+  store i64 0, i64* %23, align 8, !tbaa !10
+  %24 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %25 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %24, i64 0, i32 1
+  %26 = load volatile i64*, i64** %25, align 8, !tbaa !5
+  %27 = icmp eq i64* %26, %inst
+  br i1 %27, label %28, label %33
+
+; <label>:28                                      ; preds = %19
+  %29 = load i64, i64* %5, align 8, !tbaa !10
+  %30 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %24, i64 0, i32 0
+  %31 = load volatile i64*, i64** %30, align 8, !tbaa !7
+  %32 = getelementptr inbounds i64, i64* %31, i64 %2
+  store i64 %29, i64* %32, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !20
+  br label %33
+
+; <label>:33                                      ; preds = %9, %28, %19, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_UnmapHPage(i64* readonly %inst, i64 %virt_addr) #0 {
+  %1 = lshr i64 %virt_addr, 39
+  %2 = and i64 %1, 511
+  %3 = getelementptr inbounds i64, i64* %inst, i64 %2
+  %4 = load i64, i64* %3, align 8, !tbaa !10
+  %5 = and i64 %4, 1152921504606842880
+  %6 = icmp eq i64 %5, 0
+  br i1 %6, label %23, label %7
+
+; <label>:7                                       ; preds = %0
+  %8 = lshr i64 %virt_addr, 30
+  %9 = and i64 %8, 511
+  %10 = inttoptr i64 %5 to i8*
+  %11 = tail call i8* @GetVirtualAddress(i32 0, i8* %10) #3
+  %12 = bitcast i8* %11 to i64*
+  %13 = getelementptr inbounds i64, i64* %12, i64 %9
+  store i64 0, i64* %13, align 8, !tbaa !10
+  %14 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %15 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %14, i64 0, i32 1
+  %16 = load volatile i64*, i64** %15, align 8, !tbaa !5
+  %17 = icmp eq i64* %16, %inst
+  br i1 %17, label %18, label %23
+
+; <label>:18                                      ; preds = %7
+  %19 = load i64, i64* %3, align 8, !tbaa !10
+  %20 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %14, i64 0, i32 0
+  %21 = load volatile i64*, i64** %20, align 8, !tbaa !7
+  %22 = getelementptr inbounds i64, i64* %21, i64 %2
+  store i64 %19, i64* %22, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %virt_addr) #4, !srcloc !21
+  br label %23
+
+; <label>:23                                      ; preds = %7, %18, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_Unmap(i64* readonly %inst, i64 %virt_addr, i64 %size) #0 {
+  br label %VirtMemMan_UnmapLPage.exit
+
+VirtMemMan_UnmapLPage.exit:                       ; preds = %VirtMemMan_UnmapLPage.exit.backedge, %0
+  %.01 = phi i64 [ %virt_addr, %0 ], [ %.01.be, %VirtMemMan_UnmapLPage.exit.backedge ]
+  %.0 = phi i64 [ %size, %0 ], [ %.0.be, %VirtMemMan_UnmapLPage.exit.backedge ]
+  switch i64 %.0, label %58 [
+    i64 0, label %79
+    i64 4096, label %1
+    i64 2097152, label %2
+    i64 1073741824, label %35
+  ]
+
+; <label>:1                                       ; preds = %VirtMemMan_UnmapLPage.exit
+  tail call void @VirtMemMan_UnmapSPage(i64* %inst, i64 %.01) #5
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:2                                       ; preds = %VirtMemMan_UnmapLPage.exit
+  %3 = lshr i64 %.01, 39
+  %4 = and i64 %3, 511
+  %5 = lshr i64 %.01, 21
+  %6 = and i64 %5, 511
+  %7 = getelementptr inbounds i64, i64* %inst, i64 %4
+  %8 = load i64, i64* %7, align 8, !tbaa !10
+  %9 = and i64 %8, 1152921504606842880
+  %10 = icmp eq i64 %9, 0
+  br i1 %10, label %VirtMemMan_UnmapLPage.exit.backedge, label %11
+
+; <label>:11                                      ; preds = %2
+  %12 = lshr i64 %.01, 30
+  %13 = and i64 %12, 511
+  %14 = inttoptr i64 %9 to i8*
+  %15 = tail call i8* @GetVirtualAddress(i32 0, i8* %14) #3
+  %16 = bitcast i8* %15 to i64*
+  %17 = getelementptr inbounds i64, i64* %16, i64 %13
+  %18 = load i64, i64* %17, align 8, !tbaa !10
+  %19 = and i64 %18, 1152921504606842880
+  %20 = icmp eq i64 %19, 0
+  br i1 %20, label %VirtMemMan_UnmapLPage.exit.backedge, label %21
+
+; <label>:21                                      ; preds = %11
+  %22 = inttoptr i64 %19 to i8*
+  %23 = tail call i8* @GetVirtualAddress(i32 0, i8* %22) #3
+  %24 = bitcast i8* %23 to i64*
+  %25 = getelementptr inbounds i64, i64* %24, i64 %6
+  store i64 0, i64* %25, align 8, !tbaa !10
+  %26 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %27 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %26, i64 0, i32 1
+  %28 = load volatile i64*, i64** %27, align 8, !tbaa !5
+  %29 = icmp eq i64* %28, %inst
+  br i1 %29, label %30, label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:30                                      ; preds = %21
+  %31 = load i64, i64* %7, align 8, !tbaa !10
+  %32 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %26, i64 0, i32 0
+  %33 = load volatile i64*, i64** %32, align 8, !tbaa !7
+  %34 = getelementptr inbounds i64, i64* %33, i64 %4
+  store i64 %31, i64* %34, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %.01) #4, !srcloc !20
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:35                                      ; preds = %VirtMemMan_UnmapLPage.exit
+  %36 = lshr i64 %.01, 39
+  %37 = and i64 %36, 511
+  %38 = getelementptr inbounds i64, i64* %inst, i64 %37
+  %39 = load i64, i64* %38, align 8, !tbaa !10
+  %40 = and i64 %39, 1152921504606842880
+  %41 = icmp eq i64 %40, 0
+  br i1 %41, label %VirtMemMan_UnmapLPage.exit.backedge, label %42
+
+; <label>:42                                      ; preds = %35
+  %43 = lshr i64 %.01, 30
+  %44 = and i64 %43, 511
+  %45 = inttoptr i64 %40 to i8*
+  %46 = tail call i8* @GetVirtualAddress(i32 0, i8* %45) #3
+  %47 = bitcast i8* %46 to i64*
+  %48 = getelementptr inbounds i64, i64* %47, i64 %44
+  store i64 0, i64* %48, align 8, !tbaa !10
+  %49 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %50 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %49, i64 0, i32 1
+  %51 = load volatile i64*, i64** %50, align 8, !tbaa !5
+  %52 = icmp eq i64* %51, %inst
+  br i1 %52, label %53, label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:53                                      ; preds = %42
+  %54 = load i64, i64* %38, align 8, !tbaa !10
+  %55 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %49, i64 0, i32 0
+  %56 = load volatile i64*, i64** %55, align 8, !tbaa !7
+  %57 = getelementptr inbounds i64, i64* %56, i64 %37
+  store i64 %54, i64* %57, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %.01) #4, !srcloc !21
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:58                                      ; preds = %VirtMemMan_UnmapLPage.exit
+  %59 = icmp ugt i64 %.0, 1073741823
+  %60 = and i64 %.01, 1073741823
+  %61 = icmp eq i64 %60, 0
+  %or.cond = and i1 %59, %61
+  br i1 %or.cond, label %62, label %65
+
+; <label>:62                                      ; preds = %58
+  %63 = add i64 %.0, -1073741824
+  tail call void @VirtMemMan_Unmap(i64* %inst, i64 %.01, i64 1073741824) #5
+  %64 = add i64 %.01, 1073741824
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+VirtMemMan_UnmapLPage.exit.backedge:              ; preds = %62, %76, %69, %1, %2, %11, %21, %30, %35, %42, %53
+  %.01.be = phi i64 [ %.01, %1 ], [ %64, %62 ], [ %71, %69 ], [ %78, %76 ], [ %.01, %2 ], [ %.01, %11 ], [ %.01, %21 ], [ %.01, %30 ], [ %.01, %35 ], [ %.01, %42 ], [ %.01, %53 ]
+  %.0.be = phi i64 [ 0, %1 ], [ %63, %62 ], [ %70, %69 ], [ %77, %76 ], [ 0, %2 ], [ 0, %11 ], [ 0, %21 ], [ 0, %30 ], [ 0, %35 ], [ 0, %42 ], [ 0, %53 ]
+  br label %VirtMemMan_UnmapLPage.exit
+
+; <label>:65                                      ; preds = %58
+  %66 = icmp ugt i64 %.0, 2097151
+  %67 = and i64 %.01, 2097151
+  %68 = icmp eq i64 %67, 0
+  %or.cond4 = and i1 %66, %68
+  br i1 %or.cond4, label %69, label %72
+
+; <label>:69                                      ; preds = %65
+  %70 = add i64 %.0, -2097152
+  tail call void @VirtMemMan_Unmap(i64* %inst, i64 %.01, i64 2097152) #5
+  %71 = add i64 %.01, 2097152
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:72                                      ; preds = %65
+  %73 = icmp ugt i64 %.0, 4095
+  %74 = and i64 %.01, 4095
+  %75 = icmp eq i64 %74, 0
+  %or.cond6 = and i1 %73, %75
+  br i1 %or.cond6, label %76, label %79
+
+; <label>:76                                      ; preds = %72
+  %77 = add i64 %.0, -4096
+  tail call void @VirtMemMan_Unmap(i64* %inst, i64 %.01, i64 4096) #5
+  %78 = add i64 %.01, 4096
+  br label %VirtMemMan_UnmapLPage.exit.backedge
+
+; <label>:79                                      ; preds = %VirtMemMan_UnmapLPage.exit, %72
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @VirtMemMan_GetPhysicalAddress(i64* nocapture readonly %inst, i8* %addr) #0 {
+  %1 = ptrtoint i8* %addr to i64
+  %2 = lshr i64 %1, 39
+  %3 = and i64 %2, 511
+  %4 = lshr i64 %1, 21
+  %5 = and i64 %4, 511
+  %6 = lshr i64 %1, 12
+  %7 = and i64 %6, 511
+  %8 = getelementptr inbounds i64, i64* %inst, i64 %3
+  %9 = load i64, i64* %8, align 8, !tbaa !10
+  %10 = and i64 %9, 1
+  %11 = icmp eq i64 %10, 0
+  br i1 %11, label %.thread21, label %12
+
+; <label>:12                                      ; preds = %0
+  %13 = lshr i64 %1, 30
+  %14 = and i64 %13, 511
+  %15 = and i64 %9, 1152921504606842880
+  %16 = inttoptr i64 %15 to i8*
+  %17 = tail call i8* @GetVirtualAddress(i32 0, i8* %16) #3
+  %18 = bitcast i8* %17 to i64*
+  %19 = getelementptr inbounds i64, i64* %18, i64 %14
+  %20 = load i64, i64* %19, align 8, !tbaa !10
+  %21 = and i64 %20, 129
+  %22 = icmp eq i64 %21, 129
+  br i1 %22, label %23, label %28
+
+; <label>:23                                      ; preds = %12
+  %24 = and i64 %20, 1152921503533105152
+  %25 = and i64 %1, 1073741823
+  %26 = or i64 %24, %25
+  %27 = inttoptr i64 %26 to i8*
+  br label %.thread21
+
+; <label>:28                                      ; preds = %12
+  %29 = and i64 %20, 1
+  %30 = icmp eq i64 %29, 0
+  br i1 %30, label %.thread21, label %31
+
+; <label>:31                                      ; preds = %28
+  %32 = and i64 %20, 1152921504606842880
+  %33 = inttoptr i64 %32 to i8*
+  %34 = tail call i8* @GetVirtualAddress(i32 0, i8* %33) #3
+  %35 = bitcast i8* %34 to i64*
+  %36 = getelementptr inbounds i64, i64* %35, i64 %5
+  %37 = load i64, i64* %36, align 8, !tbaa !10
+  %38 = and i64 %37, 129
+  %39 = icmp eq i64 %38, 129
+  br i1 %39, label %40, label %45
+
+; <label>:40                                      ; preds = %31
+  %41 = and i64 %37, 1152921504605798400
+  %42 = and i64 %1, 2097151
+  %43 = add nuw nsw i64 %41, %42
+  %44 = inttoptr i64 %43 to i8*
+  br label %.thread21
+
+; <label>:45                                      ; preds = %31
+  %46 = and i64 %37, 1
+  %47 = icmp eq i64 %46, 0
+  br i1 %47, label %.thread21, label %48
+
+; <label>:48                                      ; preds = %45
+  %49 = and i64 %37, 1152921504606842880
+  %50 = inttoptr i64 %49 to i8*
+  %51 = tail call i8* @GetVirtualAddress(i32 0, i8* %50) #3
+  %52 = bitcast i8* %51 to i64*
+  %53 = getelementptr inbounds i64, i64* %52, i64 %7
+  %54 = load i64, i64* %53, align 8, !tbaa !10
+  %55 = and i64 %54, 1
+  %56 = icmp eq i64 %55, 0
+  br i1 %56, label %.thread21, label %57
+
+; <label>:57                                      ; preds = %48
+  %58 = and i64 %54, 1152921504606842880
+  %59 = and i64 %1, 4095
+  %60 = or i64 %58, %59
+  %61 = inttoptr i64 %60 to i8*
+  br label %.thread21
+
+.thread21:                                        ; preds = %57, %40, %23, %48, %45, %28, %0
+  %.5 = phi i8* [ null, %0 ], [ null, %28 ], [ null, %45 ], [ null, %48 ], [ %27, %23 ], [ %61, %57 ], [ %44, %40 ]
+  ret i8* %.5
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i8* @VirtMemMan_GetVirtualAddress(i32 %c, i8* %addr) #2 {
+  switch i32 %c, label %19 [
+    i32 0, label %1
+    i32 2, label %8
+    i32 1, label %14
+  ]
+
+; <label>:1                                       ; preds = %0
+  %2 = ptrtoint i8* %addr to i64
+  %3 = add i64 %2, -17179869184
+  %4 = icmp ult i8* %addr, inttoptr (i64 4294967296 to i8*)
+  %5 = select i1 %4, i64 8589934592, i64 0
+  %6 = add i64 %3, %5
+  %7 = inttoptr i64 %6 to i8*
+  br label %19
+
+; <label>:8                                       ; preds = %0
+  %9 = icmp ult i8* %addr, inttoptr (i64 4294967296 to i8*)
+  br i1 %9, label %10, label %19
+
+; <label>:10                                      ; preds = %8
+  %11 = ptrtoint i8* %addr to i64
+  %12 = add i64 %11, -17179869184
+  %13 = inttoptr i64 %12 to i8*
+  br label %19
+
+; <label>:14                                      ; preds = %0
+  %.old = icmp ult i8* %addr, inttoptr (i64 4294967296 to i8*)
+  br i1 %.old, label %15, label %19
+
+; <label>:15                                      ; preds = %14
+  %16 = ptrtoint i8* %addr to i64
+  %17 = add i64 %16, -21474836480
+  %18 = inttoptr i64 %17 to i8*
+  br label %19
+
+; <label>:19                                      ; preds = %8, %14, %0, %15, %10, %1
+  %.0 = phi i8* [ %7, %1 ], [ %13, %10 ], [ %18, %15 ], [ null, %0 ], [ null, %14 ], [ null, %8 ]
+  ret i8* %.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @VirtMemMan_FindFreeAddress(i64* nocapture readonly %inst, i64 %size, i32 %allocType, i32 %sec_perms) #0 {
+  %1 = and i64 %size, 4095
+  %2 = icmp eq i64 %1, 0
+  %3 = add i64 %size, 4096
+  %4 = and i64 %3, -4096
+  %.0 = select i1 %2, i64 %size, i64 %4
+  switch i32 %allocType, label %5 [
+    i32 0, label %6
+    i32 256, label %6
+  ]
+
+; <label>:5                                       ; preds = %0
+  br label %6
+
+; <label>:6                                       ; preds = %0, %0, %5
+  %pml_base.0 = phi i32 [ 256, %5 ], [ 511, %0 ], [ 511, %0 ]
+  %7 = and i32 %sec_perms, 1
+  %8 = icmp eq i32 %7, 0
+  br i1 %8, label %14, label %9
+
+; <label>:9                                       ; preds = %6
+  switch i32 %allocType, label %13 [
+    i32 0, label %14
+    i32 64, label %10
+    i32 1, label %11
+    i32 256, label %12
+  ]
+
+; <label>:10                                      ; preds = %9
+  br label %14
+
+; <label>:11                                      ; preds = %9
+  br label %14
+
+; <label>:12                                      ; preds = %9
+  br label %14
+
+; <label>:13                                      ; preds = %9
+  br label %14
+
+; <label>:14                                      ; preds = %9, %6, %10, %11, %12, %13
+  %pml_base.1 = phi i32 [ 0, %13 ], [ 1, %12 ], [ 2, %11 ], [ 20, %10 ], [ %pml_base.0, %6 ], [ 1, %9 ]
+  %pdpt_base.0 = phi i64 [ 0, %13 ], [ 1, %12 ], [ 0, %11 ], [ 0, %10 ], [ 0, %6 ], [ 0, %9 ]
+  %15 = add nsw i32 %pml_base.1, 128
+  %16 = sext i32 %15 to i64
+  %17 = icmp eq i64 %.0, 0
+  br i1 %17, label %.critedge, label %.lr.ph66
+
+.lr.ph66:                                         ; preds = %14
+  %18 = sext i32 %pml_base.1 to i64
+  br label %25
+
+.critedge.loopexit:                               ; preds = %.critedge4
+  %addr.11.lcssa = phi i64 [ %addr.11, %.critedge4 ]
+  br label %.critedge
+
+.critedge:                                        ; preds = %.critedge.loopexit, %14
+  %addr.0.lcssa = phi i64 [ 0, %14 ], [ %addr.11.lcssa, %.critedge.loopexit ]
+  %19 = and i64 %addr.0.lcssa, 140737488355328
+  %20 = icmp eq i64 %19, 0
+  %21 = or i64 %addr.0.lcssa, -281474976710656
+  %addr.0. = select i1 %20, i64 %addr.0.lcssa, i64 %21
+  %22 = icmp eq i64 %addr.0., 0
+  %23 = inttoptr i64 %addr.0. to i8*
+  %24 = select i1 %22, i8* inttoptr (i64 4096 to i8*), i8* %23
+  ret i8* %24
+
+; <label>:25                                      ; preds = %.lr.ph66, %.critedge4
+  %cur_score.065 = phi i64 [ 0, %.lr.ph66 ], [ %cur_score.11, %.critedge4 ]
+  %prev_val.064 = phi i64 [ 0, %.lr.ph66 ], [ %prev_val.7, %.critedge4 ]
+  %pml_i.061 = phi i64 [ %18, %.lr.ph66 ], [ %122, %.critedge4 ]
+  %addr.060 = phi i64 [ 0, %.lr.ph66 ], [ %addr.11, %.critedge4 ]
+  %26 = getelementptr inbounds i64, i64* %inst, i64 %pml_i.061
+  %27 = load i64, i64* %26, align 8, !tbaa !10
+  %28 = and i64 %27, 1
+  %29 = icmp eq i64 %28, 0
+  br i1 %29, label %30, label %34
+
+; <label>:30                                      ; preds = %25
+  %31 = icmp eq i64 %cur_score.065, 0
+  %32 = shl i64 %pml_i.061, 39
+  %.addr.0 = select i1 %31, i64 %32, i64 %addr.060
+  %33 = add i64 %cur_score.065, 549755813888
+  br label %.critedge4
+
+; <label>:34                                      ; preds = %25
+  %35 = and i64 %27, 128
+  %36 = icmp eq i64 %35, 0
+  br i1 %36, label %37, label %119
+
+; <label>:37                                      ; preds = %34
+  %38 = and i64 %27, 1152921504606842880
+  %39 = inttoptr i64 %38 to i8*
+  %40 = tail call i8* @GetVirtualAddress(i32 0, i8* %39) #3
+  %41 = bitcast i8* %40 to i64*
+  %notlhs = icmp eq i64 %cur_score.065, 0
+  %notrhs = icmp eq i64 %pml_i.061, 0
+  %or.cond3.not = or i1 %notrhs, %notlhs
+  %42 = add i64 %pml_i.061, -1
+  %43 = icmp eq i64 %42, %prev_val.064
+  %or.cond19 = or i1 %43, %or.cond3.not
+  %cur_score.1 = select i1 %or.cond19, i64 %cur_score.065, i64 0
+  %44 = icmp ult i64 %cur_score.1, %.0
+  br i1 %44, label %.lr.ph55, label %.critedge4
+
+.lr.ph55:                                         ; preds = %37
+  %45 = shl i64 %pml_i.061, 39
+  br label %46
+
+; <label>:46                                      ; preds = %.lr.ph55, %.critedge7
+  %cur_score.254 = phi i64 [ %cur_score.1, %.lr.ph55 ], [ %cur_score.10, %.critedge7 ]
+  %pdpt_i.053 = phi i64 [ %pdpt_base.0, %.lr.ph55 ], [ %116, %.critedge7 ]
+  %prev_val.152 = phi i64 [ %prev_val.064, %.lr.ph55 ], [ %prev_val.6, %.critedge7 ]
+  %addr.251 = phi i64 [ %addr.060, %.lr.ph55 ], [ %addr.10, %.critedge7 ]
+  %47 = getelementptr inbounds i64, i64* %41, i64 %pdpt_i.053
+  %48 = load i64, i64* %47, align 8, !tbaa !10
+  %49 = and i64 %48, 1
+  %50 = icmp eq i64 %49, 0
+  br i1 %50, label %51, label %56
+
+; <label>:51                                      ; preds = %46
+  %52 = icmp eq i64 %cur_score.254, 0
+  %53 = shl i64 %pdpt_i.053, 30
+  %54 = or i64 %53, %45
+  %addr.3 = select i1 %52, i64 %54, i64 %addr.251
+  %55 = add i64 %cur_score.254, 1073741824
+  br label %.critedge7
+
+; <label>:56                                      ; preds = %46
+  %57 = and i64 %48, 128
+  %58 = icmp eq i64 %57, 0
+  br i1 %58, label %59, label %.critedge7
+
+; <label>:59                                      ; preds = %56
+  %60 = and i64 %48, 1152921504606842880
+  %61 = inttoptr i64 %60 to i8*
+  %62 = tail call i8* @GetVirtualAddress(i32 0, i8* %61) #3
+  %63 = bitcast i8* %62 to i64*
+  %notlhs30 = icmp eq i64 %cur_score.254, 0
+  %notrhs31 = icmp eq i64 %pdpt_i.053, 0
+  %or.cond6.not = or i1 %notrhs31, %notlhs30
+  %64 = add i64 %pdpt_i.053, -1
+  %65 = icmp eq i64 %64, %prev_val.152
+  %or.cond22 = or i1 %65, %or.cond6.not
+  %cur_score.3 = select i1 %or.cond22, i64 %cur_score.254, i64 0
+  %66 = icmp ult i64 %cur_score.3, %.0
+  br i1 %66, label %.lr.ph46, label %.critedge7
+
+.lr.ph46:                                         ; preds = %59
+  %67 = shl i64 %pdpt_i.053, 30
+  %68 = or i64 %67, %45
+  %69 = or i64 %pdpt_i.053, %pml_i.061
+  br label %70
+
+; <label>:70                                      ; preds = %.lr.ph46, %.critedge10
+  %pd_i.045 = phi i64 [ 0, %.lr.ph46 ], [ %113, %.critedge10 ]
+  %cur_score.444 = phi i64 [ %cur_score.3, %.lr.ph46 ], [ %cur_score.9, %.critedge10 ]
+  %prev_val.243 = phi i64 [ %prev_val.152, %.lr.ph46 ], [ %prev_val.5, %.critedge10 ]
+  %addr.442 = phi i64 [ %addr.251, %.lr.ph46 ], [ %addr.9, %.critedge10 ]
+  %71 = getelementptr inbounds i64, i64* %63, i64 %pd_i.045
+  %72 = load i64, i64* %71, align 8, !tbaa !10
+  %73 = and i64 %72, 1
+  %74 = icmp eq i64 %73, 0
+  br i1 %74, label %75, label %80
+
+; <label>:75                                      ; preds = %70
+  %76 = icmp eq i64 %cur_score.444, 0
+  %77 = shl i64 %pd_i.045, 21
+  %78 = or i64 %68, %77
+  %addr.5 = select i1 %76, i64 %78, i64 %addr.442
+  %79 = add i64 %cur_score.444, 2097152
+  br label %.critedge10
+
+; <label>:80                                      ; preds = %70
+  %81 = and i64 %72, 128
+  %82 = icmp eq i64 %81, 0
+  br i1 %82, label %83, label %.critedge10
+
+; <label>:83                                      ; preds = %80
+  %84 = and i64 %72, 1152921504606842880
+  %85 = inttoptr i64 %84 to i8*
+  %86 = tail call i8* @GetVirtualAddress(i32 0, i8* %85) #3
+  %87 = bitcast i8* %86 to i64*
+  %notlhs32 = icmp eq i64 %cur_score.444, 0
+  %notrhs33 = icmp eq i64 %pd_i.045, 0
+  %or.cond9.not = or i1 %notlhs32, %notrhs33
+  %88 = add nsw i64 %pd_i.045, -1
+  %89 = icmp eq i64 %88, %prev_val.243
+  %or.cond25 = or i1 %or.cond9.not, %89
+  %cur_score.5 = select i1 %or.cond25, i64 %cur_score.444, i64 0
+  %90 = icmp ult i64 %cur_score.5, %.0
+  br i1 %90, label %.lr.ph, label %.critedge10
+
+.lr.ph:                                           ; preds = %83
+  %91 = or i64 %69, %pd_i.045
+  %92 = shl i64 %pd_i.045, 21
+  %93 = or i64 %68, %92
+  br label %94
+
+; <label>:94                                      ; preds = %.lr.ph, %109
+  %pt_i.038 = phi i64 [ 0, %.lr.ph ], [ %110, %109 ]
+  %cur_score.637 = phi i64 [ %cur_score.5, %.lr.ph ], [ %cur_score.8, %109 ]
+  %prev_val.336 = phi i64 [ %prev_val.243, %.lr.ph ], [ %prev_val.4, %109 ]
+  %addr.635 = phi i64 [ %addr.442, %.lr.ph ], [ %addr.8, %109 ]
+  %95 = or i64 %91, %pt_i.038
+  %96 = icmp eq i64 %95, 0
+  %.pt_i.0 = select i1 %96, i64 1, i64 %pt_i.038
+  %97 = icmp eq i64 %.pt_i.0, 0
+  %98 = add i64 %.pt_i.0, -1
+  %99 = icmp eq i64 %prev_val.336, %98
+  %or.cond28 = or i1 %97, %99
+  %cur_score.7 = select i1 %or.cond28, i64 %cur_score.637, i64 0
+  %100 = getelementptr inbounds i64, i64* %87, i64 %.pt_i.0
+  %101 = load i64, i64* %100, align 8, !tbaa !10
+  %102 = and i64 %101, 1
+  %103 = icmp eq i64 %102, 0
+  br i1 %103, label %104, label %109
+
+; <label>:104                                     ; preds = %94
+  %105 = icmp eq i64 %cur_score.7, 0
+  %106 = shl i64 %.pt_i.0, 12
+  %107 = or i64 %93, %106
+  %addr.7 = select i1 %105, i64 %107, i64 %addr.635
+  %108 = add i64 %cur_score.7, 4096
+  br label %109
+
+; <label>:109                                     ; preds = %94, %104
+  %addr.8 = phi i64 [ %addr.7, %104 ], [ %addr.635, %94 ]
+  %prev_val.4 = phi i64 [ %.pt_i.0, %104 ], [ %prev_val.336, %94 ]
+  %cur_score.8 = phi i64 [ %108, %104 ], [ %cur_score.7, %94 ]
+  %110 = add i64 %.pt_i.0, 1
+  %111 = icmp ult i64 %110, 512
+  %112 = icmp ult i64 %cur_score.8, %.0
+  %or.cond26 = and i1 %112, %111
+  br i1 %or.cond26, label %94, label %.critedge10.loopexit
+
+.critedge10.loopexit:                             ; preds = %109
+  %cur_score.8.lcssa = phi i64 [ %cur_score.8, %109 ]
+  %prev_val.4.lcssa = phi i64 [ %prev_val.4, %109 ]
+  %addr.8.lcssa = phi i64 [ %addr.8, %109 ]
+  br label %.critedge10
+
+.critedge10:                                      ; preds = %.critedge10.loopexit, %83, %75, %80
+  %addr.9 = phi i64 [ %addr.5, %75 ], [ %addr.442, %80 ], [ %addr.442, %83 ], [ %addr.8.lcssa, %.critedge10.loopexit ]
+  %prev_val.5 = phi i64 [ %pd_i.045, %75 ], [ %prev_val.243, %80 ], [ %prev_val.243, %83 ], [ %prev_val.4.lcssa, %.critedge10.loopexit ]
+  %cur_score.9 = phi i64 [ %79, %75 ], [ %cur_score.444, %80 ], [ %cur_score.5, %83 ], [ %cur_score.8.lcssa, %.critedge10.loopexit ]
+  %113 = add nuw nsw i64 %pd_i.045, 1
+  %114 = icmp ult i64 %113, 512
+  %115 = icmp ult i64 %cur_score.9, %.0
+  %or.cond23 = and i1 %115, %114
+  br i1 %or.cond23, label %70, label %.critedge7.loopexit
+
+.critedge7.loopexit:                              ; preds = %.critedge10
+  %cur_score.9.lcssa = phi i64 [ %cur_score.9, %.critedge10 ]
+  %prev_val.5.lcssa = phi i64 [ %prev_val.5, %.critedge10 ]
+  %addr.9.lcssa = phi i64 [ %addr.9, %.critedge10 ]
+  br label %.critedge7
+
+.critedge7:                                       ; preds = %.critedge7.loopexit, %59, %51, %56
+  %addr.10 = phi i64 [ %addr.3, %51 ], [ %addr.251, %56 ], [ %addr.251, %59 ], [ %addr.9.lcssa, %.critedge7.loopexit ]
+  %prev_val.6 = phi i64 [ %pdpt_i.053, %51 ], [ %prev_val.152, %56 ], [ %prev_val.152, %59 ], [ %prev_val.5.lcssa, %.critedge7.loopexit ]
+  %cur_score.10 = phi i64 [ %55, %51 ], [ %cur_score.254, %56 ], [ %cur_score.3, %59 ], [ %cur_score.9.lcssa, %.critedge7.loopexit ]
+  %116 = add nuw nsw i64 %pdpt_i.053, 1
+  %117 = icmp ult i64 %116, 512
+  %118 = icmp ult i64 %cur_score.10, %.0
+  %or.cond20 = and i1 %117, %118
+  br i1 %or.cond20, label %46, label %.critedge4.loopexit
+
+; <label>:119                                     ; preds = %34
+  %120 = icmp eq i64 %cur_score.065, 0
+  %121 = shl i64 %pml_i.061, 39
+  %.addr.029 = select i1 %120, i64 %121, i64 %addr.060
+  br label %.critedge4
+
+.critedge4.loopexit:                              ; preds = %.critedge7
+  %cur_score.10.lcssa = phi i64 [ %cur_score.10, %.critedge7 ]
+  %prev_val.6.lcssa = phi i64 [ %prev_val.6, %.critedge7 ]
+  %addr.10.lcssa = phi i64 [ %addr.10, %.critedge7 ]
+  br label %.critedge4
+
+.critedge4:                                       ; preds = %.critedge4.loopexit, %37, %119, %30
+  %addr.11 = phi i64 [ %.addr.0, %30 ], [ %.addr.029, %119 ], [ %addr.060, %37 ], [ %addr.10.lcssa, %.critedge4.loopexit ]
+  %prev_val.7 = phi i64 [ %pml_i.061, %30 ], [ %prev_val.064, %119 ], [ %prev_val.064, %37 ], [ %prev_val.6.lcssa, %.critedge4.loopexit ]
+  %cur_score.11 = phi i64 [ %33, %30 ], [ %cur_score.065, %119 ], [ %cur_score.1, %37 ], [ %cur_score.10.lcssa, %.critedge4.loopexit ]
+  %122 = add nsw i64 %pml_i.061, 1
+  %123 = icmp ult i64 %122, %16
+  %124 = icmp ult i64 %122, 512
+  %or.cond = and i1 %123, %124
+  %125 = icmp ult i64 %cur_score.11, %.0
+  %or.cond17 = and i1 %or.cond, %125
+  br i1 %or.cond17, label %25, label %.critedge.loopexit
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_ReturnPermissions(i64 %entry, i32* %cacheType, i32* %access_perm, i32* %security_perm) #0 {
+  %1 = and i64 %entry, 1
+  %2 = icmp eq i64 %1, 0
+  br i1 %2, label %9, label %3
+
+; <label>:3                                       ; preds = %0
+  %4 = lshr i64 %entry, 2
+  %.tr1 = trunc i64 %4 to i32
+  %. = and i32 %.tr1, 1
+  %entry.tr = trunc i64 %entry to i32
+  %5 = and i32 %entry.tr, 2
+  %6 = icmp slt i64 %entry, 0
+  %access.0..v = select i1 %6, i32 4, i32 5
+  %access.0. = or i32 %5, %access.0..v
+  %7 = lshr i64 %entry, 3
+  %.tr = trunc i64 %7 to i32
+  %8 = and i32 %.tr, 3
+  br label %9
+
+; <label>:9                                       ; preds = %0, %3
+  %access.2 = phi i32 [ %access.0., %3 ], [ 0, %0 ]
+  %sec.1 = phi i32 [ %., %3 ], [ 0, %0 ]
+  %cache.0 = phi i32 [ %8, %3 ], [ 0, %0 ]
+  %10 = icmp eq i32* %cacheType, null
+  br i1 %10, label %12, label %11
+
+; <label>:11                                      ; preds = %9
+  store i32 %cache.0, i32* %cacheType, align 4, !tbaa !22
+  br label %12
+
+; <label>:12                                      ; preds = %9, %11
+  %13 = icmp eq i32* %access_perm, null
+  br i1 %13, label %15, label %14
+
+; <label>:14                                      ; preds = %12
+  store i32 %access.2, i32* %access_perm, align 4, !tbaa !22
+  br label %15
+
+; <label>:15                                      ; preds = %12, %14
+  %16 = icmp eq i32* %security_perm, null
+  br i1 %16, label %18, label %17
+
+; <label>:17                                      ; preds = %15
+  store i32 %sec.1, i32* %security_perm, align 4, !tbaa !22
+  br label %18
+
+; <label>:18                                      ; preds = %15, %17
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_CheckAddressPermissions(i64* nocapture readonly %inst, i64 %addr, i32* %cacheType, i32* %access_perm, i32* %security_perm) #0 {
+  %1 = lshr i64 %addr, 39
+  %2 = and i64 %1, 511
+  %3 = lshr i64 %addr, 30
+  %4 = and i64 %3, 511
+  %5 = lshr i64 %addr, 21
+  %6 = and i64 %5, 511
+  %7 = lshr i64 %addr, 12
+  %8 = and i64 %7, 511
+  %9 = icmp eq i32* %cacheType, null
+  br i1 %9, label %11, label %10
+
+; <label>:10                                      ; preds = %0
+  store i32 0, i32* %cacheType, align 4, !tbaa !22
+  br label %11
+
+; <label>:11                                      ; preds = %0, %10
+  %12 = icmp eq i32* %access_perm, null
+  br i1 %12, label %14, label %13
+
+; <label>:13                                      ; preds = %11
+  store i32 0, i32* %access_perm, align 4, !tbaa !22
+  br label %14
+
+; <label>:14                                      ; preds = %11, %13
+  %15 = icmp eq i32* %security_perm, null
+  br i1 %15, label %17, label %16
+
+; <label>:16                                      ; preds = %14
+  store i32 0, i32* %security_perm, align 4, !tbaa !22
+  br label %17
+
+; <label>:17                                      ; preds = %14, %16
+  %18 = getelementptr inbounds i64, i64* %inst, i64 %2
+  %19 = load i64, i64* %18, align 8, !tbaa !10
+  %20 = and i64 %19, 1152921504606842880
+  %21 = inttoptr i64 %20 to i8*
+  %22 = tail call i8* @GetVirtualAddress(i32 0, i8* %21) #3
+  %23 = icmp eq i64 %20, 0
+  br i1 %23, label %VirtMemMan_ReturnPermissions.exit, label %24
+
+; <label>:24                                      ; preds = %17
+  %25 = bitcast i8* %22 to i64*
+  %26 = getelementptr inbounds i64, i64* %25, i64 %4
+  %27 = load i64, i64* %26, align 8, !tbaa !10
+  %28 = and i64 %27, 128
+  %29 = icmp eq i64 %28, 0
+  br i1 %29, label %45, label %30
+
+; <label>:30                                      ; preds = %24
+  %31 = and i64 %27, 1
+  %32 = icmp eq i64 %31, 0
+  br i1 %32, label %39, label %33
+
+; <label>:33                                      ; preds = %30
+  %34 = lshr i64 %27, 2
+  %.tr1.i = trunc i64 %34 to i32
+  %..i = and i32 %.tr1.i, 1
+  %entry.tr.i = trunc i64 %27 to i32
+  %35 = and i32 %entry.tr.i, 2
+  %36 = icmp slt i64 %27, 0
+  %access.0..v.i = select i1 %36, i32 4, i32 5
+  %access.0..i = or i32 %35, %access.0..v.i
+  %37 = lshr i64 %27, 3
+  %.tr.i = trunc i64 %37 to i32
+  %38 = and i32 %.tr.i, 3
+  br label %39
+
+; <label>:39                                      ; preds = %33, %30
+  %access.2.i = phi i32 [ %access.0..i, %33 ], [ 0, %30 ]
+  %sec.1.i = phi i32 [ %..i, %33 ], [ 0, %30 ]
+  %cache.0.i = phi i32 [ %38, %33 ], [ 0, %30 ]
+  br i1 %9, label %41, label %40
+
+; <label>:40                                      ; preds = %39
+  store i32 %cache.0.i, i32* %cacheType, align 4, !tbaa !22
+  br label %41
+
+; <label>:41                                      ; preds = %40, %39
+  br i1 %12, label %43, label %42
+
+; <label>:42                                      ; preds = %41
+  store i32 %access.2.i, i32* %access_perm, align 4, !tbaa !22
+  br label %43
+
+; <label>:43                                      ; preds = %42, %41
+  br i1 %15, label %VirtMemMan_ReturnPermissions.exit, label %44
+
+; <label>:44                                      ; preds = %43
+  store i32 %sec.1.i, i32* %security_perm, align 4, !tbaa !22
+  br label %VirtMemMan_ReturnPermissions.exit
+
+; <label>:45                                      ; preds = %24
+  %46 = and i64 %27, 1152921504606842880
+  %47 = icmp eq i64 %46, 0
+  br i1 %47, label %VirtMemMan_ReturnPermissions.exit, label %48
+
+; <label>:48                                      ; preds = %45
+  %49 = inttoptr i64 %46 to i8*
+  %50 = tail call i8* @GetVirtualAddress(i32 0, i8* %49) #3
+  %51 = bitcast i8* %50 to i64*
+  %52 = getelementptr inbounds i64, i64* %51, i64 %6
+  %53 = load i64, i64* %52, align 8, !tbaa !10
+  %54 = and i64 %53, 128
+  %55 = icmp eq i64 %54, 0
+  br i1 %55, label %71, label %56
+
+; <label>:56                                      ; preds = %48
+  %57 = and i64 %53, 1
+  %58 = icmp eq i64 %57, 0
+  br i1 %58, label %65, label %59
+
+; <label>:59                                      ; preds = %56
+  %60 = lshr i64 %53, 2
+  %.tr1.i.14 = trunc i64 %60 to i32
+  %..i.15 = and i32 %.tr1.i.14, 1
+  %entry.tr.i.16 = trunc i64 %53 to i32
+  %61 = and i32 %entry.tr.i.16, 2
+  %62 = icmp slt i64 %53, 0
+  %access.0..v.i.17 = select i1 %62, i32 4, i32 5
+  %access.0..i.18 = or i32 %61, %access.0..v.i.17
+  %63 = lshr i64 %53, 3
+  %.tr.i.19 = trunc i64 %63 to i32
+  %64 = and i32 %.tr.i.19, 3
+  br label %65
+
+; <label>:65                                      ; preds = %59, %56
+  %access.2.i.20 = phi i32 [ %access.0..i.18, %59 ], [ 0, %56 ]
+  %sec.1.i.21 = phi i32 [ %..i.15, %59 ], [ 0, %56 ]
+  %cache.0.i.22 = phi i32 [ %64, %59 ], [ 0, %56 ]
+  br i1 %9, label %67, label %66
+
+; <label>:66                                      ; preds = %65
+  store i32 %cache.0.i.22, i32* %cacheType, align 4, !tbaa !22
+  br label %67
+
+; <label>:67                                      ; preds = %66, %65
+  br i1 %12, label %69, label %68
+
+; <label>:68                                      ; preds = %67
+  store i32 %access.2.i.20, i32* %access_perm, align 4, !tbaa !22
+  br label %69
+
+; <label>:69                                      ; preds = %68, %67
+  br i1 %15, label %VirtMemMan_ReturnPermissions.exit, label %70
+
+; <label>:70                                      ; preds = %69
+  store i32 %sec.1.i.21, i32* %security_perm, align 4, !tbaa !22
+  br label %VirtMemMan_ReturnPermissions.exit
+
+; <label>:71                                      ; preds = %48
+  %72 = and i64 %53, 1152921504606842880
+  %73 = icmp eq i64 %72, 0
+  br i1 %73, label %VirtMemMan_ReturnPermissions.exit, label %74
+
+; <label>:74                                      ; preds = %71
+  %75 = inttoptr i64 %72 to i8*
+  %76 = tail call i8* @GetVirtualAddress(i32 0, i8* %75) #3
+  %77 = bitcast i8* %76 to i64*
+  %78 = getelementptr inbounds i64, i64* %77, i64 %8
+  %79 = load i64, i64* %78, align 8, !tbaa !10
+  %80 = and i64 %79, 1
+  %81 = icmp eq i64 %80, 0
+  br i1 %81, label %88, label %82
+
+; <label>:82                                      ; preds = %74
+  %83 = lshr i64 %79, 2
+  %.tr1.i.4 = trunc i64 %83 to i32
+  %..i.5 = and i32 %.tr1.i.4, 1
+  %entry.tr.i.6 = trunc i64 %79 to i32
+  %84 = and i32 %entry.tr.i.6, 2
+  %85 = icmp slt i64 %79, 0
+  %access.0..v.i.7 = select i1 %85, i32 4, i32 5
+  %access.0..i.8 = or i32 %84, %access.0..v.i.7
+  %86 = lshr i64 %79, 3
+  %.tr.i.9 = trunc i64 %86 to i32
+  %87 = and i32 %.tr.i.9, 3
+  br label %88
+
+; <label>:88                                      ; preds = %82, %74
+  %access.2.i.10 = phi i32 [ %access.0..i.8, %82 ], [ 0, %74 ]
+  %sec.1.i.11 = phi i32 [ %..i.5, %82 ], [ 0, %74 ]
+  %cache.0.i.12 = phi i32 [ %87, %82 ], [ 0, %74 ]
+  br i1 %9, label %90, label %89
+
+; <label>:89                                      ; preds = %88
+  store i32 %cache.0.i.12, i32* %cacheType, align 4, !tbaa !22
+  br label %90
+
+; <label>:90                                      ; preds = %89, %88
+  br i1 %12, label %92, label %91
+
+; <label>:91                                      ; preds = %90
+  store i32 %access.2.i.10, i32* %access_perm, align 4, !tbaa !22
+  br label %92
+
+; <label>:92                                      ; preds = %91, %90
+  br i1 %15, label %VirtMemMan_ReturnPermissions.exit, label %93
+
+; <label>:93                                      ; preds = %92
+  store i32 %sec.1.i.11, i32* %security_perm, align 4, !tbaa !22
+  br label %VirtMemMan_ReturnPermissions.exit
+
+VirtMemMan_ReturnPermissions.exit:                ; preds = %93, %92, %70, %69, %44, %43, %45, %71, %17
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_FreePageTable(i64* nocapture readonly %inst) #0 {
+  br label %2
+
+; <label>:1                                       ; preds = %32
+  ret void
+
+; <label>:2                                       ; preds = %32, %0
+  %indvars.iv12 = phi i64 [ 0, %0 ], [ %indvars.iv.next13, %32 ]
+  %3 = getelementptr inbounds i64, i64* %inst, i64 %indvars.iv12
+  %4 = load i64, i64* %3, align 8, !tbaa !10
+  %5 = and i64 %4, 1152921504606842880
+  %6 = inttoptr i64 %5 to i8*
+  %7 = tail call i8* @GetVirtualAddress(i32 0, i8* %6) #3
+  %8 = bitcast i8* %7 to i64*
+  %9 = icmp eq i64 %5, 0
+  br i1 %9, label %32, label %.preheader5.preheader
+
+.preheader5.preheader:                            ; preds = %2
+  br label %.preheader5
+
+; <label>:10                                      ; preds = %31
+  tail call void @MemMan_Free(i64 %5) #3
+  br label %32
+
+.preheader5:                                      ; preds = %.preheader5.preheader, %31
+  %indvars.iv9 = phi i64 [ %indvars.iv.next10, %31 ], [ 0, %.preheader5.preheader ]
+  %11 = getelementptr inbounds i64, i64* %8, i64 %indvars.iv9
+  %12 = load i64, i64* %11, align 8, !tbaa !10
+  %13 = and i64 %12, 128
+  %14 = icmp eq i64 %13, 0
+  br i1 %14, label %15, label %31
+
+; <label>:15                                      ; preds = %.preheader5
+  %16 = and i64 %12, 1152921504606842880
+  %17 = inttoptr i64 %16 to i8*
+  %18 = tail call i8* @GetVirtualAddress(i32 0, i8* %17) #3
+  %19 = bitcast i8* %18 to i64*
+  %20 = icmp eq i64 %16, 0
+  br i1 %20, label %31, label %.preheader.preheader
+
+.preheader.preheader:                             ; preds = %15
+  br label %.preheader
+
+; <label>:21                                      ; preds = %30
+  tail call void @MemMan_Free(i64 %16) #3
+  br label %31
+
+.preheader:                                       ; preds = %.preheader.preheader, %30
+  %indvars.iv = phi i64 [ %indvars.iv.next, %30 ], [ 0, %.preheader.preheader ]
+  %22 = getelementptr inbounds i64, i64* %19, i64 %indvars.iv
+  %23 = load i64, i64* %22, align 8, !tbaa !10
+  %24 = and i64 %23, 128
+  %25 = icmp eq i64 %24, 0
+  br i1 %25, label %26, label %30
+
+; <label>:26                                      ; preds = %.preheader
+  %27 = and i64 %23, 1152921504606842880
+  %28 = icmp eq i64 %27, 0
+  br i1 %28, label %30, label %29
+
+; <label>:29                                      ; preds = %26
+  tail call void @MemMan_Free(i64 %27) #3
+  br label %30
+
+; <label>:30                                      ; preds = %26, %.preheader, %29
+  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+  %exitcond = icmp eq i64 %indvars.iv.next, 512
+  br i1 %exitcond, label %21, label %.preheader
+
+; <label>:31                                      ; preds = %21, %15, %.preheader5
+  %indvars.iv.next10 = add nuw nsw i64 %indvars.iv9, 1
+  %exitcond11 = icmp eq i64 %indvars.iv.next10, 512
+  br i1 %exitcond11, label %10, label %.preheader5
+
+; <label>:32                                      ; preds = %2, %10
+  %indvars.iv.next13 = add nuw nsw i64 %indvars.iv12, 1
+  %exitcond14 = icmp eq i64 %indvars.iv.next13, 512
+  br i1 %exitcond14, label %1, label %2
+}
+
+; Function Attrs: noredzone
+declare void @MemMan_Free(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @VirtMemMan_LockPageToUser(i8* %virtualAddress, i64* %pageSize) #0 {
+  %1 = ptrtoint i8* %virtualAddress to i64
+  %2 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %3 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %2, i64 0, i32 1
+  %4 = load volatile i64*, i64** %3, align 8, !tbaa !5
+  %5 = lshr i64 %1, 39
+  %6 = and i64 %5, 511
+  %7 = lshr i64 %1, 21
+  %8 = and i64 %7, 511
+  %9 = lshr i64 %1, 12
+  %10 = and i64 %9, 511
+  %11 = getelementptr inbounds i64, i64* %4, i64 %6
+  %12 = load i64, i64* %11, align 8, !tbaa !10
+  %13 = and i64 %12, 1152921504606842880
+  %14 = inttoptr i64 %13 to i8*
+  %15 = tail call i8* @GetVirtualAddress(i32 0, i8* %14) #3
+  %16 = icmp eq i64 %13, 0
+  br i1 %16, label %59, label %17
+
+; <label>:17                                      ; preds = %0
+  %18 = bitcast i8* %15 to i64*
+  %19 = lshr i64 %1, 30
+  %20 = and i64 %19, 511
+  %21 = getelementptr inbounds i64, i64* %18, i64 %20
+  %22 = load i64, i64* %21, align 8, !tbaa !10
+  %23 = and i64 %22, 128
+  %24 = icmp eq i64 %23, 0
+  br i1 %24, label %30, label %25
+
+; <label>:25                                      ; preds = %17
+  %26 = and i64 %22, -3
+  store i64 %26, i64* %21, align 8, !tbaa !10
+  %27 = icmp eq i64* %pageSize, null
+  br i1 %27, label %29, label %28
+
+; <label>:28                                      ; preds = %25
+  store i64 1073741824, i64* %pageSize, align 8, !tbaa !10
+  br label %29
+
+; <label>:29                                      ; preds = %25, %28
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !23
+  br label %59
+
+; <label>:30                                      ; preds = %17
+  %31 = and i64 %22, 1152921504606842880
+  %32 = icmp eq i64 %31, 0
+  br i1 %32, label %59, label %33
+
+; <label>:33                                      ; preds = %30
+  %34 = inttoptr i64 %31 to i8*
+  %35 = tail call i8* @GetVirtualAddress(i32 0, i8* %34) #3
+  %36 = bitcast i8* %35 to i64*
+  %37 = getelementptr inbounds i64, i64* %36, i64 %8
+  %38 = load i64, i64* %37, align 8, !tbaa !10
+  %39 = and i64 %38, 128
+  %40 = icmp eq i64 %39, 0
+  br i1 %40, label %46, label %41
+
+; <label>:41                                      ; preds = %33
+  %42 = and i64 %38, -3
+  store i64 %42, i64* %37, align 8, !tbaa !10
+  %43 = icmp eq i64* %pageSize, null
+  br i1 %43, label %45, label %44
+
+; <label>:44                                      ; preds = %41
+  store i64 2097152, i64* %pageSize, align 8, !tbaa !10
+  br label %45
+
+; <label>:45                                      ; preds = %41, %44
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !24
+  br label %59
+
+; <label>:46                                      ; preds = %33
+  %47 = and i64 %38, 1152921504606842880
+  %48 = icmp eq i64 %47, 0
+  br i1 %48, label %59, label %49
+
+; <label>:49                                      ; preds = %46
+  %50 = inttoptr i64 %47 to i8*
+  %51 = tail call i8* @GetVirtualAddress(i32 0, i8* %50) #3
+  %52 = bitcast i8* %51 to i64*
+  %53 = getelementptr inbounds i64, i64* %52, i64 %10
+  %54 = load i64, i64* %53, align 8, !tbaa !10
+  %55 = and i64 %54, -3
+  store i64 %55, i64* %53, align 8, !tbaa !10
+  %56 = icmp eq i64* %pageSize, null
+  br i1 %56, label %58, label %57
+
+; <label>:57                                      ; preds = %49
+  store i64 4096, i64* %pageSize, align 8, !tbaa !10
+  br label %58
+
+; <label>:58                                      ; preds = %49, %57
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !25
+  br label %59
+
+; <label>:59                                      ; preds = %29, %30, %46, %58, %45, %0
+  %.2 = phi i64 [ -1, %0 ], [ %22, %29 ], [ -1, %30 ], [ %38, %45 ], [ %54, %58 ], [ -1, %46 ]
+  ret i64 %.2
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_UnlockPageToUser(i8* %virtualAddress, i64 %key) #0 {
+  %1 = ptrtoint i8* %virtualAddress to i64
+  %2 = load %struct.VirtMemManData*, %struct.VirtMemManData** @virtMemData, align 8, !tbaa !1
+  %3 = getelementptr inbounds %struct.VirtMemManData, %struct.VirtMemManData* %2, i64 0, i32 1
+  %4 = load volatile i64*, i64** %3, align 8, !tbaa !5
+  %5 = lshr i64 %1, 39
+  %6 = and i64 %5, 511
+  %7 = lshr i64 %1, 21
+  %8 = and i64 %7, 511
+  %9 = lshr i64 %1, 12
+  %10 = and i64 %9, 511
+  %11 = getelementptr inbounds i64, i64* %4, i64 %6
+  %12 = load i64, i64* %11, align 8, !tbaa !10
+  %13 = and i64 %12, 1152921504606842880
+  %14 = inttoptr i64 %13 to i8*
+  %15 = tail call i8* @GetVirtualAddress(i32 0, i8* %14) #3
+  %16 = icmp eq i64 %13, 0
+  br i1 %16, label %46, label %17
+
+; <label>:17                                      ; preds = %0
+  %18 = bitcast i8* %15 to i64*
+  %19 = lshr i64 %1, 30
+  %20 = and i64 %19, 511
+  %21 = getelementptr inbounds i64, i64* %18, i64 %20
+  %22 = load i64, i64* %21, align 8, !tbaa !10
+  %23 = and i64 %22, 128
+  %24 = icmp eq i64 %23, 0
+  br i1 %24, label %26, label %25
+
+; <label>:25                                      ; preds = %17
+  store i64 %key, i64* %21, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !26
+  br label %46
+
+; <label>:26                                      ; preds = %17
+  %27 = and i64 %22, 1152921504606842880
+  %28 = icmp eq i64 %27, 0
+  br i1 %28, label %46, label %29
+
+; <label>:29                                      ; preds = %26
+  %30 = inttoptr i64 %27 to i8*
+  %31 = tail call i8* @GetVirtualAddress(i32 0, i8* %30) #3
+  %32 = bitcast i8* %31 to i64*
+  %33 = getelementptr inbounds i64, i64* %32, i64 %8
+  %34 = load i64, i64* %33, align 8, !tbaa !10
+  %35 = and i64 %34, 128
+  %36 = icmp eq i64 %35, 0
+  br i1 %36, label %38, label %37
+
+; <label>:37                                      ; preds = %29
+  store i64 %key, i64* %33, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !27
+  br label %46
+
+; <label>:38                                      ; preds = %29
+  %39 = and i64 %34, 1152921504606842880
+  %40 = icmp eq i64 %39, 0
+  br i1 %40, label %46, label %41
+
+; <label>:41                                      ; preds = %38
+  %42 = inttoptr i64 %39 to i8*
+  %43 = tail call i8* @GetVirtualAddress(i32 0, i8* %42) #3
+  %44 = bitcast i8* %43 to i64*
+  %45 = getelementptr inbounds i64, i64* %44, i64 %10
+  store i64 %key, i64* %45, align 8, !tbaa !10
+  tail call void asm sideeffect "invlpg ($0)", "r,~{dirflag},~{fpsr},~{flags}"(i64 %1) #4, !srcloc !28
+  br label %46
+
+; <label>:46                                      ; preds = %25, %26, %38, %41, %37, %0
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @VirtMemMan_HandlePageFault(i32 %UNUSED_int_no, i32 %err_code) #0 {
+  %1 = tail call i64 asm sideeffect "movq %cr2, $0", "=r,~{dirflag},~{fpsr},~{flags}"() #4, !srcloc !29
+  %2 = shl i32 %err_code, 4
+  %3 = and i32 %2, 16
+  %4 = shl i32 %err_code, 1
+  %5 = and i32 %4, 4
+  %6 = or i32 %3, %5
+  %7 = and i32 %4, 8
+  %8 = or i32 %6, %7
+  %9 = lshr i32 %err_code, 4
+  %10 = and i32 %9, 1
+  %11 = add nuw nsw i32 %10, 1
+  %12 = or i32 %8, %11
+  tail call void @HandlePageFault(i64 %1, i32 %12) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @HandlePageFault(i64, i32) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone nounwind readnone uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+attributes #4 = { nounwind }
+attributes #5 = { nobuiltin noredzone }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !2, i64 8}
+!6 = !{!"VirtMemManData", !2, i64 0, !2, i64 8, !3, i64 16, !2, i64 24}
+!7 = !{!6, !2, i64 0}
+!8 = !{!6, !3, i64 16}
+!9 = !{i32 86607}
+!10 = !{!11, !11, i64 0}
+!11 = !{!"long", !3, i64 0}
+!12 = !{i32 15767}
+!13 = !{i32 86752}
+!14 = !{!6, !2, i64 24}
+!15 = !{i32 -2147371418, i32 -2147371412}
+!16 = !{i32 12262}
+!17 = !{i32 17110}
+!18 = !{i32 18587}
+!19 = !{i32 19579}
+!20 = !{i32 20385}
+!21 = !{i32 20945}
+!22 = !{!3, !3, i64 0}
+!23 = !{i32 36064}
+!24 = !{i32 36538}
+!25 = !{i32 36908}
+!26 = !{i32 37657}
+!27 = !{i32 38024}
+!28 = !{i32 38297}
+!29 = !{i32 38490}

@@ -1,0 +1,66 @@
+; ModuleID = 'hal/timer.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+; Function Attrs: noredzone nounwind uwtable
+define void @InitializeTimer() #0 {
+  %1 = tail call i32 @HPET_Initialize() #2
+  %2 = icmp eq i32 %1, 1
+  br i1 %2, label %3, label %4
+
+; <label>:3                                       ; preds = %0
+  tail call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #3, !srcloc !1
+  br label %4
+
+; <label>:4                                       ; preds = %3, %0
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i32 @HPET_Initialize() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @GetTimerValue() #0 {
+  %1 = tail call i64 @HPET_GetCounterValue() #2
+  ret i64 %1
+}
+
+; Function Attrs: noredzone
+declare i64 @HPET_GetCounterValue() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @SetTimerValue(i64 %val) #0 {
+  tail call void @HPET_SetCounterValue(i64 %val) #2
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @HPET_SetCounterValue(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @SetTimerEnableMode(i8 zeroext %enabled) #0 {
+  tail call void @HPET_SetCounterEnableStatus(i8 zeroext %enabled) #2
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @HPET_SetCounterEnableStatus(i8 zeroext) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @GetTimerInterval_NS(i64 %diff) #0 {
+  %1 = tail call i64 @HPET_GetElapsedTime(i64 %diff) #2
+  ret i64 %1
+}
+
+; Function Attrs: noredzone
+declare i64 @HPET_GetElapsedTime(i64) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nobuiltin noredzone nounwind }
+attributes #3 = { nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{i32 151, i32 157}

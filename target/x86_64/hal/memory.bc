@@ -1,0 +1,805 @@
+; ModuleID = 'hal/memory.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.MemoryAllocationsMap = type { i32, i64, i64, i64, i32, i32, i64, i64, %struct.MemoryAllocationsMap* }
+%struct.ProcessInformation = type { i64, [256 x i8], i32, i32, i32, [22 x void (i32)*], i64, %struct.MemoryAllocationsMap*, %struct.List*, i32, i64* }
+%struct.List = type opaque
+
+@vmem_lock = internal unnamed_addr global i64* null, align 8
+@.str = private unnamed_addr constant [18 x i8] c"Error: Page Fault\00", align 1
+@switch.table.1 = private unnamed_addr constant [3 x i32] [i32 0, i32 2, i32 1]
+
+; Function Attrs: noredzone nounwind uwtable
+define void @MemoryHAL_Initialize() #0 {
+  %1 = tail call i64* @CreateBootstrapSpinlock() #3
+  store i64* %1, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call i32 @RegisterInterruptHandler(i32 14, void (i32, i32)* nonnull @VirtMemMan_HandlePageFault) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i64* @CreateBootstrapSpinlock() #1
+
+; Function Attrs: noredzone
+declare i32 @RegisterInterruptHandler(i32, void (i32, i32)*) #1
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_HandlePageFault(i32, i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @GetVirtualAddress(i32 %c, i8* %physicalAddress) #0 {
+  %1 = tail call i8* @VirtMemMan_GetVirtualAddress(i32 %c, i8* %physicalAddress) #3
+  ret i8* %1
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #2
+
+; Function Attrs: noredzone
+declare i8* @VirtMemMan_GetVirtualAddress(i32, i8*) #1
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #2
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @GetPhysicalAddress(i8* %virtualAddress) #0 {
+  %1 = tail call i64* @VirtMemMan_GetCurrent() #3
+  %2 = tail call i8* @VirtMemMan_GetPhysicalAddress(i64* %1, i8* %virtualAddress) #3
+  ret i8* %2
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @GetPhysicalAddressUID(i64 %src, i8* %virtualAddress) #0 {
+  %1 = inttoptr i64 %src to i64*
+  %2 = tail call i8* @VirtMemMan_GetPhysicalAddress(i64* %1, i8* %virtualAddress) #3
+  ret i8* %2
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @GetActiveVirtualMemoryInstance() #0 {
+  %1 = tail call i64* @VirtMemMan_GetCurrent() #3
+  %2 = ptrtoint i64* %1 to i64
+  ret i64 %2
+}
+
+; Function Attrs: noredzone
+declare i8* @VirtMemMan_GetPhysicalAddress(i64*, i8*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @CreateVirtualMemoryInstance(i64* %inst) #0 {
+  %1 = icmp eq i64* %inst, null
+  br i1 %1, label %9, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %4 = tail call zeroext i8 @LockSpinlock(i64* %3) #3
+  %5 = tail call i64* @VirtMemMan_CreateInstance() #3
+  %6 = ptrtoint i64* %5 to i64
+  store i64 %6, i64* %inst, align 8, !tbaa !5
+  %7 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %8 = tail call zeroext i8 @UnlockSpinlock(i64* %7) #3
+  br label %9
+
+; <label>:9                                       ; preds = %0, %2
+  %.0 = phi i32 [ 0, %2 ], [ 64, %0 ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone
+declare zeroext i8 @LockSpinlock(i64*) #1
+
+; Function Attrs: noredzone
+declare i64* @VirtMemMan_CreateInstance() #1
+
+; Function Attrs: noredzone
+declare zeroext i8 @UnlockSpinlock(i64*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @FreeVirtualMemoryInstance(i64 %inst) #0 {
+  %1 = icmp ne i64 %inst, 0
+  %2 = and i64 %inst, 4095
+  %3 = icmp eq i64 %2, 0
+  %or.cond = and i1 %1, %3
+  br i1 %or.cond, label %4, label %10
+
+; <label>:4                                       ; preds = %0
+  %5 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %6 = tail call zeroext i8 @LockSpinlock(i64* %5) #3
+  %7 = inttoptr i64 %inst to i64*
+  tail call void @VirtMemMan_FreePageTable(i64* %7) #3
+  %8 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %9 = tail call zeroext i8 @UnlockSpinlock(i64* %8) #3
+  br label %10
+
+; <label>:10                                      ; preds = %0, %4
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_FreePageTable(i64*) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @SetActiveVirtualMemoryInstance(i64 %inst) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = inttoptr i64 %inst to i64*
+  %4 = tail call i64* @VirtMemMan_SetCurrent(i64* %3) #3
+  %5 = ptrtoint i64* %4 to i64
+  %6 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %7 = tail call zeroext i8 @UnlockSpinlock(i64* %6) #3
+  ret i64 %5
+}
+
+; Function Attrs: noredzone
+declare i64* @VirtMemMan_SetCurrent(i64*) #1
+
+; Function Attrs: noredzone
+declare i64* @VirtMemMan_GetCurrent() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @MapPage(i64 %pageTable, %struct.MemoryAllocationsMap* %allocationMap, i64 %physicalAddress, i64 %virtualAddress, i64 %size, i32 %cacheMode, i32 %allocType, i32 %flags) #0 {
+  %1 = icmp eq i64 %virtualAddress, 0
+  br i1 %1, label %27, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = icmp ult i32 %cacheMode, 3
+  br i1 %3, label %switch.lookup, label %27
+
+switch.lookup:                                    ; preds = %2
+  %4 = sext i32 %cacheMode to i64
+  %switch.gep = getelementptr inbounds [3 x i32], [3 x i32]* @switch.table.1, i64 0, i64 %4
+  %switch.load = load i32, i32* %switch.gep, align 4
+  %5 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %6 = tail call zeroext i8 @LockSpinlock(i64* %5) #3
+  %7 = lshr i32 %flags, 1
+  %.lobit = and i32 %7, 1
+  %8 = and i32 %7, 2
+  %9 = lshr i32 %flags, 3
+  %.lobit3 = and i32 %9, 1
+  %10 = icmp eq %struct.MemoryAllocationsMap* %allocationMap, null
+  br i1 %10, label %20, label %11
+
+; <label>:11                                      ; preds = %switch.lookup
+  %12 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 0
+  store i32 %cacheMode, i32* %12, align 4, !tbaa !7
+  %13 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 1
+  store i64 %virtualAddress, i64* %13, align 8, !tbaa !9
+  %14 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 2
+  store i64 %physicalAddress, i64* %14, align 8, !tbaa !10
+  %15 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 3
+  store i64 %size, i64* %15, align 8, !tbaa !11
+  %16 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 4
+  store i32 %flags, i32* %16, align 4, !tbaa !12
+  %17 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 5
+  store i32 %allocType, i32* %17, align 4, !tbaa !13
+  %18 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 6
+  store i64 0, i64* %18, align 8, !tbaa !14
+  %19 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %allocationMap, i64 0, i32 7
+  store i64 0, i64* %19, align 8, !tbaa !15
+  br label %20
+
+; <label>:20                                      ; preds = %switch.lookup, %11
+  %21 = and i32 %allocType, 4
+  %22 = icmp eq i32 %21, 0
+  %23 = select i1 %22, i32 %8, i32 0
+  %access.1. = or i32 %23, %.lobit
+  %24 = inttoptr i64 %pageTable to i64*
+  tail call void @VirtMemMan_Map(i64* %24, i64 %virtualAddress, i64 %physicalAddress, i64 %size, i8 zeroext 1, i32 %switch.load, i32 %access.1., i32 %.lobit3) #3
+  %25 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %26 = tail call zeroext i8 @UnlockSpinlock(i64* %25) #3
+  br label %27
+
+; <label>:27                                      ; preds = %2, %20, %0
+  %.1 = phi i32 [ 64, %0 ], [ 0, %20 ], [ 8, %2 ]
+  ret i32 %.1
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_Map(i64*, i64, i64, i64, i8 zeroext, i32, i32, i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @UnmapPage(i64 %pageTable, i64 %virtualAddress, i64 %size) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = inttoptr i64 %pageTable to i64*
+  tail call void @VirtMemMan_Unmap(i64* %3, i64 %virtualAddress, i64 %size) #3
+  %4 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %5 = tail call zeroext i8 @UnlockSpinlock(i64* %4) #3
+  ret i32 0
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_Unmap(i64*, i64, i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @FindFreeVirtualAddress(i64 %pageTable, i64* %virtualAddress, i64 %size, i32 %allocType, i32 %flags) #0 {
+  %1 = icmp eq i64* %virtualAddress, null
+  br i1 %1, label %14, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %4 = tail call zeroext i8 @LockSpinlock(i64* %3) #3
+  %5 = lshr i32 %flags, 3
+  %.lobit = and i32 %5, 1
+  %6 = inttoptr i64 %pageTable to i64*
+  %7 = tail call i8* @VirtMemMan_FindFreeAddress(i64* %6, i64 %size, i32 %allocType, i32 %.lobit) #3
+  %8 = icmp eq i8* %7, null
+  br i1 %8, label %11, label %9
+
+; <label>:9                                       ; preds = %2
+  %10 = ptrtoint i8* %7 to i64
+  store i64 %10, i64* %virtualAddress, align 8, !tbaa !5
+  br label %11
+
+; <label>:11                                      ; preds = %2, %9
+  %12 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %13 = tail call zeroext i8 @UnlockSpinlock(i64* %12) #3
+  br label %14
+
+; <label>:14                                      ; preds = %0, %11
+  %.0 = phi i32 [ 0, %11 ], [ 64, %0 ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone
+declare i8* @VirtMemMan_FindFreeAddress(i64*, i64, i32, i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @ForkTable(i64 %src, %struct.MemoryAllocationsMap* readonly %srcAllocBase, i64* %dst, %struct.MemoryAllocationsMap** %dstAllocBase) #0 {
+  %1 = icmp eq i64* %dst, null
+  br i1 %1, label %.loopexit, label %CreateVirtualMemoryInstance.exit
+
+CreateVirtualMemoryInstance.exit:                 ; preds = %0
+  %2 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %3 = tail call zeroext i8 @LockSpinlock(i64* %2) #3
+  %4 = tail call i64* @VirtMemMan_CreateInstance() #3
+  %5 = ptrtoint i64* %4 to i64
+  store i64 %5, i64* %dst, align 8, !tbaa !5
+  %6 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %7 = tail call zeroext i8 @UnlockSpinlock(i64* %6) #3
+  %8 = icmp eq %struct.MemoryAllocationsMap** %dstAllocBase, null
+  %9 = icmp eq %struct.MemoryAllocationsMap* %srcAllocBase, null
+  %or.cond = or i1 %9, %8
+  br i1 %or.cond, label %.loopexit, label %.lr.ph
+
+.lr.ph:                                           ; preds = %CreateVirtualMemoryInstance.exit
+  %10 = tail call i8* @kmalloc(i64 64) #3
+  %11 = bitcast %struct.MemoryAllocationsMap** %dstAllocBase to i8**
+  store i8* %10, i8** %11, align 8, !tbaa !1
+  %12 = bitcast i64* %dst to i64**
+  %13 = inttoptr i64 %src to i64*
+  br label %14
+
+; <label>:14                                      ; preds = %.lr.ph, %65
+  %c.03 = phi %struct.MemoryAllocationsMap* [ %srcAllocBase, %.lr.ph ], [ %.pre, %65 ]
+  %b.02.in = phi i8* [ %10, %.lr.ph ], [ %66, %65 ]
+  %15 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 5
+  %16 = load i32, i32* %15, align 4, !tbaa !13
+  %17 = and i32 %16, 1
+  %18 = icmp eq i32 %17, 0
+  br i1 %18, label %19, label %MapPage.exit
+
+; <label>:19                                      ; preds = %14
+  %20 = load i64*, i64** %12, align 8, !tbaa !5
+  %21 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 1
+  %22 = bitcast i64* %21 to i8**
+  %23 = load i8*, i8** %22, align 8, !tbaa !9
+  %24 = tail call i8* @VirtMemMan_GetPhysicalAddress(i64* %13, i8* %23) #3
+  %25 = ptrtoint i8* %24 to i64
+  %26 = load i64, i64* %21, align 8, !tbaa !9
+  %27 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 3
+  %28 = load i64, i64* %27, align 8, !tbaa !11
+  %29 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 0
+  %30 = load i32, i32* %29, align 4, !tbaa !7
+  %31 = load i32, i32* %15, align 4, !tbaa !13
+  %32 = or i32 %31, 4
+  %33 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 4
+  %34 = load i32, i32* %33, align 4, !tbaa !12
+  %35 = icmp ne i64 %26, 0
+  %36 = icmp ult i32 %30, 3
+  %or.cond1 = and i1 %35, %36
+  br i1 %or.cond1, label %switch.lookup.i, label %MapPage.exit
+
+switch.lookup.i:                                  ; preds = %19
+  %37 = sext i32 %30 to i64
+  %switch.gep.i = getelementptr inbounds [3 x i32], [3 x i32]* @switch.table.1, i64 0, i64 %37
+  %switch.load.i = load i32, i32* %switch.gep.i, align 4
+  %38 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %39 = tail call zeroext i8 @LockSpinlock(i64* %38) #3
+  %40 = lshr i32 %34, 1
+  %.lobit.i = and i32 %40, 1
+  %41 = lshr i32 %34, 3
+  %.lobit3.i = and i32 %41, 1
+  %42 = icmp eq i8* %b.02.in, null
+  br i1 %42, label %59, label %43
+
+; <label>:43                                      ; preds = %switch.lookup.i
+  %44 = bitcast i8* %b.02.in to i32*
+  store i32 %30, i32* %44, align 4, !tbaa !7
+  %45 = getelementptr inbounds i8, i8* %b.02.in, i64 8
+  %46 = bitcast i8* %45 to i64*
+  store i64 %26, i64* %46, align 8, !tbaa !9
+  %47 = getelementptr inbounds i8, i8* %b.02.in, i64 16
+  %48 = bitcast i8* %47 to i64*
+  store i64 %25, i64* %48, align 8, !tbaa !10
+  %49 = getelementptr inbounds i8, i8* %b.02.in, i64 24
+  %50 = bitcast i8* %49 to i64*
+  store i64 %28, i64* %50, align 8, !tbaa !11
+  %51 = getelementptr inbounds i8, i8* %b.02.in, i64 32
+  %52 = bitcast i8* %51 to i32*
+  store i32 %34, i32* %52, align 4, !tbaa !12
+  %53 = getelementptr inbounds i8, i8* %b.02.in, i64 36
+  %54 = bitcast i8* %53 to i32*
+  store i32 %32, i32* %54, align 4, !tbaa !13
+  %55 = getelementptr inbounds i8, i8* %b.02.in, i64 40
+  %56 = bitcast i8* %55 to i64*
+  store i64 0, i64* %56, align 8, !tbaa !14
+  %57 = getelementptr inbounds i8, i8* %b.02.in, i64 48
+  %58 = bitcast i8* %57 to i64*
+  store i64 0, i64* %58, align 8, !tbaa !15
+  br label %59
+
+; <label>:59                                      ; preds = %43, %switch.lookup.i
+  tail call void @VirtMemMan_Map(i64* %20, i64 %26, i64 %25, i64 %28, i8 zeroext 1, i32 %switch.load.i, i32 %.lobit.i, i32 %.lobit3.i) #3
+  %60 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %61 = tail call zeroext i8 @UnlockSpinlock(i64* %60) #3
+  br label %MapPage.exit
+
+MapPage.exit:                                     ; preds = %19, %59, %14
+  %62 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %c.03, i64 0, i32 8
+  %63 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %62, align 8, !tbaa !16
+  %64 = icmp eq %struct.MemoryAllocationsMap* %63, null
+  br i1 %64, label %.loopexit.loopexit, label %65
+
+; <label>:65                                      ; preds = %MapPage.exit
+  %66 = tail call i8* @kmalloc(i64 64) #3
+  %67 = getelementptr inbounds i8, i8* %b.02.in, i64 56
+  %68 = bitcast i8* %67 to i8**
+  store i8* %66, i8** %68, align 8, !tbaa !16
+  %.pre = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %62, align 8, !tbaa !16
+  %69 = icmp eq %struct.MemoryAllocationsMap* %.pre, null
+  br i1 %69, label %.loopexit.loopexit, label %14
+
+.loopexit.loopexit:                               ; preds = %65, %MapPage.exit
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %CreateVirtualMemoryInstance.exit, %0
+  %.0 = phi i32 [ 64, %0 ], [ 64, %CreateVirtualMemoryInstance.exit ], [ 0, %.loopexit.loopexit ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone
+declare i8* @kmalloc(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @AllocatePhysicalPage() #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = tail call i64 @MemMan_Alloc() #3
+  %4 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %5 = tail call zeroext i8 @UnlockSpinlock(i64* %4) #3
+  ret i64 %3
+}
+
+; Function Attrs: noredzone
+declare i64 @MemMan_Alloc() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @FreePhysicalPage(i64 %ptr) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  tail call void @MemMan_Free(i64 %ptr) #3
+  %3 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %4 = tail call zeroext i8 @UnlockSpinlock(i64* %3) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @MemMan_Free(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @AllocatePhysicalPageCont(i32 %pageCount) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = tail call i64 @MemMan_Alloc4KiBPageCont(i32 %pageCount) #3
+  %4 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %5 = tail call zeroext i8 @UnlockSpinlock(i64* %4) #3
+  ret i64 %3
+}
+
+; Function Attrs: noredzone
+declare i64 @MemMan_Alloc4KiBPageCont(i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @FreePhysicalPageCont(i64 %ptr, i32 %pageCount) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  tail call void @MemMan_FreeCont(i64 %ptr, i32 %pageCount) #3
+  %3 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %4 = tail call zeroext i8 @UnlockSpinlock(i64* %3) #3
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @MemMan_FreeCont(i64, i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @AllocateAPLSMemory(i64 %size) #0 {
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = tail call i8* @VirtMemMan_AllocCoreLocalData(i64 %size) #3
+  %4 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %5 = tail call zeroext i8 @UnlockSpinlock(i64* %4) #3
+  ret i8* %3
+}
+
+; Function Attrs: noredzone
+declare i8* @VirtMemMan_AllocCoreLocalData(i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @GetCoreCount() #0 {
+  %1 = tail call i32 @SMP_GetCoreCount() #3
+  ret i32 %1
+}
+
+; Function Attrs: noredzone
+declare i32 @SMP_GetCoreCount() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @LockPageToUser(i64 %virtualAddress) #0 {
+  %size = alloca i64, align 8
+  %pInfo = alloca %struct.ProcessInformation*, align 8
+  %1 = bitcast i64* %size to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %1) #2
+  store i64 0, i64* %size, align 8, !tbaa !5
+  %2 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %3 = tail call zeroext i8 @LockSpinlock(i64* %2) #3
+  %4 = inttoptr i64 %virtualAddress to i8*
+  %5 = call i64 @VirtMemMan_LockPageToUser(i8* %4, i64* nonnull %size) #3
+  %6 = bitcast %struct.ProcessInformation** %pInfo to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %6) #2
+  store %struct.ProcessInformation* null, %struct.ProcessInformation** %pInfo, align 8, !tbaa !1
+  %7 = call i64 @GetCurrentProcessUID() #3
+  %8 = call i32 @GetProcessReference(i64 %7, %struct.ProcessInformation** nonnull %pInfo) #3
+  %9 = load %struct.ProcessInformation*, %struct.ProcessInformation** %pInfo, align 8, !tbaa !1
+  %10 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %9, i64 0, i32 7
+  %map.0.2 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %10, align 8
+  %11 = icmp eq %struct.MemoryAllocationsMap* %map.0.2, null
+  br i1 %11, label %.loopexit, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %0
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph.preheader, %24
+  %map.03 = phi %struct.MemoryAllocationsMap* [ %map.0, %24 ], [ %map.0.2, %.lr.ph.preheader ]
+  %12 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.03, i64 0, i32 1
+  %13 = load i64, i64* %12, align 8, !tbaa !9
+  %14 = icmp ugt i64 %13, %virtualAddress
+  br i1 %14, label %24, label %15
+
+; <label>:15                                      ; preds = %.lr.ph
+  %16 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.03, i64 0, i32 3
+  %17 = load i64, i64* %16, align 8, !tbaa !11
+  %18 = add i64 %17, %13
+  %19 = icmp ult i64 %18, %virtualAddress
+  br i1 %19, label %24, label %20
+
+; <label>:20                                      ; preds = %15
+  %map.03.lcssa = phi %struct.MemoryAllocationsMap* [ %map.03, %15 ]
+  %21 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.03.lcssa, i64 0, i32 5
+  %22 = load i32, i32* %21, align 4, !tbaa !13
+  %23 = or i32 %22, 128
+  store i32 %23, i32* %21, align 4, !tbaa !13
+  br label %.loopexit
+
+; <label>:24                                      ; preds = %15, %.lr.ph
+  %25 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.03, i64 0, i32 8
+  %map.0 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %25, align 8
+  %26 = icmp eq %struct.MemoryAllocationsMap* %map.0, null
+  br i1 %26, label %.loopexit.loopexit, label %.lr.ph
+
+.loopexit.loopexit:                               ; preds = %24
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %0, %20
+  %27 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %28 = call zeroext i8 @UnlockSpinlock(i64* %27) #3
+  call void @llvm.lifetime.end(i64 8, i8* %6) #2
+  call void @llvm.lifetime.end(i64 8, i8* %1) #2
+  ret i64 %5
+}
+
+; Function Attrs: noredzone
+declare i64 @VirtMemMan_LockPageToUser(i8*, i64*) #1
+
+; Function Attrs: noredzone
+declare i32 @GetProcessReference(i64, %struct.ProcessInformation**) #1
+
+; Function Attrs: noredzone
+declare i64 @GetCurrentProcessUID() #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @UnlockPageToUser(i64 %virtualAddress, i64 %lockKey) #0 {
+  %pInfo = alloca %struct.ProcessInformation*, align 8
+  %1 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %2 = tail call zeroext i8 @LockSpinlock(i64* %1) #3
+  %3 = bitcast %struct.ProcessInformation** %pInfo to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %3) #2
+  store %struct.ProcessInformation* null, %struct.ProcessInformation** %pInfo, align 8, !tbaa !1
+  %4 = tail call i64 @GetCurrentProcessUID() #3
+  %5 = call i32 @GetProcessReference(i64 %4, %struct.ProcessInformation** nonnull %pInfo) #3
+  %6 = load %struct.ProcessInformation*, %struct.ProcessInformation** %pInfo, align 8, !tbaa !1
+  %7 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %6, i64 0, i32 7
+  %map.0.1 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %7, align 8
+  %8 = icmp eq %struct.MemoryAllocationsMap* %map.0.1, null
+  br i1 %8, label %.loopexit, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %0
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph.preheader, %26
+  %map.02 = phi %struct.MemoryAllocationsMap* [ %map.0, %26 ], [ %map.0.1, %.lr.ph.preheader ]
+  %9 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.02, i64 0, i32 5
+  %10 = load i32, i32* %9, align 4, !tbaa !13
+  %11 = and i32 %10, 128
+  %12 = icmp eq i32 %11, 0
+  br i1 %12, label %26, label %13
+
+; <label>:13                                      ; preds = %.lr.ph
+  %14 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.02, i64 0, i32 1
+  %15 = load i64, i64* %14, align 8, !tbaa !9
+  %16 = icmp ugt i64 %15, %virtualAddress
+  br i1 %16, label %26, label %17
+
+; <label>:17                                      ; preds = %13
+  %18 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.02, i64 0, i32 3
+  %19 = load i64, i64* %18, align 8, !tbaa !11
+  %20 = add i64 %19, %15
+  %21 = icmp ult i64 %20, %virtualAddress
+  br i1 %21, label %26, label %22
+
+; <label>:22                                      ; preds = %17
+  %.lcssa = phi i32* [ %9, %17 ]
+  %23 = inttoptr i64 %virtualAddress to i8*
+  call void @VirtMemMan_UnlockPageToUser(i8* %23, i64 %lockKey) #3
+  %24 = load i32, i32* %.lcssa, align 4, !tbaa !13
+  %25 = and i32 %24, -129
+  store i32 %25, i32* %.lcssa, align 4, !tbaa !13
+  br label %.loopexit
+
+; <label>:26                                      ; preds = %17, %13, %.lr.ph
+  %27 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.02, i64 0, i32 8
+  %map.0 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %27, align 8
+  %28 = icmp eq %struct.MemoryAllocationsMap* %map.0, null
+  br i1 %28, label %.loopexit.loopexit, label %.lr.ph
+
+.loopexit.loopexit:                               ; preds = %26
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %0, %22
+  %29 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %30 = call zeroext i8 @UnlockSpinlock(i64* %29) #3
+  call void @llvm.lifetime.end(i64 8, i8* %3) #2
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_UnlockPageToUser(i8*, i64) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @HandlePageFault(i64 %virtualAddress, i32 %error) #0 {
+  %procInfo = alloca %struct.ProcessInformation*, align 8
+  %1 = tail call zeroext i8 @ProcessSys_IsInitialized() #3
+  %2 = icmp eq i8 %1, 0
+  br i1 %2, label %.preheader.preheader, label %3
+
+.preheader.preheader:                             ; preds = %0
+  br label %.preheader
+
+.preheader:                                       ; preds = %.preheader.preheader, %.preheader
+  tail call void (i8*, ...) @debug_gfx_writeLine(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str, i64 0, i64 0)) #3
+  br label %.preheader
+
+; <label>:3                                       ; preds = %0
+  %4 = bitcast %struct.ProcessInformation** %procInfo to i8*
+  call void @llvm.lifetime.start(i64 8, i8* %4) #2
+  store %struct.ProcessInformation* null, %struct.ProcessInformation** %procInfo, align 8, !tbaa !1
+  %5 = tail call i64 @GetCurrentProcessUID() #3
+  %6 = call i32 @GetProcessReference(i64 %5, %struct.ProcessInformation** nonnull %procInfo) #3
+  %7 = load %struct.ProcessInformation*, %struct.ProcessInformation** %procInfo, align 8, !tbaa !1
+  %8 = icmp eq %struct.ProcessInformation* %7, null
+  %9 = zext i1 %8 to i32
+  %10 = getelementptr inbounds %struct.ProcessInformation, %struct.ProcessInformation* %7, i64 0, i32 7
+  %11 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %10, align 8, !tbaa !17
+  %12 = icmp eq %struct.MemoryAllocationsMap* %11, null
+  %13 = zext i1 %12 to i32
+  %14 = or i32 %13, %9
+  %15 = icmp eq i32 %14, 0
+  br i1 %15, label %.preheader1.preheader, label %.preheader2.preheader
+
+.preheader2.preheader:                            ; preds = %3
+  br label %.preheader2
+
+.preheader1.preheader:                            ; preds = %3
+  br label %.preheader1
+
+.preheader2:                                      ; preds = %.preheader2.preheader, %.preheader2
+  call void (i8*, ...) @debug_gfx_writeLine(i8* getelementptr inbounds ([18 x i8], [18 x i8]* @.str, i64 0, i64 0)) #3
+  br label %.preheader2
+
+.preheader1:                                      ; preds = %.preheader1.preheader, %34
+  %map.0 = phi %struct.MemoryAllocationsMap* [ %36, %34 ], [ %11, %.preheader1.preheader ]
+  %16 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.0, i64 0, i32 1
+  %17 = load i64, i64* %16, align 8, !tbaa !9
+  %18 = icmp ugt i64 %17, %virtualAddress
+  br i1 %18, label %34, label %19
+
+; <label>:19                                      ; preds = %.preheader1
+  %20 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.0, i64 0, i32 3
+  %21 = load i64, i64* %20, align 8, !tbaa !11
+  %22 = add i64 %21, %17
+  %23 = icmp ult i64 %22, %virtualAddress
+  br i1 %23, label %34, label %24
+
+; <label>:24                                      ; preds = %19
+  %map.0.lcssa = phi %struct.MemoryAllocationsMap* [ %map.0, %19 ]
+  %25 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.0.lcssa, i64 0, i32 5
+  %26 = load i32, i32* %25, align 4, !tbaa !13
+  %27 = and i32 %26, 128
+  %28 = icmp eq i32 %27, 0
+  br i1 %28, label %30, label %29
+
+; <label>:29                                      ; preds = %24
+  call void @TaskSwitch(i32 0, i32 0) #3
+  br label %.loopexit
+
+; <label>:30                                      ; preds = %24
+  %31 = and i32 %26, 64
+  %32 = icmp eq i32 %31, 0
+  br i1 %32, label %.loopexit, label %33
+
+; <label>:33                                      ; preds = %30
+  call void asm sideeffect "cli\0A\09hlt", "~{dirflag},~{fpsr},~{flags}"() #2, !srcloc !19
+  br label %.loopexit
+
+; <label>:34                                      ; preds = %19, %.preheader1
+  %35 = getelementptr inbounds %struct.MemoryAllocationsMap, %struct.MemoryAllocationsMap* %map.0, i64 0, i32 8
+  %36 = load %struct.MemoryAllocationsMap*, %struct.MemoryAllocationsMap** %35, align 8, !tbaa !16
+  %37 = icmp eq %struct.MemoryAllocationsMap* %36, null
+  br i1 %37, label %.loopexit.loopexit, label %.preheader1
+
+.loopexit.loopexit:                               ; preds = %34
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %30, %29, %33
+  call void @llvm.lifetime.end(i64 8, i8* %4) #2
+  ret void
+}
+
+; Function Attrs: noredzone
+declare zeroext i8 @ProcessSys_IsInitialized() #1
+
+; Function Attrs: noredzone
+declare void @debug_gfx_writeLine(i8*, ...) #1
+
+; Function Attrs: noredzone
+declare void @TaskSwitch(i32, i32) #1
+
+; Function Attrs: noredzone nounwind uwtable
+define void @CheckAddressPermissions(i64 %pageTable, i64 %addr, i32* %cacheMode, i32* %flags) #0 {
+  %cache = alloca i32, align 4
+  %access_perm = alloca i32, align 4
+  %sec_perm = alloca i32, align 4
+  %1 = bitcast i32* %cache to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %1) #2
+  store i32 0, i32* %cache, align 4, !tbaa !20
+  %2 = bitcast i32* %access_perm to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %2) #2
+  store i32 0, i32* %access_perm, align 4, !tbaa !20
+  %3 = bitcast i32* %sec_perm to i8*
+  call void @llvm.lifetime.start(i64 4, i8* %3) #2
+  store i32 0, i32* %sec_perm, align 4, !tbaa !20
+  %4 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %5 = tail call zeroext i8 @LockSpinlock(i64* %4) #3
+  %6 = inttoptr i64 %pageTable to i64*
+  call void @VirtMemMan_CheckAddressPermissions(i64* %6, i64 %addr, i32* nonnull %cache, i32* nonnull %access_perm, i32* nonnull %sec_perm) #3
+  %7 = load i64*, i64** @vmem_lock, align 8, !tbaa !1
+  %8 = call zeroext i8 @UnlockSpinlock(i64* %7) #3
+  %9 = load i32, i32* %cache, align 4, !tbaa !20
+  %10 = load i32, i32* %access_perm, align 4
+  %11 = or i32 %10, %9
+  %12 = load i32, i32* %sec_perm, align 4
+  %13 = or i32 %11, %12
+  %14 = icmp eq i32 %13, 0
+  br i1 %14, label %15, label %21
+
+; <label>:15                                      ; preds = %0
+  %16 = icmp eq i32* %cacheMode, null
+  br i1 %16, label %18, label %17
+
+; <label>:17                                      ; preds = %15
+  store i32 0, i32* %cacheMode, align 4, !tbaa !20
+  br label %18
+
+; <label>:18                                      ; preds = %15, %17
+  %19 = icmp eq i32* %flags, null
+  br i1 %19, label %37, label %20
+
+; <label>:20                                      ; preds = %18
+  store i32 0, i32* %flags, align 4, !tbaa !20
+  br label %37
+
+; <label>:21                                      ; preds = %0
+  %22 = icmp ult i32 %9, 3
+  br i1 %22, label %switch.lookup, label %24
+
+switch.lookup:                                    ; preds = %21
+  %23 = sext i32 %9 to i64
+  %switch.gep = getelementptr inbounds [3 x i32], [3 x i32]* @switch.table.1, i64 0, i64 %23
+  %switch.load = load i32, i32* %switch.gep, align 4
+  br label %24
+
+; <label>:24                                      ; preds = %21, %switch.lookup
+  %c.0 = phi i32 [ %switch.load, %switch.lookup ], [ 0, %21 ]
+  %25 = shl i32 %12, 3
+  %26 = and i32 %25, 8
+  %27 = shl i32 %10, 1
+  %28 = and i32 %27, 4
+  %29 = or i32 %28, %26
+  %30 = and i32 %10, 1
+  %31 = add nuw nsw i32 %30, 1
+  %a.3 = or i32 %29, %31
+  %32 = icmp eq i32* %cacheMode, null
+  br i1 %32, label %34, label %33
+
+; <label>:33                                      ; preds = %24
+  store i32 %c.0, i32* %cacheMode, align 4, !tbaa !20
+  br label %34
+
+; <label>:34                                      ; preds = %24, %33
+  %35 = icmp eq i32* %flags, null
+  br i1 %35, label %37, label %36
+
+; <label>:36                                      ; preds = %34
+  store i32 %a.3, i32* %flags, align 4, !tbaa !20
+  br label %37
+
+; <label>:37                                      ; preds = %36, %34, %20, %18
+  call void @llvm.lifetime.end(i64 4, i8* %3) #2
+  call void @llvm.lifetime.end(i64 4, i8* %2) #2
+  call void @llvm.lifetime.end(i64 4, i8* %1) #2
+  ret void
+}
+
+; Function Attrs: noredzone
+declare void @VirtMemMan_CheckAddressPermissions(i64*, i64, i32*, i32*, i32*) #1
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"any pointer", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !6, i64 0}
+!6 = !{!"long", !3, i64 0}
+!7 = !{!8, !3, i64 0}
+!8 = !{!"MemoryAllocationsMap", !3, i64 0, !6, i64 8, !6, i64 16, !6, i64 24, !3, i64 32, !3, i64 36, !6, i64 40, !6, i64 48, !2, i64 56}
+!9 = !{!8, !6, i64 8}
+!10 = !{!8, !6, i64 16}
+!11 = !{!8, !6, i64 24}
+!12 = !{!8, !3, i64 32}
+!13 = !{!8, !3, i64 36}
+!14 = !{!8, !6, i64 40}
+!15 = !{!8, !6, i64 48}
+!16 = !{!8, !2, i64 56}
+!17 = !{!18, !2, i64 464}
+!18 = !{!"ProcessInformation", !6, i64 0, !3, i64 8, !3, i64 264, !3, i64 268, !3, i64 272, !3, i64 280, !6, i64 456, !2, i64 464, !2, i64 472, !3, i64 480, !2, i64 488}
+!19 = !{i32 9689, i32 9695}
+!20 = !{!3, !3, i64 0}

@@ -1,0 +1,802 @@
+; ModuleID = 'common/common.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+@uids_base = internal unnamed_addr global i64 0, align 8
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @memcpy(i8* %dest, i8* nocapture readonly %src, i64 %size) #0 {
+  %1 = icmp eq i64 %size, 0
+  br i1 %1, label %34, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %0
+  %2 = add i64 %size, -1
+  %xtraiter = and i64 %size, 7
+  %lcmp.mod = icmp eq i64 %xtraiter, 0
+  br i1 %lcmp.mod, label %.lr.ph.preheader.split, label %.lr.ph.prol.preheader
+
+.lr.ph.prol.preheader:                            ; preds = %.lr.ph.preheader
+  br label %.lr.ph.prol
+
+.lr.ph.prol:                                      ; preds = %.lr.ph.prol.preheader, %.lr.ph.prol
+  %.05.prol = phi i64 [ %3, %.lr.ph.prol ], [ %size, %.lr.ph.prol.preheader ]
+  %.014.prol = phi i8* [ %4, %.lr.ph.prol ], [ %src, %.lr.ph.prol.preheader ]
+  %.023.prol = phi i8* [ %6, %.lr.ph.prol ], [ %dest, %.lr.ph.prol.preheader ]
+  %prol.iter = phi i64 [ %prol.iter.sub, %.lr.ph.prol ], [ %xtraiter, %.lr.ph.prol.preheader ]
+  %3 = add i64 %.05.prol, -1
+  %4 = getelementptr inbounds i8, i8* %.014.prol, i64 1
+  %5 = load i8, i8* %.014.prol, align 1, !tbaa !1
+  %6 = getelementptr inbounds i8, i8* %.023.prol, i64 1
+  store i8 %5, i8* %.023.prol, align 1, !tbaa !1
+  %prol.iter.sub = add i64 %prol.iter, -1
+  %prol.iter.cmp = icmp eq i64 %prol.iter.sub, 0
+  br i1 %prol.iter.cmp, label %.lr.ph.preheader.split.loopexit, label %.lr.ph.prol, !llvm.loop !4
+
+.lr.ph.preheader.split.loopexit:                  ; preds = %.lr.ph.prol
+  %.lcssa7 = phi i8* [ %6, %.lr.ph.prol ]
+  %.lcssa6 = phi i8* [ %4, %.lr.ph.prol ]
+  %.lcssa = phi i64 [ %3, %.lr.ph.prol ]
+  br label %.lr.ph.preheader.split
+
+.lr.ph.preheader.split:                           ; preds = %.lr.ph.preheader.split.loopexit, %.lr.ph.preheader
+  %.05.unr = phi i64 [ %size, %.lr.ph.preheader ], [ %.lcssa, %.lr.ph.preheader.split.loopexit ]
+  %.014.unr = phi i8* [ %src, %.lr.ph.preheader ], [ %.lcssa6, %.lr.ph.preheader.split.loopexit ]
+  %.023.unr = phi i8* [ %dest, %.lr.ph.preheader ], [ %.lcssa7, %.lr.ph.preheader.split.loopexit ]
+  %7 = icmp ult i64 %2, 7
+  br i1 %7, label %._crit_edge, label %.lr.ph.preheader.split.split
+
+.lr.ph.preheader.split.split:                     ; preds = %.lr.ph.preheader.split
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph, %.lr.ph.preheader.split.split
+  %.05 = phi i64 [ %.05.unr, %.lr.ph.preheader.split.split ], [ %29, %.lr.ph ]
+  %.014 = phi i8* [ %.014.unr, %.lr.ph.preheader.split.split ], [ %30, %.lr.ph ]
+  %.023 = phi i8* [ %.023.unr, %.lr.ph.preheader.split.split ], [ %32, %.lr.ph ]
+  %8 = getelementptr inbounds i8, i8* %.014, i64 1
+  %9 = load i8, i8* %.014, align 1, !tbaa !1
+  %10 = getelementptr inbounds i8, i8* %.023, i64 1
+  store i8 %9, i8* %.023, align 1, !tbaa !1
+  %11 = getelementptr inbounds i8, i8* %.014, i64 2
+  %12 = load i8, i8* %8, align 1, !tbaa !1
+  %13 = getelementptr inbounds i8, i8* %.023, i64 2
+  store i8 %12, i8* %10, align 1, !tbaa !1
+  %14 = getelementptr inbounds i8, i8* %.014, i64 3
+  %15 = load i8, i8* %11, align 1, !tbaa !1
+  %16 = getelementptr inbounds i8, i8* %.023, i64 3
+  store i8 %15, i8* %13, align 1, !tbaa !1
+  %17 = getelementptr inbounds i8, i8* %.014, i64 4
+  %18 = load i8, i8* %14, align 1, !tbaa !1
+  %19 = getelementptr inbounds i8, i8* %.023, i64 4
+  store i8 %18, i8* %16, align 1, !tbaa !1
+  %20 = getelementptr inbounds i8, i8* %.014, i64 5
+  %21 = load i8, i8* %17, align 1, !tbaa !1
+  %22 = getelementptr inbounds i8, i8* %.023, i64 5
+  store i8 %21, i8* %19, align 1, !tbaa !1
+  %23 = getelementptr inbounds i8, i8* %.014, i64 6
+  %24 = load i8, i8* %20, align 1, !tbaa !1
+  %25 = getelementptr inbounds i8, i8* %.023, i64 6
+  store i8 %24, i8* %22, align 1, !tbaa !1
+  %26 = getelementptr inbounds i8, i8* %.014, i64 7
+  %27 = load i8, i8* %23, align 1, !tbaa !1
+  %28 = getelementptr inbounds i8, i8* %.023, i64 7
+  store i8 %27, i8* %25, align 1, !tbaa !1
+  %29 = add i64 %.05, -8
+  %30 = getelementptr inbounds i8, i8* %.014, i64 8
+  %31 = load i8, i8* %26, align 1, !tbaa !1
+  %32 = getelementptr inbounds i8, i8* %.023, i64 8
+  store i8 %31, i8* %28, align 1, !tbaa !1
+  %33 = icmp eq i64 %29, 0
+  br i1 %33, label %._crit_edge.unr-lcssa, label %.lr.ph
+
+._crit_edge.unr-lcssa:                            ; preds = %.lr.ph
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %.lr.ph.preheader.split, %._crit_edge.unr-lcssa
+  %scevgep = getelementptr i8, i8* %dest, i64 %size
+  br label %34
+
+; <label>:34                                      ; preds = %._crit_edge, %0
+  %.02.lcssa = phi i8* [ %scevgep, %._crit_edge ], [ %dest, %0 ]
+  ret i8* %.02.lcssa
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @memset(i8* %dstpp, i32 %c, i64 %len) #0 {
+  %1 = icmp eq i64 %len, 0
+  br i1 %1, label %19, label %.lr.ph
+
+.lr.ph:                                           ; preds = %0
+  %2 = trunc i32 %c to i8
+  %3 = add i64 %len, -1
+  %xtraiter = and i64 %len, 7
+  %lcmp.mod = icmp eq i64 %xtraiter, 0
+  br i1 %lcmp.mod, label %.lr.ph.split, label %.preheader
+
+.preheader:                                       ; preds = %.lr.ph
+  br label %4
+
+; <label>:4                                       ; preds = %.preheader, %4
+  %.03.prol = phi i64 [ %5, %4 ], [ %len, %.preheader ]
+  %.012.prol = phi i8* [ %6, %4 ], [ %dstpp, %.preheader ]
+  %prol.iter = phi i64 [ %prol.iter.sub, %4 ], [ %xtraiter, %.preheader ]
+  %5 = add i64 %.03.prol, -1
+  %6 = getelementptr inbounds i8, i8* %.012.prol, i64 1
+  store i8 %2, i8* %.012.prol, align 1, !tbaa !1
+  %prol.iter.sub = add i64 %prol.iter, -1
+  %prol.iter.cmp = icmp eq i64 %prol.iter.sub, 0
+  br i1 %prol.iter.cmp, label %.lr.ph.split.loopexit, label %4, !llvm.loop !6
+
+.lr.ph.split.loopexit:                            ; preds = %4
+  %.lcssa4 = phi i8* [ %6, %4 ]
+  %.lcssa = phi i64 [ %5, %4 ]
+  br label %.lr.ph.split
+
+.lr.ph.split:                                     ; preds = %.lr.ph.split.loopexit, %.lr.ph
+  %.03.unr = phi i64 [ %len, %.lr.ph ], [ %.lcssa, %.lr.ph.split.loopexit ]
+  %.012.unr = phi i8* [ %dstpp, %.lr.ph ], [ %.lcssa4, %.lr.ph.split.loopexit ]
+  %7 = icmp ult i64 %3, 7
+  br i1 %7, label %._crit_edge, label %.lr.ph.split.split
+
+.lr.ph.split.split:                               ; preds = %.lr.ph.split
+  br label %8
+
+; <label>:8                                       ; preds = %8, %.lr.ph.split.split
+  %.03 = phi i64 [ %.03.unr, %.lr.ph.split.split ], [ %16, %8 ]
+  %.012 = phi i8* [ %.012.unr, %.lr.ph.split.split ], [ %17, %8 ]
+  %9 = getelementptr inbounds i8, i8* %.012, i64 1
+  store i8 %2, i8* %.012, align 1, !tbaa !1
+  %10 = getelementptr inbounds i8, i8* %.012, i64 2
+  store i8 %2, i8* %9, align 1, !tbaa !1
+  %11 = getelementptr inbounds i8, i8* %.012, i64 3
+  store i8 %2, i8* %10, align 1, !tbaa !1
+  %12 = getelementptr inbounds i8, i8* %.012, i64 4
+  store i8 %2, i8* %11, align 1, !tbaa !1
+  %13 = getelementptr inbounds i8, i8* %.012, i64 5
+  store i8 %2, i8* %12, align 1, !tbaa !1
+  %14 = getelementptr inbounds i8, i8* %.012, i64 6
+  store i8 %2, i8* %13, align 1, !tbaa !1
+  %15 = getelementptr inbounds i8, i8* %.012, i64 7
+  store i8 %2, i8* %14, align 1, !tbaa !1
+  %16 = add i64 %.03, -8
+  %17 = getelementptr inbounds i8, i8* %.012, i64 8
+  store i8 %2, i8* %15, align 1, !tbaa !1
+  %18 = icmp eq i64 %16, 0
+  br i1 %18, label %._crit_edge.unr-lcssa, label %8
+
+._crit_edge.unr-lcssa:                            ; preds = %8
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %.lr.ph.split, %._crit_edge.unr-lcssa
+  %scevgep = getelementptr i8, i8* %dstpp, i64 %len
+  br label %19
+
+; <label>:19                                      ; preds = %._crit_edge, %0
+  %.01.lcssa = phi i8* [ %scevgep, %._crit_edge ], [ %dstpp, %0 ]
+  ret i8* %.01.lcssa
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @memmove(i8* %dst, i8* readonly %src, i64 %count) #0 {
+  %1 = icmp eq i8* %src, %dst
+  br i1 %1, label %.loopexit, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = icmp ugt i8* %src, %dst
+  br i1 %3, label %.preheader, label %37
+
+.preheader:                                       ; preds = %2
+  %4 = icmp eq i64 %count, 0
+  br i1 %4, label %.loopexit, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %.preheader
+  %5 = add i64 %count, -1
+  %xtraiter = and i64 %count, 7
+  %lcmp.mod = icmp eq i64 %xtraiter, 0
+  br i1 %lcmp.mod, label %.lr.ph.preheader.split, label %.lr.ph.prol.preheader
+
+.lr.ph.prol.preheader:                            ; preds = %.lr.ph.preheader
+  br label %.lr.ph.prol
+
+.lr.ph.prol:                                      ; preds = %.lr.ph.prol.preheader, %.lr.ph.prol
+  %b.04.prol = phi i8* [ %7, %.lr.ph.prol ], [ %src, %.lr.ph.prol.preheader ]
+  %a.03.prol = phi i8* [ %9, %.lr.ph.prol ], [ %dst, %.lr.ph.prol.preheader ]
+  %.02.prol = phi i64 [ %6, %.lr.ph.prol ], [ %count, %.lr.ph.prol.preheader ]
+  %prol.iter = phi i64 [ %prol.iter.sub, %.lr.ph.prol ], [ %xtraiter, %.lr.ph.prol.preheader ]
+  %6 = add i64 %.02.prol, -1
+  %7 = getelementptr inbounds i8, i8* %b.04.prol, i64 1
+  %8 = load i8, i8* %b.04.prol, align 1, !tbaa !1
+  %9 = getelementptr inbounds i8, i8* %a.03.prol, i64 1
+  store i8 %8, i8* %a.03.prol, align 1, !tbaa !1
+  %prol.iter.sub = add i64 %prol.iter, -1
+  %prol.iter.cmp = icmp eq i64 %prol.iter.sub, 0
+  br i1 %prol.iter.cmp, label %.lr.ph.preheader.split.loopexit, label %.lr.ph.prol, !llvm.loop !7
+
+.lr.ph.preheader.split.loopexit:                  ; preds = %.lr.ph.prol
+  %.lcssa17 = phi i8* [ %9, %.lr.ph.prol ]
+  %.lcssa16 = phi i8* [ %7, %.lr.ph.prol ]
+  %.lcssa = phi i64 [ %6, %.lr.ph.prol ]
+  br label %.lr.ph.preheader.split
+
+.lr.ph.preheader.split:                           ; preds = %.lr.ph.preheader.split.loopexit, %.lr.ph.preheader
+  %b.04.unr = phi i8* [ %src, %.lr.ph.preheader ], [ %.lcssa16, %.lr.ph.preheader.split.loopexit ]
+  %a.03.unr = phi i8* [ %dst, %.lr.ph.preheader ], [ %.lcssa17, %.lr.ph.preheader.split.loopexit ]
+  %.02.unr = phi i64 [ %count, %.lr.ph.preheader ], [ %.lcssa, %.lr.ph.preheader.split.loopexit ]
+  %10 = icmp ult i64 %5, 7
+  br i1 %10, label %.loopexit.loopexit, label %.lr.ph.preheader.split.split
+
+.lr.ph.preheader.split.split:                     ; preds = %.lr.ph.preheader.split
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph, %.lr.ph.preheader.split.split
+  %b.04 = phi i8* [ %b.04.unr, %.lr.ph.preheader.split.split ], [ %33, %.lr.ph ]
+  %a.03 = phi i8* [ %a.03.unr, %.lr.ph.preheader.split.split ], [ %35, %.lr.ph ]
+  %.02 = phi i64 [ %.02.unr, %.lr.ph.preheader.split.split ], [ %32, %.lr.ph ]
+  %11 = getelementptr inbounds i8, i8* %b.04, i64 1
+  %12 = load i8, i8* %b.04, align 1, !tbaa !1
+  %13 = getelementptr inbounds i8, i8* %a.03, i64 1
+  store i8 %12, i8* %a.03, align 1, !tbaa !1
+  %14 = getelementptr inbounds i8, i8* %b.04, i64 2
+  %15 = load i8, i8* %11, align 1, !tbaa !1
+  %16 = getelementptr inbounds i8, i8* %a.03, i64 2
+  store i8 %15, i8* %13, align 1, !tbaa !1
+  %17 = getelementptr inbounds i8, i8* %b.04, i64 3
+  %18 = load i8, i8* %14, align 1, !tbaa !1
+  %19 = getelementptr inbounds i8, i8* %a.03, i64 3
+  store i8 %18, i8* %16, align 1, !tbaa !1
+  %20 = getelementptr inbounds i8, i8* %b.04, i64 4
+  %21 = load i8, i8* %17, align 1, !tbaa !1
+  %22 = getelementptr inbounds i8, i8* %a.03, i64 4
+  store i8 %21, i8* %19, align 1, !tbaa !1
+  %23 = getelementptr inbounds i8, i8* %b.04, i64 5
+  %24 = load i8, i8* %20, align 1, !tbaa !1
+  %25 = getelementptr inbounds i8, i8* %a.03, i64 5
+  store i8 %24, i8* %22, align 1, !tbaa !1
+  %26 = getelementptr inbounds i8, i8* %b.04, i64 6
+  %27 = load i8, i8* %23, align 1, !tbaa !1
+  %28 = getelementptr inbounds i8, i8* %a.03, i64 6
+  store i8 %27, i8* %25, align 1, !tbaa !1
+  %29 = getelementptr inbounds i8, i8* %b.04, i64 7
+  %30 = load i8, i8* %26, align 1, !tbaa !1
+  %31 = getelementptr inbounds i8, i8* %a.03, i64 7
+  store i8 %30, i8* %28, align 1, !tbaa !1
+  %32 = add i64 %.02, -8
+  %33 = getelementptr inbounds i8, i8* %b.04, i64 8
+  %34 = load i8, i8* %29, align 1, !tbaa !1
+  %35 = getelementptr inbounds i8, i8* %a.03, i64 8
+  store i8 %34, i8* %31, align 1, !tbaa !1
+  %36 = icmp eq i64 %32, 0
+  br i1 %36, label %.loopexit.loopexit.unr-lcssa, label %.lr.ph
+
+; <label>:37                                      ; preds = %2
+  %38 = add i64 %count, -1
+  %39 = icmp eq i64 %count, 0
+  br i1 %39, label %.loopexit, label %.lr.ph8
+
+.lr.ph8:                                          ; preds = %37
+  %40 = getelementptr inbounds i8, i8* %src, i64 %38
+  %41 = getelementptr inbounds i8, i8* %dst, i64 %38
+  %42 = add i64 %count, -1
+  %xtraiter12 = and i64 %count, 7
+  %lcmp.mod13 = icmp eq i64 %xtraiter12, 0
+  br i1 %lcmp.mod13, label %.lr.ph8.split, label %.preheader15
+
+.preheader15:                                     ; preds = %.lr.ph8
+  br label %43
+
+; <label>:43                                      ; preds = %.preheader15, %43
+  %b.17.prol = phi i8* [ %45, %43 ], [ %40, %.preheader15 ]
+  %a.16.prol = phi i8* [ %47, %43 ], [ %41, %.preheader15 ]
+  %.15.prol = phi i64 [ %44, %43 ], [ %count, %.preheader15 ]
+  %prol.iter14 = phi i64 [ %prol.iter14.sub, %43 ], [ %xtraiter12, %.preheader15 ]
+  %44 = add i64 %.15.prol, -1
+  %45 = getelementptr inbounds i8, i8* %b.17.prol, i64 -1
+  %46 = load i8, i8* %b.17.prol, align 1, !tbaa !1
+  %47 = getelementptr inbounds i8, i8* %a.16.prol, i64 -1
+  store i8 %46, i8* %a.16.prol, align 1, !tbaa !1
+  %prol.iter14.sub = add i64 %prol.iter14, -1
+  %prol.iter14.cmp = icmp eq i64 %prol.iter14.sub, 0
+  br i1 %prol.iter14.cmp, label %.lr.ph8.split.loopexit, label %43, !llvm.loop !8
+
+.lr.ph8.split.loopexit:                           ; preds = %43
+  %.lcssa20 = phi i8* [ %47, %43 ]
+  %.lcssa19 = phi i8* [ %45, %43 ]
+  %.lcssa18 = phi i64 [ %44, %43 ]
+  br label %.lr.ph8.split
+
+.lr.ph8.split:                                    ; preds = %.lr.ph8.split.loopexit, %.lr.ph8
+  %b.17.unr = phi i8* [ %40, %.lr.ph8 ], [ %.lcssa19, %.lr.ph8.split.loopexit ]
+  %a.16.unr = phi i8* [ %41, %.lr.ph8 ], [ %.lcssa20, %.lr.ph8.split.loopexit ]
+  %.15.unr = phi i64 [ %count, %.lr.ph8 ], [ %.lcssa18, %.lr.ph8.split.loopexit ]
+  %48 = icmp ult i64 %42, 7
+  br i1 %48, label %.loopexit.loopexit11, label %.lr.ph8.split.split
+
+.lr.ph8.split.split:                              ; preds = %.lr.ph8.split
+  br label %49
+
+; <label>:49                                      ; preds = %49, %.lr.ph8.split.split
+  %b.17 = phi i8* [ %b.17.unr, %.lr.ph8.split.split ], [ %72, %49 ]
+  %a.16 = phi i8* [ %a.16.unr, %.lr.ph8.split.split ], [ %74, %49 ]
+  %.15 = phi i64 [ %.15.unr, %.lr.ph8.split.split ], [ %71, %49 ]
+  %50 = getelementptr inbounds i8, i8* %b.17, i64 -1
+  %51 = load i8, i8* %b.17, align 1, !tbaa !1
+  %52 = getelementptr inbounds i8, i8* %a.16, i64 -1
+  store i8 %51, i8* %a.16, align 1, !tbaa !1
+  %53 = getelementptr inbounds i8, i8* %b.17, i64 -2
+  %54 = load i8, i8* %50, align 1, !tbaa !1
+  %55 = getelementptr inbounds i8, i8* %a.16, i64 -2
+  store i8 %54, i8* %52, align 1, !tbaa !1
+  %56 = getelementptr inbounds i8, i8* %b.17, i64 -3
+  %57 = load i8, i8* %53, align 1, !tbaa !1
+  %58 = getelementptr inbounds i8, i8* %a.16, i64 -3
+  store i8 %57, i8* %55, align 1, !tbaa !1
+  %59 = getelementptr inbounds i8, i8* %b.17, i64 -4
+  %60 = load i8, i8* %56, align 1, !tbaa !1
+  %61 = getelementptr inbounds i8, i8* %a.16, i64 -4
+  store i8 %60, i8* %58, align 1, !tbaa !1
+  %62 = getelementptr inbounds i8, i8* %b.17, i64 -5
+  %63 = load i8, i8* %59, align 1, !tbaa !1
+  %64 = getelementptr inbounds i8, i8* %a.16, i64 -5
+  store i8 %63, i8* %61, align 1, !tbaa !1
+  %65 = getelementptr inbounds i8, i8* %b.17, i64 -6
+  %66 = load i8, i8* %62, align 1, !tbaa !1
+  %67 = getelementptr inbounds i8, i8* %a.16, i64 -6
+  store i8 %66, i8* %64, align 1, !tbaa !1
+  %68 = getelementptr inbounds i8, i8* %b.17, i64 -7
+  %69 = load i8, i8* %65, align 1, !tbaa !1
+  %70 = getelementptr inbounds i8, i8* %a.16, i64 -7
+  store i8 %69, i8* %67, align 1, !tbaa !1
+  %71 = add i64 %.15, -8
+  %72 = getelementptr inbounds i8, i8* %b.17, i64 -8
+  %73 = load i8, i8* %68, align 1, !tbaa !1
+  %74 = getelementptr inbounds i8, i8* %a.16, i64 -8
+  store i8 %73, i8* %70, align 1, !tbaa !1
+  %75 = icmp eq i64 %71, 0
+  br i1 %75, label %.loopexit.loopexit11.unr-lcssa, label %49
+
+.loopexit.loopexit.unr-lcssa:                     ; preds = %.lr.ph
+  br label %.loopexit.loopexit
+
+.loopexit.loopexit:                               ; preds = %.lr.ph.preheader.split, %.loopexit.loopexit.unr-lcssa
+  br label %.loopexit
+
+.loopexit.loopexit11.unr-lcssa:                   ; preds = %49
+  br label %.loopexit.loopexit11
+
+.loopexit.loopexit11:                             ; preds = %.lr.ph8.split, %.loopexit.loopexit11.unr-lcssa
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit11, %.loopexit.loopexit, %37, %.preheader, %0
+  ret i8* %dst
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @strrev(i8* %str) #0 {
+  %1 = icmp eq i8* %str, null
+  br i1 %1, label %.loopexit, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = load i8, i8* %str, align 1, !tbaa !1
+  %4 = icmp eq i8 %3, 0
+  br i1 %4, label %.loopexit, label %._crit_edge.preheader
+
+._crit_edge.preheader:                            ; preds = %2
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.preheader, %._crit_edge
+  %5 = phi i64 [ %7, %._crit_edge ], [ 1, %._crit_edge.preheader ]
+  %.phi.trans.insert = getelementptr inbounds i8, i8* %str, i64 %5
+  %.pre = load i8, i8* %.phi.trans.insert, align 1, !tbaa !1
+  %6 = icmp eq i8 %.pre, 0
+  %7 = add i64 %5, 1
+  br i1 %6, label %strlen.exit.preheader, label %._crit_edge
+
+strlen.exit.preheader:                            ; preds = %._crit_edge
+  %.lcssa = phi i64 [ %5, %._crit_edge ]
+  %8 = getelementptr inbounds i8, i8* %str, i64 %.lcssa
+  %end_ptr.0.1 = getelementptr inbounds i8, i8* %8, i64 -1
+  %9 = icmp ugt i8* %end_ptr.0.1, %str
+  br i1 %9, label %strlen.exit.preheader6, label %.loopexit
+
+strlen.exit.preheader6:                           ; preds = %strlen.exit.preheader
+  %10 = load i8, i8* %end_ptr.0.1, align 1, !tbaa !1
+  store i8 %10, i8* %str, align 1, !tbaa !1
+  store i8 %3, i8* %end_ptr.0.1, align 1, !tbaa !1
+  %11 = getelementptr inbounds i8, i8* %str, i64 1
+  %end_ptr.0.7 = getelementptr inbounds i8, i8* %end_ptr.0.1, i64 -1
+  %12 = icmp ugt i8* %end_ptr.0.7, %11
+  br i1 %12, label %strlen.exit.strlen.exit_crit_edge.preheader, label %.loopexit
+
+strlen.exit.strlen.exit_crit_edge.preheader:      ; preds = %strlen.exit.preheader6
+  br label %strlen.exit.strlen.exit_crit_edge
+
+strlen.exit.strlen.exit_crit_edge:                ; preds = %strlen.exit.strlen.exit_crit_edge.preheader, %strlen.exit.strlen.exit_crit_edge
+  %end_ptr.08 = phi i8* [ %end_ptr.0, %strlen.exit.strlen.exit_crit_edge ], [ %end_ptr.0.7, %strlen.exit.strlen.exit_crit_edge.preheader ]
+  %13 = phi i8* [ %15, %strlen.exit.strlen.exit_crit_edge ], [ %11, %strlen.exit.strlen.exit_crit_edge.preheader ]
+  %.pre4 = load i8, i8* %13, align 1, !tbaa !1
+  %14 = load i8, i8* %end_ptr.08, align 1, !tbaa !1
+  store i8 %14, i8* %13, align 1, !tbaa !1
+  store i8 %.pre4, i8* %end_ptr.08, align 1, !tbaa !1
+  %15 = getelementptr inbounds i8, i8* %13, i64 1
+  %end_ptr.0 = getelementptr inbounds i8, i8* %end_ptr.08, i64 -1
+  %16 = icmp ugt i8* %end_ptr.0, %15
+  br i1 %16, label %strlen.exit.strlen.exit_crit_edge, label %.loopexit.loopexit
+
+.loopexit.loopexit:                               ; preds = %strlen.exit.strlen.exit_crit_edge
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %strlen.exit.preheader6, %strlen.exit.preheader, %0, %2
+  ret void
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i64 @strlen(i8* nocapture readonly %str) #1 {
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  %size.0 = phi i64 [ 0, %0 ], [ %5, %1 ]
+  %2 = getelementptr inbounds i8, i8* %str, i64 %size.0
+  %3 = load i8, i8* %2, align 1, !tbaa !1
+  %4 = icmp eq i8 %3, 0
+  %5 = add i64 %size.0, 1
+  br i1 %4, label %6, label %1
+
+; <label>:6                                       ; preds = %1
+  %size.0.lcssa = phi i64 [ %size.0, %1 ]
+  ret i64 %size.0.lcssa
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i32 @strncmp(i8* nocapture readonly %s1, i8* nocapture readonly %s2, i64 %n) #1 {
+  br label %1
+
+; <label>:1                                       ; preds = %3, %0
+  %.02 = phi i8* [ %s1, %0 ], [ %5, %3 ]
+  %.01 = phi i8* [ %s2, %0 ], [ %7, %3 ]
+  %.0 = phi i64 [ %n, %0 ], [ %4, %3 ]
+  %2 = icmp eq i64 %.0, 0
+  br i1 %2, label %.loopexit.loopexit, label %3
+
+; <label>:3                                       ; preds = %1
+  %4 = add i64 %.0, -1
+  %5 = getelementptr inbounds i8, i8* %.02, i64 1
+  %6 = load i8, i8* %.02, align 1, !tbaa !1
+  %7 = getelementptr inbounds i8, i8* %.01, i64 1
+  %8 = load i8, i8* %.01, align 1, !tbaa !1
+  %9 = icmp eq i8 %6, %8
+  br i1 %9, label %1, label %10
+
+; <label>:10                                      ; preds = %3
+  %.lcssa9 = phi i8 [ %8, %3 ]
+  %.lcssa = phi i8 [ %6, %3 ]
+  %11 = zext i8 %.lcssa to i32
+  %12 = zext i8 %.lcssa9 to i32
+  %13 = sub nsw i32 %11, %12
+  br label %.loopexit
+
+.loopexit.loopexit:                               ; preds = %1
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %10
+  %.03 = phi i32 [ %13, %10 ], [ 0, %.loopexit.loopexit ]
+  ret i32 %.03
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @strcpy(i8* %destination, i8* nocapture readonly %source) #0 {
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  %size.0.i = phi i64 [ 0, %0 ], [ %5, %1 ]
+  %2 = getelementptr inbounds i8, i8* %source, i64 %size.0.i
+  %3 = load i8, i8* %2, align 1, !tbaa !1
+  %4 = icmp eq i8 %3, 0
+  %5 = add i64 %size.0.i, 1
+  br i1 %4, label %strlen.exit, label %1
+
+strlen.exit:                                      ; preds = %1
+  %size.0.i.lcssa = phi i64 [ %size.0.i, %1 ]
+  %6 = icmp eq i64 %size.0.i.lcssa, 0
+  br i1 %6, label %memcpy.exit, label %.lr.ph.i.preheader
+
+.lr.ph.i.preheader:                               ; preds = %strlen.exit
+  %7 = add i64 %size.0.i.lcssa, -1
+  %xtraiter = and i64 %size.0.i.lcssa, 7
+  %lcmp.mod = icmp eq i64 %xtraiter, 0
+  br i1 %lcmp.mod, label %.lr.ph.i.preheader.split, label %.lr.ph.i.prol.preheader
+
+.lr.ph.i.prol.preheader:                          ; preds = %.lr.ph.i.preheader
+  br label %.lr.ph.i.prol
+
+.lr.ph.i.prol:                                    ; preds = %.lr.ph.i.prol.preheader, %.lr.ph.i.prol
+  %.05.i.prol = phi i64 [ %8, %.lr.ph.i.prol ], [ %size.0.i.lcssa, %.lr.ph.i.prol.preheader ]
+  %.014.i.prol = phi i8* [ %9, %.lr.ph.i.prol ], [ %source, %.lr.ph.i.prol.preheader ]
+  %.023.i.prol = phi i8* [ %11, %.lr.ph.i.prol ], [ %destination, %.lr.ph.i.prol.preheader ]
+  %prol.iter = phi i64 [ %prol.iter.sub, %.lr.ph.i.prol ], [ %xtraiter, %.lr.ph.i.prol.preheader ]
+  %8 = add i64 %.05.i.prol, -1
+  %9 = getelementptr inbounds i8, i8* %.014.i.prol, i64 1
+  %10 = load i8, i8* %.014.i.prol, align 1, !tbaa !1
+  %11 = getelementptr inbounds i8, i8* %.023.i.prol, i64 1
+  store i8 %10, i8* %.023.i.prol, align 1, !tbaa !1
+  %prol.iter.sub = add i64 %prol.iter, -1
+  %prol.iter.cmp = icmp eq i64 %prol.iter.sub, 0
+  br i1 %prol.iter.cmp, label %.lr.ph.i.preheader.split.loopexit, label %.lr.ph.i.prol, !llvm.loop !9
+
+.lr.ph.i.preheader.split.loopexit:                ; preds = %.lr.ph.i.prol
+  %.lcssa2 = phi i8* [ %11, %.lr.ph.i.prol ]
+  %.lcssa1 = phi i8* [ %9, %.lr.ph.i.prol ]
+  %.lcssa = phi i64 [ %8, %.lr.ph.i.prol ]
+  br label %.lr.ph.i.preheader.split
+
+.lr.ph.i.preheader.split:                         ; preds = %.lr.ph.i.preheader.split.loopexit, %.lr.ph.i.preheader
+  %.05.i.unr = phi i64 [ %size.0.i.lcssa, %.lr.ph.i.preheader ], [ %.lcssa, %.lr.ph.i.preheader.split.loopexit ]
+  %.014.i.unr = phi i8* [ %source, %.lr.ph.i.preheader ], [ %.lcssa1, %.lr.ph.i.preheader.split.loopexit ]
+  %.023.i.unr = phi i8* [ %destination, %.lr.ph.i.preheader ], [ %.lcssa2, %.lr.ph.i.preheader.split.loopexit ]
+  %12 = icmp ult i64 %7, 7
+  br i1 %12, label %._crit_edge.i, label %.lr.ph.i.preheader.split.split
+
+.lr.ph.i.preheader.split.split:                   ; preds = %.lr.ph.i.preheader.split
+  br label %.lr.ph.i
+
+.lr.ph.i:                                         ; preds = %.lr.ph.i, %.lr.ph.i.preheader.split.split
+  %.05.i = phi i64 [ %.05.i.unr, %.lr.ph.i.preheader.split.split ], [ %34, %.lr.ph.i ]
+  %.014.i = phi i8* [ %.014.i.unr, %.lr.ph.i.preheader.split.split ], [ %35, %.lr.ph.i ]
+  %.023.i = phi i8* [ %.023.i.unr, %.lr.ph.i.preheader.split.split ], [ %37, %.lr.ph.i ]
+  %13 = getelementptr inbounds i8, i8* %.014.i, i64 1
+  %14 = load i8, i8* %.014.i, align 1, !tbaa !1
+  %15 = getelementptr inbounds i8, i8* %.023.i, i64 1
+  store i8 %14, i8* %.023.i, align 1, !tbaa !1
+  %16 = getelementptr inbounds i8, i8* %.014.i, i64 2
+  %17 = load i8, i8* %13, align 1, !tbaa !1
+  %18 = getelementptr inbounds i8, i8* %.023.i, i64 2
+  store i8 %17, i8* %15, align 1, !tbaa !1
+  %19 = getelementptr inbounds i8, i8* %.014.i, i64 3
+  %20 = load i8, i8* %16, align 1, !tbaa !1
+  %21 = getelementptr inbounds i8, i8* %.023.i, i64 3
+  store i8 %20, i8* %18, align 1, !tbaa !1
+  %22 = getelementptr inbounds i8, i8* %.014.i, i64 4
+  %23 = load i8, i8* %19, align 1, !tbaa !1
+  %24 = getelementptr inbounds i8, i8* %.023.i, i64 4
+  store i8 %23, i8* %21, align 1, !tbaa !1
+  %25 = getelementptr inbounds i8, i8* %.014.i, i64 5
+  %26 = load i8, i8* %22, align 1, !tbaa !1
+  %27 = getelementptr inbounds i8, i8* %.023.i, i64 5
+  store i8 %26, i8* %24, align 1, !tbaa !1
+  %28 = getelementptr inbounds i8, i8* %.014.i, i64 6
+  %29 = load i8, i8* %25, align 1, !tbaa !1
+  %30 = getelementptr inbounds i8, i8* %.023.i, i64 6
+  store i8 %29, i8* %27, align 1, !tbaa !1
+  %31 = getelementptr inbounds i8, i8* %.014.i, i64 7
+  %32 = load i8, i8* %28, align 1, !tbaa !1
+  %33 = getelementptr inbounds i8, i8* %.023.i, i64 7
+  store i8 %32, i8* %30, align 1, !tbaa !1
+  %34 = add i64 %.05.i, -8
+  %35 = getelementptr inbounds i8, i8* %.014.i, i64 8
+  %36 = load i8, i8* %31, align 1, !tbaa !1
+  %37 = getelementptr inbounds i8, i8* %.023.i, i64 8
+  store i8 %36, i8* %33, align 1, !tbaa !1
+  %38 = icmp eq i64 %34, 0
+  br i1 %38, label %._crit_edge.i.unr-lcssa, label %.lr.ph.i
+
+._crit_edge.i.unr-lcssa:                          ; preds = %.lr.ph.i
+  br label %._crit_edge.i
+
+._crit_edge.i:                                    ; preds = %.lr.ph.i.preheader.split, %._crit_edge.i.unr-lcssa
+  %scevgep.i = getelementptr i8, i8* %destination, i64 %size.0.i.lcssa
+  br label %memcpy.exit
+
+memcpy.exit:                                      ; preds = %strlen.exit, %._crit_edge.i
+  %.02.lcssa.i = phi i8* [ %scevgep.i, %._crit_edge.i ], [ %destination, %strlen.exit ]
+  ret i8* %.02.lcssa.i
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i8* @strcpy_s(i8* %dst, i64 %d_len, i8* nocapture readonly %src, i64 %s_len) #0 {
+  %1 = icmp ult i64 %d_len, %s_len
+  %2 = select i1 %1, i64 %d_len, i64 %s_len
+  %3 = icmp eq i64 %2, 0
+  br i1 %3, label %memcpy.exit, label %.lr.ph.i.preheader
+
+.lr.ph.i.preheader:                               ; preds = %0
+  br label %.lr.ph.i
+
+.lr.ph.i:                                         ; preds = %.lr.ph.i.preheader, %.lr.ph.i
+  %.05.i = phi i64 [ %4, %.lr.ph.i ], [ %2, %.lr.ph.i.preheader ]
+  %.014.i = phi i8* [ %5, %.lr.ph.i ], [ %src, %.lr.ph.i.preheader ]
+  %.023.i = phi i8* [ %7, %.lr.ph.i ], [ %dst, %.lr.ph.i.preheader ]
+  %4 = add i64 %.05.i, -1
+  %5 = getelementptr inbounds i8, i8* %.014.i, i64 1
+  %6 = load i8, i8* %.014.i, align 1, !tbaa !1
+  %7 = getelementptr inbounds i8, i8* %.023.i, i64 1
+  store i8 %6, i8* %.023.i, align 1, !tbaa !1
+  %8 = icmp eq i64 %4, 0
+  br i1 %8, label %._crit_edge.i, label %.lr.ph.i
+
+._crit_edge.i:                                    ; preds = %.lr.ph.i
+  %scevgep.i = getelementptr i8, i8* %dst, i64 %2
+  br label %memcpy.exit
+
+memcpy.exit:                                      ; preds = %0, %._crit_edge.i
+  %.02.lcssa.i = phi i8* [ %scevgep.i, %._crit_edge.i ], [ %dst, %0 ]
+  ret i8* %.02.lcssa.i
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i8* @strchr(i8* readonly %s, i32 %c) #1 {
+  %sext = shl i32 %c, 24
+  %1 = ashr exact i32 %sext, 24
+  br label %2
+
+; <label>:2                                       ; preds = %6, %0
+  %.01 = phi i8* [ %s, %0 ], [ %7, %6 ]
+  %3 = load i8, i8* %.01, align 1, !tbaa !1
+  %4 = sext i8 %3 to i32
+  %5 = icmp eq i32 %4, %1
+  br i1 %5, label %9, label %6
+
+; <label>:6                                       ; preds = %2
+  %7 = getelementptr inbounds i8, i8* %.01, i64 1
+  %8 = icmp eq i8 %3, 0
+  br i1 %8, label %9, label %2
+
+; <label>:9                                       ; preds = %2, %6
+  %.0 = phi i8* [ null, %6 ], [ %.01, %2 ]
+  ret i8* %.0
+}
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i8* @strrchr(i8* readonly %s, i32 %c) #1 {
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  %size.0.i = phi i64 [ 0, %0 ], [ %5, %1 ]
+  %2 = getelementptr inbounds i8, i8* %s, i64 %size.0.i
+  %3 = load i8, i8* %2, align 1, !tbaa !1
+  %4 = icmp eq i8 %3, 0
+  %5 = add i64 %size.0.i, 1
+  br i1 %4, label %strlen.exit.preheader, label %1
+
+strlen.exit.preheader:                            ; preds = %1
+  %.lcssa = phi i8* [ %2, %1 ]
+  %sext = shl i32 %c, 24
+  %6 = ashr exact i32 %sext, 24
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %strlen.exit._crit_edge, label %.lr.ph.preheader
+
+.lr.ph.preheader:                                 ; preds = %strlen.exit.preheader
+  br label %.lr.ph
+
+.lr.ph:                                           ; preds = %.lr.ph.preheader, %.strlen.exit_crit_edge
+  %e.01 = phi i8* [ %8, %.strlen.exit_crit_edge ], [ %.lcssa, %.lr.ph.preheader ]
+  %8 = getelementptr inbounds i8, i8* %e.01, i64 -1
+  %9 = icmp eq i8* %e.01, %s
+  br i1 %9, label %strlen.exit._crit_edge.loopexit, label %.strlen.exit_crit_edge
+
+.strlen.exit_crit_edge:                           ; preds = %.lr.ph
+  %.pre = load i8, i8* %8, align 1, !tbaa !1
+  %10 = sext i8 %.pre to i32
+  %11 = icmp eq i32 %10, %6
+  br i1 %11, label %strlen.exit._crit_edge.loopexit, label %.lr.ph
+
+strlen.exit._crit_edge.loopexit:                  ; preds = %.strlen.exit_crit_edge, %.lr.ph
+  %.0.ph = phi i8* [ null, %.lr.ph ], [ %8, %.strlen.exit_crit_edge ]
+  br label %strlen.exit._crit_edge
+
+strlen.exit._crit_edge:                           ; preds = %strlen.exit._crit_edge.loopexit, %strlen.exit.preheader
+  %.0 = phi i8* [ %.lcssa, %strlen.exit.preheader ], [ %.0.ph, %strlen.exit._crit_edge.loopexit ]
+  ret i8* %.0
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i32 @find_first_zero(i32 %bit_array) #2 {
+  %1 = icmp eq i32 %bit_array, 0
+  br i1 %1, label %6, label %2
+
+; <label>:2                                       ; preds = %0
+  %3 = xor i32 %bit_array, -1
+  %4 = tail call i32 asm "bsfl $1,$0\0A\09jne 1f\0A\09movl $$32, $0\0A1:", "=r,r,~{dirflag},~{fpsr},~{flags}"(i32 %3) #3, !srcloc !10
+  %5 = and i32 %4, 65535
+  br label %6
+
+; <label>:6                                       ; preds = %0, %2
+  %.0 = phi i32 [ %5, %2 ], [ 0, %0 ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i32 @set_bit_cnt(i32 %bit_array) #2 {
+  %1 = icmp eq i32 %bit_array, 0
+  br i1 %1, label %.loopexit, label %.preheader.preheader
+
+.preheader.preheader:                             ; preds = %0
+  br label %.preheader
+
+.preheader:                                       ; preds = %.preheader, %.preheader.preheader
+  %i.02 = phi i32 [ 0, %.preheader.preheader ], [ %17, %.preheader ]
+  %set_bit.01 = phi i32 [ 0, %.preheader.preheader ], [ %set_bit.0..3, %.preheader ]
+  %2 = shl i32 1, %i.02
+  %3 = and i32 %2, %bit_array
+  %not. = icmp ne i32 %3, 0
+  %4 = zext i1 %not. to i32
+  %set_bit.0. = add i32 %4, %set_bit.01
+  %5 = or i32 %i.02, 1
+  %6 = shl i32 1, %5
+  %7 = and i32 %6, %bit_array
+  %not..1 = icmp ne i32 %7, 0
+  %8 = zext i1 %not..1 to i32
+  %set_bit.0..1 = add i32 %8, %set_bit.0.
+  %9 = or i32 %i.02, 2
+  %10 = shl i32 1, %9
+  %11 = and i32 %10, %bit_array
+  %not..2 = icmp ne i32 %11, 0
+  %12 = zext i1 %not..2 to i32
+  %set_bit.0..2 = add i32 %12, %set_bit.0..1
+  %13 = or i32 %i.02, 3
+  %14 = shl i32 1, %13
+  %15 = and i32 %14, %bit_array
+  %not..3 = icmp ne i32 %15, 0
+  %16 = zext i1 %not..3 to i32
+  %set_bit.0..3 = add i32 %16, %set_bit.0..2
+  %17 = add nsw i32 %i.02, 4
+  %exitcond.3 = icmp eq i32 %17, 32
+  br i1 %exitcond.3, label %.loopexit.loopexit, label %.preheader
+
+.loopexit.loopexit:                               ; preds = %.preheader
+  %set_bit.0..3.lcssa = phi i32 [ %set_bit.0..3, %.preheader ]
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %0
+  %.0 = phi i32 [ 0, %0 ], [ %set_bit.0..3.lcssa, %.loopexit.loopexit ]
+  ret i32 %.0
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define i64 @new_uid() #0 {
+  %1 = load i64, i64* @uids_base, align 8, !tbaa !11
+  %2 = add i64 %1, 1
+  store i64 %2, i64* @uids_base, align 8, !tbaa !11
+  %3 = and i64 %2, 4294967295
+  ret i64 %3
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i32 @rand(i32 %seed) #2 {
+  ret i32 0
+}
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define i32 @ffs(i32 %val) #2 {
+  br label %1
+
+; <label>:1                                       ; preds = %1, %0
+  %cnt.0 = phi i32 [ 0, %0 ], [ %5, %1 ]
+  %2 = shl i32 1, %cnt.0
+  %3 = and i32 %2, %val
+  %4 = icmp eq i32 %3, 0
+  %5 = add nuw nsw i32 %cnt.0, 1
+  br i1 %4, label %6, label %1
+
+; <label>:6                                       ; preds = %1
+  %cnt.0.lcssa = phi i32 [ %cnt.0, %1 ]
+  ret i32 %cnt.0.lcssa
+}
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone nounwind readonly uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone nounwind readnone uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nounwind readnone }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"omnipotent char", !3, i64 0}
+!3 = !{!"Simple C/C++ TBAA"}
+!4 = distinct !{!4, !5}
+!5 = !{!"llvm.loop.unroll.disable"}
+!6 = distinct !{!6, !5}
+!7 = distinct !{!7, !5}
+!8 = distinct !{!8, !5}
+!9 = distinct !{!9, !5}
+!10 = !{i32 2062, i32 2075, i32 2100, i32 2146}
+!11 = !{!12, !12, i64 0}
+!12 = !{!"long", !2, i64 0}

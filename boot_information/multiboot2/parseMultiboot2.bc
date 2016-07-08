@@ -1,0 +1,253 @@
+; ModuleID = 'boot_information/multiboot2/parseMultiboot2.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.CardinalBootInfo = type { i64, i32, i32, i32, i32, i32, i32, i64, i64, i64, i64, %struct.CardinalMemMap*, i64, i32, i32, i32, i8 }
+%struct.CardinalMemMap = type { i64, i64, i8 }
+
+@bootInfo = internal global %struct.CardinalBootInfo zeroinitializer, align 8
+
+; Function Attrs: noredzone nounwind uwtable
+define void @ParseAndSaveBootInformation(i8* %boot_info) #0 {
+  %1 = bitcast i8* %boot_info to i32*
+  %2 = load i32, i32* %1, align 4, !tbaa !1
+  %3 = tail call i8* @memset(i8* bitcast (%struct.CardinalBootInfo* @bootInfo to i8*), i32 0, i64 96) #3
+  %4 = icmp ugt i32 %2, 8
+  br i1 %4, label %.lr.ph4.preheader, label %._crit_edge.5
+
+.lr.ph4.preheader:                                ; preds = %0
+  br label %.lr.ph4
+
+._crit_edge.5.loopexit:                           ; preds = %91
+  br label %._crit_edge.5
+
+._crit_edge.5:                                    ; preds = %._crit_edge.5.loopexit, %0
+  ret void
+
+.lr.ph4:                                          ; preds = %.lr.ph4.preheader, %91
+  %i.02 = phi i32 [ %101, %91 ], [ 8, %.lr.ph4.preheader ]
+  %5 = zext i32 %i.02 to i64
+  %6 = getelementptr inbounds i8, i8* %boot_info, i64 %5
+  %7 = bitcast i8* %6 to i32*
+  %8 = load i32, i32* %7, align 4, !tbaa !1
+  switch i32 %8, label %91 [
+    i32 6, label %9
+    i32 8, label %49
+    i32 9, label %64
+    i32 14, label %79
+    i32 15, label %79
+    i32 3, label %82
+  ]
+
+; <label>:9                                       ; preds = %.lr.ph4
+  %10 = getelementptr inbounds i8, i8* %6, i64 4
+  %11 = bitcast i8* %10 to i32*
+  %12 = load i32, i32* %11, align 4, !tbaa !5
+  %13 = add i32 %12, -16
+  %14 = getelementptr inbounds i8, i8* %6, i64 8
+  %15 = bitcast i8* %14 to i32*
+  %16 = load i32, i32* %15, align 4, !tbaa !7
+  %17 = udiv i32 %13, %16
+  %18 = sext i32 %17 to i64
+  %19 = mul nsw i64 %18, 24
+  %20 = tail call i8* @bootstrap_malloc(i64 %19) #3
+  %21 = bitcast i8* %20 to %struct.CardinalMemMap*
+  %22 = load i32, i32* %11, align 4, !tbaa !5
+  %23 = icmp eq i32 %22, 16
+  br i1 %23, label %28, label %.lr.ph
+
+.lr.ph:                                           ; preds = %9
+  %24 = getelementptr inbounds i8, i8* %6, i64 16
+  %25 = load i32, i32* %15, align 4, !tbaa !7
+  %26 = add i32 %22, -16
+  br label %30
+
+._crit_edge:                                      ; preds = %30
+  %.lcssa10 = phi i64 [ %37, %30 ]
+  %.lcssa = phi i64 [ %34, %30 ]
+  %27 = add i64 %.lcssa10, %.lcssa
+  store i64 %27, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 0), align 8, !tbaa !8
+  br label %28
+
+; <label>:28                                      ; preds = %9, %._crit_edge
+  store i8* %20, i8** bitcast (%struct.CardinalMemMap** getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 11) to i8**), align 8, !tbaa !12
+  %29 = trunc i64 %19 to i32
+  store i32 %29, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 6), align 4, !tbaa !13
+  br label %91
+
+; <label>:30                                      ; preds = %.lr.ph, %30
+  %j.01 = phi i32 [ 0, %.lr.ph ], [ %47, %30 ]
+  %31 = zext i32 %j.01 to i64
+  %32 = getelementptr inbounds i8, i8* %24, i64 %31
+  %33 = bitcast i8* %32 to i64*
+  %34 = load i64, i64* %33, align 1, !tbaa !14
+  %35 = getelementptr inbounds i8, i8* %32, i64 8
+  %36 = bitcast i8* %35 to i64*
+  %37 = load i64, i64* %36, align 1, !tbaa !17
+  %38 = udiv i32 %j.01, %25
+  %39 = zext i32 %38 to i64
+  %40 = getelementptr inbounds %struct.CardinalMemMap, %struct.CardinalMemMap* %21, i64 %39, i32 0
+  store i64 %34, i64* %40, align 8, !tbaa !18
+  %41 = getelementptr inbounds %struct.CardinalMemMap, %struct.CardinalMemMap* %21, i64 %39, i32 1
+  store i64 %37, i64* %41, align 8, !tbaa !20
+  %42 = getelementptr inbounds i8, i8* %32, i64 16
+  %43 = bitcast i8* %42 to i32*
+  %44 = load i32, i32* %43, align 1, !tbaa !21
+  %45 = trunc i32 %44 to i8
+  %46 = getelementptr inbounds %struct.CardinalMemMap, %struct.CardinalMemMap* %21, i64 %39, i32 2
+  store i8 %45, i8* %46, align 1, !tbaa !22
+  %47 = add i32 %25, %j.01
+  %48 = icmp ult i32 %47, %26
+  br i1 %48, label %30, label %._crit_edge
+
+; <label>:49                                      ; preds = %.lr.ph4
+  %50 = getelementptr inbounds i8, i8* %6, i64 8
+  %51 = bitcast i8* %50 to i64*
+  %52 = load i64, i64* %51, align 8, !tbaa !23
+  store i64 %52, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 12), align 8, !tbaa !27
+  %53 = getelementptr inbounds i8, i8* %6, i64 16
+  %54 = bitcast i8* %53 to i32*
+  %55 = load i32, i32* %54, align 4, !tbaa !28
+  store i32 %55, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 13), align 8, !tbaa !29
+  %56 = getelementptr inbounds i8, i8* %6, i64 20
+  %57 = bitcast i8* %56 to i32*
+  %58 = load i32, i32* %57, align 4, !tbaa !30
+  store i32 %58, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 14), align 4, !tbaa !31
+  %59 = getelementptr inbounds i8, i8* %6, i64 24
+  %60 = bitcast i8* %59 to i32*
+  %61 = load i32, i32* %60, align 4, !tbaa !32
+  store i32 %61, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 15), align 8, !tbaa !33
+  %62 = getelementptr inbounds i8, i8* %6, i64 28
+  %63 = load i8, i8* %62, align 1, !tbaa !34
+  store i8 %63, i8* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 16), align 4, !tbaa !35
+  br label %91
+
+; <label>:64                                      ; preds = %.lr.ph4
+  store i32 9, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 1), align 8, !tbaa !36
+  %65 = getelementptr inbounds i8, i8* %6, i64 4
+  %66 = bitcast i8* %65 to i32*
+  %67 = load i32, i32* %66, align 4, !tbaa !37
+  store i32 %67, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 2), align 4, !tbaa !39
+  %68 = getelementptr inbounds i8, i8* %6, i64 8
+  %69 = bitcast i8* %68 to i32*
+  %70 = load i32, i32* %69, align 4, !tbaa !40
+  store i32 %70, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 3), align 8, !tbaa !41
+  %71 = getelementptr inbounds i8, i8* %6, i64 12
+  %72 = bitcast i8* %71 to i32*
+  %73 = load i32, i32* %72, align 4, !tbaa !42
+  store i32 %73, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 4), align 4, !tbaa !43
+  %74 = getelementptr inbounds i8, i8* %6, i64 16
+  %75 = bitcast i8* %74 to i32*
+  %76 = load i32, i32* %75, align 4, !tbaa !44
+  store i32 %76, i32* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 5), align 8, !tbaa !45
+  %77 = getelementptr inbounds i8, i8* %6, i64 20
+  %78 = ptrtoint i8* %77 to i64
+  store i64 %78, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 7), align 8, !tbaa !46
+  br label %91
+
+; <label>:79                                      ; preds = %.lr.ph4, %.lr.ph4
+  %80 = getelementptr inbounds i8, i8* %6, i64 8
+  %81 = ptrtoint i8* %80 to i64
+  store i64 %81, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 8), align 8, !tbaa !47
+  br label %91
+
+; <label>:82                                      ; preds = %.lr.ph4
+  %83 = getelementptr inbounds i8, i8* %6, i64 8
+  %84 = bitcast i8* %83 to i32*
+  %85 = load i32, i32* %84, align 4, !tbaa !48
+  %86 = zext i32 %85 to i64
+  store i64 %86, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 9), align 8, !tbaa !50
+  %87 = getelementptr inbounds i8, i8* %6, i64 4
+  %88 = bitcast i8* %87 to i32*
+  %89 = load i32, i32* %88, align 4, !tbaa !51
+  %90 = zext i32 %89 to i64
+  store i64 %90, i64* getelementptr inbounds (%struct.CardinalBootInfo, %struct.CardinalBootInfo* @bootInfo, i64 0, i32 10), align 8, !tbaa !52
+  br label %91
+
+; <label>:91                                      ; preds = %.lr.ph4, %82, %79, %64, %49, %28
+  %92 = add i32 %i.02, 4
+  %93 = zext i32 %92 to i64
+  %94 = getelementptr inbounds i8, i8* %boot_info, i64 %93
+  %95 = bitcast i8* %94 to i32*
+  %96 = load i32, i32* %95, align 4, !tbaa !1
+  %97 = and i32 %96, 7
+  %98 = icmp eq i32 %97, 0
+  %99 = sub nsw i32 8, %97
+  %100 = select i1 %98, i32 0, i32 %99
+  %s.0 = add i32 %96, %i.02
+  %101 = add i32 %s.0, %100
+  %102 = icmp ult i32 %101, %2
+  br i1 %102, label %.lr.ph4, label %._crit_edge.5.loopexit
+}
+
+; Function Attrs: noredzone
+declare i8* @memset(i8*, i32, i64) #1
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #1
+
+; Function Attrs: noredzone nounwind readnone uwtable
+define %struct.CardinalBootInfo* @GetBootInfo() #2 {
+  ret %struct.CardinalBootInfo* @bootInfo
+}
+
+attributes #0 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone nounwind readnone uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"int", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{!6, !2, i64 4}
+!6 = !{!"multiboot_tag_mmap", !2, i64 0, !2, i64 4, !2, i64 8, !2, i64 12, !3, i64 16}
+!7 = !{!6, !2, i64 8}
+!8 = !{!9, !10, i64 0}
+!9 = !{!"", !10, i64 0, !2, i64 8, !2, i64 12, !2, i64 16, !2, i64 20, !2, i64 24, !2, i64 28, !10, i64 32, !10, i64 40, !10, i64 48, !10, i64 56, !11, i64 64, !10, i64 72, !2, i64 80, !2, i64 84, !2, i64 88, !3, i64 92}
+!10 = !{!"long", !3, i64 0}
+!11 = !{!"any pointer", !3, i64 0}
+!12 = !{!9, !11, i64 64}
+!13 = !{!9, !2, i64 28}
+!14 = !{!15, !16, i64 0}
+!15 = !{!"multiboot_mmap_entry", !16, i64 0, !16, i64 8, !2, i64 16, !2, i64 20}
+!16 = !{!"long long", !3, i64 0}
+!17 = !{!15, !16, i64 8}
+!18 = !{!19, !10, i64 0}
+!19 = !{!"", !10, i64 0, !10, i64 8, !3, i64 16}
+!20 = !{!19, !10, i64 8}
+!21 = !{!15, !2, i64 16}
+!22 = !{!19, !3, i64 16}
+!23 = !{!24, !16, i64 8}
+!24 = !{!"multiboot_tag_framebuffer", !25, i64 0, !3, i64 32}
+!25 = !{!"multiboot_tag_framebuffer_common", !2, i64 0, !2, i64 4, !16, i64 8, !2, i64 16, !2, i64 20, !2, i64 24, !3, i64 28, !3, i64 29, !26, i64 30}
+!26 = !{!"short", !3, i64 0}
+!27 = !{!9, !10, i64 72}
+!28 = !{!24, !2, i64 16}
+!29 = !{!9, !2, i64 80}
+!30 = !{!24, !2, i64 20}
+!31 = !{!9, !2, i64 84}
+!32 = !{!24, !2, i64 24}
+!33 = !{!9, !2, i64 88}
+!34 = !{!24, !3, i64 28}
+!35 = !{!9, !3, i64 92}
+!36 = !{!9, !2, i64 8}
+!37 = !{!38, !2, i64 4}
+!38 = !{!"multiboot_tag_elf_sections", !2, i64 0, !2, i64 4, !2, i64 8, !2, i64 12, !2, i64 16, !3, i64 20}
+!39 = !{!9, !2, i64 12}
+!40 = !{!38, !2, i64 8}
+!41 = !{!9, !2, i64 16}
+!42 = !{!38, !2, i64 12}
+!43 = !{!9, !2, i64 20}
+!44 = !{!38, !2, i64 16}
+!45 = !{!9, !2, i64 24}
+!46 = !{!9, !10, i64 32}
+!47 = !{!9, !10, i64 40}
+!48 = !{!49, !2, i64 8}
+!49 = !{!"multiboot_tag_module", !2, i64 0, !2, i64 4, !2, i64 8, !2, i64 12, !3, i64 16}
+!50 = !{!9, !10, i64 48}
+!51 = !{!49, !2, i64 4}
+!52 = !{!9, !10, i64 56}

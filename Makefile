@@ -38,16 +38,19 @@ CCADMIN=CCadmin
 CC=clang
 ASFLAGS =-D$(CONF)
 
-CFLAGS=  -target $(TARGET_TRIPLET) -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3
+CFLAGS=  -target $(TARGET_TRIPLET) -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O3 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
 
 
-.c.o:
-	$(CC) $(CFLAGS) -S $? -o $(?:.c=.s)
-	$(AS) $(ASFLAGS) $(?:.c=.s) -c -o $(?:.c=.o)
-	rm -f $(?:.c=.s)
+%.bc: %.c
+	$(CC) $(CFLAGS) -S $? -o $(?:.c=.bc)
+
+%.bc:%.S
+	touch $(?:.S=.bc)
+	$(AS) $? -c -o $(?:.S=.o)
+	cp $(?:.S=.o) $?.o
 
 .s.o:
 	$(AS) $(ASFLAGS) $? -c -o $(?:.s=.o)
@@ -68,10 +71,13 @@ clean_initrd:
 	cd initrd && $(MAKE) clean
 
 # build
-build:$(SOURCES) clean_output initrd
+build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
+	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
+	llc tmp.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
+	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
-	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES)) $(SOURCES) -mcmodel=kernel
+	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
 	cd initrd && $(MAKE) $(TARGET_MAKE)
 	cp initrd/initrd build/$(CONF)/initrd
 
@@ -80,6 +86,7 @@ clean: clean_initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
 	rm -f $(SOURCES)
 	rm -f $(SOURCES:.o=.d)
+	rm -f $(SOURCES:.o=.bc)
 	rm -rf build/$(CONF)/*
 	rm -rf ISO/*
 

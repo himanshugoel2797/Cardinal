@@ -1,0 +1,679 @@
+; ModuleID = 'pci/pci.c'
+target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-none--elf"
+
+%struct.Cardinal_Driver = type { [256 x i8], [256 x i8], i32, void (i32)*, i8 (%struct.PCI_DeviceFuncs*)*, i8 (%struct.PCI_DeviceFuncs*)* }
+%struct.PCI_DeviceFuncs = type { i8, i8, i8, i16, i16, i32, i32, i32, i8, [6 x %struct.PCI_BAR], i8 }
+%struct.PCI_BAR = type { i64, i32, i8 }
+%struct.MCFG_Entry = type { i64, i16, i8, i8, i32 }
+
+@drivers = constant [2 x %struct.Cardinal_Driver] [%struct.Cardinal_Driver { [256 x i8] c"UHCI\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00", [256 x i8] c"PCI\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00", i32 11, void (i32)* @UHCI_ActivationStateChange, i8 (%struct.PCI_DeviceFuncs*)* @UHCI_DetectController, i8 (%struct.PCI_DeviceFuncs*)* @UHCI_InitializeController }, %struct.Cardinal_Driver zeroinitializer], align 16
+@pci_deviceCount = internal unnamed_addr global i32 0, align 4
+@pci_devices = internal global [128 x %struct.PCI_DeviceFuncs] zeroinitializer, align 16
+@.str = private unnamed_addr constant [5 x i8] c"MCFG\00", align 1
+@mcfg_entry_count = internal unnamed_addr global i64 0, align 8
+@mcfg_table = internal unnamed_addr global %struct.MCFG_Entry* null, align 8
+@.str.1 = private unnamed_addr constant [4 x i8] c"PCI\00", align 1
+
+; Function Attrs: noredzone
+declare void @UHCI_ActivationStateChange(i32) #0
+
+; Function Attrs: noredzone
+declare zeroext i8 @UHCI_DetectController(%struct.PCI_DeviceFuncs*) #0
+
+; Function Attrs: noredzone
+declare zeroext i8 @UHCI_InitializeController(%struct.PCI_DeviceFuncs*) #0
+
+; Function Attrs: noredzone nounwind readonly uwtable
+define i32 @pci_getDeviceCount() #1 {
+  %1 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  ret i32 %1
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @pci_getDeviceInfo(i32 %pci_index, %struct.PCI_DeviceFuncs* %p) #2 {
+  %1 = icmp eq %struct.PCI_DeviceFuncs* %p, null
+  %2 = zext i1 %1 to i32
+  %3 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %4 = icmp ule i32 %3, %pci_index
+  %5 = zext i1 %4 to i32
+  %6 = or i32 %5, %2
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %8, label %13
+
+; <label>:8                                       ; preds = %0
+  %9 = getelementptr inbounds %struct.PCI_DeviceFuncs, %struct.PCI_DeviceFuncs* %p, i64 0, i32 0
+  %10 = zext i32 %pci_index to i64
+  %11 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %10, i32 0
+  %12 = tail call i8* @memcpy(i8* %9, i8* %11, i64 128) #4
+  br label %13
+
+; <label>:13                                      ; preds = %0, %8
+  ret void
+}
+
+; Function Attrs: noredzone
+declare i8* @memcpy(i8*, i8*, i64) #0
+
+; Function Attrs: noredzone nounwind uwtable
+define i32 @pci_readDWord(i32 %bus, i32 %device, i32 %function, i32 %offset) #2 {
+  %1 = shl i32 %bus, 16
+  %2 = shl i32 %device, 11
+  %3 = shl i32 %function, 8
+  %4 = and i32 %offset, 252
+  %5 = or i32 %1, %2
+  %6 = or i32 %5, %3
+  %7 = or i32 %6, %4
+  %8 = or i32 %7, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %8) #3, !srcloc !5
+  %9 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  ret i32 %9
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @pci_writeDWord(i32 %bus, i32 %device, i32 %function, i32 %offset, i32 %val) #2 {
+  %1 = shl i32 %bus, 16
+  %2 = shl i32 %device, 11
+  %3 = shl i32 %function, 8
+  %4 = and i32 %offset, 252
+  %5 = or i32 %1, %2
+  %6 = or i32 %5, %3
+  %7 = or i32 %6, %4
+  %8 = or i32 %7, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %8) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 %val) #3, !srcloc !5
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define zeroext i8 @pci_enableMSI(i32 %device_index) #2 {
+  %1 = zext i32 %device_index to i64
+  %2 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 5
+  %3 = load i32, i32* %2, align 8, !tbaa !7
+  %4 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 6
+  %5 = load i32, i32* %4, align 4, !tbaa !10
+  %6 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 7
+  %7 = load i32, i32* %6, align 16, !tbaa !11
+  %8 = shl i32 %3, 16
+  %9 = shl i32 %5, 11
+  %10 = shl i32 %7, 8
+  %11 = or i32 %8, %9
+  %12 = or i32 %11, %10
+  %13 = or i32 %12, -2147483644
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %13) #3, !srcloc !5
+  %14 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %15 = and i32 %14, -1029
+  %16 = or i32 %15, 4
+  %17 = load i32, i32* %2, align 8, !tbaa !7
+  %18 = load i32, i32* %4, align 4, !tbaa !10
+  %19 = load i32, i32* %6, align 16, !tbaa !11
+  %20 = shl i32 %17, 16
+  %21 = shl i32 %18, 11
+  %22 = shl i32 %19, 8
+  %23 = or i32 %20, %21
+  %24 = or i32 %23, %22
+  %25 = or i32 %24, -2147483644
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %25) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 %16) #3, !srcloc !5
+  %26 = load i32, i32* %2, align 8, !tbaa !7
+  %27 = load i32, i32* %4, align 4, !tbaa !10
+  %28 = load i32, i32* %6, align 16, !tbaa !11
+  %29 = shl i32 %26, 16
+  %30 = shl i32 %27, 11
+  %31 = shl i32 %28, 8
+  %32 = or i32 %29, %30
+  %33 = or i32 %32, %31
+  %34 = or i32 %33, -2147483596
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %34) #3, !srcloc !5
+  %35 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %36 = shl i32 %35, 8
+  %37 = and i32 %36, 65280
+  br label %38
+
+; <label>:38                                      ; preds = %0, %40
+  %msi_ctrl_off_nx.02 = phi i32 [ %37, %0 ], [ %54, %40 ]
+  %39 = icmp eq i32 %msi_ctrl_off_nx.02, 0
+  br i1 %39, label %.loopexit.loopexit, label %40
+
+; <label>:40                                      ; preds = %38
+  %41 = load i32, i32* %2, align 8, !tbaa !7
+  %42 = load i32, i32* %4, align 4, !tbaa !10
+  %43 = load i32, i32* %6, align 16, !tbaa !11
+  %44 = lshr i32 %msi_ctrl_off_nx.02, 8
+  %45 = shl i32 %41, 16
+  %46 = shl i32 %42, 11
+  %47 = shl i32 %43, 8
+  %48 = and i32 %44, 252
+  %49 = or i32 %48, %45
+  %50 = or i32 %49, %46
+  %51 = or i32 %50, %47
+  %52 = or i32 %51, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %52) #3, !srcloc !5
+  %53 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %54 = and i32 %53, 65535
+  %55 = and i32 %53, 255
+  %56 = icmp eq i32 %55, 5
+  br i1 %56, label %57, label %38
+
+; <label>:57                                      ; preds = %40
+  %.lcssa7 = phi i32 [ %48, %40 ]
+  %.lcssa = phi i32 [ %44, %40 ]
+  %58 = load i32, i32* %2, align 8, !tbaa !7
+  %59 = load i32, i32* %4, align 4, !tbaa !10
+  %60 = load i32, i32* %6, align 16, !tbaa !11
+  %61 = shl i32 %58, 16
+  %62 = shl i32 %59, 11
+  %63 = shl i32 %60, 8
+  %64 = or i32 %.lcssa7, %61
+  %65 = or i32 %64, %62
+  %66 = or i32 %65, %63
+  %67 = or i32 %66, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %67) #3, !srcloc !5
+  %68 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %69 = load i32, i32* %2, align 8, !tbaa !7
+  %70 = load i32, i32* %4, align 4, !tbaa !10
+  %71 = load i32, i32* %6, align 16, !tbaa !11
+  %72 = shl i32 %69, 16
+  %73 = shl i32 %70, 11
+  %74 = shl i32 %71, 8
+  %75 = or i32 %.lcssa7, %72
+  %76 = or i32 %75, %73
+  %77 = or i32 %76, %74
+  %78 = or i32 %77, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %78) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 65536) #3, !srcloc !5
+  %79 = load i32, i32* %2, align 8, !tbaa !7
+  %80 = load i32, i32* %4, align 4, !tbaa !10
+  %81 = load i32, i32* %6, align 16, !tbaa !11
+  %82 = add nuw nsw i32 %.lcssa, 4
+  %83 = shl i32 %79, 16
+  %84 = shl i32 %80, 11
+  %85 = shl i32 %81, 8
+  %86 = and i32 %82, 252
+  %87 = or i32 %86, %83
+  %88 = or i32 %87, %84
+  %89 = or i32 %88, %85
+  %90 = or i32 %89, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %90) #3, !srcloc !5
+  %91 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %92 = tail call zeroext i8 @APIC_GetID() #4
+  %93 = zext i8 %92 to i32
+  %94 = shl nuw nsw i32 %93, 12
+  %95 = or i32 %94, -18874368
+  %96 = load i32, i32* %2, align 8, !tbaa !7
+  %97 = load i32, i32* %4, align 4, !tbaa !10
+  %98 = load i32, i32* %6, align 16, !tbaa !11
+  %99 = shl i32 %96, 16
+  %100 = shl i32 %97, 11
+  %101 = shl i32 %98, 8
+  %102 = or i32 %86, %99
+  %103 = or i32 %102, %100
+  %104 = or i32 %103, %101
+  %105 = or i32 %104, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %105) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 %95) #3, !srcloc !5
+  br label %.loopexit
+
+.loopexit.loopexit:                               ; preds = %38
+  br label %.loopexit
+
+.loopexit:                                        ; preds = %.loopexit.loopexit, %57
+  %.0 = phi i8 [ 1, %57 ], [ 0, %.loopexit.loopexit ]
+  ret i8 %.0
+}
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.start(i64, i8* nocapture) #3
+
+; Function Attrs: noredzone
+declare zeroext i8 @APIC_GetID() #0
+
+; Function Attrs: nounwind
+declare void @llvm.lifetime.end(i64, i8* nocapture) #3
+
+; Function Attrs: noredzone nounwind uwtable
+define void @pci_regMSIVector(i32 %device_index, i8 zeroext %vector) #2 {
+  %1 = zext i32 %device_index to i64
+  %2 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 5
+  %3 = load i32, i32* %2, align 8, !tbaa !7
+  %4 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 6
+  %5 = load i32, i32* %4, align 4, !tbaa !10
+  %6 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %1, i32 7
+  %7 = load i32, i32* %6, align 16, !tbaa !11
+  %8 = shl i32 %3, 16
+  %9 = shl i32 %5, 11
+  %10 = shl i32 %7, 8
+  %11 = or i32 %8, %9
+  %12 = or i32 %11, %10
+  %13 = or i32 %12, -2147483596
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %13) #3, !srcloc !5
+  %14 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %15 = shl i32 %14, 8
+  %16 = and i32 %15, 65280
+  br label %17
+
+; <label>:17                                      ; preds = %0, %17
+  %msi_ctrl_off_nx.01 = phi i32 [ %16, %0 ], [ %31, %17 ]
+  %18 = load i32, i32* %2, align 8, !tbaa !7
+  %19 = load i32, i32* %4, align 4, !tbaa !10
+  %20 = load i32, i32* %6, align 16, !tbaa !11
+  %21 = lshr i32 %msi_ctrl_off_nx.01, 8
+  %22 = shl i32 %18, 16
+  %23 = shl i32 %19, 11
+  %24 = shl i32 %20, 8
+  %25 = and i32 %21, 252
+  %26 = or i32 %25, %22
+  %27 = or i32 %26, %23
+  %28 = or i32 %27, %24
+  %29 = or i32 %28, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %29) #3, !srcloc !5
+  %30 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %31 = and i32 %30, 65535
+  %32 = and i32 %30, 255
+  %33 = icmp eq i32 %32, 5
+  br i1 %33, label %34, label %17
+
+; <label>:34                                      ; preds = %17
+  %.lcssa5 = phi i32 [ %25, %17 ]
+  %.lcssa = phi i32 [ %21, %17 ]
+  %35 = load i32, i32* %2, align 8, !tbaa !7
+  %36 = load i32, i32* %4, align 4, !tbaa !10
+  %37 = load i32, i32* %6, align 16, !tbaa !11
+  %38 = shl i32 %35, 16
+  %39 = shl i32 %36, 11
+  %40 = shl i32 %37, 8
+  %41 = or i32 %.lcssa5, %38
+  %42 = or i32 %41, %39
+  %43 = or i32 %42, %40
+  %44 = or i32 %43, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %44) #3, !srcloc !5
+  %45 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %46 = load i32, i32* %2, align 8, !tbaa !7
+  %47 = load i32, i32* %4, align 4, !tbaa !10
+  %48 = load i32, i32* %6, align 16, !tbaa !11
+  %49 = shl i32 %46, 16
+  %50 = shl i32 %47, 11
+  %51 = shl i32 %48, 8
+  %52 = or i32 %.lcssa5, %49
+  %53 = or i32 %52, %50
+  %54 = or i32 %53, %51
+  %55 = or i32 %54, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %55) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 %45) #3, !srcloc !5
+  %56 = and i32 %45, 2139095040
+  %57 = icmp eq i32 %56, 0
+  %..v = select i1 %57, i32 8, i32 12
+  %. = add nuw nsw i32 %..v, %.lcssa
+  %58 = load i32, i32* %2, align 8, !tbaa !7
+  %59 = load i32, i32* %4, align 4, !tbaa !10
+  %60 = load i32, i32* %6, align 16, !tbaa !11
+  %61 = shl i32 %58, 16
+  %62 = shl i32 %59, 11
+  %63 = shl i32 %60, 8
+  %64 = and i32 %., 252
+  %65 = or i32 %64, %61
+  %66 = or i32 %65, %62
+  %67 = or i32 %66, %63
+  %68 = or i32 %67, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %68) #3, !srcloc !5
+  %69 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %70 = and i32 %69, -256
+  %71 = zext i8 %vector to i32
+  %72 = or i32 %70, %71
+  %73 = load i32, i32* %2, align 8, !tbaa !7
+  %74 = load i32, i32* %4, align 4, !tbaa !10
+  %75 = load i32, i32* %6, align 16, !tbaa !11
+  %76 = shl i32 %73, 16
+  %77 = shl i32 %74, 11
+  %78 = shl i32 %75, 8
+  %79 = or i32 %64, %76
+  %80 = or i32 %79, %77
+  %81 = or i32 %80, %78
+  %82 = or i32 %81, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %82) #3, !srcloc !5
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3324, i32 %72) #3, !srcloc !5
+  ret void
+}
+
+; Function Attrs: noredzone nounwind uwtable
+define void @pci_Initialize() #2 {
+  %f1 = alloca %struct.PCI_DeviceFuncs, align 8
+  %1 = tail call i8* @ACPITables_FindTable(i8* getelementptr inbounds ([5 x i8], [5 x i8]* @.str, i64 0, i64 0), i32 0) #4
+  %2 = getelementptr inbounds i8, i8* %1, i64 4
+  %3 = bitcast i8* %2 to i32*
+  %4 = load i32, i32* %3, align 1, !tbaa !12
+  %5 = zext i32 %4 to i64
+  %6 = add nsw i64 %5, -44
+  %7 = lshr i64 %6, 4
+  store i64 %7, i64* @mcfg_entry_count, align 8, !tbaa !16
+  %8 = shl nuw i64 %7, 4
+  %9 = tail call i8* @bootstrap_malloc(i64 %8) #4
+  store i8* %9, i8** bitcast (%struct.MCFG_Entry** @mcfg_table to i8**), align 8, !tbaa !17
+  %10 = getelementptr inbounds i8, i8* %1, i64 48
+  %11 = load i64, i64* @mcfg_entry_count, align 8, !tbaa !16
+  %12 = shl i64 %11, 4
+  %13 = tail call i8* @memcpy(i8* %9, i8* %10, i64 %12) #4
+  br label %.preheader3
+
+.preheader3:                                      ; preds = %20, %0
+  %bus.011 = phi i32 [ 0, %0 ], [ %21, %20 ]
+  %14 = shl i32 %bus.011, 16
+  br label %22
+
+; <label>:15                                      ; preds = %20
+  %16 = tail call i32 @RegisterBus(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.1, i64 0, i64 0)) #4
+  %17 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %18 = icmp eq i32 %17, 0
+  br i1 %18, label %._crit_edge, label %.preheader.lr.ph
+
+.preheader.lr.ph:                                 ; preds = %15
+  %19 = getelementptr inbounds %struct.PCI_DeviceFuncs, %struct.PCI_DeviceFuncs* %f1, i64 0, i32 0
+  br label %.preheader
+
+; <label>:20                                      ; preds = %.loopexit2
+  %21 = add nuw nsw i32 %bus.011, 1
+  %exitcond14 = icmp eq i32 %21, 256
+  br i1 %exitcond14, label %15, label %.preheader3
+
+; <label>:22                                      ; preds = %.loopexit2, %.preheader3
+  %device.010 = phi i32 [ 0, %.preheader3 ], [ %146, %.loopexit2 ]
+  %23 = shl i32 %device.010, 11
+  %24 = or i32 %23, %14
+  %25 = or i32 %24, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %25) #3, !srcloc !5
+  %26 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %27 = icmp ult i32 %26, -65536
+  br i1 %27, label %28, label %.loopexit2
+
+; <label>:28                                      ; preds = %22
+  %29 = or i32 %24, -2147483636
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %29) #3, !srcloc !5
+  %30 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %31 = and i32 %30, 8388608
+  %32 = icmp ne i32 %31, 0
+  %. = select i1 %32, i32 8, i32 1
+  br label %33
+
+; <label>:33                                      ; preds = %28, %143
+  %f.09 = phi i32 [ 0, %28 ], [ %144, %143 ]
+  %34 = shl i32 %f.09, 8
+  %35 = or i32 %34, %24
+  %36 = or i32 %35, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %36) #3, !srcloc !5
+  %37 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %38 = icmp ult i32 %37, -65536
+  br i1 %38, label %39, label %143
+
+; <label>:39                                      ; preds = %33
+  %40 = or i32 %35, -2147483640
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %40) #3, !srcloc !5
+  %41 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %42 = lshr i32 %41, 24
+  %43 = trunc i32 %42 to i8
+  %44 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %45 = zext i32 %44 to i64
+  %46 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %45, i32 0
+  store i8 %43, i8* %46, align 16, !tbaa !19
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %40) #3, !srcloc !5
+  %47 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %48 = lshr i32 %47, 16
+  %49 = trunc i32 %48 to i8
+  %50 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %51 = zext i32 %50 to i64
+  %52 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %51, i32 1
+  store i8 %49, i8* %52, align 1, !tbaa !20
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %40) #3, !srcloc !5
+  %53 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %54 = lshr i32 %53, 8
+  %55 = trunc i32 %54 to i8
+  %56 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %57 = zext i32 %56 to i64
+  %58 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %57, i32 2
+  store i8 %55, i8* %58, align 2, !tbaa !21
+  %59 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %57, i32 5
+  store i32 %bus.011, i32* %59, align 8, !tbaa !7
+  %60 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %57, i32 6
+  store i32 %device.010, i32* %60, align 4, !tbaa !10
+  %61 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %57, i32 7
+  store i32 %f.09, i32* %61, align 16, !tbaa !11
+  %62 = or i32 %35, -2147483636
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %62) #3, !srcloc !5
+  %63 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %64 = lshr i32 %63, 16
+  %65 = trunc i32 %64 to i8
+  %66 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %67 = zext i32 %66 to i64
+  %68 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %67, i32 10
+  store i8 %65, i8* %68, align 8, !tbaa !22
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %36) #3, !srcloc !5
+  %69 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %70 = lshr i32 %69, 16
+  %71 = trunc i32 %70 to i16
+  %72 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %73 = zext i32 %72 to i64
+  %74 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %73, i32 3
+  store i16 %71, i16* %74, align 4, !tbaa !23
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %36) #3, !srcloc !5
+  %75 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %76 = trunc i32 %75 to i16
+  %77 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %78 = zext i32 %77 to i64
+  %79 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %78, i32 4
+  store i16 %76, i16* %79, align 2, !tbaa !24
+  %80 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %78, i32 10
+  %81 = load i8, i8* %80, align 8, !tbaa !22
+  %82 = zext i8 %81 to i32
+  switch i32 %82, label %87 [
+    i32 0, label %83
+    i32 1, label %85
+  ]
+
+; <label>:83                                      ; preds = %39
+  %84 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %78, i32 8
+  store i8 6, i8* %84, align 4, !tbaa !25
+  br label %.lr.ph
+
+; <label>:85                                      ; preds = %39
+  %86 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %78, i32 8
+  store i8 2, i8* %86, align 4, !tbaa !25
+  br label %.lr.ph
+
+; <label>:87                                      ; preds = %39
+  %.phi.trans.insert = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %78, i32 8
+  %.pre = load i8, i8* %.phi.trans.insert, align 4, !tbaa !25
+  %88 = icmp eq i8 %.pre, 0
+  br i1 %88, label %._crit_edge.8, label %.lr.ph
+
+.lr.ph:                                           ; preds = %83, %85, %87
+  %89 = phi i8 [ %.pre, %87 ], [ 6, %83 ], [ 2, %85 ]
+  br label %92
+
+._crit_edge.8.loopexit:                           ; preds = %140
+  %.lcssa = phi i32 [ %127, %140 ]
+  br label %._crit_edge.8
+
+._crit_edge.8:                                    ; preds = %._crit_edge.8.loopexit, %87
+  %90 = phi i32 [ %77, %87 ], [ %.lcssa, %._crit_edge.8.loopexit ]
+  %91 = add i32 %90, 1
+  store i32 %91, i32* @pci_deviceCount, align 4, !tbaa !1
+  br label %143
+
+; <label>:92                                      ; preds = %.lr.ph, %140
+  %bar_index.06 = phi i8 [ 0, %.lr.ph ], [ %141, %140 ]
+  %93 = zext i8 %bar_index.06 to i32
+  %94 = shl nuw nsw i32 %93, 2
+  %95 = add nuw nsw i32 %94, 16
+  %96 = and i32 %95, 252
+  %97 = or i32 %35, %96
+  %98 = or i32 %97, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %98) #3, !srcloc !5
+  %99 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %100 = zext i32 %99 to i64
+  %101 = zext i8 %bar_index.06 to i64
+  %102 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %103 = zext i32 %102 to i64
+  %104 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %103, i32 9, i64 %101, i32 1
+  store i32 %95, i32* %104, align 8, !tbaa !26
+  %.tr = trunc i32 %99 to i8
+  %105 = and i8 %.tr, 1
+  %106 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %103, i32 9, i64 %101, i32 2
+  store i8 %105, i8* %106, align 4, !tbaa !28
+  %107 = and i64 %100, 3
+  %108 = icmp eq i64 %107, 2
+  br i1 %108, label %109, label %126
+
+; <label>:109                                     ; preds = %92
+  %110 = add i8 %bar_index.06, 1
+  %111 = zext i8 %110 to i32
+  %112 = shl nuw nsw i32 %111, 2
+  %113 = add nuw nsw i32 %112, 16
+  %114 = and i32 %113, 252
+  %115 = or i32 %35, %114
+  %116 = or i32 %115, -2147483648
+  tail call void asm sideeffect "outl $1, $0", "{dx}N,{ax},~{dirflag},~{fpsr},~{flags}"(i16 3320, i32 %116) #3, !srcloc !5
+  %117 = tail call i32 asm sideeffect "inl $1, $0", "={ax},{dx}N,~{dirflag},~{fpsr},~{flags}"(i16 3324) #3, !srcloc !6
+  %118 = zext i32 %117 to i64
+  %119 = shl nuw i64 %118, 32
+  %120 = or i64 %119, %100
+  %121 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %122 = zext i32 %121 to i64
+  %123 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %122, i32 8
+  %124 = load i8, i8* %123, align 4, !tbaa !25
+  %125 = add i8 %124, -1
+  store i8 %125, i8* %123, align 4, !tbaa !25
+  br label %126
+
+; <label>:126                                     ; preds = %109, %92
+  %127 = phi i32 [ %121, %109 ], [ %102, %92 ]
+  %bar_index.1 = phi i8 [ %110, %109 ], [ %bar_index.06, %92 ]
+  %bar_val.0 = phi i64 [ %120, %109 ], [ %100, %92 ]
+  %128 = and i64 %bar_val.0, 1
+  %129 = icmp eq i64 %128, 0
+  br i1 %129, label %135, label %130
+
+; <label>:130                                     ; preds = %126
+  %131 = and i64 %bar_val.0, -4
+  %132 = zext i8 %bar_index.1 to i64
+  %133 = zext i32 %127 to i64
+  %134 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %133, i32 9, i64 %132, i32 0
+  store i64 %131, i64* %134, align 8, !tbaa !29
+  br label %140
+
+; <label>:135                                     ; preds = %126
+  %136 = and i64 %bar_val.0, -16
+  %137 = zext i8 %bar_index.1 to i64
+  %138 = zext i32 %127 to i64
+  %139 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %138, i32 9, i64 %137, i32 0
+  store i64 %136, i64* %139, align 8, !tbaa !29
+  br label %140
+
+; <label>:140                                     ; preds = %135, %130
+  %141 = add i8 %bar_index.1, 1
+  %142 = icmp ult i8 %141, %89
+  br i1 %142, label %92, label %._crit_edge.8.loopexit
+
+; <label>:143                                     ; preds = %33, %._crit_edge.8
+  %144 = add nuw nsw i32 %f.09, 1
+  %145 = icmp slt i32 %144, %.
+  br i1 %145, label %33, label %.loopexit2.loopexit
+
+.loopexit2.loopexit:                              ; preds = %143
+  br label %.loopexit2
+
+.loopexit2:                                       ; preds = %.loopexit2.loopexit, %22
+  %146 = add nuw nsw i32 %device.010, 1
+  %exitcond = icmp eq i32 %146, 32
+  br i1 %exitcond, label %20, label %22
+
+.preheader:                                       ; preds = %.preheader.lr.ph, %158
+  %147 = phi i32 [ %17, %.preheader.lr.ph ], [ %160, %158 ]
+  %i.05 = phi i32 [ 0, %.preheader.lr.ph ], [ %159, %158 ]
+  %148 = zext i32 %i.05 to i64
+  call void @llvm.lifetime.start(i64 128, i8* %19) #3
+  %149 = icmp ugt i32 %147, %i.05
+  br i1 %149, label %150, label %pci_getDeviceInfo.exit
+
+._crit_edge.loopexit:                             ; preds = %158
+  br label %._crit_edge
+
+._crit_edge:                                      ; preds = %._crit_edge.loopexit, %15
+  ret void
+
+; <label>:150                                     ; preds = %.preheader
+  %151 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %148, i32 0
+  %152 = call i8* @memcpy(i8* %19, i8* %151, i64 128) #4
+  br label %pci_getDeviceInfo.exit
+
+pci_getDeviceInfo.exit:                           ; preds = %.preheader, %150
+  %153 = call zeroext i8 @UHCI_DetectController(%struct.PCI_DeviceFuncs* nonnull %f1) #4
+  %154 = icmp eq i8 %153, 0
+  br i1 %154, label %.loopexit13, label %.critedge
+
+.critedge:                                        ; preds = %pci_getDeviceInfo.exit
+  %155 = call i32 @RegisterDevice(i8* getelementptr inbounds ([2 x %struct.Cardinal_Driver], [2 x %struct.Cardinal_Driver]* @drivers, i64 0, i64 0, i32 0, i64 0), i8* getelementptr inbounds ([2 x %struct.Cardinal_Driver], [2 x %struct.Cardinal_Driver]* @drivers, i64 0, i64 0, i32 1, i64 0), i32 11, void (i32)* nonnull @UHCI_ActivationStateChange) #4
+  %156 = getelementptr inbounds [128 x %struct.PCI_DeviceFuncs], [128 x %struct.PCI_DeviceFuncs]* @pci_devices, i64 0, i64 %148
+  %157 = call zeroext i8 @UHCI_InitializeController(%struct.PCI_DeviceFuncs* %156) #4
+  call void @llvm.lifetime.end(i64 128, i8* %19) #3
+  br label %158
+
+.loopexit13:                                      ; preds = %pci_getDeviceInfo.exit
+  call void @llvm.lifetime.end(i64 128, i8* %19) #3
+  br label %158
+
+; <label>:158                                     ; preds = %.loopexit13, %.critedge
+  %159 = add i32 %i.05, 1
+  %160 = load i32, i32* @pci_deviceCount, align 4, !tbaa !1
+  %161 = icmp ult i32 %159, %160
+  br i1 %161, label %.preheader, label %._crit_edge.loopexit
+}
+
+; Function Attrs: noredzone
+declare i8* @ACPITables_FindTable(i8*, i32) #0
+
+; Function Attrs: noredzone
+declare i8* @bootstrap_malloc(i64) #0
+
+; Function Attrs: noredzone
+declare i32 @RegisterBus(i8*) #0
+
+; Function Attrs: noredzone
+declare i32 @RegisterDevice(i8*, i8*, i32, void (i32)*) #0
+
+attributes #0 = { noredzone "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { noredzone nounwind readonly uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { noredzone nounwind uwtable "disable-tail-calls"="false" "less-precise-fpmad"="false" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="-3dnow,-3dnowa,-aes,-avx,-avx2,-avx512bw,-avx512cd,-avx512dq,-avx512er,-avx512f,-avx512pf,-avx512vl,-f16c,-fma,-fma4,-pclmul,-sha,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-ssse3,-xop" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #3 = { nounwind }
+attributes #4 = { nobuiltin noredzone nounwind }
+
+!llvm.ident = !{!0}
+
+!0 = !{!"clang version 3.7.0 (tags/RELEASE_370/final)"}
+!1 = !{!2, !2, i64 0}
+!2 = !{!"int", !3, i64 0}
+!3 = !{!"omnipotent char", !4, i64 0}
+!4 = !{!"Simple C/C++ TBAA"}
+!5 = !{i32 80762}
+!6 = !{i32 80900}
+!7 = !{!8, !2, i64 8}
+!8 = !{!"", !3, i64 0, !3, i64 1, !3, i64 2, !9, i64 4, !9, i64 6, !2, i64 8, !2, i64 12, !2, i64 16, !3, i64 20, !3, i64 24, !3, i64 120}
+!9 = !{!"short", !3, i64 0}
+!10 = !{!8, !2, i64 12}
+!11 = !{!8, !2, i64 16}
+!12 = !{!13, !2, i64 4}
+!13 = !{!"", !14, i64 0, !15, i64 40, !3, i64 48}
+!14 = !{!"", !3, i64 0, !2, i64 4, !3, i64 8, !3, i64 9, !3, i64 10, !3, i64 16, !2, i64 24, !2, i64 28, !2, i64 32}
+!15 = !{!"long", !3, i64 0}
+!16 = !{!15, !15, i64 0}
+!17 = !{!18, !18, i64 0}
+!18 = !{!"any pointer", !3, i64 0}
+!19 = !{!8, !3, i64 0}
+!20 = !{!8, !3, i64 1}
+!21 = !{!8, !3, i64 2}
+!22 = !{!8, !3, i64 120}
+!23 = !{!8, !9, i64 4}
+!24 = !{!8, !9, i64 6}
+!25 = !{!8, !3, i64 20}
+!26 = !{!27, !2, i64 8}
+!27 = !{!"PCI_BAR", !15, i64 0, !2, i64 8, !3, i64 12}
+!28 = !{!27, !3, i64 12}
+!29 = !{!27, !15, i64 0}
