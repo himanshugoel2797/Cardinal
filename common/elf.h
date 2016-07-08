@@ -401,8 +401,6 @@ typedef enum ElfLimitations {
 
 typedef struct ElfInformation {
     void *entry_point;
-    void *shdr_data;
-    uint64_t shdr_data_size;
     void *phdr_data;
     uint64_t phdr_num;
     uint64_t phdr_ent_size;
