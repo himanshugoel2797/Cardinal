@@ -80,6 +80,7 @@ build:$(SOURCES:.o=.bc) clean_output initrd
 	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
 	cd initrd && $(MAKE) $(TARGET_MAKE)
 	cp initrd/initrd build/$(CONF)/initrd
+	rm -rf tmp.S
 
 # clean
 clean: clean_initrd
