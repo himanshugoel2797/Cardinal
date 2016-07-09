@@ -28,7 +28,7 @@ typedef enum {
     MemoryAllocationType_Global = (1 << 5), ///<Shared between all cores
     MemoryAllocationType_Application = (1 << 6),
     MemoryAllocationType_PageLocked = (1 << 7),
-    MemoryAllocationType_HeapLo = (1 << 8)
+    MemoryAllocationType_MMapLo = (1 << 8)
 } MemoryAllocationType;
 
 ///Memory Allocation Flags
@@ -111,6 +111,14 @@ MemoryAllocationErrors
 UnmapPage(UID 			pageTable,
           uint64_t 		virtualAddress,
           size_t 		size);
+
+uint64_t
+GetMemoryAllocationTypeTop(MemoryAllocationType allocType,
+                           MemoryAllocationFlags sec_perms);
+
+uint64_t
+GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
+                           MemoryAllocationFlags sec_perms);
 
 MemoryAllocationErrors
 FindFreeVirtualAddress(UID 			pageTable,

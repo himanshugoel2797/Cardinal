@@ -123,9 +123,9 @@ void
 setup_preemption(void) {
     //Start the APIC timer here to act as a reference 'clock'
     //This is to be used along with the provided frequency to allow threads to sleep
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency());
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
     APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(APIC_GetTimerFrequency());
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);

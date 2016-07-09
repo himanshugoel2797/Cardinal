@@ -769,6 +769,93 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
     return NULL;
 }
 
+uint64_t
+VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms)
+{
+    int pml_base = 256;
+    int pdpt_base = 0;
+
+    switch(allocType) {
+    case MemoryAllocationType_Heap:
+        pml_base = 511;
+        break;
+    default:
+        pml_base = 256;
+        break;
+    }
+
+    if(sec_perms & MEM_USER) {
+
+        switch(allocType) {
+        case MemoryAllocationType_Heap:
+            pml_base = 1;
+            break;
+        case MemoryAllocationType_Application:
+            pml_base = 20;
+            break;
+        case MemoryAllocationType_Stack:
+            pml_base = 2;
+            break;
+        case MemoryAllocationType_MMap:
+            pml_base = 3;
+            break;
+        case MemoryAllocationType_MMapLo:
+            pml_base = 0;
+            pdpt_base = 1;
+            break;
+        default:
+            pml_base = 0;
+            break;
+        }
+    }
+
+    return pml_base << 39;
+}
+
+uint64_t
+VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms)
+{
+    int pml_base = 256;
+    int pdpt_base = 0;
+
+    switch(allocType) {
+    case MemoryAllocationType_Heap:
+        pml_base = 511;
+        break;
+    default:
+        pml_base = 256;
+        break;
+    }
+
+    if(sec_perms & MEM_USER) {
+
+        switch(allocType) {
+        case MemoryAllocationType_Heap:
+            pml_base = 1;
+            break;
+        case MemoryAllocationType_Application:
+            pml_base = 20;
+            break;
+        case MemoryAllocationType_Stack:
+            pml_base = 2;
+            break;
+        case MemoryAllocationType_MMap:
+            pml_base = 3;
+            break;
+        case MemoryAllocationType_MMapLo:
+            pml_base = 0;
+            pdpt_base = 1;
+            break;
+        default:
+            pml_base = 0;
+            break;
+        }
+    }
+    return (pml_base + 1) << 39;
+}
+
 void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,
@@ -790,7 +877,6 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
     switch(allocType) {
     case MemoryAllocationType_Heap:
-    case MemoryAllocationType_HeapLo:
         pml_base = 511;
         break;
     default:
@@ -810,8 +896,11 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
         case MemoryAllocationType_Stack:
             pml_base = 2;
             break;
-        case MemoryAllocationType_HeapLo:
-            pml_base = 1;
+        case MemoryAllocationType_MMap:
+            pml_base = 3;
+            break;
+        case MemoryAllocationType_MMapLo:
+            pml_base = 0;
             pdpt_base = 1;
             break;
         default:

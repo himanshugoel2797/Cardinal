@@ -48,9 +48,9 @@ SwitchToUserMode(uint64_t pc, uint64_t sp) {
         "pushfq\n\t"
         "popq %%r11\n\t"
         "orq $512, %%r11\n\t"
-        "mov %%rax, %%rsp\n\t"
+        "mov %[sp], %%rsp\n\t"
         "mov %%rsp, %%rbp\n\t"
-        "sysretq\n\t" :: "a"(sp), "c"(pc)
+        "sysretq\n\t" :: [sp]"r"(sp), "c"(pc)
     );
 }
 

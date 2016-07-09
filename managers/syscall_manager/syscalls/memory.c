@@ -43,10 +43,10 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
     if(prot & PROT_WRITE)
         allocFlags |= MemoryAllocationFlags_Write;
 
-    MemoryAllocationType allocType = MemoryAllocationType_Heap;
+    MemoryAllocationType allocType = MemoryAllocationType_MMap;
 
     if(flags & MAP_32BIT)
-        allocType = MemoryAllocationType_HeapLo;
+        allocType = MemoryAllocationType_MMapLo;
 
     //Ignore the hint provided by the application
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
@@ -80,4 +80,42 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     return EINVAL;
+}
+
+
+uint64_t
+Brk_Syscall(uint64_t UNUSED(instruction_pointer),
+            uint64_t syscall_num,
+            uint64_t *syscall_params)
+{
+    if(syscall_num != Syscall_Brk)
+        return ENOSYS;
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 1)
+        return ENOSYS;
+
+    if(data->params[0] == 0)
+    {
+        uint64_t addr = 0;
+        FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
+                           &addr,
+                           PAGE_SIZE,
+                           MemoryAllocationType_Heap,
+                           MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+        return addr;
+    }
+
+    uint64_t area_base = GetMemoryAllocationTypeBase(MemoryAllocationType_Heap, MemoryAllocationFlags_User);
+    uint64_t area_top = GetMemoryAllocationTypeTop(MemoryAllocationType_Heap, MemoryAllocationFlags_User);
+
+    if(area_base <= data->params[0] && area_top > data->params[0])
+    {
+        //TODO expand the heap by a few pages and return the new heap break
+
+    }
+    else 
+    return ENOMEM;
 }

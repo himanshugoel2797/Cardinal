@@ -544,10 +544,14 @@ setup_preemption:                       # @setup_preemption
 	orl	$33, %ecx
 	movq	(%rax), %rax
 	movl	%ecx, 800(%rax)
-	movq	apic_data, %rax
-	movq	8(%rax), %rcx
-	movq	(%rax), %rax
-	movl	%ecx, 896(%rax)
+	movq	apic_data, %rcx
+	movq	8(%rcx), %rax
+	shrq	$3, %rax
+	movabsq	$2361183241434822607, %rdx # imm = 0x20C49BA5E353F7CF
+	mulq	%rdx
+	shrq	$4, %rdx
+	movq	(%rcx), %rax
+	movl	%edx, 896(%rax)
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
 	movl	800(%rcx), %ecx
@@ -6190,14 +6194,13 @@ SwitchToUserMode:                       # @SwitchToUserMode
 	movq	%rsp, %rbp
 .Ltmp465:
 	.cfi_def_cfa_register %rbp
-	movq	%rsi, %rax
 	movq	%rdi, %rcx
 	#APP
 	cli
 	pushfq
 	popq	%r11
 	orq	$512, %r11              # imm = 0x200
-	movq	%rax, %rsp
+	movq	%rsi, %rsp
 	movq	%rsp, %rbp
 	sysretq
 
@@ -6411,7 +6414,7 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$680, %rsp              # imm = 0x2A8
+	subq	$664, %rsp              # imm = 0x298
 .Ltmp486:
 	.cfi_offset %rbx, -56
 .Ltmp487:
@@ -6503,9 +6506,9 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	hlt
 	#NO_APP
 .LBB98_6:
-	movl	$6, -704(%rbp)
-	movq	$4096, -696(%rbp)       # imm = 0x1000
-	movl	$11, -688(%rbp)
+	movl	$6, -688(%rbp)
+	movq	$4096, -680(%rbp)       # imm = 0x1000
+	movl	$11, -672(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
 	movq	168(%rcx), %rax
@@ -6559,8 +6562,8 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 .LBB98_7:                               # %LockSpinlock.exit.i.2.thread
 	movq	8(%rcx), %rax
 .LBB98_10:                              # %GetCurrentThreadUID.exit
-	movq	%rax, -680(%rbp)
-	movl	$12, -672(%rbp)
+	movq	%rax, -664(%rbp)
+	movl	$12, -656(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
 	movq	168(%rcx), %rax
@@ -6614,8 +6617,8 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 .LBB98_11:                              # %LockSpinlock.exit.i.5.thread
 	movq	8(%rcx), %rax
 .LBB98_14:                              # %GetCurrentThreadUID.exit7
-	movq	%rax, -664(%rbp)
-	movl	$13, -656(%rbp)
+	movq	%rax, -648(%rbp)
+	movl	$13, -640(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
 	movq	168(%rcx), %rax
@@ -6670,8 +6673,8 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	movq	16(%rcx), %rax
 .LBB98_18:                              # %GetCurrentProcessUID.exit11
 	movq	(%rax), %rax
-	movq	%rax, -648(%rbp)
-	movl	$14, -640(%rbp)
+	movq	%rax, -632(%rbp)
+	movl	$14, -624(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
 	movq	168(%rcx), %rax
@@ -6726,11 +6729,9 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	movq	16(%rcx), %rax
 .LBB98_22:                              # %GetCurrentProcessUID.exit15
 	movq	(%rax), %rax
-	movq	%rax, -632(%rbp)
-	movl	$25, -624(%rbp)
+	movq	%rax, -616(%rbp)
+	movl	$25, -608(%rbp)
 	movq	-576(%rbp), %rbx
-	movq	%rbx, -616(%rbp)
-	movl	$9, -608(%rbp)
 	movq	%rbx, -600(%rbp)
 	movl	$16, -592(%rbp)
 	movl	$3219913727, %eax       # imm = 0xBFEBFBFF
@@ -6790,8 +6791,8 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 .LBB98_26:                              # %GetCurrentThreadUID.exit19
 	callq	GetThreadUserStack
 	movq	%r12, (%rsp)
-	leaq	-704(%rbp), %r8
-	movl	$8, %r9d
+	leaq	-688(%rbp), %r8
+	movl	$7, %r9d
 	movq	%rax, %rdi
 	movl	%r15d, %esi
 	movq	%r13, %rdx
@@ -6808,7 +6809,7 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	sysretq
 
 	#NO_APP
-	addq	$680, %rsp              # imm = 0x2A8
+	addq	$664, %rsp              # imm = 0x298
 	popq	%rbx
 	popq	%r12
 	popq	%r13
@@ -6866,7 +6867,7 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	jne	.LBB99_2
 .LBB99_3:                               # %.loopexit4
 	leal	2(%r14), %r8d
-	leal	4(%r9), %eax
+	leal	5(%r9), %eax
 	leaq	(%r8,%rax,2), %r15
 	movq	virtMemData, %rax
 	movq	8(%rax), %rdi
@@ -6907,7 +6908,7 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	#NO_APP
 	movq	vmem_lock, %r12
 	movl	$4096, %esi             # imm = 0x1000
-	xorl	%edx, %edx
+	movl	$2, %edx
 	movl	$1, %ecx
 	callq	VirtMemMan_FindFreeAddress
 	movq	%rax, %r13
@@ -6932,7 +6933,7 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	movq	%rcx, -72(%rbp)         # 8-byte Spill
 	movq	%r9, -80(%rbp)          # 8-byte Spill
 	movl	$4096, %esi             # imm = 0x1000
-	xorl	%edx, %edx
+	movl	$2, %edx
 	movl	$1, %ecx
 	callq	VirtMemMan_FindFreeAddress
 	movq	%rax, %r13
@@ -7034,18 +7035,18 @@ SetupApplicationStack:                  # @SetupApplicationStack
 
 	#NO_APP
 .LBB99_14:                              # %LockSpinlock.exit.i
-	movq	-56(%rbp), %rcx         # 8-byte Reload
-	testq	%rcx, %rcx
+	movq	-56(%rbp), %rdx         # 8-byte Reload
+	testq	%rdx, %rdx
 	je	.LBB99_16
 # BB#15:
-	movl	$0, (%rcx)
-	movq	%r13, 8(%rcx)
-	movq	%rax, 16(%rcx)
-	movq	$4096, 24(%rcx)         # imm = 0x1000
-	movl	$12, 32(%rcx)
-	movl	$0, 52(%rcx)
-	movq	$0, 44(%rcx)
-	movq	$0, 36(%rcx)
+	movl	$0, (%rdx)
+	movq	%r13, 8(%rdx)
+	movq	%rax, 16(%rdx)
+	movq	$4096, 24(%rdx)         # imm = 0x1000
+	movabsq	$8589934604, %rcx       # imm = 0x20000000C
+	movq	%rcx, 32(%rdx)
+	movq	$0, 48(%rdx)
+	movq	$0, 40(%rdx)
 .LBB99_16:
 	movl	$1, 8(%rsp)
 	movl	$2, (%rsp)
@@ -7343,8 +7344,11 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	movl	$4, 32(%r15)
 	movq	24(%r8), %rcx
 	movq	%rcx, 40(%r15)
-	movl	$0, 48(%r15)
-	movq	$0, 56(%r15)
+	movl	$9, 48(%r15)
+	movq	(%r8), %rcx
+	movq	%rcx, 56(%r15)
+	movl	$0, 64(%r15)
+	movq	$0, 72(%r15)
 	addq	$88, %rsp
 	popq	%rbx
 	popq	%r12
@@ -8117,7 +8121,7 @@ APIC_CallibrateTimer:                   # @APIC_CallibrateTimer
 	movl	$0, 896(%rax)
 	movq	apic_data, %rax
 	movq	(%rax), %rax
-	movl	$1, 992(%rax)
+	movl	$3, 992(%rax)
 	movq	$APIC_TimerCallibrate, intHandlers+256
 	movq	$ShadowInterruptHandler, idt_handler_calls+256
 	movq	apic_data, %rax
@@ -13146,212 +13150,212 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	andq	$-4096, %rax            # imm = 0xFFFFFFFFFFFFF000
 	testw	$4095, %si              # imm = 0xFFF
 	cmoveq	%rsi, %rax
-	movl	$511, %esi              # imm = 0x1FF
-	movl	%edx, %edi
-	orl	$256, %edi              # imm = 0x100
-	cmpl	$256, %edi              # imm = 0x100
-	je	.LBB164_2
-# BB#1:
-	movl	$256, %esi              # imm = 0x100
-.LBB164_2:
-	xorl	%edi, %edi
-	movq	%rdi, -96(%rbp)         # 8-byte Spill
-	testb	$1, %cl
-	je	.LBB164_14
-# BB#3:
-	movl	$1, %esi
-	xorl	%ecx, %ecx
-	movq	%rcx, -96(%rbp)         # 8-byte Spill
-	cmpl	$63, %edx
-	jg	.LBB164_7
-# BB#4:
 	testl	%edx, %edx
-	je	.LBB164_14
+	movl	$511, %edi              # imm = 0x1FF
+	movl	$256, %esi              # imm = 0x100
+	cmovel	%edi, %esi
+	xorl	%edi, %edi
+	testb	$1, %cl
+	je	.LBB164_13
+# BB#1:
+	xorl	%edi, %edi
+	cmpl	$1, %edx
+	jle	.LBB164_2
 # BB#5:
+	cmpl	$2, %edx
+	je	.LBB164_9
+# BB#6:
+	cmpl	$256, %edx              # imm = 0x100
+	jne	.LBB164_7
+# BB#10:
+	xorl	%esi, %esi
+	movl	$1, %edi
+	jmp	.LBB164_13
+.LBB164_2:
+	movl	$1, %esi
+	testl	%edx, %edx
+	je	.LBB164_13
+# BB#3:
 	cmpl	$1, %edx
 	jne	.LBB164_11
-# BB#6:
+# BB#4:
 	movl	$2, %esi
 	jmp	.LBB164_12
+.LBB164_9:
+	movl	$3, %esi
+	jmp	.LBB164_12
 .LBB164_7:
-	cmpl	$256, %edx              # imm = 0x100
-	jne	.LBB164_8
-# BB#10:
-	movl	$1, %ecx
-	jmp	.LBB164_13
-.LBB164_8:
 	cmpl	$64, %edx
 	jne	.LBB164_11
-# BB#9:
+# BB#8:
 	movl	$20, %esi
 	jmp	.LBB164_12
 .LBB164_11:
 	xorl	%esi, %esi
 .LBB164_12:
-	xorl	%ecx, %ecx
+	xorl	%edi, %edi
 .LBB164_13:
-	movq	%rcx, -96(%rbp)         # 8-byte Spill
-.LBB164_14:
-	xorl	%ecx, %ecx
-	testq	%rax, %rax
-	je	.LBB164_45
-# BB#15:                                # %.lr.ph66
-	movslq	%esi, %rdi
-	subl	$-128, %esi
-	movslq	%esi, %rcx
+	movq	%rdi, -96(%rbp)         # 8-byte Spill
+	movl	%esi, %ecx
+	subl	$-128, %ecx
 	movq	%rcx, -88(%rbp)         # 8-byte Spill
-	xorl	%esi, %esi
-	xorl	%r11d, %r11d
+	xorl	%edx, %edx
+	testq	%rax, %rax
+	je	.LBB164_44
+# BB#14:                                # %.lr.ph65
+	movl	%esi, %r9d
 	xorl	%ecx, %ecx
+	xorl	%r11d, %r11d
+	xorl	%edx, %edx
 	.align	16, 0x90
-.LBB164_16:                             # =>This Loop Header: Depth=1
-                                        #     Child Loop BB164_22 Depth 2
-                                        #       Child Loop BB164_27 Depth 3
-                                        #         Child Loop BB164_33 Depth 4
-	movq	-80(%rbp), %rdx         # 8-byte Reload
-	movq	(%rdx,%rdi,8), %rbx
-	testb	$1, %bl
-	jne	.LBB164_18
-# BB#17:                                #   in Loop: Header=BB164_16 Depth=1
-	movq	%rdi, %rdx
-	shlq	$39, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rdx, %rcx
-	movabsq	$549755813888, %rdx     # imm = 0x8000000000
-	addq	%rdx, %rsi
-	movq	%rdi, %r11
-	movq	%rdi, -64(%rbp)         # 8-byte Spill
-	jmp	.LBB164_42
+.LBB164_15:                             # =>This Loop Header: Depth=1
+                                        #     Child Loop BB164_21 Depth 2
+                                        #       Child Loop BB164_26 Depth 3
+                                        #         Child Loop BB164_32 Depth 4
+	movq	-80(%rbp), %rsi         # 8-byte Reload
+	movq	(%rsi,%r9,8), %rdi
+	testb	$1, %dil
+	jne	.LBB164_17
+# BB#16:                                #   in Loop: Header=BB164_15 Depth=1
+	movq	%r9, %rsi
+	shlq	$39, %rsi
+	testq	%rcx, %rcx
+	cmoveq	%rsi, %rdx
+	movabsq	$549755813888, %rsi     # imm = 0x8000000000
+	addq	%rsi, %rcx
+	movq	%r9, %r11
+	movq	%r9, -72(%rbp)          # 8-byte Spill
+	jmp	.LBB164_41
 	.align	16, 0x90
-.LBB164_18:                             #   in Loop: Header=BB164_16 Depth=1
-	testb	$-128, %bl
-	jne	.LBB164_41
-# BB#19:                                #   in Loop: Header=BB164_16 Depth=1
-	movabsq	$1152921504606842880, %rdx # imm = 0xFFFFFFFFFFFF000
-	andq	%rdx, %rbx
-	movq	%rbx, %rdx
-	shrq	$32, %rdx
-	sete	%dl
-	movzbl	%dl, %r8d
-	leaq	-1(%rdi), %r9
-	testq	%rdi, %rdi
-	movl	$0, %edx
-	cmoveq	%rsi, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rsi, %rdx
-	cmpq	%r11, %r9
-	cmovneq	%rdx, %rsi
-	cmpq	%rax, %rsi
-	jae	.LBB164_20
-# BB#21:                                # %.lr.ph55
-                                        #   in Loop: Header=BB164_16 Depth=1
+.LBB164_17:                             #   in Loop: Header=BB164_15 Depth=1
+	testb	$-128, %dil
+	jne	.LBB164_40
+# BB#18:                                #   in Loop: Header=BB164_15 Depth=1
+	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
+	andq	%rsi, %rdi
+	movq	%rdi, %rsi
+	shrq	$32, %rsi
+	sete	%bl
+	movzbl	%bl, %r8d
+	leaq	-1(%r9), %rsi
+	testq	%r9, %r9
+	movl	$0, %ebx
+	cmoveq	%rcx, %rbx
+	testq	%rcx, %rcx
+	cmoveq	%rcx, %rbx
+	cmpq	%r11, %rsi
+	cmovneq	%rbx, %rcx
+	cmpq	%rax, %rcx
+	jae	.LBB164_19
+# BB#20:                                # %.lr.ph55
+                                        #   in Loop: Header=BB164_15 Depth=1
 	shlq	$33, %r8
-	addq	%r8, %rbx
-	movabsq	$-17179869184, %rdx     # imm = 0xFFFFFFFC00000000
-	addq	%rdx, %rbx
-	movq	%rbx, -48(%rbp)         # 8-byte Spill
-	movq	%rdi, %rdx
-	movq	%rdi, -64(%rbp)         # 8-byte Spill
-	shlq	$39, %rdx
-	movq	%rdx, -56(%rbp)         # 8-byte Spill
+	addq	%r8, %rdi
+	movabsq	$-17179869184, %rsi     # imm = 0xFFFFFFFC00000000
+	addq	%rsi, %rdi
+	movq	%rdi, -48(%rbp)         # 8-byte Spill
+	movq	%r9, %rsi
+	movq	%r9, -72(%rbp)          # 8-byte Spill
+	shlq	$39, %rsi
+	movq	%rsi, -56(%rbp)         # 8-byte Spill
 	movq	-96(%rbp), %r10         # 8-byte Reload
 	.align	16, 0x90
-.LBB164_22:                             #   Parent Loop BB164_16 Depth=1
+.LBB164_21:                             #   Parent Loop BB164_15 Depth=1
                                         # =>  This Loop Header: Depth=2
-                                        #       Child Loop BB164_27 Depth 3
-                                        #         Child Loop BB164_33 Depth 4
-	movq	(%rbx,%r10,8), %r13
+                                        #       Child Loop BB164_26 Depth 3
+                                        #         Child Loop BB164_32 Depth 4
+	movq	(%rdi,%r10,8), %r13
 	testb	$1, %r13b
-	jne	.LBB164_24
-# BB#23:                                #   in Loop: Header=BB164_22 Depth=2
-	movq	%r10, %rdx
-	shlq	$30, %rdx
-	orq	-56(%rbp), %rdx         # 8-byte Folded Reload
-	testq	%rsi, %rsi
-	cmoveq	%rdx, %rcx
-	addq	$1073741824, %rsi       # imm = 0x40000000
+	jne	.LBB164_23
+# BB#22:                                #   in Loop: Header=BB164_21 Depth=2
+	movq	%r10, %rsi
+	shlq	$30, %rsi
+	orq	-56(%rbp), %rsi         # 8-byte Folded Reload
+	testq	%rcx, %rcx
+	cmoveq	%rsi, %rdx
+	addq	$1073741824, %rcx       # imm = 0x40000000
 	movq	%r10, %r11
-	jmp	.LBB164_39
+	jmp	.LBB164_38
 	.align	16, 0x90
-.LBB164_24:                             #   in Loop: Header=BB164_22 Depth=2
+.LBB164_23:                             #   in Loop: Header=BB164_21 Depth=2
 	testb	$-128, %r13b
-	jne	.LBB164_39
-# BB#25:                                #   in Loop: Header=BB164_22 Depth=2
-	movabsq	$1152921504606842880, %rdx # imm = 0xFFFFFFFFFFFF000
-	andq	%rdx, %r13
-	movabsq	$4294967296, %rdx       # imm = 0x100000000
-	cmpq	%rdx, %r13
-	movl	$0, %edx
+	jne	.LBB164_38
+# BB#24:                                #   in Loop: Header=BB164_21 Depth=2
+	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
+	andq	%rsi, %r13
+	movabsq	$4294967296, %rsi       # imm = 0x100000000
+	cmpq	%rsi, %r13
+	movl	$0, %esi
 	movabsq	$8589934592, %rbx       # imm = 0x200000000
-	cmovbq	%rbx, %rdx
+	cmovbq	%rbx, %rsi
 	leaq	-1(%r10), %r9
 	testq	%r10, %r10
 	movl	$0, %ebx
-	cmoveq	%rsi, %rbx
-	testq	%rsi, %rsi
-	cmoveq	%rsi, %rbx
+	cmoveq	%rcx, %rbx
+	testq	%rcx, %rcx
+	cmoveq	%rcx, %rbx
 	cmpq	%r11, %r9
-	cmovneq	%rbx, %rsi
-	cmpq	%rax, %rsi
-	jae	.LBB164_39
-# BB#26:                                # %.lr.ph46
-                                        #   in Loop: Header=BB164_22 Depth=2
+	cmovneq	%rbx, %rcx
+	cmpq	%rax, %rcx
+	jae	.LBB164_38
+# BB#25:                                # %.lr.ph46
+                                        #   in Loop: Header=BB164_21 Depth=2
 	movabsq	$-17179869184, %rbx     # imm = 0xFFFFFFFC00000000
 	addq	%rbx, %r13
-	addq	%rdx, %r13
+	addq	%rsi, %r13
 	movq	%r10, %rbx
 	shlq	$30, %rbx
 	orq	-56(%rbp), %rbx         # 8-byte Folded Reload
-	movq	%r10, %rdx
-	orq	-64(%rbp), %rdx         # 8-byte Folded Reload
-	movq	%rdx, -72(%rbp)         # 8-byte Spill
+	movq	%r10, %rsi
+	orq	-72(%rbp), %rsi         # 8-byte Folded Reload
+	movq	%rsi, -64(%rbp)         # 8-byte Spill
 	xorl	%r8d, %r8d
 	.align	16, 0x90
-.LBB164_27:                             #   Parent Loop BB164_16 Depth=1
-                                        #     Parent Loop BB164_22 Depth=2
+.LBB164_26:                             #   Parent Loop BB164_15 Depth=1
+                                        #     Parent Loop BB164_21 Depth=2
                                         # =>    This Loop Header: Depth=3
-                                        #         Child Loop BB164_33 Depth 4
+                                        #         Child Loop BB164_32 Depth 4
 	movq	(%r13,%r8,8), %r12
 	testb	$1, %r12b
-	jne	.LBB164_29
-# BB#28:                                #   in Loop: Header=BB164_27 Depth=3
-	movq	%r8, %rdx
-	shlq	$21, %rdx
-	orq	%rbx, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rdx, %rcx
-	addq	$2097152, %rsi          # imm = 0x200000
+	jne	.LBB164_28
+# BB#27:                                #   in Loop: Header=BB164_26 Depth=3
+	movq	%r8, %rsi
+	shlq	$21, %rsi
+	orq	%rbx, %rsi
+	testq	%rcx, %rcx
+	cmoveq	%rsi, %rdx
+	addq	$2097152, %rcx          # imm = 0x200000
 	movq	%r8, %r11
-	jmp	.LBB164_37
+	jmp	.LBB164_36
 	.align	16, 0x90
-.LBB164_29:                             #   in Loop: Header=BB164_27 Depth=3
+.LBB164_28:                             #   in Loop: Header=BB164_26 Depth=3
 	testb	$-128, %r12b
-	jne	.LBB164_37
-# BB#30:                                #   in Loop: Header=BB164_27 Depth=3
+	jne	.LBB164_36
+# BB#29:                                #   in Loop: Header=BB164_26 Depth=3
 	movq	%rbx, %rdi
-	movabsq	$1152921504606842880, %rdx # imm = 0xFFFFFFFFFFFF000
-	andq	%rdx, %r12
-	movabsq	$4294967296, %rdx       # imm = 0x100000000
-	cmpq	%rdx, %r12
+	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
+	andq	%rsi, %r12
+	movabsq	$4294967296, %rsi       # imm = 0x100000000
+	cmpq	%rsi, %r12
 	movl	$0, %ebx
-	movabsq	$8589934592, %rdx       # imm = 0x200000000
-	cmovbq	%rdx, %rbx
-	leaq	-1(%r8), %rdx
-	cmpq	%r11, %rdx
-	movl	$0, %edx
-	cmoveq	%rsi, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rsi, %rdx
+	movabsq	$8589934592, %rsi       # imm = 0x200000000
+	cmovbq	%rsi, %rbx
+	leaq	-1(%r8), %rsi
+	cmpq	%r11, %rsi
+	movl	$0, %esi
+	cmoveq	%rcx, %rsi
+	testq	%rcx, %rcx
+	cmoveq	%rcx, %rsi
 	testq	%r8, %r8
-	cmovneq	%rdx, %rsi
-	cmpq	%rax, %rsi
-	jae	.LBB164_31
-# BB#32:                                # %.lr.ph
-                                        #   in Loop: Header=BB164_27 Depth=3
-	movabsq	$-17179869184, %rdx     # imm = 0xFFFFFFFC00000000
-	addq	%rdx, %r12
+	cmovneq	%rsi, %rcx
+	cmpq	%rax, %rcx
+	jae	.LBB164_30
+# BB#31:                                # %.lr.ph
+                                        #   in Loop: Header=BB164_26 Depth=3
+	movabsq	$-17179869184, %rsi     # imm = 0xFFFFFFFC00000000
+	addq	%rsi, %r12
 	addq	%rbx, %r12
-	movq	-72(%rbp), %r9          # 8-byte Reload
+	movq	-64(%rbp), %r9          # 8-byte Reload
 	orq	%r8, %r9
 	movq	%r8, %r14
 	shlq	$21, %r14
@@ -13360,95 +13364,95 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	xorl	%r15d, %r15d
 	movl	$1, %edi
 	.align	16, 0x90
-.LBB164_33:                             #   Parent Loop BB164_16 Depth=1
-                                        #     Parent Loop BB164_22 Depth=2
-                                        #       Parent Loop BB164_27 Depth=3
+.LBB164_32:                             #   Parent Loop BB164_15 Depth=1
+                                        #     Parent Loop BB164_21 Depth=2
+                                        #       Parent Loop BB164_26 Depth=3
                                         # =>      This Inner Loop Header: Depth=4
-	movq	%rsi, %rdx
-	movq	%r9, %rsi
-	orq	%r15, %rsi
+	movq	%rcx, %rsi
+	movq	%r9, %rcx
+	orq	%r15, %rcx
 	cmoveq	%rdi, %r15
-	leaq	-1(%r15), %rsi
-	cmpq	%rsi, %r11
-	movl	$0, %esi
-	cmoveq	%rdx, %rsi
+	leaq	-1(%r15), %rcx
+	cmpq	%rcx, %r11
+	movl	$0, %ecx
+	cmoveq	%rsi, %rcx
 	testq	%r15, %r15
-	cmoveq	%rdx, %rsi
+	cmoveq	%rsi, %rcx
 	testb	$1, (%r12,%r15,8)
-	jne	.LBB164_35
-# BB#34:                                #   in Loop: Header=BB164_33 Depth=4
-	movq	%r15, %rdx
-	shlq	$12, %rdx
-	orq	%r14, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rdx, %rcx
-	addq	$4096, %rsi             # imm = 0x1000
+	jne	.LBB164_34
+# BB#33:                                #   in Loop: Header=BB164_32 Depth=4
+	movq	%r15, %rsi
+	shlq	$12, %rsi
+	orq	%r14, %rsi
+	testq	%rcx, %rcx
+	cmoveq	%rsi, %rdx
+	addq	$4096, %rcx             # imm = 0x1000
 	movq	%r15, %r11
-.LBB164_35:                             #   in Loop: Header=BB164_33 Depth=4
+.LBB164_34:                             #   in Loop: Header=BB164_32 Depth=4
 	incq	%r15
 	cmpq	$511, %r15              # imm = 0x1FF
-	ja	.LBB164_37
-# BB#36:                                #   in Loop: Header=BB164_33 Depth=4
-	cmpq	%rax, %rsi
-	jb	.LBB164_33
-	jmp	.LBB164_37
-.LBB164_31:                             #   in Loop: Header=BB164_27 Depth=3
+	ja	.LBB164_36
+# BB#35:                                #   in Loop: Header=BB164_32 Depth=4
+	cmpq	%rax, %rcx
+	jb	.LBB164_32
+	jmp	.LBB164_36
+.LBB164_30:                             #   in Loop: Header=BB164_26 Depth=3
 	movq	%rdi, %rbx
 	.align	16, 0x90
-.LBB164_37:                             # %.critedge10
-                                        #   in Loop: Header=BB164_27 Depth=3
+.LBB164_36:                             # %.critedge10
+                                        #   in Loop: Header=BB164_26 Depth=3
 	incq	%r8
 	cmpq	$511, %r8               # imm = 0x1FF
-	ja	.LBB164_39
-# BB#38:                                # %.critedge10
-                                        #   in Loop: Header=BB164_27 Depth=3
-	cmpq	%rax, %rsi
-	jb	.LBB164_27
+	ja	.LBB164_38
+# BB#37:                                # %.critedge10
+                                        #   in Loop: Header=BB164_26 Depth=3
+	cmpq	%rax, %rcx
+	jb	.LBB164_26
 	.align	16, 0x90
-.LBB164_39:                             # %.critedge7
-                                        #   in Loop: Header=BB164_22 Depth=2
+.LBB164_38:                             # %.critedge7
+                                        #   in Loop: Header=BB164_21 Depth=2
 	incq	%r10
 	cmpq	$511, %r10              # imm = 0x1FF
-	ja	.LBB164_42
-# BB#40:                                # %.critedge7
-                                        #   in Loop: Header=BB164_22 Depth=2
-	cmpq	%rax, %rsi
-	movq	-48(%rbp), %rbx         # 8-byte Reload
-	jb	.LBB164_22
-	jmp	.LBB164_42
+	ja	.LBB164_41
+# BB#39:                                # %.critedge7
+                                        #   in Loop: Header=BB164_21 Depth=2
+	cmpq	%rax, %rcx
+	movq	-48(%rbp), %rdi         # 8-byte Reload
+	jb	.LBB164_21
+	jmp	.LBB164_41
 	.align	16, 0x90
-.LBB164_41:                             #   in Loop: Header=BB164_16 Depth=1
-	movq	%rdi, %rdx
-	movq	%rdi, -64(%rbp)         # 8-byte Spill
-	shlq	$39, %rdx
-	testq	%rsi, %rsi
-	cmoveq	%rdx, %rcx
-	jmp	.LBB164_42
-.LBB164_20:                             #   in Loop: Header=BB164_16 Depth=1
-	movq	%rdi, -64(%rbp)         # 8-byte Spill
+.LBB164_40:                             #   in Loop: Header=BB164_15 Depth=1
+	movq	%r9, %rsi
+	movq	%r9, -72(%rbp)          # 8-byte Spill
+	shlq	$39, %rsi
+	testq	%rcx, %rcx
+	cmoveq	%rsi, %rdx
+	jmp	.LBB164_41
+.LBB164_19:                             #   in Loop: Header=BB164_15 Depth=1
+	movq	%r9, -72(%rbp)          # 8-byte Spill
 	.align	16, 0x90
-.LBB164_42:                             # %.critedge4
-                                        #   in Loop: Header=BB164_16 Depth=1
-	movq	-64(%rbp), %rdi         # 8-byte Reload
-	incq	%rdi
-	cmpq	-88(%rbp), %rdi         # 8-byte Folded Reload
-	jae	.LBB164_45
+.LBB164_41:                             # %.critedge4
+                                        #   in Loop: Header=BB164_15 Depth=1
+	movq	-72(%rbp), %r9          # 8-byte Reload
+	incq	%r9
+	cmpq	-88(%rbp), %r9          # 8-byte Folded Reload
+	jae	.LBB164_44
+# BB#42:                                # %.critedge4
+                                        #   in Loop: Header=BB164_15 Depth=1
+	cmpq	$511, %r9               # imm = 0x1FF
+	ja	.LBB164_44
 # BB#43:                                # %.critedge4
-                                        #   in Loop: Header=BB164_16 Depth=1
-	cmpq	$511, %rdi              # imm = 0x1FF
-	ja	.LBB164_45
-# BB#44:                                # %.critedge4
-                                        #   in Loop: Header=BB164_16 Depth=1
-	cmpq	%rax, %rsi
-	jb	.LBB164_16
-.LBB164_45:                             # %.critedge
-	movabsq	$-281474976710656, %rdx # imm = 0xFFFF000000000000
-	orq	%rcx, %rdx
-	btq	$47, %rcx
-	cmovaeq	%rcx, %rdx
-	testq	%rdx, %rdx
+                                        #   in Loop: Header=BB164_15 Depth=1
+	cmpq	%rax, %rcx
+	jb	.LBB164_15
+.LBB164_44:                             # %.critedge
+	movabsq	$-281474976710656, %rcx # imm = 0xFFFF000000000000
+	orq	%rdx, %rcx
+	btq	$47, %rdx
+	cmovaeq	%rdx, %rcx
+	testq	%rcx, %rcx
 	movl	$4096, %eax             # imm = 0x1000
-	cmovneq	%rdx, %rax
+	cmovneq	%rcx, %rax
 	addq	$56, %rsp
 	popq	%rbx
 	popq	%r12
@@ -16633,10 +16637,14 @@ kernel_main:                            # @kernel_main
 	orl	$33, %ecx
 	movq	(%rax), %rax
 	movl	%ecx, 800(%rax)
-	movq	apic_data, %rax
-	movq	8(%rax), %rcx
-	movq	(%rax), %rax
-	movl	%ecx, 896(%rax)
+	movq	apic_data, %rcx
+	movq	8(%rcx), %rax
+	shrq	$3, %rax
+	movabsq	$2361183241434822607, %rdx # imm = 0x20C49BA5E353F7CF
+	mulq	%rdx
+	shrq	$4, %rdx
+	movq	(%rcx), %rax
+	movl	%edx, 896(%rax)
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
 	movl	800(%rcx), %ecx
@@ -16842,10 +16850,14 @@ smp_main:                               # @smp_main
 	orl	$33, %ecx
 	movq	(%rax), %rax
 	movl	%ecx, 800(%rax)
-	movq	apic_data, %rax
-	movq	8(%rax), %rcx
-	movq	(%rax), %rax
-	movl	%ecx, 896(%rax)
+	movq	apic_data, %rcx
+	movq	8(%rcx), %rax
+	shrq	$3, %rax
+	movabsq	$2361183241434822607, %rdx # imm = 0x20C49BA5E353F7CF
+	mulq	%rdx
+	shrq	$4, %rdx
+	movq	(%rcx), %rax
+	movl	%edx, 896(%rax)
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
 	movl	800(%rcx), %ecx
@@ -42637,7 +42649,7 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	movq	$MMap_Syscall, Syscalls+72
 	testq	%rax, %rax
 	je	.LBB339_13
-# BB#12:
+# BB#12:                                # %RegisterSyscall.exit12
 	#APP
 	mfence
 	lock
@@ -42649,13 +42661,61 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 .Ltmp3068:
 
 	#NO_APP
-.LBB339_13:                             # %RegisterSyscall.exit12
+	movq	syscall_lock, %rax
+	testq	%rax, %rax
+	je	.LBB339_13
+# BB#14:                                # %LockSpinlock.exit.i.14
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp3069
+.Ltmp3070:
+	btq	$25, %rcx
+	jae	.Ltmp3071
+.Ltmp3071:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp3070
+.Ltmp3069:
+	btq	$25, %rcx
+	jae	.Ltmp3072
+	orw	$1, 4(%rax)
+.Ltmp3072:
+	cli
+
+	#NO_APP
+	movq	syscall_lock, %rax
+	movq	$Brk_Syscall, Syscalls+96
+	testq	%rax, %rax
+	je	.LBB339_16
+# BB#15:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp3073
+	sti
+	movw	$0, 4(%rax)
+.Ltmp3073:
+
+	#NO_APP
+.LBB339_16:                             # %RegisterSyscall.exit16
 	popq	%rbp
 	retq
 .LBB339_4:                              # %LockSpinlock.exit.i.2.thread
 	movq	$ArchPrctl_Syscall, Syscalls+1264
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	movq	$MMap_Syscall, Syscalls+72
+	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
 .LBB339_1:                              # %LockSpinlock.exit.i.thread
@@ -42663,15 +42723,22 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	movq	$ArchPrctl_Syscall, Syscalls+1264
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	movq	$MMap_Syscall, Syscalls+72
+	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
 .LBB339_7:                              # %LockSpinlock.exit.i.6.thread
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	movq	$MMap_Syscall, Syscalls+72
+	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
 .LBB339_10:                             # %LockSpinlock.exit.i.10.thread
 	movq	$MMap_Syscall, Syscalls+72
+	movq	$Brk_Syscall, Syscalls+96
+	popq	%rbp
+	retq
+.LBB339_13:                             # %LockSpinlock.exit.i.14.thread
+	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
 .Lfunc_end339:
@@ -42685,12 +42752,12 @@ Nanosleep_Syscall:                      # @Nanosleep_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3069:
+.Ltmp3074:
 	.cfi_def_cfa_offset 16
-.Ltmp3070:
+.Ltmp3075:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3071:
+.Ltmp3076:
 	.cfi_def_cfa_register %rbp
 	movl	$38, %eax
 	cmpq	$4, %rsi
@@ -42715,12 +42782,12 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3072:
+.Ltmp3077:
 	.cfi_def_cfa_offset 16
-.Ltmp3073:
+.Ltmp3078:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3074:
+.Ltmp3079:
 	.cfi_def_cfa_register %rbp
 	movl	$38, %eax
 	cmpq	$218, %rsi
@@ -42747,19 +42814,19 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	xaddw	%si, 2(%rcx)
 	cmpw	%si, (%rcx)
-	je	.Ltmp3075
-.Ltmp3076:
+	je	.Ltmp3080
+.Ltmp3081:
 	btq	$25, %rsi
-	jae	.Ltmp3077
-.Ltmp3077:
+	jae	.Ltmp3082
+.Ltmp3082:
 	pause
 	cmpw	%si, (%rcx)
-	jne	.Ltmp3076
-.Ltmp3075:
+	jne	.Ltmp3081
+.Ltmp3080:
 	btq	$25, %rsi
-	jae	.Ltmp3078
+	jae	.Ltmp3083
 	orw	$1, 4(%rcx)
-.Ltmp3078:
+.Ltmp3083:
 	cli
 
 	#NO_APP
@@ -42773,10 +42840,10 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3079
+	jae	.Ltmp3084
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3079:
+.Ltmp3084:
 
 	#NO_APP
 	jmp	.LBB341_6
@@ -42803,19 +42870,19 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp3080
-.Ltmp3081:
+	je	.Ltmp3085
+.Ltmp3086:
 	btq	$25, %rdx
-	jae	.Ltmp3082
-.Ltmp3082:
+	jae	.Ltmp3087
+.Ltmp3087:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp3081
-.Ltmp3080:
+	jne	.Ltmp3086
+.Ltmp3085:
 	btq	$25, %rdx
-	jae	.Ltmp3083
+	jae	.Ltmp3088
 	orw	$1, 4(%rax)
-.Ltmp3083:
+.Ltmp3088:
 	cli
 
 	#NO_APP
@@ -42829,10 +42896,10 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp3084
+	jae	.Ltmp3089
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp3084:
+.Ltmp3089:
 
 	#NO_APP
 .LBB341_10:                             # %GetCurrentThreadUID.exit4
@@ -42853,12 +42920,12 @@ MMap_Syscall:                           # @MMap_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3085:
+.Ltmp3090:
 	.cfi_def_cfa_offset 16
-.Ltmp3086:
+.Ltmp3091:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3087:
+.Ltmp3092:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -42866,15 +42933,15 @@ MMap_Syscall:                           # @MMap_Syscall
 	pushq	%r12
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp3088:
+.Ltmp3093:
 	.cfi_offset %rbx, -56
-.Ltmp3089:
+.Ltmp3094:
 	.cfi_offset %r12, -48
-.Ltmp3090:
+.Ltmp3095:
 	.cfi_offset %r13, -40
-.Ltmp3091:
+.Ltmp3096:
 	.cfi_offset %r14, -32
-.Ltmp3092:
+.Ltmp3097:
 	.cfi_offset %r15, -24
 	movl	$38, %ecx
 	cmpq	$9, %rsi
@@ -42888,9 +42955,9 @@ MMap_Syscall:                           # @MMap_Syscall
 	movq	(%rax), %r14
 	movq	8(%rax), %r12
 	movq	16(%rax), %rcx
-	movq	24(%rax), %r13
-	movq	%r13, %r15
-	andq	$32, %r15
+	movq	24(%rax), %rax
+	movq	%rax, %r13
+	andq	$32, %r13
 	jne	.LBB342_4
 # BB#3:
 	#APP
@@ -42898,7 +42965,7 @@ MMap_Syscall:                           # @MMap_Syscall
 	hlt
 	#NO_APP
 .LBB342_4:
-	testb	$16, %r13b
+	testb	$16, %al
 	je	.LBB342_6
 # BB#5:
 	#APP
@@ -42907,8 +42974,10 @@ MMap_Syscall:                           # @MMap_Syscall
 	#NO_APP
 .LBB342_6:
 	movq	%rcx, -48(%rbp)         # 8-byte Spill
-	andl	$64, %r13d
-	shll	$2, %r13d
+	testb	$64, %al
+	movl	$256, %eax              # imm = 0x100
+	movl	$2, %r15d
+	cmovnel	%eax, %r15d
 	movq	virtMemData, %rax
 	movq	8(%rax), %rdi
 	movq	vmem_lock, %rax
@@ -42916,75 +42985,6 @@ MMap_Syscall:                           # @MMap_Syscall
 	testq	%rax, %rax
 	je	.LBB342_8
 # BB#7:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp3093
-.Ltmp3094:
-	btq	$25, %rcx
-	jae	.Ltmp3095
-.Ltmp3095:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp3094
-.Ltmp3093:
-	btq	$25, %rcx
-	jae	.Ltmp3096
-	orw	$1, 4(%rax)
-.Ltmp3096:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-.LBB342_8:                              # %LockSpinlock.exit.i.3
-	movl	$1, %ecx
-	movq	%r12, %rsi
-	movl	%r13d, %edx
-	callq	VirtMemMan_FindFreeAddress
-	testq	%rax, %rax
-	cmovneq	%rax, %r14
-	testq	%rbx, %rbx
-	je	.LBB342_10
-# BB#9:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp3097
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp3097:
-
-	#NO_APP
-.LBB342_10:                             # %FindFreeVirtualAddress.exit
-	movl	$22, %ecx
-	testq	%r15, %r15
-	je	.LBB342_24
-# BB#11:
-	movq	%r12, %rax
-	andq	$4095, %rax             # imm = 0xFFF
-	movl	$4096, %ecx             # imm = 0x1000
-	subq	%rax, %rcx
-	xorl	%r15d, %r15d
-	movq	%r12, %rax
-	andq	$4095, %rax             # imm = 0xFFF
-	cmovneq	%rcx, %r15
-	addq	%r12, %r15
-	movq	%r15, %rdi
-	shrq	$12, %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB342_12
-# BB#13:                                # %LockSpinlock.exit.i.7
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -43013,6 +43013,75 @@ MMap_Syscall:                           # @MMap_Syscall
 
 	#NO_APP
 	movq	vmem_lock, %rbx
+.LBB342_8:                              # %LockSpinlock.exit.i.3
+	movl	$1, %ecx
+	movq	%r12, %rsi
+	movl	%r15d, %edx
+	callq	VirtMemMan_FindFreeAddress
+	testq	%rax, %rax
+	cmovneq	%rax, %r14
+	testq	%rbx, %rbx
+	je	.LBB342_10
+# BB#9:
+	#APP
+	mfence
+	lock
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp3102
+	sti
+	movw	$0, 4(%rbx)
+.Ltmp3102:
+
+	#NO_APP
+.LBB342_10:                             # %FindFreeVirtualAddress.exit
+	movl	$22, %ecx
+	testq	%r13, %r13
+	je	.LBB342_24
+# BB#11:
+	movq	%r12, %rax
+	andq	$4095, %rax             # imm = 0xFFF
+	movl	$4096, %ecx             # imm = 0x1000
+	subq	%rax, %rcx
+	xorl	%r13d, %r13d
+	movq	%r12, %rax
+	andq	$4095, %rax             # imm = 0xFFF
+	cmovneq	%rcx, %r13
+	addq	%r12, %r13
+	movq	%r13, %rdi
+	shrq	$12, %rdi
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB342_12
+# BB#13:                                # %LockSpinlock.exit.i.7
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp3103
+.Ltmp3104:
+	btq	$25, %rcx
+	jae	.Ltmp3105
+.Ltmp3105:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp3104
+.Ltmp3103:
+	btq	$25, %rcx
+	jae	.Ltmp3106
+	orw	$1, 4(%rax)
+.Ltmp3106:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rbx
 	callq	MemMan_Alloc4KiBPageCont
 	movq	%rax, %r12
 	testq	%rbx, %rbx
@@ -43023,10 +43092,10 @@ MMap_Syscall:                           # @MMap_Syscall
 	lock
 	incw	(%rbx)
 	btw	$0, 4(%rbx)
-	jae	.Ltmp3102
+	jae	.Ltmp3107
 	sti
 	movw	$0, 4(%rbx)
-.Ltmp3102:
+.Ltmp3107:
 
 	#NO_APP
 	jmp	.LBB342_15
@@ -43068,19 +43137,19 @@ MMap_Syscall:                           # @MMap_Syscall
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp3103
-.Ltmp3104:
+	je	.Ltmp3108
+.Ltmp3109:
 	btq	$25, %rdx
-	jae	.Ltmp3105
-.Ltmp3105:
+	jae	.Ltmp3110
+.Ltmp3110:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp3104
-.Ltmp3103:
+	jne	.Ltmp3109
+.Ltmp3108:
 	btq	$25, %rdx
-	jae	.Ltmp3106
+	jae	.Ltmp3111
 	orw	$1, 4(%rcx)
-.Ltmp3106:
+.Ltmp3111:
 	cli
 
 	#NO_APP
@@ -43094,9 +43163,9 @@ MMap_Syscall:                           # @MMap_Syscall
 	movl	$0, (%rax)
 	movq	%r14, 8(%rax)
 	movq	%r12, 16(%rax)
-	movq	%r15, 24(%rax)
+	movq	%r13, 24(%rax)
 	movl	%esi, 32(%rax)
-	movl	%r13d, 36(%rax)
+	movl	%r15d, 36(%rax)
 	movq	$0, 48(%rax)
 	movq	$0, 40(%rax)
 .LBB342_21:
@@ -43106,7 +43175,7 @@ MMap_Syscall:                           # @MMap_Syscall
 	xorl	%r9d, %r9d
 	movq	%r14, %rsi
 	movq	%r12, %rdx
-	movq	%r15, %rcx
+	movq	%r13, %rcx
 	callq	VirtMemMan_Map
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
@@ -43117,10 +43186,10 @@ MMap_Syscall:                           # @MMap_Syscall
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3107
+	jae	.Ltmp3112
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3107:
+.Ltmp3112:
 
 	#NO_APP
 .LBB342_23:                             # %MapPage.exit
@@ -43139,6 +43208,111 @@ MMap_Syscall:                           # @MMap_Syscall
 	.size	MMap_Syscall, .Lfunc_end342-MMap_Syscall
 	.cfi_endproc
 
+	.globl	Brk_Syscall
+	.align	16, 0x90
+	.type	Brk_Syscall,@function
+Brk_Syscall:                            # @Brk_Syscall
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp3113:
+	.cfi_def_cfa_offset 16
+.Ltmp3114:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp3115:
+	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+.Ltmp3116:
+	.cfi_offset %rbx, -24
+	movl	$38, %eax
+	cmpq	$12, %rsi
+	jne	.LBB343_8
+# BB#1:
+	movl	$38, %eax
+	cmpq	$1, 16(%rdx)
+	jne	.LBB343_8
+# BB#2:
+	movq	8(%rdx), %rax
+	movq	(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB343_3
+# BB#7:
+	#APP
+	cli
+	hlt
+	#NO_APP
+	xorl	%eax, %eax
+	jmp	.LBB343_8
+.LBB343_3:
+	movq	virtMemData, %rax
+	movq	8(%rax), %rdi
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB343_4
+# BB#5:                                 # %LockSpinlock.exit.i
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp3117
+.Ltmp3118:
+	btq	$25, %rcx
+	jae	.Ltmp3119
+.Ltmp3119:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp3118
+.Ltmp3117:
+	btq	$25, %rcx
+	jae	.Ltmp3120
+	orw	$1, 4(%rax)
+.Ltmp3120:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rbx
+	movl	$4096, %esi             # imm = 0x1000
+	xorl	%edx, %edx
+	movl	$1, %ecx
+	callq	VirtMemMan_FindFreeAddress
+	testq	%rbx, %rbx
+	je	.LBB343_8
+# BB#6:
+	#APP
+	mfence
+	lock
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp3121
+	sti
+	movw	$0, 4(%rbx)
+.Ltmp3121:
+
+	#NO_APP
+	jmp	.LBB343_8
+.LBB343_4:                              # %LockSpinlock.exit.i.thread
+	movl	$4096, %esi             # imm = 0x1000
+	xorl	%edx, %edx
+	movl	$1, %ecx
+	callq	VirtMemMan_FindFreeAddress
+.LBB343_8:                              # %FindFreeVirtualAddress.exit
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	retq
+.Lfunc_end343:
+	.size	Brk_Syscall, .Lfunc_end343-Brk_Syscall
+	.cfi_endproc
+
 	.globl	USB_AddController
 	.align	16, 0x90
 	.type	USB_AddController,@function
@@ -43146,17 +43320,17 @@ USB_AddController:                      # @USB_AddController
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3108:
+.Ltmp3122:
 	.cfi_def_cfa_offset 16
-.Ltmp3109:
+.Ltmp3123:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3110:
+.Ltmp3124:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end343:
-	.size	USB_AddController, .Lfunc_end343-USB_AddController
+.Lfunc_end344:
+	.size	USB_AddController, .Lfunc_end344-USB_AddController
 	.cfi_endproc
 
 	.globl	UHCI_ControllerAdded
@@ -43166,17 +43340,17 @@ UHCI_ControllerAdded:                   # @UHCI_ControllerAdded
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3111:
+.Ltmp3125:
 	.cfi_def_cfa_offset 16
-.Ltmp3112:
+.Ltmp3126:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3113:
+.Ltmp3127:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end344:
-	.size	UHCI_ControllerAdded, .Lfunc_end344-UHCI_ControllerAdded
+.Lfunc_end345:
+	.size	UHCI_ControllerAdded, .Lfunc_end345-UHCI_ControllerAdded
 	.cfi_endproc
 
 	.globl	SecMon_Initialize
@@ -43186,16 +43360,16 @@ SecMon_Initialize:                      # @SecMon_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3114:
+.Ltmp3128:
 	.cfi_def_cfa_offset 16
-.Ltmp3115:
+.Ltmp3129:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3116:
+.Ltmp3130:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	.align	16, 0x90
-.LBB345_1:                              # =>This Inner Loop Header: Depth=1
+.LBB346_1:                              # =>This Inner Loop Header: Depth=1
 	movq	$0, filtered_syscalls(,%rax,8)
 	movq	$0, filtered_syscalls+8(,%rax,8)
 	movq	$0, filtered_syscalls+16(,%rax,8)
@@ -43206,12 +43380,12 @@ SecMon_Initialize:                      # @SecMon_Initialize
 	movq	$0, filtered_syscalls+56(,%rax,8)
 	addq	$8, %rax
 	cmpq	$256, %rax              # imm = 0x100
-	jne	.LBB345_1
+	jne	.LBB346_1
 # BB#2:
 	popq	%rbp
 	retq
-.Lfunc_end345:
-	.size	SecMon_Initialize, .Lfunc_end345-SecMon_Initialize
+.Lfunc_end346:
+	.size	SecMon_Initialize, .Lfunc_end346-SecMon_Initialize
 	.cfi_endproc
 
 	.globl	SecMon_RegisterSyscall
@@ -43221,17 +43395,17 @@ SecMon_RegisterSyscall:                 # @SecMon_RegisterSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3117:
+.Ltmp3131:
 	.cfi_def_cfa_offset 16
-.Ltmp3118:
+.Ltmp3132:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3119:
+.Ltmp3133:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end346:
-	.size	SecMon_RegisterSyscall, .Lfunc_end346-SecMon_RegisterSyscall
+.Lfunc_end347:
+	.size	SecMon_RegisterSyscall, .Lfunc_end347-SecMon_RegisterSyscall
 	.cfi_endproc
 
 	.globl	SecMon_FilterUpdateSyscall
@@ -43241,18 +43415,18 @@ SecMon_FilterUpdateSyscall:             # @SecMon_FilterUpdateSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3120:
+.Ltmp3134:
 	.cfi_def_cfa_offset 16
-.Ltmp3121:
+.Ltmp3135:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3122:
+.Ltmp3136:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
-.Lfunc_end347:
-	.size	SecMon_FilterUpdateSyscall, .Lfunc_end347-SecMon_FilterUpdateSyscall
+.Lfunc_end348:
+	.size	SecMon_FilterUpdateSyscall, .Lfunc_end348-SecMon_FilterUpdateSyscall
 	.cfi_endproc
 
 	.globl	SecMon_ControlFlowVerificationHandler
@@ -43262,17 +43436,17 @@ SecMon_ControlFlowVerificationHandler:  # @SecMon_ControlFlowVerificationHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3123:
+.Ltmp3137:
 	.cfi_def_cfa_offset 16
-.Ltmp3124:
+.Ltmp3138:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3125:
+.Ltmp3139:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end348:
-	.size	SecMon_ControlFlowVerificationHandler, .Lfunc_end348-SecMon_ControlFlowVerificationHandler
+.Lfunc_end349:
+	.size	SecMon_ControlFlowVerificationHandler, .Lfunc_end349-SecMon_ControlFlowVerificationHandler
 	.cfi_endproc
 
 	.type	smp_sync_base,@object   # @smp_sync_base

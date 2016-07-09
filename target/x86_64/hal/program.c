@@ -21,7 +21,7 @@ LoadAndStartApplication(void *elf_loc,
     if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 
     uint32_t auxv_cnt = 0;
-    AUXVector auxv[8];
+    AUXVector auxv[7];
     auxv[auxv_cnt].a_type = AUXVectorType_PGSZ;
     auxv[auxv_cnt++].a_un.a_val = PAGE_SIZE;
 
@@ -38,9 +38,6 @@ LoadAndStartApplication(void *elf_loc,
     auxv[auxv_cnt++].a_un.a_val = (int64_t)GetCurrentProcessUID();
 
     auxv[auxv_cnt].a_type = AUXVectorType_RANDOM;
-    auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
-
-    auxv[auxv_cnt].a_type = AUXVectorType_ENTRY;
     auxv[auxv_cnt++].a_un.a_val = (int64_t)elf_info.entry_point;
 
     auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
@@ -64,7 +61,7 @@ SetupApplicationStack(void *sp,
     //calculate needed space
     uint64_t size = 0;
     if(envp)for(; envp[size]; size++);
-    size += argc + 2 + ((auxv_cnt + 4) * sizeof(AUXVector))/sizeof(uint64_t);
+    size += argc + 2 + ((auxv_cnt + 5) * sizeof(AUXVector))/sizeof(uint64_t);
 
     stack -= size;
 
@@ -73,7 +70,7 @@ SetupApplicationStack(void *sp,
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                            &v_tmp_addr,
                            PAGE_SIZE,
-                           MemoryAllocationType_Heap,
+                           MemoryAllocationType_MMap,
                            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
     MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
@@ -85,7 +82,7 @@ SetupApplicationStack(void *sp,
             v_tmp_addr,
             PAGE_SIZE,
             CachingModeWriteBack,
-            MemoryAllocationType_Heap,
+            MemoryAllocationType_MMap,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
            );
 
@@ -130,6 +127,10 @@ SetupApplicationStack(void *sp,
 
     auxv->a_type = AUXVectorType_PHENT;
     auxv->a_un.a_val = (int64_t)elf->phdr_ent_size;
+    auxv++;
+
+    auxv->a_type = AUXVectorType_ENTRY;
+    auxv->a_un.a_val = (int64_t)elf->entry_point;
     auxv++;
 
     auxv->a_type = AUXVectorType_NULL;

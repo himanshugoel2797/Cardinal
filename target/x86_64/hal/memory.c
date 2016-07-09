@@ -146,6 +146,31 @@ UnmapPage(UID 			pageTable,
     return MemoryAllocationErrors_None;
 }
 
+
+uint64_t
+GetMemoryAllocationTypeTop(MemoryAllocationType allocType,
+                           MemoryAllocationFlags sec_perms)
+{
+
+    MEM_SECURITY_PERMS perms = 0;
+    if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
+    if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
+
+    return VirtMemMan_GetAllocTypeTop(allocType, perms);
+}
+
+uint64_t
+GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
+                           MemoryAllocationFlags sec_perms)
+{
+
+    MEM_SECURITY_PERMS perms = 0;
+    if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
+    if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
+
+    return VirtMemMan_GetAllocTypeBase(allocType, perms);
+}
+
 MemoryAllocationErrors
 FindFreeVirtualAddress(UID 			pageTable,
                        uint64_t			*virtualAddress,

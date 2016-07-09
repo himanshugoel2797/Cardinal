@@ -1,7 +1,10 @@
 #include <stdio.h>
-#include "libs/libCardinal/include/syscall.h"
+#include <stdlib.h>
+#include <string.h>
 
 int main() {
-    printf("Hello World!");
+	char *mem = malloc(13);
+	strcpy(mem, "Hello World!");
+    printf(mem);
     return 0;
 }

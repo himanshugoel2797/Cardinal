@@ -91,6 +91,14 @@ void*
 VirtMemMan_GetVirtualAddress(CachingMode c,
                              void 	 *addr);
 
+uint64_t
+VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms);
+
+uint64_t
+VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms);
+
 void*
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            uint64_t           size,

@@ -103,7 +103,7 @@ APIC_CallibrateTimer(void) {
     RegisterInterruptHandler(IRQ(1), APIC_TimerCallibrateRollover);
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(0);
-    APIC_SetTimerDivisor(4);
+    APIC_SetTimerDivisor(16);
 
 
     RegisterInterruptHandler(IRQ(0), APIC_TimerCallibrate);

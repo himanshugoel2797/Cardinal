@@ -8,4 +8,5 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_ArchPrctl, ArchPrctl_Syscall);
     RegisterSyscall(Syscall_SetTidAddress, SetTidAddress_Syscall);
     RegisterSyscall(Syscall_MMap, MMap_Syscall);
+    RegisterSyscall(Syscall_Brk, Brk_Syscall);
 }
