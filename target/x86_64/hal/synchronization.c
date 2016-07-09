@@ -50,7 +50,7 @@ LockSpinlock(Spinlock primitive) {
         "orw $1, +4(%[prim])\n\t"
         "4:\n\t"
         "cli\n\t"
-        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2) 
+        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory"
     );
     return TRUE;

@@ -72,7 +72,7 @@ APIC_LocalInitialize(void) {
 
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
     if(apic_data == NULL)apic_data = (APIC_APLS_Data*)AllocateAPLSMemory(sizeof(APIC_APLS_Data));
-    
+
 
     apic_data->apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
 
