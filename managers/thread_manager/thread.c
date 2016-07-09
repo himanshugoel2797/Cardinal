@@ -21,7 +21,6 @@ static uint32_t preempt_vector;
 
 #define PROPERTY_GET(type, name, default_val) type get_thread_##name (ThreadInfo *t) \
                              { \
-                                if(t == NULL)__asm__("add $0x20, %rsp\n\tpopq %rax\n\tpopq %rax\n\tcli\n\thlt"); \
                                 type tmp = default_val ; \
                                 LockSpinlock(t->lock);  \
                                 tmp = t-> name ; \
@@ -46,7 +45,6 @@ static uint32_t preempt_vector;
 
 #define PROPERTY_PROC_GET(type, name, default_val) type get_proc_##name (ProcessInformation *t) \
                              { \
-                                if(t == NULL)__asm__("add $0x20, %rsp\n\tpopq %rax\n\tpopq %rax\n\tcli\n\thlt"); \
                                 type tmp = default_val ; \
                                 LockSpinlock(t->lock);  \
                                 tmp = t-> name ; \
@@ -531,8 +529,6 @@ TaskSwitch(uint32_t int_no,
         coreState->cur_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
         SwitchAndInitializeThread(coreState->cur_thread);
-    } else {
-        __asm__("cli\n\thlt" :: "a"(coreState->cur_thread->state));
     }
 }
 

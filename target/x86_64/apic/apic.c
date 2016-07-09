@@ -24,8 +24,6 @@ static volatile APIC_APLS_Data* apic_data = NULL;
 
 void
 APIC_LockPIC(void) {
-    char a1 = inb(0x21);
-    char a2 = inb(0xA1);
 
     outb(0x20, ICW1_INIT+ICW1_ICW4); // starts the initialization sequence (in cascade mode)
     outb(0xA0, ICW1_INIT+ICW1_ICW4);
@@ -36,9 +34,6 @@ APIC_LockPIC(void) {
 
     outb(0x21, ICW4_8086);
     outb(0xA1, ICW4_8086);
-
-    outb(0x21, a1); // restore saved masks.
-    outb(0xA1, a2);
 
     outb(0x21, 0xFF);
     outb(0xA1, 0xFF);    //disable all interrupts from the PIC
@@ -77,6 +72,7 @@ APIC_LocalInitialize(void) {
 
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
     if(apic_data == NULL)apic_data = (APIC_APLS_Data*)AllocateAPLSMemory(sizeof(APIC_APLS_Data));
+    
 
     apic_data->apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
 
@@ -107,7 +103,7 @@ APIC_CallibrateTimer(void) {
     RegisterInterruptHandler(IRQ(1), APIC_TimerCallibrateRollover);
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(0);
-    APIC_SetTimerDivisor(16);
+    APIC_SetTimerDivisor(4);
 
 
     RegisterInterruptHandler(IRQ(0), APIC_TimerCallibrate);

@@ -38,7 +38,7 @@ CCADMIN=CCadmin
 CC=clang
 ASFLAGS =-D$(CONF)
 
-CFLAGS=  -target $(TARGET_TRIPLET) -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O3 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
+CFLAGS=  -target $(TARGET_TRIPLET) -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
@@ -74,13 +74,14 @@ clean_initrd:
 build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
-	llc tmp.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
+	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
+	llc tmp0.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
+	rm tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
 	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
 	cd initrd && $(MAKE) $(TARGET_MAKE)
 	cp initrd/initrd build/$(CONF)/initrd
-	rm -rf tmp.S
 
 # clean
 clean: clean_initrd

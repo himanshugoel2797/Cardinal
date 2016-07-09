@@ -54,7 +54,7 @@ load_elf(void) {
     while(1);
 }
 
-int coreCount = 0;
+volatile int coreCount = 0;
 
 void
 kernel_main(void) {

@@ -25,12 +25,12 @@ void
 SMP_LockTrampoline(void) {
     __asm__ volatile
     (
-        ".spin:"
+        "1:"
         "\n\tpause"
         "\n\ttestl $1, (%0)"
-        "\n\tjnz .spin"
+        "\n\tjnz 1b"
         "\n\tlock btsl $0, (%0)"
-        "\n\tjc .spin" :: "a"(&smp_lock)
+        "\n\tjc 1b" :: "r"(&smp_lock)
     );
 }
 
@@ -38,6 +38,6 @@ void
 SMP_UnlockTrampoline(void) {
     __asm__ volatile
     (
-        "movl $0, (%0)" :: "a"(&smp_lock)
+        "movl $0, (%0)" :: "r"(&smp_lock)
     );
 }
