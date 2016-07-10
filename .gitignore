@@ -5,6 +5,7 @@
 *.elf
 *.d
 *.bc
+tmp.S
 
 # Precompiled Headers
 *.gch
