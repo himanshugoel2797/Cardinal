@@ -27,8 +27,8 @@ typedef enum {
     MemoryAllocationType_Paged = (1 << 3),  ///<Paged from Disk
     MemoryAllocationType_Shared = (1 << 4), ///<Shared Memory
     MemoryAllocationType_Global = (1 << 5), ///<Shared between all cores
-    MemoryAllocationType_Application = (1 << 6)
-                                       MemoryAllocationType_MMapLo = (1 << 7)
+    MemoryAllocationType_Application = (1 << 6),
+    MemoryAllocationType_MMapLo = (1 << 7)
 } MemoryAllocationType;
 
 ///Memory Allocation Flags
