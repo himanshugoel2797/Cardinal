@@ -109,8 +109,7 @@ static void* ksetup_instrumentation(void* addr, size_t size) {
 bool retry = FALSE;
 void *kmalloc(size_t size) {
     LockSpinlock(alloc_sync);
-    if(allocation_info == NULL)
-    {
+    if(allocation_info == NULL) {
         UnlockSpinlock(alloc_sync);
         return NULL;
     }

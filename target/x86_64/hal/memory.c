@@ -29,13 +29,13 @@ GetVirtualAddress(CachingMode c,
 void*
 GetPhysicalAddress(void *virtualAddress) {
     void *ret = GetPhysicalAddressPageTable(GetActiveVirtualMemoryInstance(),
-                                      virtualAddress);
+                                            virtualAddress);
     return ret;
 }
 
 void*
 GetPhysicalAddressPageTable(ManagedPageTable 	*src,
-                      void 	*virtualAddress) {
+                            void 	*virtualAddress) {
     void *ret = VirtMemMan_GetPhysicalAddress((PML_Instance)src->PageTable, virtualAddress);
     return ret;
 }
@@ -143,14 +143,12 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
     LockSpinlock(vmem_lock);
 
-    if(pageTable->AllocationMap != NULL)
-    {
+    if(pageTable->AllocationMap != NULL) {
         MemoryAllocationsMap *map = pageTable->AllocationMap;
         MemoryAllocationsMap *prev = NULL;
-        do{
+        do {
 
-            if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size))
-            {
+            if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size)) {
                 //TODO define the possible situations and update the allocation map appropriately
                 MemoryAllocationsMap *top = kmalloc(sizeof(MemoryAllocationsMap));
 
@@ -163,16 +161,14 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 top->PhysicalAddress = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(virtualAddress + size));
                 top->Length = (map->VirtualAddress + map->Length) - (virtualAddress + size);
 
-                map->Length = virtualAddress - map->VirtualAddress;                
+                map->Length = virtualAddress - map->VirtualAddress;
 
-                if(top->Length != 0)
-                {
+                if(top->Length != 0) {
                     top->next = map->next;
                     map->next = top;
-                }else kfree(top);
+                } else kfree(top);
 
-                if(map->Length == 0)
-                {
+                if(map->Length == 0) {
                     if(pageTable->AllocationMap != map)
                         prev->next = map->next;
                     else
@@ -185,7 +181,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
             prev = map;
             map = map->next;
-        }while(map != NULL);
+        } while(map != NULL);
     }
 
     VirtMemMan_Unmap((PML_Instance)pageTable->PageTable,
@@ -199,8 +195,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
 uint64_t
 GetMemoryAllocationTypeTop(MemoryAllocationType allocType,
-                           MemoryAllocationFlags sec_perms)
-{
+                           MemoryAllocationFlags sec_perms) {
 
     MEM_SECURITY_PERMS perms = 0;
     if(sec_perms & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
@@ -211,8 +206,7 @@ GetMemoryAllocationTypeTop(MemoryAllocationType allocType,
 
 uint64_t
 GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
-                           MemoryAllocationFlags sec_perms)
-{
+                            MemoryAllocationFlags sec_perms) {
 
     MEM_SECURITY_PERMS perms = 0;
     if(sec_perms & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
@@ -333,7 +327,7 @@ HandlePageFault(uint64_t virtualAddress,
         ProcessInformation *procInfo = NULL;
         GetProcessReference(GetCurrentProcessUID(), &procInfo);
         if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {
-                __asm__("cli\n\thlt" :: "a"(instruction_pointer));
+            __asm__("cli\n\thlt" :: "a"(instruction_pointer));
             //while(1)debug_gfx_writeLine("Error: Page Fault");
         }
 

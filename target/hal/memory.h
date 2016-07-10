@@ -70,11 +70,11 @@ typedef struct MemoryAllocationsMap {
 } MemoryAllocationsMap;
 
 typedef struct ManagedPageTable {
-  UID                   PageTable;
-  MemoryAllocationsMap  *AllocationMap;
+    UID                   PageTable;
+    MemoryAllocationsMap  *AllocationMap;
 
-  uint32_t              reference_count;
-  Spinlock              lock;
+    uint32_t              reference_count;
+    Spinlock              lock;
 } ManagedPageTable;
 
 void*
@@ -86,7 +86,7 @@ GetPhysicalAddress(void *virtualAddress);
 
 void*
 GetPhysicalAddressPageTable(ManagedPageTable   *src,
-                      void 	             *virtualAddress);
+                            void 	             *virtualAddress);
 
 MemoryAllocationErrors
 CreateVirtualMemoryInstance(ManagedPageTable *inst);
@@ -124,7 +124,7 @@ GetMemoryAllocationTypeTop(MemoryAllocationType allocType,
 
 uint64_t
 GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
-                           MemoryAllocationFlags sec_perms);
+                            MemoryAllocationFlags sec_perms);
 
 MemoryAllocationErrors
 FindFreeVirtualAddress(ManagedPageTable* 			pageTable,

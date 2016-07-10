@@ -93,7 +93,7 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
 
 uint64_t
 VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
-                           MEM_SECURITY_PERMS sec_perms);
+                            MEM_SECURITY_PERMS sec_perms);
 
 uint64_t
 VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,

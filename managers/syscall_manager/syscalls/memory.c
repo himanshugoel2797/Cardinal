@@ -73,7 +73,7 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
                 allocType,
                 allocFlags);
 
-        
+
 
         return (uint64_t)addr;
     }
@@ -84,8 +84,7 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
 uint64_t
 Brk_Syscall(uint64_t UNUSED(instruction_pointer),
             uint64_t syscall_num,
-            uint64_t *syscall_params)
-{
+            uint64_t *syscall_params) {
     if(syscall_num != Syscall_Brk)
         return ENOSYS;
 
@@ -94,14 +93,13 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     if(data->param_num != 1)
         return ENOSYS;
 
-    if(data->params[0] == 0)
-    {
+    if(data->params[0] == 0) {
         uint64_t addr = 0;
         FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
-                           &addr,
-                           PAGE_SIZE,
-                           MemoryAllocationType_Heap,
-                           MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+                               &addr,
+                               PAGE_SIZE,
+                               MemoryAllocationType_Heap,
+                               MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
         return addr;
     }
@@ -109,11 +107,10 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     uint64_t area_base = GetMemoryAllocationTypeBase(MemoryAllocationType_Heap, MemoryAllocationFlags_User);
     uint64_t area_top = GetMemoryAllocationTypeTop(MemoryAllocationType_Heap, MemoryAllocationFlags_User);
 
-    if(area_base <= data->params[0] && area_top > data->params[0])
-    {
+    if(area_base <= data->params[0] && area_top > data->params[0]) {
         //TODO expand the heap by a few pages and return the new heap break
 
     }
-     
+
     return ENOMEM;
 }

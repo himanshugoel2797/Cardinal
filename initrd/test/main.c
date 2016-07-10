@@ -3,8 +3,8 @@
 #include <string.h>
 
 int main() {
-	char *mem = malloc(13);
-	strcpy(mem, "Hello World!");
+    char *mem = malloc(13);
+    strcpy(mem, "Hello World!");
     printf(mem);
     return 0;
 }
