@@ -34,29 +34,34 @@ typedef enum {
 typedef void (*ThreadEntryPoint)(void);
 
 typedef struct ThreadInfo {
-    UID Parent;
-    UID ID;
-    ProcessInformation *ParentProcess;
-    ThreadEntryPoint entry_point;
-    ThreadState state;
+    
+    UID                 ID;
+    
+    ProcessInformation  *ParentProcess;
+    
+    ThreadEntryPoint    entry_point;
+    ThreadState         state;
     ThreadWakeCondition wakeCondition;
-    ThreadPriority priority;
-    uint64_t signal_mask0;
-    uint64_t signal_mask1;
-    uint64_t interrupt_stack_base;
-    uint64_t kernel_stack_base;
-    uint64_t user_stack_base;
-    uint64_t current_stack;
-    uint64_t kernel_stack_aligned;
-    uint64_t interrupt_stack_aligned;
-    int core_affinity;
-    uint64_t sleep_duration_ns;
-    uint64_t sleep_start_time;
-    void *set_child_tid;
-    void *clear_child_tid;
-    void *fpu_state;
-    void *arch_specific_data;
-    Spinlock lock;
+    ThreadPriority      priority;
+    
+    uint64_t            interrupt_stack_base;
+    uint64_t            interrupt_stack_aligned;
+    uint64_t            kernel_stack_base;
+    uint64_t            kernel_stack_aligned;
+    uint64_t            user_stack_base;
+    uint64_t            current_stack;
+    uint64_t            sleep_duration_ns;
+    uint64_t            sleep_start_time;
+    
+    int32_t             core_affinity;
+
+    void                *set_child_tid;
+    void                *clear_child_tid;
+    void                *fpu_state;
+    void                *arch_specific_data;
+
+    uint32_t            reference_count;
+    Spinlock            lock;
 } ThreadInfo;
 
 typedef struct CoreInfo {

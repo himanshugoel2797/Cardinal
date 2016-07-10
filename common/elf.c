@@ -47,12 +47,10 @@ ElfLoaderError
 LoadElf32(void *loc,
           uint64_t size,
           ElfLimitations UNUSED(limits),
-          UID pageTable,
-          MemoryAllocationsMap **map,
+          ManagedPageTable *pageTable,
           ElfInformation *elfData) {
     elfData = NULL;
-    pageTable = 0;
-    *map = NULL;
+    pageTable = NULL;
     if(size < sizeof(Elf32_Ehdr))return ElfLoaderError_NotElf;
 
     loc = NULL;
@@ -68,8 +66,7 @@ ElfLoaderError
 LoadElf64(void *loc,
           uint64_t size,
           ElfLimitations UNUSED(limits),
-          UID pageTable,
-          MemoryAllocationsMap **map,
+          ManagedPageTable *pageTable,
           ElfInformation *elfData) {
     if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
     Elf64_Ehdr *hdr = (Elf64_Ehdr*)loc;
@@ -111,12 +108,8 @@ LoadElf64(void *loc,
             uint64_t mem_clr_sz = p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz;
             uint64_t mem_cpy_sz = p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz;
 
-            MemoryAllocationsMap *alloc = NULL;
-            if(map != NULL)alloc = kmalloc(sizeof(MemoryAllocationsMap));
-
             p_addr = AllocatePhysicalPage();
             MapPage(pageTable,
-                    alloc,
                     p_addr,
                     p_vaddr,
                     PAGE_SIZE,
@@ -125,7 +118,6 @@ LoadElf64(void *loc,
                     flags);
 
             MapPage(GetActiveVirtualMemoryInstance(),
-                    NULL,
                     p_addr,
                     v_tmp_addr,
                     PAGE_SIZE,
@@ -145,11 +137,6 @@ LoadElf64(void *loc,
                       v_tmp_addr,
                       PAGE_SIZE);
 
-            if(map != NULL) {
-                alloc->next = *map;
-                *map = alloc;
-            }
-
             p_memsz -= mem_clr_sz;
             p_filesz -= mem_cpy_sz;
             p_vaddr += (mem_cpy_sz > mem_clr_sz)?mem_cpy_sz : mem_clr_sz;
@@ -165,8 +152,7 @@ ElfLoaderError
 LoadElf(void *loc,
         uint64_t size,
         ElfLimitations limits,
-        UID pageTable,
-        MemoryAllocationsMap **map,
+        ManagedPageTable *pageTable,
         ElfInformation *elfData) {
 
     bool _64bit = FALSE;
@@ -174,8 +160,8 @@ LoadElf(void *loc,
     if (err != ElfLoaderError_Success)return err;
 
     if(_64bit)
-        return LoadElf64(loc, size, limits, pageTable, map, elfData);
+        return LoadElf64(loc, size, limits, pageTable, elfData);
     else
-        return LoadElf32(loc, size, limits, pageTable, map, elfData);
+        return LoadElf32(loc, size, limits, pageTable, elfData);
 
 }

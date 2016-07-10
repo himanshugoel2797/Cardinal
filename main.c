@@ -34,8 +34,8 @@ kernel_main_init(void) {
     SetTimerValue(0);
     SetTimerEnableMode(ENABLE);
 
-    kmalloc_init (allocMap);
-    ProcessSys_Initialize(allocMap);
+    kmalloc_init ();
+    ProcessSys_Initialize();
     Thread_Initialize();
     RegisterCore(0, NULL);
     CreateThread(0, kernel_main);

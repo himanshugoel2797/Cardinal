@@ -27,20 +27,20 @@ GetVirtualAddress(CachingMode c,
 
 void*
 GetPhysicalAddress(void *virtualAddress) {
-    void *ret = GetPhysicalAddressUID(GetActiveVirtualMemoryInstance(),
+    void *ret = GetPhysicalAddressPageTable(GetActiveVirtualMemoryInstance(),
                                       virtualAddress);
     return ret;
 }
 
 void*
-GetPhysicalAddressUID(UID 	src,
+GetPhysicalAddressPageTable(ManagedPageTable 	*src,
                       void 	*virtualAddress) {
     void *ret = VirtMemMan_GetPhysicalAddress((PML_Instance)src, virtualAddress);
     return ret;
 }
 
 MemoryAllocationErrors
-CreateVirtualMemoryInstance(UID *inst) {
+CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         LockSpinlock(vmem_lock);
         *inst = (UID)VirtMemMan_CreateInstance();
@@ -51,7 +51,7 @@ CreateVirtualMemoryInstance(UID *inst) {
 }
 
 void
-FreeVirtualMemoryInstance(UID inst) {
+FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != 0 && inst % PAGE_SIZE == 0) {
         LockSpinlock(vmem_lock);
         VirtMemMan_FreePageTable((PML_Instance)inst);
@@ -59,23 +59,22 @@ FreeVirtualMemoryInstance(UID inst) {
     }
 }
 
-UID
-SetActiveVirtualMemoryInstance(UID inst) {
+ManagedPageTable*
+SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     LockSpinlock(vmem_lock);
     UID ret = (UID)VirtMemMan_SetCurrent((PML_Instance)inst);
     UnlockSpinlock(vmem_lock);
     return ret;
 }
 
-UID
+ManagedPageTable*
 GetActiveVirtualMemoryInstance(void) {
     UID ret = (UID)VirtMemMan_GetCurrent();
     return ret;
 }
 
 MemoryAllocationErrors
-MapPage(UID 			pageTable,
-        MemoryAllocationsMap	*allocationMap,
+MapPage(ManagedPageTable *pageTable,
         uint64_t 		physicalAddress,
         uint64_t 		virtualAddress,
         size_t			size,
@@ -133,9 +132,9 @@ MapPage(UID 			pageTable,
 }
 
 MemoryAllocationErrors
-UnmapPage(UID 			pageTable,
-          uint64_t 		virtualAddress,
-          size_t 		size) {
+UnmapPage(ManagedPageTable 	*pageTable,
+          uint64_t 		     virtualAddress,
+          size_t 		     size) {
 
     LockSpinlock(vmem_lock);
     VirtMemMan_Unmap((PML_Instance)pageTable,
@@ -172,7 +171,7 @@ GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
 }
 
 MemoryAllocationErrors
-FindFreeVirtualAddress(UID 			pageTable,
+FindFreeVirtualAddress(ManagedPageTable *pageTable,
                        uint64_t			*virtualAddress,
                        size_t 			size,
                        MemoryAllocationType 	allocType,
@@ -199,10 +198,8 @@ FindFreeVirtualAddress(UID 			pageTable,
 }
 
 MemoryAllocationErrors
-ForkTable(UID src,
-          MemoryAllocationsMap *srcAllocBase,
-          UID *dst,
-          MemoryAllocationsMap **dstAllocBase) {
+ForkTable(ManagedPageTable *src,
+          ManagedPageTable *dst) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
     CreateVirtualMemoryInstance(dst);
@@ -366,9 +363,9 @@ HandlePageFault(uint64_t virtualAddress,
 }
 
 void
-CheckAddressPermissions(UID pageTable,
-                        uint64_t addr,
-                        CachingMode *cacheMode,
+CheckAddressPermissions(ManagedPageTable      *pageTable,
+                        uint64_t              addr,
+                        CachingMode           *cacheMode,
                         MemoryAllocationFlags *flags) {
     MEM_TYPES cache = 0;
     MEM_ACCESS_PERMS access_perm = 0;

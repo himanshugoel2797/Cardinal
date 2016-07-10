@@ -65,9 +65,7 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
         if(target_phys_addr == 0)
             return ENOMEM;
 
-        MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
         MapPage(GetActiveVirtualMemoryInstance(),
-                alloc,
                 target_phys_addr,
                 (uint64_t)addr,
                 target_len,
@@ -75,13 +73,13 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
                 allocType,
                 allocFlags);
 
+        
 
         return (uint64_t)addr;
     }
 
     return EINVAL;
 }
-
 
 uint64_t
 Brk_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -116,6 +114,6 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
         //TODO expand the heap by a few pages and return the new heap break
 
     }
-    else 
+     
     return ENOMEM;
 }

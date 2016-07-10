@@ -66,30 +66,34 @@ static uint32_t preempt_vector;
 #define SET_PROPERTY_PROC_VAL(t, name, val) set_proc_##name (GET_PROPERTY_VAL(t, ParentProcess), val)
 #define GET_PROPERTY_PROC_VAL(t, name) get_proc_##name (GET_PROPERTY_VAL(t,ParentProcess))
 
-PROPERTY_GET_SET(UID, Parent, 0)
-PROPERTY_GET_SET(UID, ID, 0)
-PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 PROPERTY_PROC_GET(UID, ID, 0)
-PROPERTY_PROC_GET(UID, PageTable, 0)
-PROPERTY_PROC_GET(MemoryAllocationsMap*, AllocationMap, NULL)
+PROPERTY_PROC_GET(ManagedPageTable*, PageTable, 0)
+PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
+
+PROPERTY_GET_SET(UID, ID, 0)
+
+PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 
 PROPERTY_GET_SET(ThreadEntryPoint, entry_point, NULL)
 PROPERTY_GET_SET(ThreadState, state, 0)
 PROPERTY_GET_SET(ThreadWakeCondition, wakeCondition, 0)
 PROPERTY_GET_SET(ThreadPriority, priority, 0)
+
 PROPERTY_GET_SET(uint64_t, interrupt_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, interrupt_stack_aligned, 0)
-PROPERTY_GET_SET(uint64_t, user_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_aligned, 0)
+PROPERTY_GET_SET(uint64_t, user_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, current_stack, 0)
-PROPERTY_GET_SET(int, core_affinity, 0)
 PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
 PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
-PROPERTY_GET_SET(void*, arch_specific_data, NULL)
-PROPERTY_GET_SET(void*, fpu_state, NULL)
+
+PROPERTY_GET_SET(int32_t, core_affinity, 0)
+
 PROPERTY_GET_SET(void*, set_child_tid, NULL)
 PROPERTY_GET_SET(void*, clear_child_tid, NULL)
+PROPERTY_GET_SET(void*, fpu_state, NULL)
+PROPERTY_GET_SET(void*, arch_specific_data, NULL)
 
 UID
 GetCurrentThreadUID(void) {
@@ -127,7 +131,6 @@ CreateThread(UID parentProcess,
     SET_PROPERTY_VAL(thd, entry_point, entry_point);
     SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
-    SET_PROPERTY_VAL(thd, Parent, parentProcess);
     SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
     SET_PROPERTY_VAL(thd, interrupt_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
@@ -176,10 +179,7 @@ CreateThread(UID parentProcess,
 
     SET_PROPERTY_VAL(thd, user_stack_base, user_stack_base + STACK_SIZE - 128);
 
-    MemoryAllocationsMap *alloc_stack = kmalloc(sizeof(MemoryAllocationsMap));
-    if((uint64_t)alloc_stack == 0)while(1);
     MapPage(GET_PROPERTY_PROC_VAL(thd, PageTable),
-            alloc_stack,
             AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
             user_stack_base,
             STACK_SIZE,
@@ -188,14 +188,10 @@ CreateThread(UID parentProcess,
             MemoryAllocationFlags_Write | MemoryAllocationFlags_User
            );
 
-    alloc_stack->next = GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next;
-    GET_PROPERTY_PROC_VAL(thd, AllocationMap)->next = alloc_stack;
-
     //Update the thread list
     List_AddEntry(neutral, thd);
 
     SET_PROPERTY_VAL(thd, ID, new_uid());
-    List_AddEntry(pInfo->ThreadIDs, (void*)GET_PROPERTY_VAL(thd, ID));
     List_AddEntry(thds, thd);
 
     return GET_PROPERTY_VAL(thd, ID);
@@ -452,19 +448,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
                 UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base + 128 - STACK_SIZE, STACK_SIZE);
 
-                for(uint64_t i = 0; i < List_Length(next_thread->ParentProcess->ThreadIDs); i++) {
-                    if((uint64_t)List_EntryAt(next_thread->ParentProcess->ThreadIDs, i) == next_thread->ID) {
-                        List_Remove(next_thread->ParentProcess->ThreadIDs, i);
-                    }
-                }
-
-                uint64_t parent_thd_cnt = List_Length(next_thread->ParentProcess->ThreadIDs);
-                ProcessStatus parent_status = next_thread->ParentProcess->Status;
-                uint64_t parent_pid = next_thread->ParentProcess->ID;
-
-                UnlockSpinlock(next_thread->ParentProcess->lock);
-                if((parent_thd_cnt == 0) | (parent_status == ProcessStatus_Terminating))
-                    KillProcess(parent_pid);
+                //TODO Free process if reference count is zero
 
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);

@@ -13,7 +13,7 @@
 
 //! Requires that the physical memory manager and the virtual memory manager be initialized too
 //! \sa kmalloc(), kfree()
-void kmalloc_init(MemoryAllocationsMap *allocationMap);
+void kmalloc_init(void);
 
 //! kernel malloc
 

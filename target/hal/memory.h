@@ -2,6 +2,7 @@
 #define _CARDINAL_HAL_MEMORY_OPS_H_
 
 #include "types.h"
+#include "synchronization.h"
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
@@ -55,51 +56,56 @@ typedef enum {
     MemoryAllocationErrors_Unknown = (1 << 6)                 ///<Unknown Error
 } MemoryAllocationErrors;
 
+
 typedef struct MemoryAllocationsMap {
-    CachingMode 		CacheMode;
-    uint64_t	 	VirtualAddress;
+    CachingMode     CacheMode;
+    uint64_t    VirtualAddress;
     uint64_t    PhysicalAddress;
-    uint64_t 		Length;
+    uint64_t    Length;
     MemoryAllocationFlags Flags;
-    MemoryAllocationType 	AllocationType;
-    uint64_t 		AdditionalData;
-    uint64_t 		ReferenceCount;
+    MemoryAllocationType  AllocationType;
+    uint64_t    AdditionalData;
 
     struct MemoryAllocationsMap *next;
 } MemoryAllocationsMap;
 
+typedef struct ManagedPageTable {
+  UID                   PageTable;
+  MemoryAllocationsMap  *AllocationMap;
+
+  uint32_t              reference_count;
+  Spinlock              lock;
+} ManagedPageTable;
+
 void*
-GetVirtualAddress(CachingMode 	c,
-                  void 		*physicalAddress);
+GetVirtualAddress(CachingMode   c,
+                  void    *physicalAddress);
 
 void*
 GetPhysicalAddress(void *virtualAddress);
 
 void*
-GetPhysicalAddressUID(UID 	src,
-                      void 	*virtualAddress);
+GetPhysicalAddressPageTable(ManagedPageTable   *src,
+                      void 	             *virtualAddress);
 
 MemoryAllocationErrors
-CreateVirtualMemoryInstance(UID *inst);
+CreateVirtualMemoryInstance(ManagedPageTable *inst);
 
 void
-FreeVirtualMemoryInstance(UID inst);
+FreeVirtualMemoryInstance(ManagedPageTable *inst);
 
-UID
-SetActiveVirtualMemoryInstance(UID inst);
+ManagedPageTable*
+SetActiveVirtualMemoryInstance(ManagedPageTable* inst);
 
-UID
+ManagedPageTable*
 GetActiveVirtualMemoryInstance(void);
 
 MemoryAllocationErrors
-ForkTable(UID src,
-          MemoryAllocationsMap *srcAllocBase,
-          UID *dst,
-          MemoryAllocationsMap **dstAllocBase);
+ForkTable(ManagedPageTable *src,
+          ManagedPageTable *dst);
 
 MemoryAllocationErrors
-MapPage(UID 			pageTable,
-        MemoryAllocationsMap	*allocationMap,
+MapPage(ManagedPageTable *pageTable,
         uint64_t 		physicalAddress,
         uint64_t 		virtualAddress,
         size_t			size,
@@ -108,7 +114,7 @@ MapPage(UID 			pageTable,
         MemoryAllocationFlags 	flags);
 
 MemoryAllocationErrors
-UnmapPage(UID 			pageTable,
+UnmapPage(ManagedPageTable* 			pageTable,
           uint64_t 		virtualAddress,
           size_t 		size);
 
@@ -121,7 +127,7 @@ GetMemoryAllocationTypeBase(MemoryAllocationType allocType,
                            MemoryAllocationFlags sec_perms);
 
 MemoryAllocationErrors
-FindFreeVirtualAddress(UID 			pageTable,
+FindFreeVirtualAddress(ManagedPageTable* 			pageTable,
                        uint64_t			*virtualAddress,
                        size_t 			size,
                        MemoryAllocationType 	allocType,
@@ -141,7 +147,7 @@ HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error);
 
 void
-CheckAddressPermissions(UID pageTable,
+CheckAddressPermissions(ManagedPageTable *pageTable,
                         uint64_t addr,
                         CachingMode *cacheMode,
                         MemoryAllocationFlags *flags);

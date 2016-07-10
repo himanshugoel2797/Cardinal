@@ -411,8 +411,7 @@ ElfLoaderError
 LoadElf(void *loc,
         uint64_t size,
         ElfLimitations limits,
-        UID pageTable,
-        MemoryAllocationsMap **map,
+        ManagedPageTable *pageTable,
         ElfInformation *elfData
        );
 

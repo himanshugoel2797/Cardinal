@@ -21,16 +21,6 @@ GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo);
 
 ProcessErrors
-KillProcess(UID pid);
-
-ProcessErrors
-SleepProcess(UID pid);
-
-ProcessErrors
-SetTLSSize(UID pid,
-           uint64_t tls_size);
-
-ProcessErrors
 SetProcessPermissions(UID pid,
                       ProcessPermissions perms);
 
@@ -38,13 +28,8 @@ ProcessErrors
 SetProcessSyscallStatus(UID pid,
                         ProcessSyscallFlags flags);
 
-ProcessErrors
-RegisterSignalHandler(UID 		pid,
-                      ProcessSignals 	signals,
-                      ProcessSignalHandler sigHandler);
-
 void
-ProcessSys_Initialize(MemoryAllocationsMap *allocMap);
+ProcessSys_Initialize(void);
 
 bool
 ProcessSys_IsInitialized(void);
