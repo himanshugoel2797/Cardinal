@@ -142,6 +142,52 @@ UnmapPage(ManagedPageTable 	*pageTable,
           size_t 		     size) {
 
     LockSpinlock(vmem_lock);
+
+    if(pageTable->AllocationMap != NULL)
+    {
+        MemoryAllocationsMap *map = pageTable->AllocationMap;
+        MemoryAllocationsMap *prev = NULL;
+        do{
+
+            if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size))
+            {
+                //TODO define the possible situations and update the allocation map appropriately
+                MemoryAllocationsMap *top = kmalloc(sizeof(MemoryAllocationsMap));
+
+                top->CacheMode = map->CacheMode;
+                top->Flags = map->Flags;
+                top->AllocationType = map->AllocationType;
+                top->AdditionalData = map->AdditionalData;
+
+                top->VirtualAddress = virtualAddress + size;
+                top->PhysicalAddress = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(virtualAddress + size));
+                top->Length = (map->VirtualAddress + map->Length) - (virtualAddress + size);
+
+                map->Length = virtualAddress - map->VirtualAddress;                
+
+                if(top->Length != 0)
+                {
+                    top->next = map->next;
+                    map->next = top;
+                }else kfree(top);
+
+                if(map->Length == 0)
+                {
+                    if(pageTable->AllocationMap != map)
+                        prev->next = map->next;
+                    else
+                        pageTable->AllocationMap = map->next;
+
+                    kfree(map);
+                    break;
+                }
+            }
+
+            prev = map;
+            map = map->next;
+        }while(map != NULL);
+    }
+
     VirtMemMan_Unmap((PML_Instance)pageTable->PageTable,
                      virtualAddress,
                      (uint64_t)size);
