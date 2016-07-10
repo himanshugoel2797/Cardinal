@@ -55,6 +55,32 @@ void
 FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL && inst->PageTable != 0 && inst->PageTable % PAGE_SIZE == 0) {
         LockSpinlock(vmem_lock);
+        //First free all memory we can free
+        
+        MemoryAllocationsMap* m = inst->AllocationMap;
+        while(m != NULL)
+        {
+            MemoryAllocationsMap* n = m->next;
+
+            uint64_t phys_addr = m->PhysicalAddress;
+            uint64_t len = m->Length;
+            MemoryAllocationType allocType = m->AllocationType;
+
+            UnmapPage(inst,
+                      m->VirtualAddress,
+                      m->Length);
+            if(!(allocType & MemoryAllocationType_Global))
+            {
+
+                //TODO make this function check shared memory status first before releasing its memory
+            FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);
+        }
+            m = n;
+        }
+
+        if(inst->AllocationMap != NULL)
+            HaltProcessor();
+
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);
     }
@@ -400,4 +426,10 @@ CheckAddressPermissions(ManagedPageTable      *pageTable,
 
     if(cacheMode != NULL)*cacheMode = c;
     if(flags != NULL)*flags = a;
+}
+
+void
+HaltProcessor(void)
+{
+    __asm__ volatile("cli\n\thlt");
 }

@@ -39,7 +39,7 @@ void kmalloc_init(void) {
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                            &virtBaseAddr_base,
                            STORE_SIZE,
-                           MemoryAllocationType_Heap,
+                           MemoryAllocationType_Heap | MemoryAllocationType_Global,
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
     uint64_t phys_addr = AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE);
