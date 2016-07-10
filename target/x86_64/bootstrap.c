@@ -92,18 +92,23 @@ bootstrap_kernel(void *param,
     RTC_Initialize ();
 
     //Convert framebuffer address to writethrough caching
-    info->framebuffer_addr = (uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr);
-    info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
-    info->initrd_start_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
+    info->framebuffer_addr = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr);
+    info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
+    info->initrd_start_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
     smp_sync_base = 1;
     APIC_Initialize();
-    //__asm__ ("hlt");
 
 
     for(int i = 0; i < 32; i++) {
         IDT_ChangeEntry(i, 0x08, 0x8E, 0x2);
     }
+
+    ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
+    pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
+    pageTable->reference_count = 0;
+    pageTable->lock = CreateBootstrapSpinlock();
+    SetActiveVirtualMemoryInstance(pageTable);
 
     //Now that all the processors are booted up and ready to do their job
     //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done

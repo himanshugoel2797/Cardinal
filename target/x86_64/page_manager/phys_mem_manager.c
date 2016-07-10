@@ -1,6 +1,6 @@
 #include "phys_mem_manager.h"
 #include "managers.h"
-#include "memory.h"
+#include "virt_mem_manager/virt_mem_manager.h"
 #include "bootinfo.h"
 #include "boot_information/boot_information.h"
 #include "elf.h"
@@ -53,7 +53,7 @@ MemMan_Initialize(void) {
     }
 
     //Mark important regions that have been preallocated
-    MemMan_MarkUsed((uint64_t)GetPhysicalAddress((void*)info->framebuffer_addr), info->framebuffer_pitch * info->framebuffer_height);
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr), info->framebuffer_pitch * info->framebuffer_height);
 
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);

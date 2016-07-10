@@ -16,9 +16,8 @@ LoadAndStartApplication(void *elf_loc,
     ProcessInformation p_info;
     GetProcessInformation(GetCurrentProcessUID(), &p_info);
 
-    MemoryAllocationsMap *m = p_info.AllocationMap;
     ElfInformation elf_info;
-    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &m, &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
+    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 
     uint32_t auxv_cnt = 0;
     AUXVector auxv[7];
@@ -73,11 +72,9 @@ SetupApplicationStack(void *sp,
                            MemoryAllocationType_MMap,
                            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-    MemoryAllocationsMap *alloc = kmalloc(sizeof(MemoryAllocationsMap));
     uint64_t phys_addr = AllocatePhysicalPage();
 
     MapPage(GetActiveVirtualMemoryInstance(),
-            alloc,
             phys_addr,
             v_tmp_addr,
             PAGE_SIZE,

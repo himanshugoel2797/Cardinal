@@ -247,7 +247,7 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movq	%rcx, bootInfo+72
 	cmpq	$920085129, -48(%rbp)   # 8-byte Folded Reload
                                         # imm = 0x36D76289
-	jne	.LBB3_28
+	jne	.LBB3_38
 # BB#9:
 	callq	GDT_Bootstrap
 	callq	IDT_Initialize
@@ -368,22 +368,22 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	cli
 
 	#NO_APP
-.LBB3_13:                               # %LockSpinlock.exit.i.i
+.LBB3_13:                               # %LockSpinlock.exit.i
 	movq	coreLocalSpace, %rcx
 	xorl	%eax, %eax
-	cmpq	$178, %rcx
+	cmpq	$8, %rcx
 	jb	.LBB3_15
 # BB#14:
 	movl	$8192, %eax             # imm = 0x2000
 	subq	%rcx, %rax
 	addq	virtMemData, %rax
-	addq	$-178, %rcx
+	addq	$-8, %rcx
 	movq	%rcx, coreLocalSpace
-.LBB3_15:                               # %VirtMemMan_AllocCoreLocalData.exit.i.i
+.LBB3_15:                               # %VirtMemMan_AllocCoreLocalData.exit.i
 	movq	vmem_lock, %rcx
 	testq	%rcx, %rcx
-	je	.LBB3_17
-# BB#16:
+	je	.LBB3_16
+# BB#17:                                # %MemoryHAL_Initialize.exit
 	#APP
 	mfence
 	lock
@@ -395,21 +395,83 @@ bootstrap_kernel:                       # @bootstrap_kernel
 .Ltmp22:
 
 	#NO_APP
-.LBB3_17:                               # %GDT_InitializeMP.exit
+	movq	vmem_lock, %rcx
+	movq	%rax, curPageTable
+	testq	%rcx, %rcx
+	je	.LBB3_19
+# BB#18:
+	xorl	%eax, %eax
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rax
+	shlq	$16, %rax
+	movw	$1, %ax
+	lock
+	xaddw	%ax, 2(%rcx)
+	cmpw	%ax, (%rcx)
+	je	.Ltmp23
+.Ltmp24:
+	btq	$25, %rax
+	jae	.Ltmp25
+.Ltmp25:
+	pause
+	cmpw	%ax, (%rcx)
+	jne	.Ltmp24
+.Ltmp23:
+	btq	$25, %rax
+	jae	.Ltmp26
+	orw	$1, 4(%rcx)
+.Ltmp26:
+	cli
+
+	#NO_APP
+	jmp	.LBB3_19
+.LBB3_16:                               # %MemoryHAL_Initialize.exit.thread
+	movq	%rax, curPageTable
+.LBB3_19:                               # %LockSpinlock.exit.i.i
+	movq	coreLocalSpace, %rcx
+	xorl	%eax, %eax
+	cmpq	$178, %rcx
+	jb	.LBB3_21
+# BB#20:
+	movl	$8192, %eax             # imm = 0x2000
+	subq	%rcx, %rax
+	addq	virtMemData, %rax
+	addq	$-178, %rcx
+	movq	%rcx, coreLocalSpace
+.LBB3_21:                               # %VirtMemMan_AllocCoreLocalData.exit.i.i
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB3_23
+# BB#22:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp27
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp27:
+
+	#NO_APP
+.LBB3_23:                               # %GDT_InitializeMP.exit
 	movq	%rax, coreLocalData
 	callq	GDT_Initialize
 	movl	pos, %eax
 	movq	%rax, %rcx
 	addq	$16384, %rcx            # imm = 0x4000
 	cmpq	$5242881, %rcx          # imm = 0x500001
-	jb	.LBB3_19
-# BB#18:
+	jb	.LBB3_25
+# BB#24:
 	#APP
 	cli
 	hlt
 	#NO_APP
 	movl	pos, %eax
-.LBB3_19:                               # %bootstrap_malloc.exit12
+.LBB3_25:                               # %bootstrap_malloc.exit18
 	movl	%eax, %ebx
 	leaq	mem_pool(%rbx), %rdi
 	addl	$16384, %eax            # imm = 0x4000
@@ -424,14 +486,14 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movq	%rax, %rcx
 	addq	$4096, %rcx             # imm = 0x1000
 	cmpq	$5242881, %rcx          # imm = 0x500001
-	jb	.LBB3_21
-# BB#20:
+	jb	.LBB3_27
+# BB#26:
 	#APP
 	cli
 	hlt
 	#NO_APP
 	movl	pos, %eax
-.LBB3_21:                               # %bootstrap_malloc.exit6
+.LBB3_27:                               # %bootstrap_malloc.exit12
 	movl	%eax, %ecx
 	leaq	mem_pool(%rcx), %rbx
 	addl	$4096, %eax             # imm = 0x1000
@@ -449,14 +511,14 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movq	%rax, %rcx
 	addq	$4096, %rcx             # imm = 0x1000
 	cmpq	$5242881, %rcx          # imm = 0x500001
-	jb	.LBB3_23
-# BB#22:
+	jb	.LBB3_29
+# BB#28:
 	#APP
 	cli
 	hlt
 	#NO_APP
 	movl	pos, %eax
-.LBB3_23:                               # %bootstrap_malloc.exit
+.LBB3_29:                               # %bootstrap_malloc.exit6
 	movl	%eax, %ecx
 	leaq	mem_pool(%rcx), %rbx
 	addl	$4096, %eax             # imm = 0x1000
@@ -476,14 +538,14 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	xorl	%esi, %esi
 	callq	ACPITables_FindTable
 	testq	%rax, %rax
-	je	.LBB3_25
-# BB#24:
+	je	.LBB3_31
+# BB#30:
 	movzbl	108(%rax), %eax
 	movl	%eax, century_register
-.LBB3_25:                               # %RTC_Initialize.exit
-	movq	bootInfo+72, %rsi
+.LBB3_31:                               # %RTC_Initialize.exit
 	movq	virtMemData, %rax
 	movq	8(%rax), %rdi
+	movq	bootInfo+72, %rsi
 	callq	VirtMemMan_GetPhysicalAddress
 	xorl	%ebx, %ebx
 	cmpq	%r13, %rax
@@ -499,7 +561,7 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movl	$1, smp_sync_base
 	callq	APIC_Initialize
 	.align	16, 0x90
-.LBB3_26:                               # =>This Inner Loop Header: Depth=1
+.LBB3_32:                               # =>This Inner Loop Header: Depth=1
 	movb	$-114, idt_entries+5(%rbx)
 	movb	$2, idt_entries+4(%rbx)
 	movw	$8, idt_entries+2(%rbx)
@@ -508,10 +570,84 @@ bootstrap_kernel:                       # @bootstrap_kernel
 	movw	$8, idt_entries+18(%rbx)
 	addq	$32, %rbx
 	cmpq	$512, %rbx              # imm = 0x200
-	jne	.LBB3_26
-# BB#27:
+	jne	.LBB3_32
+# BB#33:
+	movl	pos, %eax
+	movq	%rax, %rcx
+	addq	$32, %rcx
+	cmpq	$5242881, %rcx          # imm = 0x500001
+	jb	.LBB3_35
+# BB#34:
+	#APP
+	cli
+	hlt
+	#NO_APP
+	movl	pos, %eax
+.LBB3_35:                               # %bootstrap_malloc.exit
+	movl	%eax, %ecx
+	leaq	mem_pool(%rcx), %rdi
+	addl	$32, %eax
+	movl	%eax, pos
+	movq	$0, mem_pool+24(%rcx)
+	movq	$0, mem_pool+16(%rcx)
+	movq	$0, mem_pool+8(%rcx)
+	movq	$0, mem_pool(%rcx)
+	movq	virtMemData, %rax
+	movq	8(%rax), %rax
+	movq	%rax, mem_pool(%rcx)
+	movl	$0, mem_pool+16(%rcx)
+	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
+	xorl	%ecx, %ecx
+	#APP
+	cpuid
+
+	#NO_APP
+	movl	%ebx, ebx
+	movl	%edx, edx
+	movl	pos, %eax
+	movq	%rax, %rcx
+	addq	$64, %rcx
+	cmpq	$5242881, %rcx          # imm = 0x500001
+	jb	.LBB3_37
+# BB#36:
+	#APP
+	cli
+	hlt
+	#NO_APP
+	movl	pos, %eax
+.LBB3_37:                               # %CreateBootstrapSpinlock.exit23
+	movl	%eax, %esi
+	leaq	mem_pool(%rsi), %r8
+	addl	$64, %eax
+	movl	%eax, pos
+	movq	$0, mem_pool+56(%rsi)
+	movq	$0, mem_pool+48(%rsi)
+	movq	$0, mem_pool+40(%rsi)
+	movq	$0, mem_pool+32(%rsi)
+	movq	$0, mem_pool+24(%rsi)
+	movq	$0, mem_pool+16(%rsi)
+	movq	$0, mem_pool+8(%rsi)
+	movq	$0, mem_pool(%rsi)
+	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
+	xorl	%ecx, %ecx
+	#APP
+	cpuid
+
+	#NO_APP
+	movl	%ebx, ebx
+	movl	%edx, edx
+	movq	$0, mem_pool+56(%rsi)
+	movq	$0, mem_pool+48(%rsi)
+	movq	$0, mem_pool+40(%rsi)
+	movq	$0, mem_pool+32(%rsi)
+	movq	$0, mem_pool+24(%rsi)
+	movq	$0, mem_pool+16(%rsi)
+	movq	$0, mem_pool+8(%rsi)
+	movq	$0, mem_pool(%rsi)
+	movq	%r8, 24(%rdi)
+	callq	SetActiveVirtualMemoryInstance
 	callq	kernel_main_init
-.LBB3_28:
+.LBB3_38:
 	movl	$255, %edi
 	callq	bootstrap_kernel_panic
 .Lfunc_end3:
@@ -526,12 +662,12 @@ setup_preemption:                       # @setup_preemption
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp23:
+.Ltmp28:
 	.cfi_def_cfa_offset 16
-.Ltmp24:
+.Ltmp29:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp25:
+.Ltmp30:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	8(%rax), %rax
@@ -580,12 +716,12 @@ target_device_setup:                    # @target_device_setup
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp26:
+.Ltmp31:
 	.cfi_def_cfa_offset 16
-.Ltmp27:
+.Ltmp32:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp28:
+.Ltmp33:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
@@ -600,12 +736,12 @@ get_perf_counter:                       # @get_perf_counter
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp29:
+.Ltmp34:
 	.cfi_def_cfa_offset 16
-.Ltmp30:
+.Ltmp35:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp31:
+.Ltmp36:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
@@ -621,12 +757,12 @@ smp_unlock_cores:                       # @smp_unlock_cores
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp32:
+.Ltmp37:
 	.cfi_def_cfa_offset 16
-.Ltmp33:
+.Ltmp38:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp34:
+.Ltmp39:
 	.cfi_def_cfa_register %rbp
 	movl	$0, smp_sync_base
 	popq	%rbp
@@ -643,26 +779,26 @@ smp_bootstrap:                          # @smp_bootstrap
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp35:
+.Ltmp40:
 	.cfi_def_cfa_offset 16
-.Ltmp36:
+.Ltmp41:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp37:
+.Ltmp42:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp38:
+.Ltmp43:
 	.cfi_offset %rbx, -24
 	movq	$smp_lock139, %rax
 	#APP
-.Ltmp39:
+.Ltmp44:
 	pause
 	testl	$1, (%rax)
-	jne	.Ltmp39
+	jne	.Ltmp44
 	lock
 	btsl	$0, (%rax)
-	jb	.Ltmp39
+	jb	.Ltmp44
 	#NO_APP
 	movl	pos, %eax
 	movq	%rax, %rcx
@@ -854,18 +990,18 @@ GDT_Bootstrap:                          # @GDT_Bootstrap
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp40:
+.Ltmp45:
 	.cfi_def_cfa_offset 16
-.Ltmp41:
+.Ltmp46:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp42:
+.Ltmp47:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp43:
+.Ltmp48:
 	.cfi_offset %rbx, -32
-.Ltmp44:
+.Ltmp49:
 	.cfi_offset %r14, -24
 	#APP
 	cli
@@ -1076,12 +1212,12 @@ GDT_SetEntry:                           # @GDT_SetEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp45:
+.Ltmp50:
 	.cfi_def_cfa_offset 16
-.Ltmp46:
+.Ltmp51:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp47:
+.Ltmp52:
 	.cfi_def_cfa_register %rbp
 	movslq	%edi, %rax
 	movq	coreLocalData, %rdi
@@ -1117,12 +1253,12 @@ GDT_SetTSS:                             # @GDT_SetTSS
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp48:
+.Ltmp53:
 	.cfi_def_cfa_offset 16
-.Ltmp49:
+.Ltmp54:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp50:
+.Ltmp55:
 	.cfi_def_cfa_register %rbp
 	movslq	%edi, %rax
 	movq	coreLocalData, %rdi
@@ -1183,12 +1319,12 @@ GDT_InitializeMP:                       # @GDT_InitializeMP
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp51:
+.Ltmp56:
 	.cfi_def_cfa_offset 16
-.Ltmp52:
+.Ltmp57:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp53:
+.Ltmp58:
 	.cfi_def_cfa_register %rbp
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
@@ -1205,19 +1341,19 @@ GDT_InitializeMP:                       # @GDT_InitializeMP
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp54
-.Ltmp55:
+	je	.Ltmp59
+.Ltmp60:
 	btq	$25, %rcx
-	jae	.Ltmp56
-.Ltmp56:
+	jae	.Ltmp61
+.Ltmp61:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp55
-.Ltmp54:
+	jne	.Ltmp60
+.Ltmp59:
 	btq	$25, %rcx
-	jae	.Ltmp57
+	jae	.Ltmp62
 	orw	$1, 4(%rax)
-.Ltmp57:
+.Ltmp62:
 	cli
 
 	#NO_APP
@@ -1242,10 +1378,10 @@ GDT_InitializeMP:                       # @GDT_InitializeMP
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp58
+	jae	.Ltmp63
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp58:
+.Ltmp63:
 
 	#NO_APP
 .LBB12_6:                               # %AllocateAPLSMemory.exit
@@ -1263,12 +1399,12 @@ GDT_Initialize:                         # @GDT_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp59:
+.Ltmp64:
 	.cfi_def_cfa_offset 16
-.Ltmp60:
+.Ltmp65:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp61:
+.Ltmp66:
 	.cfi_def_cfa_register %rbp
 	#APP
 	cli
@@ -1360,12 +1496,12 @@ SetInterruptStack:                      # @SetInterruptStack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp62:
+.Ltmp67:
 	.cfi_def_cfa_offset 16
-.Ltmp63:
+.Ltmp68:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp64:
+.Ltmp69:
 	.cfi_def_cfa_register %rbp
 	movq	coreLocalData, %rax
 	movq	%rdi, 78(%rax)
@@ -1382,12 +1518,12 @@ GDT_SetIST:                             # @GDT_SetIST
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp65:
+.Ltmp70:
 	.cfi_def_cfa_offset 16
-.Ltmp66:
+.Ltmp71:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp67:
+.Ltmp72:
 	.cfi_def_cfa_register %rbp
 	decl	%edi
 	cmpl	$6, %edi
@@ -1452,22 +1588,22 @@ IDT_Initialize:                         # @IDT_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp68:
+.Ltmp73:
 	.cfi_def_cfa_offset 16
-.Ltmp69:
+.Ltmp74:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp70:
+.Ltmp75:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
 	pushq	%rax
-.Ltmp71:
+.Ltmp76:
 	.cfi_offset %rbx, -40
-.Ltmp72:
+.Ltmp77:
 	.cfi_offset %r14, -32
-.Ltmp73:
+.Ltmp78:
 	.cfi_offset %r15, -24
 	movw	$4095, idt_table        # imm = 0xFFF
 	movq	$idt_entries, idt_table+2
@@ -1554,12 +1690,12 @@ IDT_SetEntry:                           # @IDT_SetEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp74:
+.Ltmp79:
 	.cfi_def_cfa_offset 16
-.Ltmp75:
+.Ltmp80:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp76:
+.Ltmp81:
 	.cfi_def_cfa_register %rbp
 	shlq	$4, %rdi
 	movw	%si, idt_entries(%rdi)
@@ -1585,12 +1721,12 @@ IDT_FillSWInterruptHandler:             # @IDT_FillSWInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp77:
+.Ltmp82:
 	.cfi_def_cfa_offset 16
-.Ltmp78:
+.Ltmp83:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp79:
+.Ltmp84:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	testb	%dl, %dl
@@ -1645,12 +1781,12 @@ IDT_ChangeEntry:                        # @IDT_ChangeEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp80:
+.Ltmp85:
 	.cfi_def_cfa_offset 16
-.Ltmp81:
+.Ltmp86:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp82:
+.Ltmp87:
 	.cfi_def_cfa_register %rbp
 	shlq	$4, %rdi
 	movb	%dl, idt_entries+5(%rdi)
@@ -1719,15 +1855,15 @@ IDT_MainHandler:                        # @IDT_MainHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp83:
+.Ltmp88:
 	.cfi_def_cfa_offset 16
-.Ltmp84:
+.Ltmp89:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp85:
+.Ltmp90:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp86:
+.Ltmp91:
 	.cfi_offset %rbx, -24
 	movq	128(%rdi), %rax
 	cmpq	$0, idt_handler_calls(,%rax,8)
@@ -1757,12 +1893,12 @@ IDT_RegisterHandler:                    # @IDT_RegisterHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp87:
+.Ltmp92:
 	.cfi_def_cfa_offset 16
-.Ltmp88:
+.Ltmp93:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp89:
+.Ltmp94:
 	.cfi_def_cfa_register %rbp
 	movq	%rsi, idt_handler_calls(,%rdi,8)
 	popq	%rbp
@@ -1778,12 +1914,12 @@ IDT_RaiseInterrupt:                     # @IDT_RaiseInterrupt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp90:
+.Ltmp95:
 	.cfi_def_cfa_offset 16
-.Ltmp91:
+.Ltmp96:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp92:
+.Ltmp97:
 	.cfi_def_cfa_register %rbp
 	cmpl	$255, %edi
 	jbe	.LBB23_2
@@ -1807,15 +1943,15 @@ CPUID_RequestInfo:                      # @CPUID_RequestInfo
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp93:
+.Ltmp98:
 	.cfi_def_cfa_offset 16
-.Ltmp94:
+.Ltmp99:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp95:
+.Ltmp100:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp96:
+.Ltmp101:
 	.cfi_offset %rbx, -24
 	movl	%edi, %eax
 	movl	%esi, %ecx
@@ -1839,15 +1975,15 @@ CPUID_GetCacheLineSize:                 # @CPUID_GetCacheLineSize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp97:
+.Ltmp102:
 	.cfi_def_cfa_offset 16
-.Ltmp98:
+.Ltmp103:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp99:
+.Ltmp104:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp100:
+.Ltmp105:
 	.cfi_offset %rbx, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -1872,12 +2008,12 @@ CPUID_FeatureIsAvailable:               # @CPUID_FeatureIsAvailable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp101:
+.Ltmp106:
 	.cfi_def_cfa_offset 16
-.Ltmp102:
+.Ltmp107:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp103:
+.Ltmp108:
 	.cfi_def_cfa_register %rbp
 	movl	%edi, %eax
 	cmpl	$3, %edi
@@ -1923,12 +2059,12 @@ CPUID_GetValue:                         # @CPUID_GetValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp104:
+.Ltmp109:
 	.cfi_def_cfa_offset 16
-.Ltmp105:
+.Ltmp110:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp106:
+.Ltmp111:
 	.cfi_def_cfa_register %rbp
 	cmpl	$3, %edi
 	jne	.LBB27_1
@@ -1957,16 +2093,16 @@ FPU_Initialize:                         # @FPU_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp107:
+.Ltmp112:
 	.cfi_def_cfa_offset 16
-.Ltmp108:
+.Ltmp113:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp109:
+.Ltmp114:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp110:
+.Ltmp115:
 	.cfi_offset %rbx, -24
 	movl	$1, %eax
 	xorl	%ecx, %ecx
@@ -2026,12 +2162,12 @@ GetFPUStateSize:                        # @GetFPUStateSize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp111:
+.Ltmp116:
 	.cfi_def_cfa_offset 16
-.Ltmp112:
+.Ltmp117:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp113:
+.Ltmp118:
 	.cfi_def_cfa_register %rbp
 	movzbl	state_area_size, %eax
 	andl	$1, %eax
@@ -2049,12 +2185,12 @@ SaveFPUState:                           # @SaveFPUState
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp114:
+.Ltmp119:
 	.cfi_def_cfa_offset 16
-.Ltmp115:
+.Ltmp120:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp116:
+.Ltmp121:
 	.cfi_def_cfa_register %rbp
 	#APP
 	fxsave64	(%rdi)
@@ -2072,12 +2208,12 @@ RestoreFPUState:                        # @RestoreFPUState
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp117:
+.Ltmp122:
 	.cfi_def_cfa_offset 16
-.Ltmp118:
+.Ltmp123:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp119:
+.Ltmp124:
 	.cfi_def_cfa_register %rbp
 	#APP
 	fxrstor64	(%rdi)
@@ -2094,12 +2230,12 @@ FPU_X87Exception:                       # @FPU_X87Exception
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp120:
+.Ltmp125:
 	.cfi_def_cfa_offset 16
-.Ltmp121:
+.Ltmp126:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp122:
+.Ltmp127:
 	.cfi_def_cfa_register %rbp
 	cmpl	$16, %edi
 	jne	.LBB32_2
@@ -2123,12 +2259,12 @@ FPU_SIMDException:                      # @FPU_SIMDException
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp123:
+.Ltmp128:
 	.cfi_def_cfa_offset 16
-.Ltmp124:
+.Ltmp129:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp125:
+.Ltmp130:
 	.cfi_def_cfa_register %rbp
 	cmpl	$19, %edi
 	jne	.LBB33_2
@@ -2153,12 +2289,12 @@ RTC_Initialize:                         # @RTC_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp126:
+.Ltmp131:
 	.cfi_def_cfa_offset 16
-.Ltmp127:
+.Ltmp132:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp128:
+.Ltmp133:
 	.cfi_def_cfa_register %rbp
 	movq	$.L.str, %rdi
 	xorl	%esi, %esi
@@ -2182,12 +2318,12 @@ RTC_SelectRegister:                     # @RTC_SelectRegister
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp129:
+.Ltmp134:
 	.cfi_def_cfa_offset 16
-.Ltmp130:
+.Ltmp135:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp131:
+.Ltmp136:
 	.cfi_def_cfa_register %rbp
 	shlb	$7, %dil
 	orb	%sil, %dil
@@ -2208,12 +2344,12 @@ RTC_SetRegister:                        # @RTC_SetRegister
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp132:
+.Ltmp137:
 	.cfi_def_cfa_offset 16
-.Ltmp133:
+.Ltmp138:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp134:
+.Ltmp139:
 	.cfi_def_cfa_register %rbp
 	shlb	$7, %sil
 	orb	%dl, %sil
@@ -2238,12 +2374,12 @@ RTC_GetRegister:                        # @RTC_GetRegister
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp135:
+.Ltmp140:
 	.cfi_def_cfa_offset 16
-.Ltmp136:
+.Ltmp141:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp137:
+.Ltmp142:
 	.cfi_def_cfa_register %rbp
 	shlb	$7, %dil
 	orb	%sil, %dil
@@ -2268,12 +2404,12 @@ RTC_UpdateInProgress:                   # @RTC_UpdateInProgress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp138:
+.Ltmp143:
 	.cfi_def_cfa_offset 16
-.Ltmp139:
+.Ltmp144:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp140:
+.Ltmp145:
 	.cfi_def_cfa_register %rbp
 	movb	$-118, %al
 	#APP
@@ -2297,12 +2433,12 @@ RTC_GetRTCTime:                         # @RTC_GetRTCTime
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp141:
+.Ltmp146:
 	.cfi_def_cfa_offset 16
-.Ltmp142:
+.Ltmp147:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp143:
+.Ltmp148:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -2310,15 +2446,15 @@ RTC_GetRTCTime:                         # @RTC_GetRTCTime
 	pushq	%r12
 	pushq	%rbx
 	subq	$16, %rsp
-.Ltmp144:
+.Ltmp149:
 	.cfi_offset %rbx, -56
-.Ltmp145:
+.Ltmp150:
 	.cfi_offset %r12, -48
-.Ltmp146:
+.Ltmp151:
 	.cfi_offset %r13, -40
-.Ltmp147:
+.Ltmp152:
 	.cfi_offset %r14, -32
-.Ltmp148:
+.Ltmp153:
 	.cfi_offset %r15, -24
 	.align	16, 0x90
 .LBB39_1:                               # =>This Inner Loop Header: Depth=1
@@ -2643,22 +2779,22 @@ debug_gfx_writeLine:                    # @debug_gfx_writeLine
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp149:
+.Ltmp154:
 	.cfi_def_cfa_offset 16
-.Ltmp150:
+.Ltmp155:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp151:
+.Ltmp156:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
 	subq	$344, %rsp              # imm = 0x158
-.Ltmp152:
+.Ltmp157:
 	.cfi_offset %rbx, -40
-.Ltmp153:
+.Ltmp158:
 	.cfi_offset %r14, -32
-.Ltmp154:
+.Ltmp159:
 	.cfi_offset %r15, -24
 	movq	%rdi, %r14
 	movq	%r9, -328(%rbp)
@@ -2751,15 +2887,15 @@ MemoryHAL_Initialize:                   # @MemoryHAL_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp155:
+.Ltmp160:
 	.cfi_def_cfa_offset 16
-.Ltmp156:
+.Ltmp161:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp157:
+.Ltmp162:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp158:
+.Ltmp163:
 	.cfi_offset %rbx, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -2812,11 +2948,153 @@ MemoryHAL_Initialize:                   # @MemoryHAL_Initialize
 	movq	%rdi, vmem_lock
 	movq	$VirtMemMan_HandlePageFault, intHandlers+112
 	movq	$ShadowInterruptHandler, idt_handler_calls+112
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB41_4
+# BB#3:
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp164
+.Ltmp165:
+	btq	$25, %rcx
+	jae	.Ltmp166
+.Ltmp166:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp165
+.Ltmp164:
+	btq	$25, %rcx
+	jae	.Ltmp167
+	orw	$1, 4(%rax)
+.Ltmp167:
+	cli
+
+	#NO_APP
+.LBB41_4:                               # %LockSpinlock.exit
+	movq	coreLocalSpace, %rcx
+	xorl	%eax, %eax
+	cmpq	$8, %rcx
+	jb	.LBB41_6
+# BB#5:
+	movl	$8192, %eax             # imm = 0x2000
+	subq	%rcx, %rax
+	addq	virtMemData, %rax
+	addq	$-8, %rcx
+	movq	%rcx, coreLocalSpace
+.LBB41_6:                               # %VirtMemMan_AllocCoreLocalData.exit
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB41_8
+# BB#7:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp168
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp168:
+
+	#NO_APP
+.LBB41_8:                               # %UnlockSpinlock.exit
+	movq	%rax, curPageTable
 	popq	%rbx
 	popq	%rbp
 	retq
 .Lfunc_end41:
 	.size	MemoryHAL_Initialize, .Lfunc_end41-MemoryHAL_Initialize
+	.cfi_endproc
+
+	.globl	AllocateAPLSMemory
+	.align	16, 0x90
+	.type	AllocateAPLSMemory,@function
+AllocateAPLSMemory:                     # @AllocateAPLSMemory
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp169:
+	.cfi_def_cfa_offset 16
+.Ltmp170:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp171:
+	.cfi_def_cfa_register %rbp
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB42_2
+# BB#1:
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp172
+.Ltmp173:
+	btq	$25, %rcx
+	jae	.Ltmp174
+.Ltmp174:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp173
+.Ltmp172:
+	btq	$25, %rcx
+	jae	.Ltmp175
+	orw	$1, 4(%rax)
+.Ltmp175:
+	cli
+
+	#NO_APP
+.LBB42_2:                               # %LockSpinlock.exit
+	movq	coreLocalSpace, %rcx
+	xorl	%eax, %eax
+	movq	%rcx, %rdx
+	subq	%rdi, %rdx
+	jb	.LBB42_5
+# BB#3:                                 # %LockSpinlock.exit
+	testq	%rcx, %rcx
+	je	.LBB42_5
+# BB#4:
+	movl	$8192, %eax             # imm = 0x2000
+	subq	%rcx, %rax
+	addq	virtMemData, %rax
+	movq	%rdx, coreLocalSpace
+.LBB42_5:                               # %VirtMemMan_AllocCoreLocalData.exit
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB42_7
+# BB#6:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp176
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp176:
+
+	#NO_APP
+.LBB42_7:                               # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.Lfunc_end42:
+	.size	AllocateAPLSMemory, .Lfunc_end42-AllocateAPLSMemory
 	.cfi_endproc
 
 	.globl	GetVirtualAddress
@@ -2826,41 +3104,41 @@ GetVirtualAddress:                      # @GetVirtualAddress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp159:
+.Ltmp177:
 	.cfi_def_cfa_offset 16
-.Ltmp160:
+.Ltmp178:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp161:
+.Ltmp179:
 	.cfi_def_cfa_register %rbp
 	movabsq	$-17179869184, %rcx     # imm = 0xFFFFFFFC00000000
 	movabsq	$4294967296, %rdx       # imm = 0x100000000
 	xorl	%eax, %eax
 	cmpl	$2, %edi
-	je	.LBB42_4
+	je	.LBB43_4
 # BB#1:
 	cmpl	$1, %edi
-	jne	.LBB42_2
+	jne	.LBB43_2
 # BB#6:
 	xorl	%eax, %eax
 	cmpq	%rdx, %rsi
-	jae	.LBB42_9
+	jae	.LBB43_9
 # BB#7:
 	movabsq	$-21474836480, %rax     # imm = 0xFFFFFFFB00000000
 	addq	%rax, %rsi
-	jmp	.LBB42_8
-.LBB42_4:
+	jmp	.LBB43_8
+.LBB43_4:
 	xorl	%eax, %eax
 	cmpq	%rdx, %rsi
-	jae	.LBB42_9
+	jae	.LBB43_9
 # BB#5:
 	addq	%rcx, %rsi
-.LBB42_8:                               # %VirtMemMan_GetVirtualAddress.exit
+.LBB43_8:                               # %VirtMemMan_GetVirtualAddress.exit
 	movq	%rsi, %rax
-	jmp	.LBB42_9
-.LBB42_2:
+	jmp	.LBB43_9
+.LBB43_2:
 	testl	%edi, %edi
-	jne	.LBB42_9
+	jne	.LBB43_9
 # BB#3:
 	cmpq	%rdx, %rsi
 	leaq	(%rcx,%rsi), %rcx
@@ -2870,11 +3148,11 @@ GetVirtualAddress:                      # @GetVirtualAddress
 	addq	%rcx, %rax
 	popq	%rbp
 	retq
-.LBB42_9:                               # %VirtMemMan_GetVirtualAddress.exit
+.LBB43_9:                               # %VirtMemMan_GetVirtualAddress.exit
 	popq	%rbp
 	retq
-.Lfunc_end42:
-	.size	GetVirtualAddress, .Lfunc_end42-GetVirtualAddress
+.Lfunc_end43:
+	.size	GetVirtualAddress, .Lfunc_end43-GetVirtualAddress
 	.cfi_endproc
 
 	.globl	GetPhysicalAddress
@@ -2884,41 +3162,45 @@ GetPhysicalAddress:                     # @GetPhysicalAddress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp162:
+.Ltmp180:
 	.cfi_def_cfa_offset 16
-.Ltmp163:
+.Ltmp181:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp164:
+.Ltmp182:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rax
 	movq	virtMemData, %rcx
-	movq	8(%rcx), %rdi
+	movq	8(%rcx), %rcx
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rcx
+	movq	(%rcx), %rdi
 	movq	%rax, %rsi
 	popq	%rbp
 	jmp	VirtMemMan_GetPhysicalAddress # TAILCALL
-.Lfunc_end43:
-	.size	GetPhysicalAddress, .Lfunc_end43-GetPhysicalAddress
+.Lfunc_end44:
+	.size	GetPhysicalAddress, .Lfunc_end44-GetPhysicalAddress
 	.cfi_endproc
 
-	.globl	GetPhysicalAddressUID
+	.globl	GetPhysicalAddressPageTable
 	.align	16, 0x90
-	.type	GetPhysicalAddressUID,@function
-GetPhysicalAddressUID:                  # @GetPhysicalAddressUID
+	.type	GetPhysicalAddressPageTable,@function
+GetPhysicalAddressPageTable:            # @GetPhysicalAddressPageTable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp165:
+.Ltmp183:
 	.cfi_def_cfa_offset 16
-.Ltmp166:
+.Ltmp184:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp167:
+.Ltmp185:
 	.cfi_def_cfa_register %rbp
+	movq	(%rdi), %rdi
 	popq	%rbp
 	jmp	VirtMemMan_GetPhysicalAddress # TAILCALL
-.Lfunc_end44:
-	.size	GetPhysicalAddressUID, .Lfunc_end44-GetPhysicalAddressUID
+.Lfunc_end45:
+	.size	GetPhysicalAddressPageTable, .Lfunc_end45-GetPhysicalAddressPageTable
 	.cfi_endproc
 
 	.globl	GetActiveVirtualMemoryInstance
@@ -2928,19 +3210,21 @@ GetActiveVirtualMemoryInstance:         # @GetActiveVirtualMemoryInstance
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp168:
+.Ltmp186:
 	.cfi_def_cfa_offset 16
-.Ltmp169:
+.Ltmp187:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp170:
+.Ltmp188:
 	.cfi_def_cfa_register %rbp
 	movq	virtMemData, %rax
 	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
 	popq	%rbp
 	retq
-.Lfunc_end45:
-	.size	GetActiveVirtualMemoryInstance, .Lfunc_end45-GetActiveVirtualMemoryInstance
+.Lfunc_end46:
+	.size	GetActiveVirtualMemoryInstance, .Lfunc_end46-GetActiveVirtualMemoryInstance
 	.cfi_endproc
 
 	.globl	CreateVirtualMemoryInstance
@@ -2950,33 +3234,33 @@ CreateVirtualMemoryInstance:            # @CreateVirtualMemoryInstance
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp171:
+.Ltmp189:
 	.cfi_def_cfa_offset 16
-.Ltmp172:
+.Ltmp190:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp173:
+.Ltmp191:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp174:
+.Ltmp192:
 	.cfi_offset %rbx, -48
-.Ltmp175:
+.Ltmp193:
 	.cfi_offset %r12, -40
-.Ltmp176:
+.Ltmp194:
 	.cfi_offset %r14, -32
-.Ltmp177:
+.Ltmp195:
 	.cfi_offset %r15, -24
 	movq	%rdi, %r14
 	movl	$64, %r12d
 	testq	%r14, %r14
-	je	.LBB46_5
+	je	.LBB47_5
 # BB#1:
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB46_3
+	je	.LBB47_3
 # BB#2:
 	xorl	%ecx, %ecx
 	#APP
@@ -2989,23 +3273,23 @@ CreateVirtualMemoryInstance:            # @CreateVirtualMemoryInstance
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp178
-.Ltmp179:
+	je	.Ltmp196
+.Ltmp197:
 	btq	$25, %rcx
-	jae	.Ltmp180
-.Ltmp180:
+	jae	.Ltmp198
+.Ltmp198:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp179
-.Ltmp178:
+	jne	.Ltmp197
+.Ltmp196:
 	btq	$25, %rcx
-	jae	.Ltmp181
+	jae	.Ltmp199
 	orw	$1, 4(%rax)
-.Ltmp181:
+.Ltmp199:
 	cli
 
 	#NO_APP
-.LBB46_3:                               # %LockSpinlock.exit
+.LBB47_3:                               # %LockSpinlock.exit
 	callq	MemMan_Alloc
 	movq	%rax, %rcx
 	shrq	$32, %rcx
@@ -3027,20 +3311,20 @@ CreateVirtualMemoryInstance:            # @CreateVirtualMemoryInstance
 	movq	%r15, (%r14)
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB46_5
+	je	.LBB47_5
 # BB#4:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp182
+	jae	.Ltmp200
 	sti
 	movw	$0, 4(%rax)
-.Ltmp182:
+.Ltmp200:
 
 	#NO_APP
-.LBB46_5:                               # %UnlockSpinlock.exit
+.LBB47_5:                               # %UnlockSpinlock.exit
 	movl	%r12d, %eax
 	popq	%rbx
 	popq	%r12
@@ -3048,8 +3332,8 @@ CreateVirtualMemoryInstance:            # @CreateVirtualMemoryInstance
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end46:
-	.size	CreateVirtualMemoryInstance, .Lfunc_end46-CreateVirtualMemoryInstance
+.Lfunc_end47:
+	.size	CreateVirtualMemoryInstance, .Lfunc_end47-CreateVirtualMemoryInstance
 	.cfi_endproc
 
 	.globl	FreeVirtualMemoryInstance
@@ -3059,252 +3343,33 @@ FreeVirtualMemoryInstance:              # @FreeVirtualMemoryInstance
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp183:
+.Ltmp201:
 	.cfi_def_cfa_offset 16
-.Ltmp184:
+.Ltmp202:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp185:
+.Ltmp203:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp186:
-	.cfi_offset %rbx, -24
-	movl	%edi, %eax
-	andl	$4095, %eax             # imm = 0xFFF
-	testq	%rdi, %rdi
-	je	.LBB47_5
-# BB#1:
-	testq	%rax, %rax
-	jne	.LBB47_5
-# BB#2:
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB47_6
-# BB#3:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp187
-.Ltmp188:
-	btq	$25, %rcx
-	jae	.Ltmp189
-.Ltmp189:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp188
-.Ltmp187:
-	btq	$25, %rcx
-	jae	.Ltmp190
-	orw	$1, 4(%rax)
-.Ltmp190:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	VirtMemMan_FreePageTable
-	testq	%rbx, %rbx
-	je	.LBB47_5
-# BB#4:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp191
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp191:
-
-	#NO_APP
-.LBB47_5:                               # %UnlockSpinlock.exit
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-.LBB47_6:                               # %LockSpinlock.exit.thread
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	jmp	VirtMemMan_FreePageTable # TAILCALL
-.Lfunc_end47:
-	.size	FreeVirtualMemoryInstance, .Lfunc_end47-FreeVirtualMemoryInstance
-	.cfi_endproc
-
-	.globl	SetActiveVirtualMemoryInstance
-	.align	16, 0x90
-	.type	SetActiveVirtualMemoryInstance,@function
-SetActiveVirtualMemoryInstance:         # @SetActiveVirtualMemoryInstance
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp192:
-	.cfi_def_cfa_offset 16
-.Ltmp193:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp194:
-	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-.Ltmp195:
-	.cfi_offset %rbx, -32
-.Ltmp196:
-	.cfi_offset %r14, -24
-	movq	%rdi, %rbx
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB48_2
-# BB#1:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp197
-.Ltmp198:
-	btq	$25, %rcx
-	jae	.Ltmp199
-.Ltmp199:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp198
-.Ltmp197:
-	btq	$25, %rcx
-	jae	.Ltmp200
-	orw	$1, 4(%rax)
-.Ltmp200:
-	cli
-
-	#NO_APP
-.LBB48_2:                               # %LockSpinlock.exit
-	movq	virtMemData, %rax
-	movq	8(%rax), %r14
-	testq	%rbx, %rbx
-	jne	.LBB48_4
-# BB#3:
-	#APP
-	cli
-	hlt
-	#NO_APP
-	movq	virtMemData, %rax
-.LBB48_4:                               # %.preheader.i
-	movabsq	$-8589930496, %rcx      # imm = 0xFFFFFFFE00001000
-	cmpq	%rcx, %r14
-	sete	%dl
-	cmpq	%rbx, %r14
-	sete	%cl
-	orb	%dl, %cl
-	xorl	%edx, %edx
-	.align	16, 0x90
-.LBB48_5:                               # =>This Inner Loop Header: Depth=1
-	cmpl	$510, %edx              # imm = 0x1FE
-	je	.LBB48_9
-# BB#6:                                 #   in Loop: Header=BB48_5 Depth=1
-	testb	%cl, %cl
-	jne	.LBB48_8
-# BB#7:                                 #   in Loop: Header=BB48_5 Depth=1
-	movq	(%rax), %rsi
-	movq	(%rsi,%rdx,8), %rsi
-	movq	%rsi, (%r14,%rdx,8)
-.LBB48_8:                               #   in Loop: Header=BB48_5 Depth=1
-	movq	(%rbx,%rdx,8), %rsi
-	movq	(%rax), %rdi
-	movq	%rsi, (%rdi,%rdx,8)
-.LBB48_9:                               #   in Loop: Header=BB48_5 Depth=1
-	incq	%rdx
-	cmpq	$512, %rdx              # imm = 0x200
-	jne	.LBB48_5
-# BB#10:                                # %VirtMemMan_SetCurrent.exit
-	movq	(%rax), %rsi
-	movq	8(%rax), %rdi
-	callq	VirtMemMan_GetPhysicalAddress
-	#APP
-	movq	%rax, %cr3
-	#NO_APP
-	movq	virtMemData, %rax
-	movq	%rbx, 8(%rax)
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB48_12
-# BB#11:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp201
-	sti
-	movw	$0, 4(%rax)
-.Ltmp201:
-
-	#NO_APP
-.LBB48_12:                              # %UnlockSpinlock.exit
-	movq	%r14, %rax
-	popq	%rbx
-	popq	%r14
-	popq	%rbp
-	retq
-.Lfunc_end48:
-	.size	SetActiveVirtualMemoryInstance, .Lfunc_end48-SetActiveVirtualMemoryInstance
-	.cfi_endproc
-
-	.globl	MapPage
-	.align	16, 0x90
-	.type	MapPage,@function
-MapPage:                                # @MapPage
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp202:
-	.cfi_def_cfa_offset 16
-.Ltmp203:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
 .Ltmp204:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r12
-	pushq	%rbx
-	subq	$16, %rsp
-.Ltmp205:
-	.cfi_offset %rbx, -48
-.Ltmp206:
-	.cfi_offset %r12, -40
-.Ltmp207:
-	.cfi_offset %r14, -32
-.Ltmp208:
-	.cfi_offset %r15, -24
-	movq	%r8, %r11
-	movl	$64, %r14d
-	testq	%rcx, %rcx
-	je	.LBB49_8
+	.cfi_offset %rbx, -24
+	testq	%rdi, %rdi
+	je	.LBB48_6
 # BB#1:
-	movl	$8, %r14d
-	cmpl	$2, %r9d
-	ja	.LBB49_8
-# BB#2:                                 # %switch.lookup
-	movl	24(%rbp), %r8d
-	movslq	%r9d, %r10
-	movq	vmem_lock, %rbx
-	testq	%rbx, %rbx
-	je	.LBB49_4
+	movq	(%rdi), %rax
+	movl	%eax, %ecx
+	andl	$4095, %ecx             # imm = 0xFFF
+	testq	%rax, %rax
+	je	.LBB48_6
+# BB#2:
+	testq	%rcx, %rcx
+	jne	.LBB48_6
 # BB#3:
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB48_7
+# BB#4:                                 # %LockSpinlock.exit
 	xorl	%eax, %eax
 	#APP
 	mfence
@@ -3314,103 +3379,79 @@ MapPage:                                # @MapPage
 	shlq	$16, %rax
 	movw	$1, %ax
 	lock
-	xaddw	%ax, 2(%rbx)
-	cmpw	%ax, (%rbx)
-	je	.Ltmp209
-.Ltmp210:
+	xaddw	%ax, 2(%rcx)
+	cmpw	%ax, (%rcx)
+	je	.Ltmp205
+.Ltmp206:
 	btq	$25, %rax
-	jae	.Ltmp211
-.Ltmp211:
+	jae	.Ltmp207
+.Ltmp207:
 	pause
-	cmpw	%ax, (%rbx)
-	jne	.Ltmp210
-.Ltmp209:
+	cmpw	%ax, (%rcx)
+	jne	.Ltmp206
+.Ltmp205:
 	btq	$25, %rax
-	jae	.Ltmp212
-	orw	$1, 4(%rbx)
-.Ltmp212:
+	jae	.Ltmp208
+	orw	$1, 4(%rcx)
+.Ltmp208:
 	cli
 
 	#NO_APP
-.LBB49_4:                               # %LockSpinlock.exit
-	movl	16(%rbp), %r15d
-	movl	.Lswitch.table.1(,%r10,4), %r10d
-	movl	%r8d, %ebx
-	shrl	%ebx
-	movl	%ebx, %r12d
-	andl	$1, %r12d
-	andl	$2, %ebx
-	movl	%r8d, %eax
-	shrl	$3, %eax
-	andl	$1, %eax
-	testq	%rsi, %rsi
-	je	.LBB49_6
+	movq	(%rdi), %rdi
+	movq	vmem_lock, %rbx
+	callq	VirtMemMan_FreePageTable
+	testq	%rbx, %rbx
+	je	.LBB48_6
 # BB#5:
-	movl	%r9d, (%rsi)
-	movq	%rcx, 8(%rsi)
-	movq	%rdx, 16(%rsi)
-	movq	%r11, 24(%rsi)
-	movl	%r8d, 32(%rsi)
-	movl	%r15d, 36(%rsi)
-	movq	$0, 48(%rsi)
-	movq	$0, 40(%rsi)
-.LBB49_6:
-	xorl	%r14d, %r14d
-	testb	$4, %r15b
-	cmovnel	%r14d, %ebx
-	orl	%r12d, %ebx
-	movl	%eax, 8(%rsp)
-	movl	%ebx, (%rsp)
-	movl	$1, %r8d
-	movq	%rcx, %rsi
-	movq	%r11, %rcx
-	movl	%r10d, %r9d
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB49_8
-# BB#7:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp213
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp209
 	sti
-	movw	$0, 4(%rax)
-.Ltmp213:
+	movw	$0, 4(%rbx)
+.Ltmp209:
 
 	#NO_APP
-.LBB49_8:                               # %UnlockSpinlock.exit
-	movl	%r14d, %eax
-	addq	$16, %rsp
+.LBB48_6:                               # %UnlockSpinlock.exit
+	addq	$8, %rsp
 	popq	%rbx
-	popq	%r12
-	popq	%r14
-	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end49:
-	.size	MapPage, .Lfunc_end49-MapPage
+.LBB48_7:                               # %LockSpinlock.exit.thread
+	movq	%rax, %rdi
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	jmp	VirtMemMan_FreePageTable # TAILCALL
+.Lfunc_end48:
+	.size	FreeVirtualMemoryInstance, .Lfunc_end48-FreeVirtualMemoryInstance
 	.cfi_endproc
 
-	.globl	UnmapPage
+	.globl	SetActiveVirtualMemoryInstance
 	.align	16, 0x90
-	.type	UnmapPage,@function
-UnmapPage:                              # @UnmapPage
+	.type	SetActiveVirtualMemoryInstance,@function
+SetActiveVirtualMemoryInstance:         # @SetActiveVirtualMemoryInstance
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp214:
+.Ltmp210:
 	.cfi_def_cfa_offset 16
-.Ltmp215:
+.Ltmp211:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp216:
+.Ltmp212:
 	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+.Ltmp213:
+	.cfi_offset %rbx, -24
+	movq	curPageTable, %rax
+	movq	%rdi, (%rax)
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB50_2
+	je	.LBB49_2
 # BB#1:
 	xorl	%ecx, %ecx
 	#APP
@@ -3423,45 +3464,460 @@ UnmapPage:                              # @UnmapPage
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp217
-.Ltmp218:
+	je	.Ltmp214
+.Ltmp215:
 	btq	$25, %rcx
-	jae	.Ltmp219
-.Ltmp219:
+	jae	.Ltmp216
+.Ltmp216:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp218
-.Ltmp217:
+	jne	.Ltmp215
+.Ltmp214:
 	btq	$25, %rcx
-	jae	.Ltmp220
+	jae	.Ltmp217
 	orw	$1, 4(%rax)
-.Ltmp220:
+.Ltmp217:
 	cli
 
 	#NO_APP
-.LBB50_2:                               # %LockSpinlock.exit
+.LBB49_2:                               # %LockSpinlock.exit
+	movq	(%rdi), %rbx
+	movq	virtMemData, %rax
+	movq	8(%rax), %r8
+	testq	%rbx, %rbx
+	jne	.LBB49_4
+# BB#3:
+	#APP
+	cli
+	hlt
+	#NO_APP
+	movq	virtMemData, %rax
+.LBB49_4:                               # %.preheader.i
+	movabsq	$-8589930496, %rdx      # imm = 0xFFFFFFFE00001000
+	cmpq	%rdx, %r8
+	sete	%sil
+	cmpq	%rbx, %r8
+	sete	%dl
+	orb	%sil, %dl
+	xorl	%esi, %esi
+	.align	16, 0x90
+.LBB49_5:                               # =>This Inner Loop Header: Depth=1
+	cmpl	$510, %esi              # imm = 0x1FE
+	je	.LBB49_9
+# BB#6:                                 #   in Loop: Header=BB49_5 Depth=1
+	testb	%dl, %dl
+	jne	.LBB49_8
+# BB#7:                                 #   in Loop: Header=BB49_5 Depth=1
+	movq	(%rax), %rdi
+	movq	(%rdi,%rsi,8), %rdi
+	movq	%rdi, (%r8,%rsi,8)
+.LBB49_8:                               #   in Loop: Header=BB49_5 Depth=1
+	movq	(%rbx,%rsi,8), %rdi
+	movq	(%rax), %rcx
+	movq	%rdi, (%rcx,%rsi,8)
+.LBB49_9:                               #   in Loop: Header=BB49_5 Depth=1
+	incq	%rsi
+	cmpq	$512, %rsi              # imm = 0x200
+	jne	.LBB49_5
+# BB#10:                                # %VirtMemMan_SetCurrent.exit
+	movq	8(%rax), %rdi
+	movq	(%rax), %rsi
+	callq	VirtMemMan_GetPhysicalAddress
+	#APP
+	movq	%rax, %cr3
+	#NO_APP
+	movq	virtMemData, %rax
+	movq	%rbx, 8(%rax)
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB49_12
+# BB#11:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp218
+	sti
+	movw	$0, 4(%rax)
+.Ltmp218:
+
+	#NO_APP
+.LBB49_12:                              # %UnlockSpinlock.exit
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	retq
+.Lfunc_end49:
+	.size	SetActiveVirtualMemoryInstance, .Lfunc_end49-SetActiveVirtualMemoryInstance
+	.cfi_endproc
+
+	.globl	MapPage
+	.align	16, 0x90
+	.type	MapPage,@function
+MapPage:                                # @MapPage
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp219:
+	.cfi_def_cfa_offset 16
+.Ltmp220:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp221:
+	.cfi_def_cfa_register %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%r13
+	pushq	%r12
+	pushq	%rbx
+	subq	$56, %rsp
+.Ltmp222:
+	.cfi_offset %rbx, -56
+.Ltmp223:
+	.cfi_offset %r12, -48
+.Ltmp224:
+	.cfi_offset %r13, -40
+.Ltmp225:
+	.cfi_offset %r14, -32
+.Ltmp226:
+	.cfi_offset %r15, -24
+	movq	%rdx, %rbx
+	movl	$64, %r15d
+	testq	%rbx, %rbx
+	je	.LBB50_10
+# BB#1:
+	movl	$8, %r15d
+	cmpl	$2, %r8d
+	ja	.LBB50_10
+# BB#2:                                 # %switch.lookup
+	movl	%r9d, -60(%rbp)         # 4-byte Spill
+	movq	%rdi, -56(%rbp)         # 8-byte Spill
+	movq	%rsi, -72(%rbp)         # 8-byte Spill
+	movq	%rcx, -48(%rbp)         # 8-byte Spill
+	movl	16(%rbp), %r15d
+	movslq	%r8d, %rax
+	movl	%r8d, -76(%rbp)         # 4-byte Spill
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB50_4
+# BB#3:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp227
+.Ltmp228:
+	btq	$25, %rdx
+	jae	.Ltmp229
+.Ltmp229:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp228
+.Ltmp227:
+	btq	$25, %rdx
+	jae	.Ltmp230
+	orw	$1, 4(%rcx)
+.Ltmp230:
+	cli
+
+	#NO_APP
+.LBB50_4:                               # %LockSpinlock.exit
+	movl	.Lswitch.table.1(,%rax,4), %eax
+	movl	%eax, -80(%rbp)         # 4-byte Spill
+	movl	%r15d, %r12d
+	shrl	%r12d
+	movl	%r12d, %r13d
+	andl	$1, %r13d
+	andl	$2, %r12d
+	movl	%r15d, %r14d
+	shrl	$3, %r14d
+	andl	$1, %r14d
+	movl	$56, %edi
+	callq	kmalloc
+	movl	-80(%rbp), %r9d         # 4-byte Reload
+	testq	%rax, %rax
+	jne	.LBB50_8
+# BB#5:
+	movl	%r9d, %esi
+	movl	pos, %ecx
+	movq	%rcx, %rax
+	addq	$56, %rax
+	cmpq	$5242881, %rax          # imm = 0x500001
+	jb	.LBB50_7
+# BB#6:
+	#APP
+	cli
+	hlt
+	#NO_APP
+	movl	pos, %ecx
+.LBB50_7:                               # %bootstrap_malloc.exit.loopexit
+	movl	%ecx, %edx
+	leaq	mem_pool(%rdx), %rax
+	addl	$56, %ecx
+	movl	%ecx, pos
+	movq	$0, mem_pool+48(%rdx)
+	movq	$0, mem_pool+40(%rdx)
+	movq	$0, mem_pool+32(%rdx)
+	movq	$0, mem_pool+24(%rdx)
+	movq	$0, mem_pool+16(%rdx)
+	movq	$0, mem_pool+8(%rdx)
+	movq	$0, mem_pool(%rdx)
+	movl	%esi, %r9d
+.LBB50_8:                               # %bootstrap_malloc.exit
+	movl	-76(%rbp), %ecx         # 4-byte Reload
+	movl	%ecx, (%rax)
+	movq	%rbx, 8(%rax)
+	movq	-72(%rbp), %rdx         # 8-byte Reload
+	movq	%rdx, 16(%rax)
+	movq	-48(%rbp), %rcx         # 8-byte Reload
+	movq	%rcx, 24(%rax)
+	movl	%r15d, 32(%rax)
+	movq	%rbx, %rsi
+	movl	-60(%rbp), %ebx         # 4-byte Reload
+	movl	%ebx, 36(%rax)
+	movq	$0, 40(%rax)
+	movq	-56(%rbp), %r8          # 8-byte Reload
+	movq	8(%r8), %rdi
+	movq	%rdi, 48(%rax)
+	xorl	%r15d, %r15d
+	testb	$4, %bl
+	cmovnel	%r15d, %r12d
+	orl	%r13d, %r12d
+	movq	(%r8), %rdi
+	movl	%r14d, 8(%rsp)
+	movl	%r12d, (%rsp)
+	movl	$1, %r8d
+	callq	VirtMemMan_Map
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB50_10
+# BB#9:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp231
+	sti
+	movw	$0, 4(%rax)
+.Ltmp231:
+
+	#NO_APP
+.LBB50_10:                              # %UnlockSpinlock.exit
+	movl	%r15d, %eax
+	addq	$56, %rsp
+	popq	%rbx
+	popq	%r12
+	popq	%r13
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.Lfunc_end50:
+	.size	MapPage, .Lfunc_end50-MapPage
+	.cfi_endproc
+
+	.globl	UnmapPage
+	.align	16, 0x90
+	.type	UnmapPage,@function
+UnmapPage:                              # @UnmapPage
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp232:
+	.cfi_def_cfa_offset 16
+.Ltmp233:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp234:
+	.cfi_def_cfa_register %rbp
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB51_2
+# BB#1:
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp235
+.Ltmp236:
+	btq	$25, %rcx
+	jae	.Ltmp237
+.Ltmp237:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp236
+.Ltmp235:
+	btq	$25, %rcx
+	jae	.Ltmp238
+	orw	$1, 4(%rax)
+.Ltmp238:
+	cli
+
+	#NO_APP
+.LBB51_2:                               # %LockSpinlock.exit
+	movq	(%rdi), %rdi
 	callq	VirtMemMan_Unmap
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB50_4
+	je	.LBB51_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp221
+	jae	.Ltmp239
 	sti
 	movw	$0, 4(%rax)
-.Ltmp221:
+.Ltmp239:
 
 	#NO_APP
-.LBB50_4:                               # %UnlockSpinlock.exit
+.LBB51_4:                               # %UnlockSpinlock.exit
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
-.Lfunc_end50:
-	.size	UnmapPage, .Lfunc_end50-UnmapPage
+.Lfunc_end51:
+	.size	UnmapPage, .Lfunc_end51-UnmapPage
+	.cfi_endproc
+
+	.globl	GetMemoryAllocationTypeTop
+	.align	16, 0x90
+	.type	GetMemoryAllocationTypeTop,@function
+GetMemoryAllocationTypeTop:             # @GetMemoryAllocationTypeTop
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp240:
+	.cfi_def_cfa_offset 16
+.Ltmp241:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp242:
+	.cfi_def_cfa_register %rbp
+	movabsq	$549755813888, %rcx     # imm = 0x8000000000
+	testl	%edi, %edi
+	movabsq	$280925220896768, %rdx  # imm = 0xFF8000000000
+	movabsq	$140737488355328, %rax  # imm = 0x800000000000
+	cmoveq	%rdx, %rax
+	testb	$8, %sil
+	je	.LBB52_11
+# BB#1:
+	cmpl	$1, %edi
+	jle	.LBB52_2
+# BB#5:
+	cmpl	$2, %edi
+	je	.LBB52_9
+# BB#6:
+	cmpl	$256, %edi              # imm = 0x100
+	je	.LBB52_10
+# BB#7:
+	cmpl	$64, %edi
+	jne	.LBB52_10
+# BB#8:
+	movabsq	$10995116277760, %rax   # imm = 0xA0000000000
+	jmp	.LBB52_11
+.LBB52_2:
+	testl	%edi, %edi
+	movq	%rcx, %rax
+	je	.LBB52_11
+# BB#3:
+	cmpl	$1, %edi
+	jne	.LBB52_10
+# BB#4:
+	movabsq	$1099511627776, %rax    # imm = 0x10000000000
+	jmp	.LBB52_11
+.LBB52_10:
+	xorl	%eax, %eax
+	jmp	.LBB52_11
+.LBB52_9:
+	movabsq	$1649267441664, %rax    # imm = 0x18000000000
+.LBB52_11:                              # %VirtMemMan_GetAllocTypeTop.exit
+	addq	%rcx, %rax
+	popq	%rbp
+	retq
+.Lfunc_end52:
+	.size	GetMemoryAllocationTypeTop, .Lfunc_end52-GetMemoryAllocationTypeTop
+	.cfi_endproc
+
+	.globl	GetMemoryAllocationTypeBase
+	.align	16, 0x90
+	.type	GetMemoryAllocationTypeBase,@function
+GetMemoryAllocationTypeBase:            # @GetMemoryAllocationTypeBase
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp243:
+	.cfi_def_cfa_offset 16
+.Ltmp244:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp245:
+	.cfi_def_cfa_register %rbp
+	testl	%edi, %edi
+	movabsq	$280925220896768, %rcx  # imm = 0xFF8000000000
+	movabsq	$140737488355328, %rax  # imm = 0x800000000000
+	cmoveq	%rcx, %rax
+	testb	$8, %sil
+	je	.LBB53_12
+# BB#1:
+	cmpl	$1, %edi
+	jle	.LBB53_2
+# BB#4:
+	cmpl	$2, %edi
+	je	.LBB53_10
+# BB#5:
+	cmpl	$256, %edi              # imm = 0x100
+	je	.LBB53_11
+# BB#6:
+	cmpl	$64, %edi
+	jne	.LBB53_11
+# BB#7:
+	movabsq	$10995116277760, %rax   # imm = 0xA0000000000
+	popq	%rbp
+	retq
+.LBB53_2:
+	testl	%edi, %edi
+	jne	.LBB53_8
+# BB#3:
+	movabsq	$549755813888, %rax     # imm = 0x8000000000
+	popq	%rbp
+	retq
+.LBB53_10:
+	movabsq	$1649267441664, %rax    # imm = 0x18000000000
+	popq	%rbp
+	retq
+.LBB53_8:
+	cmpl	$1, %edi
+	jne	.LBB53_11
+# BB#9:
+	movabsq	$1099511627776, %rax    # imm = 0x10000000000
+	popq	%rbp
+	retq
+.LBB53_11:
+	xorl	%eax, %eax
+.LBB53_12:                              # %VirtMemMan_GetAllocTypeBase.exit
+	popq	%rbp
+	retq
+.Lfunc_end53:
+	.size	GetMemoryAllocationTypeBase, .Lfunc_end53-GetMemoryAllocationTypeBase
 	.cfi_endproc
 
 	.globl	FindFreeVirtualAddress
@@ -3471,25 +3927,25 @@ FindFreeVirtualAddress:                 # @FindFreeVirtualAddress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp222:
+.Ltmp246:
 	.cfi_def_cfa_offset 16
-.Ltmp223:
+.Ltmp247:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp224:
+.Ltmp248:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp225:
+.Ltmp249:
 	.cfi_offset %rbx, -24
 	movq	%rsi, %rbx
 	movl	$64, %eax
 	testq	%rbx, %rbx
-	je	.LBB51_7
+	je	.LBB54_7
 # BB#1:
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB51_3
+	je	.LBB54_3
 # BB#2:
 	xorl	%esi, %esi
 	#APP
@@ -3502,57 +3958,58 @@ FindFreeVirtualAddress:                 # @FindFreeVirtualAddress
 	lock
 	xaddw	%si, 2(%rax)
 	cmpw	%si, (%rax)
-	je	.Ltmp226
-.Ltmp227:
+	je	.Ltmp250
+.Ltmp251:
 	btq	$25, %rsi
-	jae	.Ltmp228
-.Ltmp228:
+	jae	.Ltmp252
+.Ltmp252:
 	pause
 	cmpw	%si, (%rax)
-	jne	.Ltmp227
-.Ltmp226:
+	jne	.Ltmp251
+.Ltmp250:
 	btq	$25, %rsi
-	jae	.Ltmp229
+	jae	.Ltmp253
 	orw	$1, 4(%rax)
-.Ltmp229:
+.Ltmp253:
 	cli
 
 	#NO_APP
-.LBB51_3:                               # %LockSpinlock.exit
+.LBB54_3:                               # %LockSpinlock.exit
 	shrl	$3, %r8d
 	andl	$1, %r8d
+	movq	(%rdi), %rdi
 	movq	%rdx, %rsi
 	movl	%ecx, %edx
 	movl	%r8d, %ecx
 	callq	VirtMemMan_FindFreeAddress
 	testq	%rax, %rax
-	je	.LBB51_5
+	je	.LBB54_5
 # BB#4:
 	movq	%rax, (%rbx)
-.LBB51_5:
+.LBB54_5:
 	movq	vmem_lock, %rcx
 	xorl	%eax, %eax
 	testq	%rcx, %rcx
-	je	.LBB51_7
+	je	.LBB54_7
 # BB#6:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp230
+	jae	.Ltmp254
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp230:
+.Ltmp254:
 
 	#NO_APP
-.LBB51_7:                               # %UnlockSpinlock.exit
+.LBB54_7:                               # %UnlockSpinlock.exit
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq
-.Lfunc_end51:
-	.size	FindFreeVirtualAddress, .Lfunc_end51-FindFreeVirtualAddress
+.Lfunc_end54:
+	.size	FindFreeVirtualAddress, .Lfunc_end54-FindFreeVirtualAddress
 	.cfi_endproc
 
 	.globl	ForkTable
@@ -3562,40 +4019,38 @@ ForkTable:                              # @ForkTable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp231:
+.Ltmp255:
 	.cfi_def_cfa_offset 16
-.Ltmp232:
+.Ltmp256:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp233:
+.Ltmp257:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$40, %rsp
-.Ltmp234:
+	pushq	%rax
+.Ltmp258:
 	.cfi_offset %rbx, -56
-.Ltmp235:
+.Ltmp259:
 	.cfi_offset %r12, -48
-.Ltmp236:
+.Ltmp260:
 	.cfi_offset %r13, -40
-.Ltmp237:
+.Ltmp261:
 	.cfi_offset %r14, -32
-.Ltmp238:
+.Ltmp262:
 	.cfi_offset %r15, -24
-	movq	%rcx, %r15
-	movq	%rdx, -48(%rbp)         # 8-byte Spill
-	movq	%rsi, %rbx
-	movq	%rdi, -56(%rbp)         # 8-byte Spill
-	movl	$64, %r13d
-	testq	%rdx, %rdx
-	je	.LBB52_19
+	movq	%rsi, %r14
+	movq	%rdi, %r12
+	movl	$64, %r15d
+	testq	%r14, %r14
+	je	.LBB55_9
 # BB#1:                                 # %CreateVirtualMemoryInstance.exit
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB52_3
+	je	.LBB55_3
 # BB#2:
 	xorl	%ecx, %ecx
 	#APP
@@ -3608,183 +4063,67 @@ ForkTable:                              # @ForkTable
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp239
-.Ltmp240:
+	je	.Ltmp263
+.Ltmp264:
 	btq	$25, %rcx
-	jae	.Ltmp241
-.Ltmp241:
+	jae	.Ltmp265
+.Ltmp265:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp240
-.Ltmp239:
+	jne	.Ltmp264
+.Ltmp263:
 	btq	$25, %rcx
-	jae	.Ltmp242
+	jae	.Ltmp266
 	orw	$1, 4(%rax)
-.Ltmp242:
+.Ltmp266:
 	cli
 
 	#NO_APP
-.LBB52_3:                               # %LockSpinlock.exit
+.LBB55_3:                               # %LockSpinlock.exit
 	callq	MemMan_Alloc
 	movq	%rax, %rcx
 	shrq	$32, %rcx
 	sete	%cl
-	movzbl	%cl, %r14d
-	shlq	$33, %r14
-	addq	%rax, %r14
+	movzbl	%cl, %ebx
+	shlq	$33, %rbx
+	addq	%rax, %rbx
 	movabsq	$-17179869184, %rax     # imm = 0xFFFFFFFC00000000
-	leaq	(%rax,%r14), %r12
+	leaq	(%rax,%rbx), %r13
 	xorl	%esi, %esi
 	movl	$4088, %edx             # imm = 0xFF8
-	movq	%r12, %rdi
+	movq	%r13, %rdi
 	callq	memset
 	movq	kernel_pdpt_paddr, %rax
 	orq	$3, %rax
 	movabsq	$-17179865096, %rcx     # imm = 0xFFFFFFFC00000FF8
-	movq	%rax, (%rcx,%r14)
-	movq	-48(%rbp), %rax         # 8-byte Reload
-	movq	%r12, (%rax)
+	movq	%rax, (%rcx,%rbx)
+	movq	%r13, (%r14)
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB52_5
+	je	.LBB55_5
 # BB#4:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp243
+	jae	.Ltmp267
 	sti
 	movw	$0, 4(%rax)
-.Ltmp243:
+.Ltmp267:
 
 	#NO_APP
-.LBB52_5:                               # %UnlockSpinlock.exit
-	testq	%rbx, %rbx
-	je	.LBB52_19
-# BB#6:                                 # %UnlockSpinlock.exit
-	testq	%r15, %r15
-	je	.LBB52_19
-# BB#7:                                 # %.lr.ph
-	movl	$64, %edi
-	callq	kmalloc
-	movq	%rax, %r12
-	movq	%r12, (%r15)
-	.align	16, 0x90
-.LBB52_8:                               # =>This Inner Loop Header: Depth=1
-	movl	36(%rbx), %r14d
-	testb	$1, %r14b
-	jne	.LBB52_17
-# BB#9:                                 #   in Loop: Header=BB52_8 Depth=1
-	movq	-48(%rbp), %rax         # 8-byte Reload
-	movq	(%rax), %r15
-	movq	8(%rbx), %r13
-	movq	-56(%rbp), %rdi         # 8-byte Reload
-	movq	%r13, %rsi
-	callq	VirtMemMan_GetPhysicalAddress
-	testq	%r13, %r13
-	je	.LBB52_17
-# BB#10:                                #   in Loop: Header=BB52_8 Depth=1
-	movl	(%rbx), %edx
-	cmpl	$2, %edx
-	ja	.LBB52_17
-# BB#11:                                # %switch.lookup.i
-                                        #   in Loop: Header=BB52_8 Depth=1
-	movq	24(%rbx), %rcx
-	movslq	%edx, %r9
-	movl	32(%rbx), %r8d
-	movq	vmem_lock, %rdi
-	testq	%rdi, %rdi
-	je	.LBB52_13
-# BB#12:                                #   in Loop: Header=BB52_8 Depth=1
-	xorl	%esi, %esi
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
-	lock
-	xaddw	%si, 2(%rdi)
-	cmpw	%si, (%rdi)
-	je	.Ltmp244
-.Ltmp245:
-	btq	$25, %rsi
-	jae	.Ltmp246
-.Ltmp246:
-	pause
-	cmpw	%si, (%rdi)
-	jne	.Ltmp245
-.Ltmp244:
-	btq	$25, %rsi
-	jae	.Ltmp247
-	orw	$1, 4(%rdi)
-.Ltmp247:
-	cli
-
-	#NO_APP
-.LBB52_13:                              # %LockSpinlock.exit.i
-                                        #   in Loop: Header=BB52_8 Depth=1
-	movl	.Lswitch.table.1(,%r9,4), %r9d
-	movl	%r8d, %edi
-	shrl	%edi
-	andl	$1, %edi
-	movl	%r8d, %esi
-	shrl	$3, %esi
-	andl	$1, %esi
+.LBB55_5:                               # %UnlockSpinlock.exit
 	testq	%r12, %r12
-	je	.LBB52_15
-# BB#14:                                #   in Loop: Header=BB52_8 Depth=1
-	orl	$4, %r14d
-	movl	%edx, (%r12)
-	movq	%r13, 8(%r12)
-	movq	%rax, 16(%r12)
-	movq	%rcx, 24(%r12)
-	movl	%r8d, 32(%r12)
-	movl	%r14d, 36(%r12)
-	movq	$0, 48(%r12)
-	movq	$0, 40(%r12)
-.LBB52_15:                              #   in Loop: Header=BB52_8 Depth=1
-	movl	%esi, 8(%rsp)
-	movl	%edi, (%rsp)
-	movl	$1, %r8d
-	movq	%r15, %rdi
-	movq	%r13, %rsi
-	movq	%rax, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB52_17
-# BB#16:                                #   in Loop: Header=BB52_8 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp248
-	sti
-	movw	$0, 4(%rax)
-.Ltmp248:
-
-	#NO_APP
-	.align	16, 0x90
-.LBB52_17:                              # %MapPage.exit
-                                        #   in Loop: Header=BB52_8 Depth=1
-	xorl	%r13d, %r13d
-	cmpq	$0, 56(%rbx)
-	je	.LBB52_19
-# BB#18:                                #   in Loop: Header=BB52_8 Depth=1
-	movl	$64, %edi
-	callq	kmalloc
-	movq	%rax, 56(%r12)
-	movq	56(%rbx), %rbx
-	testq	%rbx, %rbx
-	movq	%rax, %r12
-	jne	.LBB52_8
-.LBB52_19:                              # %.loopexit
-	movl	%r13d, %eax
-	addq	$40, %rsp
+	je	.LBB55_9
+# BB#6:
+	movq	8(%r12), %r13
+	xorl	%r15d, %r15d
+	testq	%r13, %r13
+	jne	.LBB55_7
+.LBB55_9:                               # %.loopexit
+	movl	%r15d, %eax
+	addq	$8, %rsp
 	popq	%rbx
 	popq	%r12
 	popq	%r13
@@ -3792,8 +4131,30 @@ ForkTable:                              # @ForkTable
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end52:
-	.size	ForkTable, .Lfunc_end52-ForkTable
+	.align	16, 0x90
+.LBB55_8:                               #   in Loop: Header=BB55_7 Depth=1
+	movq	8(%r13), %r15
+	movq	(%r12), %rdi
+	movq	%r15, %rsi
+	callq	VirtMemMan_GetPhysicalAddress
+	movq	24(%r13), %rcx
+	movl	(%r13), %r8d
+	orl	$4, %ebx
+	movl	32(%r13), %edx
+	movl	%edx, (%rsp)
+	movq	%r14, %rdi
+	movq	%rax, %rsi
+	movq	%r15, %rdx
+	movl	%ebx, %r9d
+	callq	MapPage
+.LBB55_7:                               # %.backedge
+                                        # =>This Inner Loop Header: Depth=1
+	movl	36(%r13), %ebx
+	testb	$1, %bl
+	jne	.LBB55_7
+	jmp	.LBB55_8
+.Lfunc_end55:
+	.size	ForkTable, .Lfunc_end55-ForkTable
 	.cfi_endproc
 
 	.globl	AllocatePhysicalPage
@@ -3803,252 +4164,16 @@ AllocatePhysicalPage:                   # @AllocatePhysicalPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp249:
-	.cfi_def_cfa_offset 16
-.Ltmp250:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp251:
-	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-.Ltmp252:
-	.cfi_offset %rbx, -24
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB53_4
-# BB#1:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp253
-.Ltmp254:
-	btq	$25, %rcx
-	jae	.Ltmp255
-.Ltmp255:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp254
-.Ltmp253:
-	btq	$25, %rcx
-	jae	.Ltmp256
-	orw	$1, 4(%rax)
-.Ltmp256:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	MemMan_Alloc
-	testq	%rbx, %rbx
-	je	.LBB53_3
-# BB#2:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp257
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp257:
-
-	#NO_APP
-.LBB53_3:                               # %UnlockSpinlock.exit
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-.LBB53_4:                               # %LockSpinlock.exit.thread
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	jmp	MemMan_Alloc            # TAILCALL
-.Lfunc_end53:
-	.size	AllocatePhysicalPage, .Lfunc_end53-AllocatePhysicalPage
-	.cfi_endproc
-
-	.globl	FreePhysicalPage
-	.align	16, 0x90
-	.type	FreePhysicalPage,@function
-FreePhysicalPage:                       # @FreePhysicalPage
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp258:
-	.cfi_def_cfa_offset 16
-.Ltmp259:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp260:
-	.cfi_def_cfa_register %rbp
-	movq	vmem_lock, %rcx
-	xorl	%eax, %eax
-	testq	%rcx, %rcx
-	je	.LBB54_2
-# BB#1:
-	xorl	%eax, %eax
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rax
-	shlq	$16, %rax
-	movw	$1, %ax
-	lock
-	xaddw	%ax, 2(%rcx)
-	cmpw	%ax, (%rcx)
-	je	.Ltmp261
-.Ltmp262:
-	btq	$25, %rax
-	jae	.Ltmp263
-.Ltmp263:
-	pause
-	cmpw	%ax, (%rcx)
-	jne	.Ltmp262
-.Ltmp261:
-	btq	$25, %rax
-	jae	.Ltmp264
-	orw	$1, 4(%rcx)
-.Ltmp264:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rax
-.LBB54_2:                               # %LockSpinlock.exit
-	movq	%rdi, %rcx
-	shrq	$12, %rcx
-	movl	$-2, %edx
-	roll	%cl, %edx
-	shrq	$17, %rdi
-	movq	KB4_Blocks_Bitmap, %rcx
-	andl	%edx, (%rcx,%rdi,4)
-	incq	freePageCount
-	movq	%rdi, lastNonFullPage
-	testq	%rax, %rax
-	je	.LBB54_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp265
-	sti
-	movw	$0, 4(%rax)
-.Ltmp265:
-
-	#NO_APP
-.LBB54_4:                               # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.Lfunc_end54:
-	.size	FreePhysicalPage, .Lfunc_end54-FreePhysicalPage
-	.cfi_endproc
-
-	.globl	AllocatePhysicalPageCont
-	.align	16, 0x90
-	.type	AllocatePhysicalPageCont,@function
-AllocatePhysicalPageCont:               # @AllocatePhysicalPageCont
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp266:
-	.cfi_def_cfa_offset 16
-.Ltmp267:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
 .Ltmp268:
-	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-.Ltmp269:
-	.cfi_offset %rbx, -24
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB55_4
-# BB#1:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp270
-.Ltmp271:
-	btq	$25, %rcx
-	jae	.Ltmp272
-.Ltmp272:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp271
-.Ltmp270:
-	btq	$25, %rcx
-	jae	.Ltmp273
-	orw	$1, 4(%rax)
-.Ltmp273:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	MemMan_Alloc4KiBPageCont
-	testq	%rbx, %rbx
-	je	.LBB55_3
-# BB#2:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp274
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp274:
-
-	#NO_APP
-.LBB55_3:                               # %UnlockSpinlock.exit
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	retq
-.LBB55_4:                               # %LockSpinlock.exit.thread
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%rbp
-	jmp	MemMan_Alloc4KiBPageCont # TAILCALL
-.Lfunc_end55:
-	.size	AllocatePhysicalPageCont, .Lfunc_end55-AllocatePhysicalPageCont
-	.cfi_endproc
-
-	.globl	FreePhysicalPageCont
-	.align	16, 0x90
-	.type	FreePhysicalPageCont,@function
-FreePhysicalPageCont:                   # @FreePhysicalPageCont
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp275:
 	.cfi_def_cfa_offset 16
-.Ltmp276:
+.Ltmp269:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp277:
+.Ltmp270:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp278:
+.Ltmp271:
 	.cfi_offset %rbx, -24
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
@@ -4065,24 +4190,24 @@ FreePhysicalPageCont:                   # @FreePhysicalPageCont
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp279
-.Ltmp280:
+	je	.Ltmp272
+.Ltmp273:
 	btq	$25, %rcx
-	jae	.Ltmp281
-.Ltmp281:
+	jae	.Ltmp274
+.Ltmp274:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp280
-.Ltmp279:
+	jne	.Ltmp273
+.Ltmp272:
 	btq	$25, %rcx
-	jae	.Ltmp282
+	jae	.Ltmp275
 	orw	$1, 4(%rax)
-.Ltmp282:
+.Ltmp275:
 	cli
 
 	#NO_APP
 	movq	vmem_lock, %rbx
-	callq	MemMan_FreeCont
+	callq	MemMan_Alloc
 	testq	%rbx, %rbx
 	je	.LBB56_3
 # BB#2:
@@ -4091,10 +4216,10 @@ FreePhysicalPageCont:                   # @FreePhysicalPageCont
 	lock
 	incw	(%rbx)
 	btw	$0, 4(%rbx)
-	jae	.Ltmp283
+	jae	.Ltmp276
 	sti
 	movw	$0, 4(%rbx)
-.Ltmp283:
+.Ltmp276:
 
 	#NO_APP
 .LBB56_3:                               # %UnlockSpinlock.exit
@@ -4106,29 +4231,111 @@ FreePhysicalPageCont:                   # @FreePhysicalPageCont
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
-	jmp	MemMan_FreeCont         # TAILCALL
+	jmp	MemMan_Alloc            # TAILCALL
 .Lfunc_end56:
-	.size	FreePhysicalPageCont, .Lfunc_end56-FreePhysicalPageCont
+	.size	AllocatePhysicalPage, .Lfunc_end56-AllocatePhysicalPage
 	.cfi_endproc
 
-	.globl	AllocateAPLSMemory
+	.globl	FreePhysicalPage
 	.align	16, 0x90
-	.type	AllocateAPLSMemory,@function
-AllocateAPLSMemory:                     # @AllocateAPLSMemory
+	.type	FreePhysicalPage,@function
+FreePhysicalPage:                       # @FreePhysicalPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp284:
+.Ltmp277:
 	.cfi_def_cfa_offset 16
-.Ltmp285:
+.Ltmp278:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp286:
+.Ltmp279:
 	.cfi_def_cfa_register %rbp
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
+	movq	vmem_lock, %rcx
+	xorl	%eax, %eax
+	testq	%rcx, %rcx
 	je	.LBB57_2
 # BB#1:
+	xorl	%eax, %eax
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rax
+	shlq	$16, %rax
+	movw	$1, %ax
+	lock
+	xaddw	%ax, 2(%rcx)
+	cmpw	%ax, (%rcx)
+	je	.Ltmp280
+.Ltmp281:
+	btq	$25, %rax
+	jae	.Ltmp282
+.Ltmp282:
+	pause
+	cmpw	%ax, (%rcx)
+	jne	.Ltmp281
+.Ltmp280:
+	btq	$25, %rax
+	jae	.Ltmp283
+	orw	$1, 4(%rcx)
+.Ltmp283:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rax
+.LBB57_2:                               # %LockSpinlock.exit
+	movq	%rdi, %rcx
+	shrq	$12, %rcx
+	movl	$-2, %edx
+	roll	%cl, %edx
+	shrq	$17, %rdi
+	movq	KB4_Blocks_Bitmap, %rcx
+	andl	%edx, (%rcx,%rdi,4)
+	incq	freePageCount
+	movq	%rdi, lastNonFullPage
+	testq	%rax, %rax
+	je	.LBB57_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp284
+	sti
+	movw	$0, 4(%rax)
+.Ltmp284:
+
+	#NO_APP
+.LBB57_4:                               # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.Lfunc_end57:
+	.size	FreePhysicalPage, .Lfunc_end57-FreePhysicalPage
+	.cfi_endproc
+
+	.globl	AllocatePhysicalPageCont
+	.align	16, 0x90
+	.type	AllocatePhysicalPageCont,@function
+AllocatePhysicalPageCont:               # @AllocatePhysicalPageCont
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp285:
+	.cfi_def_cfa_offset 16
+.Ltmp286:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp287:
+	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+.Ltmp288:
+	.cfi_offset %rbx, -24
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB58_4
+# BB#1:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -4140,57 +4347,129 @@ AllocateAPLSMemory:                     # @AllocateAPLSMemory
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp287
-.Ltmp288:
+	je	.Ltmp289
+.Ltmp290:
 	btq	$25, %rcx
-	jae	.Ltmp289
-.Ltmp289:
+	jae	.Ltmp291
+.Ltmp291:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp288
-.Ltmp287:
+	jne	.Ltmp290
+.Ltmp289:
 	btq	$25, %rcx
-	jae	.Ltmp290
+	jae	.Ltmp292
 	orw	$1, 4(%rax)
-.Ltmp290:
+.Ltmp292:
 	cli
 
 	#NO_APP
-.LBB57_2:                               # %LockSpinlock.exit
-	movq	coreLocalSpace, %rcx
-	xorl	%eax, %eax
-	movq	%rcx, %rdx
-	subq	%rdi, %rdx
-	jb	.LBB57_5
-# BB#3:                                 # %LockSpinlock.exit
-	testq	%rcx, %rcx
-	je	.LBB57_5
-# BB#4:
-	movl	$8192, %eax             # imm = 0x2000
-	subq	%rcx, %rax
-	addq	virtMemData, %rax
-	movq	%rdx, coreLocalSpace
-.LBB57_5:                               # %VirtMemMan_AllocCoreLocalData.exit
-	movq	vmem_lock, %rcx
-	testq	%rcx, %rcx
-	je	.LBB57_7
-# BB#6:
+	movq	vmem_lock, %rbx
+	callq	MemMan_Alloc4KiBPageCont
+	testq	%rbx, %rbx
+	je	.LBB58_3
+# BB#2:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp291
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp293
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp291:
+	movw	$0, 4(%rbx)
+.Ltmp293:
 
 	#NO_APP
-.LBB57_7:                               # %UnlockSpinlock.exit
+.LBB58_3:                               # %UnlockSpinlock.exit
+	addq	$8, %rsp
+	popq	%rbx
 	popq	%rbp
 	retq
-.Lfunc_end57:
-	.size	AllocateAPLSMemory, .Lfunc_end57-AllocateAPLSMemory
+.LBB58_4:                               # %LockSpinlock.exit.thread
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	jmp	MemMan_Alloc4KiBPageCont # TAILCALL
+.Lfunc_end58:
+	.size	AllocatePhysicalPageCont, .Lfunc_end58-AllocatePhysicalPageCont
+	.cfi_endproc
+
+	.globl	FreePhysicalPageCont
+	.align	16, 0x90
+	.type	FreePhysicalPageCont,@function
+FreePhysicalPageCont:                   # @FreePhysicalPageCont
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp294:
+	.cfi_def_cfa_offset 16
+.Ltmp295:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp296:
+	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+.Ltmp297:
+	.cfi_offset %rbx, -24
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB59_4
+# BB#1:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp298
+.Ltmp299:
+	btq	$25, %rcx
+	jae	.Ltmp300
+.Ltmp300:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp299
+.Ltmp298:
+	btq	$25, %rcx
+	jae	.Ltmp301
+	orw	$1, 4(%rax)
+.Ltmp301:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rbx
+	callq	MemMan_FreeCont
+	testq	%rbx, %rbx
+	je	.LBB59_3
+# BB#2:
+	#APP
+	mfence
+	lock
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp302
+	sti
+	movw	$0, 4(%rbx)
+.Ltmp302:
+
+	#NO_APP
+.LBB59_3:                               # %UnlockSpinlock.exit
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	retq
+.LBB59_4:                               # %LockSpinlock.exit.thread
+	addq	$8, %rsp
+	popq	%rbx
+	popq	%rbp
+	jmp	MemMan_FreeCont         # TAILCALL
+.Lfunc_end59:
+	.size	FreePhysicalPageCont, .Lfunc_end59-FreePhysicalPageCont
 	.cfi_endproc
 
 	.globl	GetCoreCount
@@ -4200,351 +4479,18 @@ GetCoreCount:                           # @GetCoreCount
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp292:
+.Ltmp303:
 	.cfi_def_cfa_offset 16
-.Ltmp293:
+.Ltmp304:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp294:
+.Ltmp305:
 	.cfi_def_cfa_register %rbp
 	movl	smp_coreCount, %eax
 	popq	%rbp
 	retq
-.Lfunc_end58:
-	.size	GetCoreCount, .Lfunc_end58-GetCoreCount
-	.cfi_endproc
-
-	.globl	LockPageToUser
-	.align	16, 0x90
-	.type	LockPageToUser,@function
-LockPageToUser:                         # @LockPageToUser
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp295:
-	.cfi_def_cfa_offset 16
-.Ltmp296:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp297:
-	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-	subq	$16, %rsp
-.Ltmp298:
-	.cfi_offset %rbx, -32
-.Ltmp299:
-	.cfi_offset %r14, -24
-	movq	%rdi, %rbx
-	movq	$0, -24(%rbp)
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB59_2
-# BB#1:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp300
-.Ltmp301:
-	btq	$25, %rcx
-	jae	.Ltmp302
-.Ltmp302:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp301
-.Ltmp300:
-	btq	$25, %rcx
-	jae	.Ltmp303
-	orw	$1, 4(%rax)
-.Ltmp303:
-	cli
-
-	#NO_APP
-.LBB59_2:                               # %LockSpinlock.exit
-	leaq	-24(%rbp), %rsi
-	movq	%rbx, %rdi
-	callq	VirtMemMan_LockPageToUser
-	movq	%rax, %r14
-	movq	$0, -32(%rbp)
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB59_3
-# BB#4:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp304
-.Ltmp305:
-	btq	$25, %rdx
-	jae	.Ltmp306
-.Ltmp306:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp305
-.Ltmp304:
-	btq	$25, %rdx
-	jae	.Ltmp307
-	orw	$1, 4(%rax)
-.Ltmp307:
-	cli
-
-	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB59_6
-# BB#5:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp308
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp308:
-
-	#NO_APP
-	jmp	.LBB59_6
-.LBB59_3:                               # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
-.LBB59_6:                               # %GetCurrentProcessUID.exit
-	movq	(%rax), %rdi
-	leaq	-32(%rbp), %rsi
-	callq	GetProcessReference
-	movq	-32(%rbp), %rax
-	movq	464(%rax), %rax
-	jmp	.LBB59_7
-	.align	16, 0x90
-.LBB59_14:                              #   in Loop: Header=BB59_7 Depth=1
-	movq	56(%rax), %rax
-.LBB59_7:                               # %GetCurrentProcessUID.exit
-                                        # =>This Inner Loop Header: Depth=1
-	testq	%rax, %rax
-	je	.LBB59_11
-# BB#8:                                 # %.lr.ph
-                                        #   in Loop: Header=BB59_7 Depth=1
-	movq	8(%rax), %rcx
-	cmpq	%rbx, %rcx
-	ja	.LBB59_14
-# BB#9:                                 #   in Loop: Header=BB59_7 Depth=1
-	addq	24(%rax), %rcx
-	cmpq	%rbx, %rcx
-	jb	.LBB59_14
-# BB#10:
-	orb	$-128, 36(%rax)
-.LBB59_11:                              # %.loopexit
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB59_13
-# BB#12:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp309
-	sti
-	movw	$0, 4(%rax)
-.Ltmp309:
-
-	#NO_APP
-.LBB59_13:                              # %UnlockSpinlock.exit
-	movq	%r14, %rax
-	addq	$16, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%rbp
-	retq
-.Lfunc_end59:
-	.size	LockPageToUser, .Lfunc_end59-LockPageToUser
-	.cfi_endproc
-
-	.globl	UnlockPageToUser
-	.align	16, 0x90
-	.type	UnlockPageToUser,@function
-UnlockPageToUser:                       # @UnlockPageToUser
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp310:
-	.cfi_def_cfa_offset 16
-.Ltmp311:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp312:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%rbx
-	pushq	%rax
-.Ltmp313:
-	.cfi_offset %rbx, -40
-.Ltmp314:
-	.cfi_offset %r14, -32
-.Ltmp315:
-	.cfi_offset %r15, -24
-	movq	%rsi, %r14
-	movq	%rdi, %r15
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB60_2
-# BB#1:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp316
-.Ltmp317:
-	btq	$25, %rcx
-	jae	.Ltmp318
-.Ltmp318:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp317
-.Ltmp316:
-	btq	$25, %rcx
-	jae	.Ltmp319
-	orw	$1, 4(%rax)
-.Ltmp319:
-	cli
-
-	#NO_APP
-.LBB60_2:                               # %LockSpinlock.exit
-	movq	$0, -32(%rbp)
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB60_3
-# BB#4:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp320
-.Ltmp321:
-	btq	$25, %rdx
-	jae	.Ltmp322
-.Ltmp322:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp321
-.Ltmp320:
-	btq	$25, %rdx
-	jae	.Ltmp323
-	orw	$1, 4(%rax)
-.Ltmp323:
-	cli
-
-	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB60_6
-# BB#5:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp324
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp324:
-
-	#NO_APP
-	jmp	.LBB60_6
-.LBB60_3:                               # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
-.LBB60_6:                               # %GetCurrentProcessUID.exit
-	movq	(%rax), %rdi
-	leaq	-32(%rbp), %rsi
-	callq	GetProcessReference
-	movq	-32(%rbp), %rax
-	movq	464(%rax), %rbx
-	jmp	.LBB60_7
-	.align	16, 0x90
-.LBB60_15:                              #   in Loop: Header=BB60_7 Depth=1
-	movq	56(%rbx), %rbx
-.LBB60_7:                               # %GetCurrentProcessUID.exit
-                                        # =>This Inner Loop Header: Depth=1
-	testq	%rbx, %rbx
-	je	.LBB60_12
-# BB#8:                                 # %.lr.ph
-                                        #   in Loop: Header=BB60_7 Depth=1
-	testb	$-128, 36(%rbx)
-	je	.LBB60_15
-# BB#9:                                 #   in Loop: Header=BB60_7 Depth=1
-	movq	8(%rbx), %rax
-	cmpq	%r15, %rax
-	ja	.LBB60_15
-# BB#10:                                #   in Loop: Header=BB60_7 Depth=1
-	addq	24(%rbx), %rax
-	cmpq	%r15, %rax
-	jb	.LBB60_15
-# BB#11:
-	movq	%r15, %rdi
-	movq	%r14, %rsi
-	callq	VirtMemMan_UnlockPageToUser
-	andb	$127, 36(%rbx)
-.LBB60_12:                              # %.loopexit
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB60_14
-# BB#13:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp325
-	sti
-	movw	$0, 4(%rax)
-.Ltmp325:
-
-	#NO_APP
-.LBB60_14:                              # %UnlockSpinlock.exit
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
 .Lfunc_end60:
-	.size	UnlockPageToUser, .Lfunc_end60-UnlockPageToUser
+	.size	GetCoreCount, .Lfunc_end60-GetCoreCount
 	.cfi_endproc
 
 	.globl	HandlePageFault
@@ -4554,25 +4500,29 @@ HandlePageFault:                        # @HandlePageFault
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp326:
+.Ltmp306:
 	.cfi_def_cfa_offset 16
-.Ltmp327:
+.Ltmp307:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp328:
+.Ltmp308:
 	.cfi_def_cfa_register %rbp
+	pushq	%r14
 	pushq	%rbx
-	pushq	%rax
-.Ltmp329:
-	.cfi_offset %rbx, -24
+	subq	$16, %rsp
+.Ltmp309:
+	.cfi_offset %rbx, -32
+.Ltmp310:
+	.cfi_offset %r14, -24
+	movq	%rsi, %r14
 	movq	%rdi, %rbx
 	cmpq	$0, root
 	je	.LBB61_1
 # BB#2:
-	movq	$0, -16(%rbp)
+	movq	$0, -24(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB61_3
 # BB#4:                                 # %LockSpinlock.exit.i
@@ -4587,24 +4537,24 @@ HandlePageFault:                        # @HandlePageFault
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp330
-.Ltmp331:
+	je	.Ltmp311
+.Ltmp312:
 	btq	$25, %rdx
-	jae	.Ltmp332
-.Ltmp332:
+	jae	.Ltmp313
+.Ltmp313:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp331
-.Ltmp330:
+	jne	.Ltmp312
+.Ltmp311:
 	btq	$25, %rdx
-	jae	.Ltmp333
+	jae	.Ltmp314
 	orw	$1, 4(%rax)
-.Ltmp333:
+.Ltmp314:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB61_6
 # BB#5:
@@ -4613,10 +4563,10 @@ HandlePageFault:                        # @HandlePageFault
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp334
+	jae	.Ltmp315
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp334:
+.Ltmp315:
 
 	#NO_APP
 	jmp	.LBB61_6
@@ -4628,30 +4578,32 @@ HandlePageFault:                        # @HandlePageFault
 	callq	debug_gfx_writeLine
 	jmp	.LBB61_1
 .LBB61_3:                               # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
+	movq	8(%rcx), %rax
 .LBB61_6:                               # %GetCurrentProcessUID.exit
 	movq	(%rax), %rdi
-	leaq	-16(%rbp), %rsi
+	leaq	-24(%rbp), %rsi
 	callq	GetProcessReference
-	movq	-16(%rbp), %rax
-	testq	%rax, %rax
-	sete	%cl
-	movq	464(%rax), %rax
+	movq	-24(%rbp), %rcx
+	testq	%rcx, %rcx
+	sete	%sil
+	movq	272(%rcx), %rax
+	movq	8(%rax), %rax
 	testq	%rax, %rax
 	sete	%dl
-	orb	%cl, %dl
-	movzbl	%dl, %ecx
-	cmpl	$1, %ecx
+	orb	%sil, %dl
+	movzbl	%dl, %edx
+	cmpl	$1, %edx
 	jne	.LBB61_8
+# BB#7:
+	movq	%r14, %rax
+	#APP
+	cli
+	hlt
+	#NO_APP
+	movq	272(%rcx), %rax
+	movq	8(%rax), %rax
 	.align	16, 0x90
-.LBB61_7:                               # %.preheader2
-                                        # =>This Inner Loop Header: Depth=1
-	movq	$.L.str.29, %rdi
-	xorl	%eax, %eax
-	callq	debug_gfx_writeLine
-	jmp	.LBB61_7
-	.align	16, 0x90
-.LBB61_8:                               # %.preheader1
+.LBB61_8:                               # %.preheader6
                                         # =>This Inner Loop Header: Depth=1
 	movq	8(%rax), %rcx
 	cmpq	%rbx, %rcx
@@ -4661,7 +4613,7 @@ HandlePageFault:                        # @HandlePageFault
 	cmpq	%rbx, %rcx
 	jae	.LBB61_10
 .LBB61_14:                              #   in Loop: Header=BB61_8 Depth=1
-	movq	56(%rax), %rax
+	movq	48(%rax), %rax
 	testq	%rax, %rax
 	jne	.LBB61_8
 	jmp	.LBB61_15
@@ -4682,8 +4634,9 @@ HandlePageFault:                        # @HandlePageFault
 	xorl	%edi, %edi
 	callq	TaskSwitch
 .LBB61_15:                              # %.loopexit
-	addq	$8, %rsp
+	addq	$16, %rsp
 	popq	%rbx
+	popq	%r14
 	popq	%rbp
 	retq
 .Lfunc_end61:
@@ -4697,22 +4650,22 @@ CheckAddressPermissions:                # @CheckAddressPermissions
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp335:
+.Ltmp316:
 	.cfi_def_cfa_offset 16
-.Ltmp336:
+.Ltmp317:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp337:
+.Ltmp318:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp338:
+.Ltmp319:
 	.cfi_offset %rbx, -40
-.Ltmp339:
+.Ltmp320:
 	.cfi_offset %r14, -32
-.Ltmp340:
+.Ltmp321:
 	.cfi_offset %r15, -24
 	movq	%rcx, %r14
 	movq	%rdx, %r15
@@ -4734,23 +4687,24 @@ CheckAddressPermissions:                # @CheckAddressPermissions
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp341
-.Ltmp342:
+	je	.Ltmp322
+.Ltmp323:
 	btq	$25, %rcx
-	jae	.Ltmp343
-.Ltmp343:
+	jae	.Ltmp324
+.Ltmp324:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp342
-.Ltmp341:
+	jne	.Ltmp323
+.Ltmp322:
 	btq	$25, %rcx
-	jae	.Ltmp344
+	jae	.Ltmp325
 	orw	$1, 4(%rax)
-.Ltmp344:
+.Ltmp325:
 	cli
 
 	#NO_APP
 	movq	vmem_lock, %rbx
+	movq	(%rdi), %rdi
 	leaq	-28(%rbp), %rdx
 	leaq	-32(%rbp), %rcx
 	leaq	-36(%rbp), %r8
@@ -4763,14 +4717,15 @@ CheckAddressPermissions:                # @CheckAddressPermissions
 	lock
 	incw	(%rbx)
 	btw	$0, 4(%rbx)
-	jae	.Ltmp345
+	jae	.Ltmp326
 	sti
 	movw	$0, 4(%rbx)
-.Ltmp345:
+.Ltmp326:
 
 	#NO_APP
 	jmp	.LBB62_4
 .LBB62_1:                               # %LockSpinlock.exit.thread
+	movq	(%rdi), %rdi
 	leaq	-28(%rbp), %rdx
 	leaq	-32(%rbp), %rcx
 	leaq	-36(%rbp), %r8
@@ -4836,16 +4791,16 @@ CreateSpinlock:                         # @CreateSpinlock
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp346:
+.Ltmp327:
 	.cfi_def_cfa_offset 16
-.Ltmp347:
+.Ltmp328:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp348:
+.Ltmp329:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp349:
+.Ltmp330:
 	.cfi_offset %rbx, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -4890,15 +4845,15 @@ CreateBootstrapSpinlock:                # @CreateBootstrapSpinlock
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp350:
+.Ltmp331:
 	.cfi_def_cfa_offset 16
-.Ltmp351:
+.Ltmp332:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp352:
+.Ltmp333:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp353:
+.Ltmp334:
 	.cfi_offset %rbx, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -4963,12 +4918,12 @@ LockSpinlock:                           # @LockSpinlock
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp354:
+.Ltmp335:
 	.cfi_def_cfa_offset 16
-.Ltmp355:
+.Ltmp336:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp356:
+.Ltmp337:
 	.cfi_def_cfa_register %rbp
 	testq	%rdi, %rdi
 	je	.LBB65_1
@@ -4984,19 +4939,19 @@ LockSpinlock:                           # @LockSpinlock
 	lock
 	xaddw	%ax, 2(%rdi)
 	cmpw	%ax, (%rdi)
-	je	.Ltmp357
-.Ltmp358:
+	je	.Ltmp338
+.Ltmp339:
 	btq	$25, %rax
-	jae	.Ltmp359
-.Ltmp359:
+	jae	.Ltmp340
+.Ltmp340:
 	pause
 	cmpw	%ax, (%rdi)
-	jne	.Ltmp358
-.Ltmp357:
+	jne	.Ltmp339
+.Ltmp338:
 	btq	$25, %rax
-	jae	.Ltmp360
+	jae	.Ltmp341
 	orw	$1, 4(%rdi)
-.Ltmp360:
+.Ltmp341:
 	cli
 
 	#NO_APP
@@ -5019,12 +4974,12 @@ GetSpinlockContenderCount:              # @GetSpinlockContenderCount
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp361:
+.Ltmp342:
 	.cfi_def_cfa_offset 16
-.Ltmp362:
+.Ltmp343:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp363:
+.Ltmp344:
 	.cfi_def_cfa_register %rbp
 	#APP
 	movq	(%rdi), %rax
@@ -5047,12 +5002,12 @@ UnlockSpinlock:                         # @UnlockSpinlock
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp364:
+.Ltmp345:
 	.cfi_def_cfa_offset 16
-.Ltmp365:
+.Ltmp346:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp366:
+.Ltmp347:
 	.cfi_def_cfa_register %rbp
 	testq	%rdi, %rdi
 	je	.LBB67_1
@@ -5062,10 +5017,10 @@ UnlockSpinlock:                         # @UnlockSpinlock
 	lock
 	incw	(%rdi)
 	btw	$0, 4(%rdi)
-	jae	.Ltmp367
+	jae	.Ltmp348
 	sti
 	movw	$0, 4(%rdi)
-.Ltmp367:
+.Ltmp348:
 
 	#NO_APP
 	movb	$1, %al
@@ -5087,12 +5042,12 @@ FreeSpinlock:                           # @FreeSpinlock
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp368:
+.Ltmp349:
 	.cfi_def_cfa_offset 16
-.Ltmp369:
+.Ltmp350:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp370:
+.Ltmp351:
 	.cfi_def_cfa_register %rbp
 	testq	%rdi, %rdi
 	je	.LBB68_12
@@ -5112,19 +5067,19 @@ FreeSpinlock:                           # @FreeSpinlock
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp371
-.Ltmp372:
+	je	.Ltmp352
+.Ltmp353:
 	btq	$25, %rcx
-	jae	.Ltmp373
-.Ltmp373:
+	jae	.Ltmp354
+.Ltmp354:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp372
-.Ltmp371:
+	jne	.Ltmp353
+.Ltmp352:
 	btq	$25, %rcx
-	jae	.Ltmp374
+	jae	.Ltmp355
 	orw	$1, 4(%rax)
-.Ltmp374:
+.Ltmp355:
 	cli
 
 	#NO_APP
@@ -5171,10 +5126,10 @@ FreeSpinlock:                           # @FreeSpinlock
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp375
+	jae	.Ltmp356
 	sti
 	movw	$0, 4(%rax)
-.Ltmp375:
+.Ltmp356:
 
 	#NO_APP
 .LBB68_12:                              # %kfree.exit
@@ -5191,18 +5146,18 @@ SwitchAndInitializeThread:              # @SwitchAndInitializeThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp376:
+.Ltmp357:
 	.cfi_def_cfa_offset 16
-.Ltmp377:
+.Ltmp358:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp378:
+.Ltmp359:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp379:
+.Ltmp360:
 	.cfi_offset %rbx, -24
-	movq	24(%rdi), %rax
-	movq	96(%rdi), %rbx
+	movq	16(%rdi), %rax
+	movq	64(%rdi), %rbx
 	#APP
 	movq	%rbx, %rsp
 	pushq	%rax
@@ -5237,18 +5192,18 @@ SavePreviousThread:                     # @SavePreviousThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp380:
+.Ltmp361:
 	.cfi_def_cfa_offset 16
-.Ltmp381:
+.Ltmp362:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp382:
+.Ltmp363:
 	.cfi_def_cfa_register %rbp
 	testq	%rdi, %rdi
 	je	.LBB70_5
 # BB#1:
 	movq	regs_saved, %rax
-	movq	168(%rdi), %rcx
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB70_2
 # BB#3:                                 # %LockSpinlock.exit
@@ -5263,25 +5218,25 @@ SavePreviousThread:                     # @SavePreviousThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp383
-.Ltmp384:
+	je	.Ltmp364
+.Ltmp365:
 	btq	$25, %rdx
-	jae	.Ltmp385
-.Ltmp385:
+	jae	.Ltmp366
+.Ltmp366:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp384
-.Ltmp383:
+	jne	.Ltmp365
+.Ltmp364:
 	btq	$25, %rdx
-	jae	.Ltmp386
+	jae	.Ltmp367
 	orw	$1, 4(%rcx)
-.Ltmp386:
+.Ltmp367:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rcx
+	movq	152(%rdi), %rcx
 	movq	(%rax), %rax
-	movq	%rax, 88(%rdi)
+	movq	%rax, 80(%rdi)
 	testq	%rcx, %rcx
 	je	.LBB70_5
 # BB#4:
@@ -5290,10 +5245,10 @@ SavePreviousThread:                     # @SavePreviousThread
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp387
+	jae	.Ltmp368
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp387:
+.Ltmp368:
 
 	#NO_APP
 .LBB70_5:                               # %UnlockSpinlock.exit
@@ -5301,7 +5256,7 @@ SavePreviousThread:                     # @SavePreviousThread
 	retq
 .LBB70_2:                               # %LockSpinlock.exit.thread
 	movq	(%rax), %rax
-	movq	%rax, 88(%rdi)
+	movq	%rax, 80(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end70:
@@ -5315,14 +5270,14 @@ SwitchToThread:                         # @SwitchToThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp388:
+.Ltmp369:
 	.cfi_def_cfa_offset 16
-.Ltmp389:
+.Ltmp370:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp390:
+.Ltmp371:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB71_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -5337,24 +5292,24 @@ SwitchToThread:                         # @SwitchToThread
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp391
-.Ltmp392:
+	je	.Ltmp372
+.Ltmp373:
 	btq	$25, %rcx
-	jae	.Ltmp393
-.Ltmp393:
+	jae	.Ltmp374
+.Ltmp374:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp392
-.Ltmp391:
+	jne	.Ltmp373
+.Ltmp372:
 	btq	$25, %rcx
-	jae	.Ltmp394
+	jae	.Ltmp375
 	orw	$1, 4(%rax)
-.Ltmp394:
+.Ltmp375:
 	cli
 
 	#NO_APP
-	movq	88(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	80(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB71_4
 # BB#3:
@@ -5363,15 +5318,15 @@ SwitchToThread:                         # @SwitchToThread
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp395
+	jae	.Ltmp376
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp395:
+.Ltmp376:
 
 	#NO_APP
 	jmp	.LBB71_4
 .LBB71_1:                               # %LockSpinlock.exit.thread
-	movq	88(%rdi), %rax
+	movq	80(%rdi), %rax
 .LBB71_4:                               # %UnlockSpinlock.exit
 	#APP
 	movq	%rax, %rsp
@@ -5407,12 +5362,12 @@ SetFSBase:                              # @SetFSBase
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp396:
+.Ltmp377:
 	.cfi_def_cfa_offset 16
-.Ltmp397:
+.Ltmp378:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp398:
+.Ltmp379:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rdx
 	shrq	$32, %rdx
@@ -5434,12 +5389,12 @@ SetGSBase:                              # @SetGSBase
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp399:
+.Ltmp380:
 	.cfi_def_cfa_offset 16
-.Ltmp400:
+.Ltmp381:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp401:
+.Ltmp382:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rdx
 	shrq	$32, %rdx
@@ -5461,12 +5416,12 @@ GetFSBase:                              # @GetFSBase
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp402:
+.Ltmp383:
 	.cfi_def_cfa_offset 16
-.Ltmp403:
+.Ltmp384:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp404:
+.Ltmp385:
 	.cfi_def_cfa_register %rbp
 	movl	$-1073741568, %ecx      # imm = 0xFFFFFFFFC0000100
 	#APP
@@ -5488,12 +5443,12 @@ GetGSBase:                              # @GetGSBase
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp405:
+.Ltmp386:
 	.cfi_def_cfa_offset 16
-.Ltmp406:
+.Ltmp387:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp407:
+.Ltmp388:
 	.cfi_def_cfa_register %rbp
 	movl	$-1073741567, %ecx      # imm = 0xFFFFFFFFC0000101
 	#APP
@@ -5515,14 +5470,14 @@ PerformArchSpecificTaskSave:            # @PerformArchSpecificTaskSave
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp408:
+.Ltmp389:
 	.cfi_def_cfa_offset 16
-.Ltmp409:
+.Ltmp390:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp410:
+.Ltmp391:
 	.cfi_def_cfa_register %rbp
-	movq	160(%rdi), %rsi
+	movq	136(%rdi), %rsi
 	movl	$-1073741568, %ecx      # imm = 0xFFFFFFFFC0000100
 	#APP
 	rdmsr
@@ -5552,14 +5507,14 @@ PerformArchSpecificTaskSwitch:          # @PerformArchSpecificTaskSwitch
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp411:
+.Ltmp392:
 	.cfi_def_cfa_offset 16
-.Ltmp412:
+.Ltmp393:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp413:
+.Ltmp394:
 	.cfi_def_cfa_register %rbp
-	movq	160(%rdi), %rsi
+	movq	136(%rdi), %rsi
 	movq	(%rsi), %rax
 	movq	%rax, %rdx
 	shrq	$32, %rdx
@@ -5587,12 +5542,12 @@ RequestInterruptVectorBlock:            # @RequestInterruptVectorBlock
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp414:
+.Ltmp395:
 	.cfi_def_cfa_offset 16
-.Ltmp415:
+.Ltmp396:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp416:
+.Ltmp397:
 	.cfi_def_cfa_register %rbp
 	xorl	%ecx, %ecx
 	movq	$-8, %rax
@@ -5634,16 +5589,16 @@ ShadowInterruptHandler:                 # @ShadowInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp417:
+.Ltmp398:
 	.cfi_def_cfa_offset 16
-.Ltmp418:
+.Ltmp399:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp419:
+.Ltmp400:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp420:
+.Ltmp401:
 	.cfi_offset %rbx, -24
 	movq	%rdi, %rbx
 	movq	regs_saved, %rdi
@@ -5665,19 +5620,19 @@ ShadowInterruptHandler:                 # @ShadowInterruptHandler
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp421
-.Ltmp422:
+	je	.Ltmp402
+.Ltmp403:
 	btq	$25, %rcx
-	jae	.Ltmp423
-.Ltmp423:
+	jae	.Ltmp404
+.Ltmp404:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp422
-.Ltmp421:
+	jne	.Ltmp403
+.Ltmp402:
 	btq	$25, %rcx
-	jae	.Ltmp424
+	jae	.Ltmp405
 	orw	$1, 4(%rax)
-.Ltmp424:
+.Ltmp405:
 	cli
 
 	#NO_APP
@@ -5702,10 +5657,10 @@ ShadowInterruptHandler:                 # @ShadowInterruptHandler
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp425
+	jae	.Ltmp406
 	sti
 	movw	$0, 4(%rax)
-.Ltmp425:
+.Ltmp406:
 
 	#NO_APP
 .LBB79_7:                               # %AllocateAPLSMemory.exit
@@ -5783,16 +5738,16 @@ HandleInterruptNoReturn:                # @HandleInterruptNoReturn
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp426:
+.Ltmp407:
 	.cfi_def_cfa_offset 16
-.Ltmp427:
+.Ltmp408:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp428:
+.Ltmp409:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp429:
+.Ltmp410:
 	.cfi_offset %rbx, -24
 	movl	%edi, %ebx
 	movq	regs_saved, %rdi
@@ -5835,12 +5790,12 @@ RegisterInterruptHandler:               # @RegisterInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp430:
+.Ltmp411:
 	.cfi_def_cfa_offset 16
-.Ltmp431:
+.Ltmp412:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp432:
+.Ltmp413:
 	.cfi_def_cfa_register %rbp
 	movl	$-1, %eax
 	cmpl	$255, %edi
@@ -5865,12 +5820,12 @@ GetInterruptHandler:                    # @GetInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp433:
+.Ltmp414:
 	.cfi_def_cfa_offset 16
-.Ltmp434:
+.Ltmp415:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp435:
+.Ltmp416:
 	.cfi_def_cfa_register %rbp
 	movl	$-1, %eax
 	cmpl	$255, %edi
@@ -5897,12 +5852,12 @@ RemoveInterruptHandler:                 # @RemoveInterruptHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp436:
+.Ltmp417:
 	.cfi_def_cfa_offset 16
-.Ltmp437:
+.Ltmp418:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp438:
+.Ltmp419:
 	.cfi_def_cfa_register %rbp
 	leal	-32(%rdi), %eax
 	cmpl	$223, %eax
@@ -5924,12 +5879,12 @@ SetInterruptEnableMode:                 # @SetInterruptEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp439:
+.Ltmp420:
 	.cfi_def_cfa_offset 16
-.Ltmp440:
+.Ltmp421:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp441:
+.Ltmp422:
 	.cfi_def_cfa_register %rbp
 	movzbl	%dil, %eax
 	movl	ioapic_interruptMap(,%rax,8), %ecx
@@ -5965,12 +5920,12 @@ RaiseInterrupt:                         # @RaiseInterrupt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp442:
+.Ltmp423:
 	.cfi_def_cfa_offset 16
-.Ltmp443:
+.Ltmp424:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp444:
+.Ltmp425:
 	.cfi_def_cfa_register %rbp
 	cmpl	$255, %edi
 	jbe	.LBB85_2
@@ -5994,12 +5949,12 @@ GetSavedInterruptState:                 # @GetSavedInterruptState
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp445:
+.Ltmp426:
 	.cfi_def_cfa_offset 16
-.Ltmp446:
+.Ltmp427:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp447:
+.Ltmp428:
 	.cfi_def_cfa_register %rbp
 	movq	regs_saved, %rax
 	popq	%rbp
@@ -6015,12 +5970,12 @@ InitializeTimer:                        # @InitializeTimer
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp448:
+.Ltmp429:
 	.cfi_def_cfa_offset 16
-.Ltmp449:
+.Ltmp430:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp450:
+.Ltmp431:
 	.cfi_def_cfa_register %rbp
 	movq	$.L.str.50, %rdi
 	xorl	%esi, %esi
@@ -6058,12 +6013,12 @@ GetTimerValue:                          # @GetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp451:
+.Ltmp432:
 	.cfi_def_cfa_offset 16
-.Ltmp452:
+.Ltmp433:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp453:
+.Ltmp434:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	48(%rax), %rax
@@ -6080,12 +6035,12 @@ SetTimerValue:                          # @SetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp454:
+.Ltmp435:
 	.cfi_def_cfa_offset 16
-.Ltmp455:
+.Ltmp436:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp456:
+.Ltmp437:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	%rdi, 48(%rax)
@@ -6102,12 +6057,12 @@ SetTimerEnableMode:                     # @SetTimerEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp457:
+.Ltmp438:
 	.cfi_def_cfa_offset 16
-.Ltmp458:
+.Ltmp439:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp459:
+.Ltmp440:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	16(%rax), %rcx
@@ -6128,12 +6083,12 @@ GetTimerInterval_NS:                    # @GetTimerInterval_NS
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp460:
+.Ltmp441:
 	.cfi_def_cfa_offset 16
-.Ltmp461:
+.Ltmp442:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp462:
+.Ltmp443:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movl	4(%rax), %eax
@@ -6187,12 +6142,12 @@ SwitchToUserMode:                       # @SwitchToUserMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp463:
+.Ltmp444:
 	.cfi_def_cfa_offset 16
-.Ltmp464:
+.Ltmp445:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp465:
+.Ltmp446:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rcx
 	#APP
@@ -6218,12 +6173,12 @@ SetKernelStack:                         # @SetKernelStack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp466:
+.Ltmp447:
 	.cfi_def_cfa_offset 16
-.Ltmp467:
+.Ltmp448:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp468:
+.Ltmp449:
 	.cfi_def_cfa_register %rbp
 	movq	k_stack_info, %rax
 	testq	%rax, %rax
@@ -6244,19 +6199,19 @@ SetKernelStack:                         # @SetKernelStack
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp469
-.Ltmp470:
+	je	.Ltmp450
+.Ltmp451:
 	btq	$25, %rcx
-	jae	.Ltmp471
-.Ltmp471:
+	jae	.Ltmp452
+.Ltmp452:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp470
-.Ltmp469:
+	jne	.Ltmp451
+.Ltmp450:
 	btq	$25, %rcx
-	jae	.Ltmp472
+	jae	.Ltmp453
 	orw	$1, 4(%rax)
-.Ltmp472:
+.Ltmp453:
 	cli
 
 	#NO_APP
@@ -6281,10 +6236,10 @@ SetKernelStack:                         # @SetKernelStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp473
+	jae	.Ltmp454
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp473:
+.Ltmp454:
 
 	#NO_APP
 .LBB94_7:                               # %AllocateAPLSMemory.exit
@@ -6304,12 +6259,12 @@ GetRFLAGS:                              # @GetRFLAGS
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp474:
+.Ltmp455:
 	.cfi_def_cfa_offset 16
-.Ltmp475:
+.Ltmp456:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp476:
+.Ltmp457:
 	.cfi_def_cfa_register %rbp
 	movq	k_stack_info, %rax
 	movq	8(%rax), %rax
@@ -6326,12 +6281,12 @@ SetRFLAGS:                              # @SetRFLAGS
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp477:
+.Ltmp458:
 	.cfi_def_cfa_offset 16
-.Ltmp478:
+.Ltmp459:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp479:
+.Ltmp460:
 	.cfi_def_cfa_register %rbp
 	movq	k_stack_info, %rax
 	movq	%rdi, 8(%rax)
@@ -6348,12 +6303,12 @@ Syscall_Initialize:                     # @Syscall_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp480:
+.Ltmp461:
 	.cfi_def_cfa_offset 16
-.Ltmp481:
+.Ltmp462:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp482:
+.Ltmp463:
 	.cfi_def_cfa_register %rbp
 	movl	$-1073741696, %ecx      # imm = 0xFFFFFFFFC0000080
 	#APP
@@ -6402,37 +6357,37 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp483:
+.Ltmp464:
 	.cfi_def_cfa_offset 16
-.Ltmp484:
+.Ltmp465:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp485:
+.Ltmp466:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$664, %rsp              # imm = 0x298
-.Ltmp486:
+	subq	$456, %rsp              # imm = 0x1C8
+.Ltmp467:
 	.cfi_offset %rbx, -56
-.Ltmp487:
+.Ltmp468:
 	.cfi_offset %r12, -48
-.Ltmp488:
+.Ltmp469:
 	.cfi_offset %r13, -40
-.Ltmp489:
+.Ltmp470:
 	.cfi_offset %r14, -32
-.Ltmp490:
+.Ltmp471:
 	.cfi_offset %r15, -24
 	movq	%r8, %r14
 	movl	%ecx, %r15d
-	movq	%rdx, %r13
-	movq	%rsi, %rbx
-	movq	%rdi, %r12
+	movq	%rdx, %r12
+	movq	%rsi, %r13
+	movq	%rdi, %rbx
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB98_1
 # BB#2:                                 # %LockSpinlock.exit.i
@@ -6447,24 +6402,24 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp491
-.Ltmp492:
+	je	.Ltmp472
+.Ltmp473:
 	btq	$25, %rdx
-	jae	.Ltmp493
-.Ltmp493:
+	jae	.Ltmp474
+.Ltmp474:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp492
-.Ltmp491:
+	jne	.Ltmp473
+.Ltmp472:
 	btq	$25, %rdx
-	jae	.Ltmp494
+	jae	.Ltmp475
 	orw	$1, 4(%rax)
-.Ltmp494:
+.Ltmp475:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB98_4
 # BB#3:
@@ -6473,48 +6428,95 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp495
+	jae	.Ltmp476
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp495:
+.Ltmp476:
 
 	#NO_APP
 	jmp	.LBB98_4
 .LBB98_1:                               # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
+	movq	8(%rcx), %rax
 .LBB98_4:                               # %GetCurrentProcessUID.exit
 	movq	(%rax), %rdi
-	leaq	-536(%rbp), %rsi
+	leaq	-336(%rbp), %rsi
 	callq	GetProcessInformation
-	movq	-72(%rbp), %rax
-	movq	%rax, -544(%rbp)
 	movq	virtMemData, %rax
-	movq	8(%rax), %rcx
-	leaq	-544(%rbp), %r8
-	leaq	-576(%rbp), %rax
-	xorl	%edx, %edx
-	movq	%r12, %rdi
-	movq	%rax, %r12
-	movq	%rbx, %rsi
-	movq	%r12, %r9
-	callq	LoadElf
-	testl	%eax, %eax
-	je	.LBB98_6
+	movq	8(%rax), %rax
+	cmpq	$24, %r13
+	jb	.LBB98_19
 # BB#5:
+	movzbl	(%rbx), %eax
+	cmpl	$127, %eax
+	jne	.LBB98_19
+# BB#6:
+	movzbl	1(%rbx), %eax
+	cmpl	$69, %eax
+	jne	.LBB98_19
+# BB#7:
+	movzbl	2(%rbx), %eax
+	cmpl	$76, %eax
+	jne	.LBB98_19
+# BB#8:
+	movzbl	3(%rbx), %eax
+	cmpl	$70, %eax
+	jne	.LBB98_19
+# BB#9:
+	movzbl	4(%rbx), %eax
+	cmpl	$1, %eax
+	je	.LBB98_19
+# BB#10:
+	movzbl	5(%rbx), %ecx
+	cmpl	$2, %ecx
+	je	.LBB98_19
+# BB#11:
+	cmpw	$0, 16(%rbx)
+	je	.LBB98_19
+# BB#12:
+	cmpw	$0, 18(%rbx)
+	je	.LBB98_19
+# BB#13:
+	cmpl	$1, 20(%rbx)
+	jne	.LBB98_19
+# BB#14:
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rcx
+	movzbl	7(%rbx), %edx
+	cmpl	$3, %edx
+	je	.LBB98_16
+# BB#15:
+	testb	%dl, %dl
+	jne	.LBB98_19
+.LBB98_16:
+	movzbl	%al, %eax
+	cmpl	$2, %eax
+	jne	.LBB98_17
+# BB#18:                                # %LoadElf.exit
+	leaq	-368(%rbp), %r8
+	movq	%rbx, %rdi
+	movq	%r13, %rsi
+	callq	LoadElf64
+	testl	%eax, %eax
+	jne	.LBB98_19
+	jmp	.LBB98_20
+.LBB98_17:
+	cmpq	$52, %r13
+	jae	.LBB98_20
+.LBB98_19:                              # %LoadElf.exit.thread
 	#APP
 	cli
 	hlt
 	#NO_APP
-.LBB98_6:
-	movl	$6, -688(%rbp)
-	movq	$4096, -680(%rbp)       # imm = 0x1000
-	movl	$11, -672(%rbp)
+.LBB98_20:                              # %LoadElf.exit.thread20
+	movl	$6, -480(%rbp)
+	movq	$4096, -472(%rbp)       # imm = 0x1000
+	movl	$11, -464(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB98_7
-# BB#8:                                 # %LockSpinlock.exit.i.2
+	je	.LBB98_21
+# BB#22:                                # %LockSpinlock.exit.i.2
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -6526,222 +6528,222 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp496
-.Ltmp497:
+	je	.Ltmp477
+.Ltmp478:
 	btq	$25, %rdx
-	jae	.Ltmp498
-.Ltmp498:
+	jae	.Ltmp479
+.Ltmp479:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp497
+	jne	.Ltmp478
+.Ltmp477:
+	btq	$25, %rdx
+	jae	.Ltmp480
+	orw	$1, 4(%rax)
+.Ltmp480:
+	cli
+
+	#NO_APP
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB98_24
+# BB#23:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp481
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp481:
+
+	#NO_APP
+	jmp	.LBB98_24
+.LBB98_21:                              # %LockSpinlock.exit.i.2.thread
+	movq	(%rcx), %rax
+.LBB98_24:                              # %GetCurrentThreadUID.exit
+	movq	%rax, -456(%rbp)
+	movl	$12, -448(%rbp)
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB98_25
+# BB#26:                                # %LockSpinlock.exit.i.5
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp482
+.Ltmp483:
+	btq	$25, %rdx
+	jae	.Ltmp484
+.Ltmp484:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp483
+.Ltmp482:
+	btq	$25, %rdx
+	jae	.Ltmp485
+	orw	$1, 4(%rax)
+.Ltmp485:
+	cli
+
+	#NO_APP
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB98_28
+# BB#27:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp486
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp486:
+
+	#NO_APP
+	jmp	.LBB98_28
+.LBB98_25:                              # %LockSpinlock.exit.i.5.thread
+	movq	(%rcx), %rax
+.LBB98_28:                              # %GetCurrentThreadUID.exit7
+	movq	%rax, -440(%rbp)
+	movl	$13, -432(%rbp)
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB98_29
+# BB#30:                                # %LockSpinlock.exit.i.9
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp487
+.Ltmp488:
+	btq	$25, %rdx
+	jae	.Ltmp489
+.Ltmp489:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp488
+.Ltmp487:
+	btq	$25, %rdx
+	jae	.Ltmp490
+	orw	$1, 4(%rax)
+.Ltmp490:
+	cli
+
+	#NO_APP
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB98_32
+# BB#31:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp491
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp491:
+
+	#NO_APP
+	jmp	.LBB98_32
+.LBB98_29:                              # %LockSpinlock.exit.i.9.thread
+	movq	8(%rcx), %rax
+.LBB98_32:                              # %GetCurrentProcessUID.exit11
+	movq	(%rax), %rax
+	movq	%rax, -424(%rbp)
+	movl	$14, -416(%rbp)
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB98_33
+# BB#34:                                # %LockSpinlock.exit.i.13
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp492
+.Ltmp493:
+	btq	$25, %rdx
+	jae	.Ltmp494
+.Ltmp494:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp493
+.Ltmp492:
+	btq	$25, %rdx
+	jae	.Ltmp495
+	orw	$1, 4(%rax)
+.Ltmp495:
+	cli
+
+	#NO_APP
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB98_36
+# BB#35:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp496
+	sti
+	movw	$0, 4(%rcx)
 .Ltmp496:
-	btq	$25, %rdx
-	jae	.Ltmp499
-	orw	$1, 4(%rax)
-.Ltmp499:
-	cli
 
 	#NO_APP
+	jmp	.LBB98_36
+.LBB98_33:                              # %LockSpinlock.exit.i.13.thread
 	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB98_10
-# BB#9:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp500
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp500:
-
-	#NO_APP
-	jmp	.LBB98_10
-.LBB98_7:                               # %LockSpinlock.exit.i.2.thread
-	movq	8(%rcx), %rax
-.LBB98_10:                              # %GetCurrentThreadUID.exit
-	movq	%rax, -664(%rbp)
-	movl	$12, -656(%rbp)
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB98_11
-# BB#12:                                # %LockSpinlock.exit.i.5
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp501
-.Ltmp502:
-	btq	$25, %rdx
-	jae	.Ltmp503
-.Ltmp503:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp502
-.Ltmp501:
-	btq	$25, %rdx
-	jae	.Ltmp504
-	orw	$1, 4(%rax)
-.Ltmp504:
-	cli
-
-	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB98_14
-# BB#13:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp505
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp505:
-
-	#NO_APP
-	jmp	.LBB98_14
-.LBB98_11:                              # %LockSpinlock.exit.i.5.thread
-	movq	8(%rcx), %rax
-.LBB98_14:                              # %GetCurrentThreadUID.exit7
-	movq	%rax, -648(%rbp)
-	movl	$13, -640(%rbp)
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB98_15
-# BB#16:                                # %LockSpinlock.exit.i.9
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp506
-.Ltmp507:
-	btq	$25, %rdx
-	jae	.Ltmp508
-.Ltmp508:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp507
-.Ltmp506:
-	btq	$25, %rdx
-	jae	.Ltmp509
-	orw	$1, 4(%rax)
-.Ltmp509:
-	cli
-
-	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB98_18
-# BB#17:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp510
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp510:
-
-	#NO_APP
-	jmp	.LBB98_18
-.LBB98_15:                              # %LockSpinlock.exit.i.9.thread
-	movq	16(%rcx), %rax
-.LBB98_18:                              # %GetCurrentProcessUID.exit11
+.LBB98_36:                              # %GetCurrentProcessUID.exit15
 	movq	(%rax), %rax
-	movq	%rax, -632(%rbp)
-	movl	$14, -624(%rbp)
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB98_19
-# BB#20:                                # %LockSpinlock.exit.i.13
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp511
-.Ltmp512:
-	btq	$25, %rdx
-	jae	.Ltmp513
-.Ltmp513:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp512
-.Ltmp511:
-	btq	$25, %rdx
-	jae	.Ltmp514
-	orw	$1, 4(%rax)
-.Ltmp514:
-	cli
-
-	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB98_22
-# BB#21:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp515
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp515:
-
-	#NO_APP
-	jmp	.LBB98_22
-.LBB98_19:                              # %LockSpinlock.exit.i.13.thread
-	movq	16(%rcx), %rax
-.LBB98_22:                              # %GetCurrentProcessUID.exit15
-	movq	(%rax), %rax
-	movq	%rax, -616(%rbp)
-	movl	$25, -608(%rbp)
-	movq	-576(%rbp), %rbx
-	movq	%rbx, -600(%rbp)
-	movl	$16, -592(%rbp)
+	movq	%rax, -408(%rbp)
+	movl	$25, -400(%rbp)
+	movq	-368(%rbp), %rbx
+	movq	%rbx, -392(%rbp)
+	movl	$16, -384(%rbp)
 	movl	$3219913727, %eax       # imm = 0xBFEBFBFF
-	movq	%rax, -584(%rbp)
+	movq	%rax, -376(%rbp)
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB98_23
-# BB#24:                                # %LockSpinlock.exit.i.17
+	je	.LBB98_37
+# BB#38:                                # %LockSpinlock.exit.i.17
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -6753,49 +6755,50 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp516
-.Ltmp517:
+	je	.Ltmp497
+.Ltmp498:
 	btq	$25, %rdx
-	jae	.Ltmp518
-.Ltmp518:
+	jae	.Ltmp499
+.Ltmp499:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp517
-.Ltmp516:
+	jne	.Ltmp498
+.Ltmp497:
 	btq	$25, %rdx
-	jae	.Ltmp519
+	jae	.Ltmp500
 	orw	$1, 4(%rcx)
-.Ltmp519:
+.Ltmp500:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rdi
-	movq	168(%rax), %rax
+	movq	(%rax), %rdi
+	movq	152(%rax), %rax
 	testq	%rax, %rax
-	je	.LBB98_26
-# BB#25:
+	je	.LBB98_40
+# BB#39:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp520
+	jae	.Ltmp501
 	sti
 	movw	$0, 4(%rax)
-.Ltmp520:
+.Ltmp501:
 
 	#NO_APP
-	jmp	.LBB98_26
-.LBB98_23:                              # %LockSpinlock.exit.i.17.thread
-	movq	8(%rax), %rdi
-.LBB98_26:                              # %GetCurrentThreadUID.exit19
+	jmp	.LBB98_40
+.LBB98_37:                              # %LockSpinlock.exit.i.17.thread
+	movq	(%rax), %rdi
+.LBB98_40:                              # %GetCurrentThreadUID.exit19
 	callq	GetThreadUserStack
-	movq	%r12, (%rsp)
-	leaq	-688(%rbp), %r8
+	leaq	-368(%rbp), %rcx
+	movq	%rcx, (%rsp)
+	leaq	-480(%rbp), %r8
 	movl	$7, %r9d
 	movq	%rax, %rdi
 	movl	%r15d, %esi
-	movq	%r13, %rdx
+	movq	%r12, %rdx
 	movq	%r14, %rcx
 	callq	SetupApplicationStack
 	movq	%rbx, %rcx
@@ -6809,7 +6812,7 @@ LoadAndStartApplication:                # @LoadAndStartApplication
 	sysretq
 
 	#NO_APP
-	addq	$664, %rsp              # imm = 0x298
+	addq	$456, %rsp              # imm = 0x1C8
 	popq	%rbx
 	popq	%r12
 	popq	%r13
@@ -6828,185 +6831,61 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp521:
+.Ltmp502:
 	.cfi_def_cfa_offset 16
-.Ltmp522:
+.Ltmp503:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp523:
+.Ltmp504:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$88, %rsp
-.Ltmp524:
+	subq	$72, %rsp
+.Ltmp505:
 	.cfi_offset %rbx, -56
-.Ltmp525:
+.Ltmp506:
 	.cfi_offset %r12, -48
-.Ltmp526:
+.Ltmp507:
 	.cfi_offset %r13, -40
-.Ltmp527:
+.Ltmp508:
 	.cfi_offset %r14, -32
-.Ltmp528:
+.Ltmp509:
 	.cfi_offset %r15, -24
 	movq	%r8, -96(%rbp)          # 8-byte Spill
-	movl	%esi, %r14d
-	movq	%rdi, -64(%rbp)         # 8-byte Spill
-	xorl	%ebx, %ebx
+	movq	%rdx, %r13
+	movq	%rdi, %r14
+	xorl	%eax, %eax
 	testq	%rcx, %rcx
 	je	.LBB99_3
 # BB#1:
-	movq	$-1, %rbx
+	movq	$-1, %rax
 	.align	16, 0x90
 .LBB99_2:                               # %.preheader3
                                         # =>This Inner Loop Header: Depth=1
-	cmpq	$0, 8(%rcx,%rbx,8)
-	leaq	1(%rbx), %rbx
+	cmpq	$0, 8(%rcx,%rax,8)
+	leaq	1(%rax), %rax
 	jne	.LBB99_2
 .LBB99_3:                               # %.loopexit4
-	leal	2(%r14), %r8d
-	leal	5(%r9), %eax
-	leaq	(%r8,%rax,2), %r15
+	movq	%rcx, -80(%rbp)         # 8-byte Spill
+	leal	2(%rsi), %edx
+	movq	%rdx, -88(%rbp)         # 8-byte Spill
+	movq	%rsi, -56(%rbp)         # 8-byte Spill
+	leal	5(%r9), %ecx
+	movq	%r9, -72(%rbp)          # 8-byte Spill
+	leaq	(%rdx,%rcx,2), %rbx
+	addq	%rax, %rbx
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB99_4
-# BB#5:                                 # %LockSpinlock.exit.i.7
-	movq	%rdx, -48(%rbp)         # 8-byte Spill
-	movq	%r8, -88(%rbp)          # 8-byte Spill
-	movq	%rcx, -72(%rbp)         # 8-byte Spill
-	movq	%r9, -80(%rbp)          # 8-byte Spill
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp529
-.Ltmp530:
-	btq	$25, %rcx
-	jae	.Ltmp531
-.Ltmp531:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp530
-.Ltmp529:
-	btq	$25, %rcx
-	jae	.Ltmp532
-	orw	$1, 4(%rax)
-.Ltmp532:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r12
-	movl	$4096, %esi             # imm = 0x1000
-	movl	$2, %edx
-	movl	$1, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, %r13
-	testq	%r12, %r12
-	je	.LBB99_7
-# BB#6:
-	#APP
-	mfence
-	lock
-	incw	(%r12)
-	btw	$0, 4(%r12)
-	jae	.Ltmp533
-	sti
-	movw	$0, 4(%r12)
-.Ltmp533:
-
-	#NO_APP
-	jmp	.LBB99_7
-.LBB99_4:                               # %LockSpinlock.exit.i.7.thread
-	movq	%rdx, -48(%rbp)         # 8-byte Spill
-	movq	%r8, -88(%rbp)          # 8-byte Spill
-	movq	%rcx, -72(%rbp)         # 8-byte Spill
-	movq	%r9, -80(%rbp)          # 8-byte Spill
-	movl	$4096, %esi             # imm = 0x1000
-	movl	$2, %edx
-	movl	$1, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, %r13
-.LBB99_7:                               # %FindFreeVirtualAddress.exit
-	addq	%rbx, %r15
-	movl	$64, %edi
-	callq	kmalloc
-	movq	vmem_lock, %rdx
-	testq	%rdx, %rdx
-	je	.LBB99_8
-# BB#9:                                 # %LockSpinlock.exit.i.11
-	movq	%rax, -56(%rbp)         # 8-byte Spill
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rdx)
-	cmpw	%cx, (%rdx)
-	je	.Ltmp534
-.Ltmp535:
-	btq	$25, %rcx
-	jae	.Ltmp536
-.Ltmp536:
-	pause
-	cmpw	%cx, (%rdx)
-	jne	.Ltmp535
-.Ltmp534:
-	btq	$25, %rcx
-	jae	.Ltmp537
-	orw	$1, 4(%rdx)
-.Ltmp537:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	MemMan_Alloc
-	testq	%rbx, %rbx
-	je	.LBB99_11
-# BB#10:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp538
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp538:
-
-	#NO_APP
-	jmp	.LBB99_11
-.LBB99_8:                               # %LockSpinlock.exit.i.11.thread
-	movq	%rax, -56(%rbp)         # 8-byte Spill
-	callq	MemMan_Alloc
-.LBB99_11:                              # %AllocatePhysicalPage.exit
-	movq	%r14, %r12
-	movq	-48(%rbp), %r14         # 8-byte Reload
-	movq	-64(%rbp), %rbx         # 8-byte Reload
-	shlq	$3, %r15
-	movq	virtMemData, %rcx
-	movq	8(%rcx), %rdi
-	testq	%r13, %r13
-	je	.LBB99_18
-# BB#12:
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
 	movq	vmem_lock, %rcx
+	xorl	%r15d, %r15d
 	testq	%rcx, %rcx
-	je	.LBB99_14
-# BB#13:
+	je	.LBB99_5
+# BB#4:
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -7018,338 +6897,387 @@ SetupApplicationStack:                  # @SetupApplicationStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp539
-.Ltmp540:
+	je	.Ltmp510
+.Ltmp511:
 	btq	$25, %rdx
-	jae	.Ltmp541
-.Ltmp541:
+	jae	.Ltmp512
+.Ltmp512:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp540
-.Ltmp539:
+	jne	.Ltmp511
+.Ltmp510:
 	btq	$25, %rdx
-	jae	.Ltmp542
+	jae	.Ltmp513
 	orw	$1, 4(%rcx)
-.Ltmp542:
+.Ltmp513:
 	cli
 
 	#NO_APP
-.LBB99_14:                              # %LockSpinlock.exit.i
-	movq	-56(%rbp), %rdx         # 8-byte Reload
-	testq	%rdx, %rdx
-	je	.LBB99_16
-# BB#15:
-	movl	$0, (%rdx)
-	movq	%r13, 8(%rdx)
-	movq	%rax, 16(%rdx)
-	movq	$4096, 24(%rdx)         # imm = 0x1000
-	movabsq	$8589934604, %rcx       # imm = 0x20000000C
-	movq	%rcx, 32(%rdx)
-	movq	$0, 48(%rdx)
-	movq	$0, 40(%rdx)
-.LBB99_16:
-	movl	$1, 8(%rsp)
-	movl	$2, (%rsp)
-	movl	$4096, %ecx             # imm = 0x1000
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
-	movq	%r13, %rsi
-	movq	%rax, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB99_18
-# BB#17:
+	movq	vmem_lock, %r15
+.LBB99_5:                               # %LockSpinlock.exit.i
+	shlq	$3, %rbx
+	movq	(%rax), %rdi
+	movl	$4096, %esi             # imm = 0x1000
+	movl	$2, %edx
+	movl	$1, %ecx
+	callq	VirtMemMan_FindFreeAddress
+	movq	%rax, %r12
+	testq	%r15, %r15
+	je	.LBB99_7
+# BB#6:                                 # %FindFreeVirtualAddress.exit
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp543
+	incw	(%r15)
+	btw	$0, 4(%r15)
+	jae	.Ltmp514
 	sti
-	movw	$0, 4(%rax)
-.Ltmp543:
+	movw	$0, 4(%r15)
+.Ltmp514:
 
 	#NO_APP
-.LBB99_18:                              # %MapPage.exit
-	movq	%rbx, %rax
-	subq	%r15, %rax
-	movq	%rax, -56(%rbp)         # 8-byte Spill
-	xorl	%edi, %edi
-	testl	%r12d, %r12d
-	je	.LBB99_19
-# BB#36:
-	movq	%r15, -104(%rbp)        # 8-byte Spill
-	movq	%rbx, -64(%rbp)         # 8-byte Spill
-	xorl	%r10d, %r10d
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB99_7
+# BB#8:                                 # %LockSpinlock.exit.i.7
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp515
+.Ltmp516:
+	btq	$25, %rcx
+	jae	.Ltmp517
+.Ltmp517:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp516
+.Ltmp515:
+	btq	$25, %rcx
+	jae	.Ltmp518
+	orw	$1, 4(%rax)
+.Ltmp518:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %r15
+	callq	MemMan_Alloc
+	testq	%r15, %r15
+	je	.LBB99_10
+# BB#9:
+	#APP
+	mfence
+	lock
+	incw	(%r15)
+	btw	$0, 4(%r15)
+	jae	.Ltmp519
+	sti
+	movw	$0, 4(%r15)
+.Ltmp519:
+
+	#NO_APP
+	jmp	.LBB99_10
+.LBB99_7:                               # %LockSpinlock.exit.i.7.thread
+	callq	MemMan_Alloc
+.LBB99_10:                              # %AllocatePhysicalPage.exit
+	movq	%r13, %r15
+	movq	%r14, -64(%rbp)         # 8-byte Spill
+	subq	%rbx, %r14
+	movq	%rbx, -104(%rbp)        # 8-byte Spill
+	movq	virtMemData, %rcx
+	movq	8(%rcx), %rcx
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rdi
+	movl	$12, (%rsp)
+	xorl	%r13d, %r13d
+	movl	$4096, %ecx             # imm = 0x1000
+	xorl	%r8d, %r8d
+	movl	$2, %r9d
+	movq	%rax, %rsi
+	movq	%r12, %rdx
+	callq	MapPage
+	movq	-56(%rbp), %r9          # 8-byte Reload
+	testl	%r9d, %r9d
+	je	.LBB99_11
+# BB#28:
+	xorl	%r11d, %r11d
 	.align	16, 0x90
-.LBB99_37:                              # %.lr.ph14
+.LBB99_29:                              # %.lr.ph14
                                         # =>This Loop Header: Depth=1
-                                        #     Child Loop BB99_38 Depth 2
-                                        #     Child Loop BB99_42 Depth 2
-                                        #     Child Loop BB99_45 Depth 2
-                                        #     Child Loop BB99_47 Depth 2
-	leaq	(%r13,%r10), %rbx
-	leaq	1(%rdi), %r8
-	movq	%rbx, 8(%rax,%rdi,8)
-	movq	(%r14,%rdi,8), %r15
+                                        #     Child Loop BB99_30 Depth 2
+                                        #     Child Loop BB99_34 Depth 2
+                                        #     Child Loop BB99_37 Depth 2
+                                        #     Child Loop BB99_39 Depth 2
+	leaq	(%r12,%r11), %rsi
+	leaq	1(%r13), %r10
+	movq	%rsi, 8(%r14,%r13,8)
+	movq	(%r15,%r13,8), %rax
+	movq	$-1, %rdi
+	.align	16, 0x90
+.LBB99_30:                              #   Parent Loop BB99_29 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	cmpb	$0, 1(%rax,%rdi)
+	leaq	1(%rdi), %rdi
+	jne	.LBB99_30
+# BB#31:                                # %strlen.exit.i
+                                        #   in Loop: Header=BB99_29 Depth=1
+	testq	%rdi, %rdi
+	je	.LBB99_38
+# BB#32:                                # %.lr.ph.i.preheader.i
+                                        #   in Loop: Header=BB99_29 Depth=1
+	leaq	-1(%rdi), %r8
+	movq	%rdi, %rbx
+	andq	$7, %rbx
+	je	.LBB99_36
+# BB#33:                                # %.lr.ph.i.prol.i.preheader
+                                        #   in Loop: Header=BB99_29 Depth=1
+	movq	%r15, -48(%rbp)         # 8-byte Spill
+	movq	%r14, %r15
+	leaq	(%rbx,%r11), %r9
+	movl	%edi, %ecx
+	andl	$7, %ecx
+	negq	%rcx
+	movq	%rax, %rdx
+	.align	16, 0x90
+.LBB99_34:                              # %.lr.ph.i.prol.i
+                                        #   Parent Loop BB99_29 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movb	(%rdx), %r14b
+	incq	%rdx
+	movb	%r14b, (%rsi)
+	incq	%rsi
+	incq	%rcx
+	jne	.LBB99_34
+# BB#35:                                # %.lr.ph.i.preheader.split.i.loopexit
+                                        #   in Loop: Header=BB99_29 Depth=1
+	addq	%rbx, %rax
+	leaq	(%r9,%r12), %rsi
+	subq	%rbx, %rdi
+	movq	%r15, %r14
+	movq	-56(%rbp), %r9          # 8-byte Reload
+	movq	-48(%rbp), %r15         # 8-byte Reload
+.LBB99_36:                              # %.lr.ph.i.preheader.split.i
+                                        #   in Loop: Header=BB99_29 Depth=1
+	cmpq	$7, %r8
+	jb	.LBB99_38
+	.align	16, 0x90
+.LBB99_37:                              # %.lr.ph.i.i
+                                        #   Parent Loop BB99_29 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movb	(%rax), %cl
+	movb	%cl, (%rsi)
+	movb	1(%rax), %cl
+	movb	%cl, 1(%rsi)
+	movb	2(%rax), %cl
+	movb	%cl, 2(%rsi)
+	movb	3(%rax), %cl
+	movb	%cl, 3(%rsi)
+	movb	4(%rax), %cl
+	movb	%cl, 4(%rsi)
+	movb	5(%rax), %cl
+	movb	%cl, 5(%rsi)
+	movb	6(%rax), %cl
+	movb	%cl, 6(%rsi)
+	addq	$-8, %rdi
+	movb	7(%rax), %cl
+	leaq	8(%rax), %rax
+	movb	%cl, 7(%rsi)
+	leaq	8(%rsi), %rsi
+	jne	.LBB99_37
+.LBB99_38:                              # %strcpy.exit
+                                        #   in Loop: Header=BB99_29 Depth=1
+	movq	(%r15,%r13,8), %rax
 	movq	$-1, %rdx
 	.align	16, 0x90
-.LBB99_38:                              #   Parent Loop BB99_37 Depth=1
+.LBB99_39:                              #   Parent Loop BB99_29 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
-	cmpb	$0, 1(%r15,%rdx)
+	cmpb	$0, 1(%rax,%rdx)
 	leaq	1(%rdx), %rdx
-	jne	.LBB99_38
-# BB#39:                                # %strlen.exit.i
-                                        #   in Loop: Header=BB99_37 Depth=1
-	testq	%rdx, %rdx
-	je	.LBB99_46
-# BB#40:                                # %.lr.ph.i.preheader.i
-                                        #   in Loop: Header=BB99_37 Depth=1
-	leaq	-1(%rdx), %r9
-	movq	%rdx, %rcx
-	andq	$7, %rcx
-	je	.LBB99_44
-# BB#41:                                # %.lr.ph.i.prol.i.preheader
-                                        #   in Loop: Header=BB99_37 Depth=1
-	movq	%r12, %rax
-	leaq	(%rcx,%r10), %r11
-	movl	%edx, %r12d
-	andl	$7, %r12d
-	negq	%r12
-	movq	%r15, %rsi
+	jne	.LBB99_39
+# BB#40:                                # %strlen.exit
+                                        #   in Loop: Header=BB99_29 Depth=1
+	addq	%r11, %rdx
+	cmpl	%r9d, %r10d
+	movq	%r10, %r13
+	movq	%rdx, %r11
+	jne	.LBB99_29
+	jmp	.LBB99_12
+.LBB99_11:
+	xorl	%edx, %edx
+.LBB99_12:                              # %._crit_edge.15
+	movl	%r9d, %eax
+	movq	%rax, (%r14)
+	leal	1(%r9), %eax
+	movq	$0, (%r14,%rax,8)
+	movq	-80(%rbp), %rbx         # 8-byte Reload
+	testq	%rbx, %rbx
+	je	.LBB99_13
+# BB#14:                                # %.preheader
+	movq	(%rbx), %rax
+	testq	%rax, %rax
+	movq	-72(%rbp), %rdi         # 8-byte Reload
+	movq	-88(%rbp), %rcx         # 8-byte Reload
+	je	.LBB99_18
+# BB#15:
+	movl	$1, %esi
 	.align	16, 0x90
-.LBB99_42:                              # %.lr.ph.i.prol.i
-                                        #   Parent Loop BB99_37 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movb	(%rsi), %r14b
-	incq	%rsi
-	movb	%r14b, (%rbx)
+.LBB99_16:                              # %.lr.ph9
+                                        # =>This Inner Loop Header: Depth=1
+	movl	%esi, %ecx
+	leal	1(%r9,%rcx), %esi
+	movq	%rax, (%r14,%rsi,8)
+	movl	%ecx, %eax
+	movq	(%rbx,%rax,8), %rax
+	movl	%ecx, %esi
+	incl	%esi
+	testq	%rax, %rax
+	jne	.LBB99_16
+# BB#17:
+	leal	2(%r9,%rcx), %ecx
+	jmp	.LBB99_18
+.LBB99_13:
+	movq	-72(%rbp), %rdi         # 8-byte Reload
+	movq	-88(%rbp), %rcx         # 8-byte Reload
+.LBB99_18:                              # %.loopexit
+	movq	16(%rbp), %r8
+	movl	%ecx, %eax
+	incl	%ecx
+	movq	$0, (%r14,%rax,8)
+	leaq	(%r14,%rcx,8), %r13
+	testl	%edi, %edi
+	je	.LBB99_25
+# BB#19:                                # %.lr.ph
+	leal	-1(%rdi), %eax
+	shlq	$4, %rax
+	addq	$16, %rax
+	subq	-104(%rbp), %rax        # 8-byte Folded Reload
+	leaq	(%rax,%rcx,8), %rsi
+	xorl	%eax, %eax
+	testb	$1, %dil
+	je	.LBB99_21
+# BB#20:
+	movq	-96(%rbp), %rax         # 8-byte Reload
+	movq	%rax, %rcx
+	movl	(%rcx), %eax
+	movl	%eax, (%r13)
+	movq	8(%rcx), %rax
+	movq	%rax, 8(%r13)
+	addq	$16, %r13
+	movl	$1, %eax
+.LBB99_21:                              # %.lr.ph.split
+	addq	%rsi, -64(%rbp)         # 8-byte Folded Spill
+	cmpl	$1, %edi
+	je	.LBB99_24
+# BB#22:                                # %.lr.ph.split.split.preheader
+	subl	%eax, %edi
+	shlq	$4, %rax
+	movq	-96(%rbp), %rcx         # 8-byte Reload
+	leaq	24(%rax,%rcx), %rax
+	.align	16, 0x90
+.LBB99_23:                              # %.lr.ph.split.split
+                                        # =>This Inner Loop Header: Depth=1
+	movl	-24(%rax), %ecx
+	movl	%ecx, (%r13)
+	movq	-16(%rax), %rcx
+	movq	%rcx, 8(%r13)
+	movl	-8(%rax), %ecx
+	movl	%ecx, 16(%r13)
+	movq	(%rax), %rcx
+	movq	%rcx, 24(%r13)
+	addq	$32, %rax
+	addq	$32, %r13
+	addl	$-2, %edi
+	jne	.LBB99_23
+.LBB99_24:                              # %._crit_edge
+	movq	-64(%rbp), %r13         # 8-byte Reload
+.LBB99_25:
+	leaq	(%r12,%rdx), %r10
+	movq	16(%r8), %rbx
+	movq	24(%r8), %rdi
+	movq	%rdi, %rsi
+	imulq	%rbx, %rsi
+	testq	%rsi, %rsi
+	je	.LBB99_46
+# BB#26:                                # %.lr.ph.preheader.i
+	movq	8(%r8), %rax
+	leaq	-1(%rsi), %r9
+	movq	%rsi, %r11
+	andq	$7, %r11
+	je	.LBB99_27
+# BB#41:                                # %.lr.ph.prol.i.preheader
+	movq	%r14, %r15
+	leaq	(%rdx,%r11), %r14
+	imull	%ebx, %edi
+	andl	$7, %edi
+	negq	%rdi
+	movq	%rax, %rbx
+	movq	%r10, %rdx
+	.align	16, 0x90
+.LBB99_42:                              # %.lr.ph.prol.i
+                                        # =>This Inner Loop Header: Depth=1
+	movb	(%rbx), %cl
 	incq	%rbx
-	incq	%r12
+	movb	%cl, (%rdx)
+	incq	%rdx
+	incq	%rdi
 	jne	.LBB99_42
-# BB#43:                                # %.lr.ph.i.preheader.split.i.loopexit
-                                        #   in Loop: Header=BB99_37 Depth=1
-	addq	%rcx, %r15
-	leaq	(%r11,%r13), %rbx
-	subq	%rcx, %rdx
-	movq	%rax, %r12
-	movq	-56(%rbp), %rax         # 8-byte Reload
-	movq	-48(%rbp), %r14         # 8-byte Reload
-.LBB99_44:                              # %.lr.ph.i.preheader.split.i
-                                        #   in Loop: Header=BB99_37 Depth=1
+# BB#43:                                # %.lr.ph.preheader.split.i.loopexit
+	addq	%r11, %rax
+	addq	%r14, %r12
+	subq	%r11, %rsi
+	movq	%r15, %r14
+	jmp	.LBB99_44
+.LBB99_27:
+	movq	%r10, %r12
+.LBB99_44:                              # %.lr.ph.preheader.split.i
 	cmpq	$7, %r9
 	jb	.LBB99_46
 	.align	16, 0x90
-.LBB99_45:                              # %.lr.ph.i.i
-                                        #   Parent Loop BB99_37 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movb	(%r15), %cl
-	movb	%cl, (%rbx)
-	movb	1(%r15), %cl
-	movb	%cl, 1(%rbx)
-	movb	2(%r15), %cl
-	movb	%cl, 2(%rbx)
-	movb	3(%r15), %cl
-	movb	%cl, 3(%rbx)
-	movb	4(%r15), %cl
-	movb	%cl, 4(%rbx)
-	movb	5(%r15), %cl
-	movb	%cl, 5(%rbx)
-	movb	6(%r15), %cl
-	movb	%cl, 6(%rbx)
-	addq	$-8, %rdx
-	movb	7(%r15), %cl
-	leaq	8(%r15), %r15
-	movb	%cl, 7(%rbx)
-	leaq	8(%rbx), %rbx
+.LBB99_45:                              # %.lr.ph.i
+                                        # =>This Inner Loop Header: Depth=1
+	movb	(%rax), %cl
+	movb	%cl, (%r12)
+	movb	1(%rax), %cl
+	movb	%cl, 1(%r12)
+	movb	2(%rax), %cl
+	movb	%cl, 2(%r12)
+	movb	3(%rax), %cl
+	movb	%cl, 3(%r12)
+	movb	4(%rax), %cl
+	movb	%cl, 4(%r12)
+	movb	5(%rax), %cl
+	movb	%cl, 5(%r12)
+	movb	6(%rax), %cl
+	movb	%cl, 6(%r12)
+	addq	$-8, %rsi
+	movb	7(%rax), %cl
+	leaq	8(%rax), %rax
+	movb	%cl, 7(%r12)
+	leaq	8(%r12), %r12
 	jne	.LBB99_45
-.LBB99_46:                              # %strcpy.exit
-                                        #   in Loop: Header=BB99_37 Depth=1
-	movq	(%r14,%rdi,8), %rcx
-	movq	$-1, %rsi
-	.align	16, 0x90
-.LBB99_47:                              #   Parent Loop BB99_37 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	cmpb	$0, 1(%rcx,%rsi)
-	leaq	1(%rsi), %rsi
-	jne	.LBB99_47
-# BB#48:                                # %strlen.exit
-                                        #   in Loop: Header=BB99_37 Depth=1
-	addq	%r10, %rsi
-	cmpl	%r12d, %r8d
-	movq	%r8, %rdi
-	movq	%rsi, %r10
-	jne	.LBB99_37
-	jmp	.LBB99_20
-.LBB99_19:
-	movq	%r15, -104(%rbp)        # 8-byte Spill
-	movq	%rbx, -64(%rbp)         # 8-byte Spill
-	xorl	%esi, %esi
-.LBB99_20:                              # %._crit_edge.15
-	movl	%r12d, %ecx
-	movq	%rcx, (%rax)
-	leal	1(%r12), %ecx
-	movq	$0, (%rax,%rcx,8)
-	movq	-72(%rbp), %r8          # 8-byte Reload
-	testq	%r8, %r8
-	je	.LBB99_21
-# BB#22:                                # %.preheader
-	movq	(%r8), %rcx
-	testq	%rcx, %rcx
-	movq	-80(%rbp), %rbx         # 8-byte Reload
-	movq	-88(%rbp), %rdx         # 8-byte Reload
-	je	.LBB99_26
-# BB#23:
-	movl	$1, %edi
-	.align	16, 0x90
-.LBB99_24:                              # %.lr.ph9
-                                        # =>This Inner Loop Header: Depth=1
-	movl	%edi, %edx
-	leal	1(%r12,%rdx), %edi
-	movq	%rcx, (%rax,%rdi,8)
-	movl	%edx, %ecx
-	movq	(%r8,%rcx,8), %rcx
-	movl	%edx, %edi
-	incl	%edi
-	testq	%rcx, %rcx
-	jne	.LBB99_24
-# BB#25:
-	leal	2(%r12,%rdx), %edx
-	jmp	.LBB99_26
-.LBB99_21:
-	movq	-80(%rbp), %rbx         # 8-byte Reload
-	movq	-88(%rbp), %rdx         # 8-byte Reload
-.LBB99_26:                              # %.loopexit
-	movq	16(%rbp), %r8
-	movl	%edx, %ecx
-	incl	%edx
-	movq	$0, (%rax,%rcx,8)
-	leaq	(%rax,%rdx,8), %r15
-	testl	%ebx, %ebx
-	je	.LBB99_33
-# BB#27:                                # %.lr.ph
-	leal	-1(%rbx), %ecx
-	shlq	$4, %rcx
-	addq	$16, %rcx
-	subq	-104(%rbp), %rcx        # 8-byte Folded Reload
-	leaq	(%rcx,%rdx,8), %rdi
-	xorl	%ecx, %ecx
-	testb	$1, %bl
-	je	.LBB99_29
-# BB#28:
-	movq	-96(%rbp), %rcx         # 8-byte Reload
-	movq	%rcx, %rdx
-	movl	(%rdx), %ecx
-	movl	%ecx, (%r15)
-	movq	8(%rdx), %rcx
-	movq	%rcx, 8(%r15)
-	addq	$16, %r15
-	movl	$1, %ecx
-.LBB99_29:                              # %.lr.ph.split
-	addq	%rdi, -64(%rbp)         # 8-byte Folded Spill
-	cmpl	$1, %ebx
-	je	.LBB99_32
-# BB#30:                                # %.lr.ph.split.split.preheader
-	subl	%ecx, %ebx
-	shlq	$4, %rcx
-	movq	-96(%rbp), %rdx         # 8-byte Reload
-	leaq	24(%rcx,%rdx), %rcx
-	.align	16, 0x90
-.LBB99_31:                              # %.lr.ph.split.split
-                                        # =>This Inner Loop Header: Depth=1
-	movl	-24(%rcx), %edx
-	movl	%edx, (%r15)
-	movq	-16(%rcx), %rdx
-	movq	%rdx, 8(%r15)
-	movl	-8(%rcx), %edx
-	movl	%edx, 16(%r15)
-	movq	(%rcx), %rdx
-	movq	%rdx, 24(%r15)
-	addq	$32, %rcx
-	addq	$32, %r15
-	addl	$-2, %ebx
-	jne	.LBB99_31
-.LBB99_32:                              # %._crit_edge
-	movq	-64(%rbp), %r15         # 8-byte Reload
-.LBB99_33:
-	leaq	(%r13,%rsi), %r10
-	movq	16(%r8), %rcx
-	movq	24(%r8), %rbx
-	movq	%rbx, %rdi
-	imulq	%rcx, %rdi
-	testq	%rdi, %rdi
-	je	.LBB99_54
-# BB#34:                                # %.lr.ph.preheader.i
-	movq	8(%r8), %rdx
-	leaq	-1(%rdi), %r9
-	movq	%rdi, %r11
-	andq	$7, %r11
-	je	.LBB99_35
-# BB#49:                                # %.lr.ph.prol.i.preheader
-	leaq	(%rsi,%r11), %r14
-	imull	%ecx, %ebx
-	andl	$7, %ebx
-	negq	%rbx
-	movq	%rdx, %rcx
-	movq	%r10, %rsi
-	.align	16, 0x90
-.LBB99_50:                              # %.lr.ph.prol.i
-                                        # =>This Inner Loop Header: Depth=1
-	movb	(%rcx), %r12b
-	incq	%rcx
-	movb	%r12b, (%rsi)
-	incq	%rsi
-	incq	%rbx
-	jne	.LBB99_50
-# BB#51:                                # %.lr.ph.preheader.split.i.loopexit
-	addq	%r11, %rdx
-	addq	%r14, %r13
-	subq	%r11, %rdi
-	jmp	.LBB99_52
-.LBB99_35:
-	movq	%r10, %r13
-.LBB99_52:                              # %.lr.ph.preheader.split.i
-	cmpq	$7, %r9
-	jb	.LBB99_54
-	.align	16, 0x90
-.LBB99_53:                              # %.lr.ph.i
-                                        # =>This Inner Loop Header: Depth=1
-	movb	(%rdx), %cl
-	movb	%cl, (%r13)
-	movb	1(%rdx), %cl
-	movb	%cl, 1(%r13)
-	movb	2(%rdx), %cl
-	movb	%cl, 2(%r13)
-	movb	3(%rdx), %cl
-	movb	%cl, 3(%r13)
-	movb	4(%rdx), %cl
-	movb	%cl, 4(%r13)
-	movb	5(%rdx), %cl
-	movb	%cl, 5(%r13)
-	movb	6(%rdx), %cl
-	movb	%cl, 6(%r13)
-	addq	$-8, %rdi
-	movb	7(%rdx), %cl
-	leaq	8(%rdx), %rdx
-	movb	%cl, 7(%r13)
-	leaq	8(%r13), %r13
-	jne	.LBB99_53
-.LBB99_54:                              # %memcpy.exit
-	movl	$3, (%r15)
-	movq	%r10, 8(%r15)
-	movl	$5, 16(%r15)
-	movq	16(%r8), %rcx
-	movq	%rcx, 24(%r15)
-	movl	$4, 32(%r15)
-	movq	24(%r8), %rcx
-	movq	%rcx, 40(%r15)
-	movl	$9, 48(%r15)
-	movq	(%r8), %rcx
-	movq	%rcx, 56(%r15)
-	movl	$0, 64(%r15)
-	movq	$0, 72(%r15)
-	addq	$88, %rsp
+.LBB99_46:                              # %memcpy.exit
+	movl	$3, (%r13)
+	movq	%r10, 8(%r13)
+	movl	$5, 16(%r13)
+	movq	16(%r8), %rax
+	movq	%rax, 24(%r13)
+	movl	$4, 32(%r13)
+	movq	24(%r8), %rax
+	movq	%rax, 40(%r13)
+	movl	$9, 48(%r13)
+	movq	(%r8), %rax
+	movq	%rax, 56(%r13)
+	movl	$0, 64(%r13)
+	movq	$0, 72(%r13)
+	movq	%r14, %rax
+	addq	$72, %rsp
 	popq	%rbx
 	popq	%r12
 	popq	%r13
@@ -7368,12 +7296,12 @@ PIT_SetFrequency:                       # @PIT_SetFrequency
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp544:
+.Ltmp520:
 	.cfi_def_cfa_offset 16
-.Ltmp545:
+.Ltmp521:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp546:
+.Ltmp522:
 	.cfi_def_cfa_register %rbp
 	movl	%edx, %r9d
 	movl	$1193180, %eax          # imm = 0x1234DC
@@ -7435,12 +7363,12 @@ PIT_Sleep:                              # @PIT_Sleep
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp547:
+.Ltmp523:
 	.cfi_def_cfa_offset 16
-.Ltmp548:
+.Ltmp524:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp549:
+.Ltmp525:
 	.cfi_def_cfa_register %rbp
 	movl	$1, pit_handlerMode
 	movl	ioapic_interruptMap+256, %eax
@@ -7555,12 +7483,12 @@ PIT_SetEnableMode:                      # @PIT_SetEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp550:
+.Ltmp526:
 	.cfi_def_cfa_offset 16
-.Ltmp551:
+.Ltmp527:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp552:
+.Ltmp528:
 	.cfi_def_cfa_register %rbp
 	movl	ioapic_interruptMap+256, %eax
 	cmpl	$-1, %eax
@@ -7595,12 +7523,12 @@ PIT_Initialize:                         # @PIT_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp553:
+.Ltmp529:
 	.cfi_def_cfa_offset 16
-.Ltmp554:
+.Ltmp530:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp555:
+.Ltmp531:
 	.cfi_def_cfa_register %rbp
 	movl	$19886, curFrequency    # imm = 0x4DAE
 	movb	$52, %al
@@ -7627,12 +7555,12 @@ PIT_TempIntHandler:                     # @PIT_TempIntHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp556:
+.Ltmp532:
 	.cfi_def_cfa_offset 16
-.Ltmp557:
+.Ltmp533:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp558:
+.Ltmp534:
 	.cfi_def_cfa_register %rbp
 	cmpl	$32, %edi
 	jne	.LBB104_4
@@ -7658,16 +7586,16 @@ HPET_Initialize:                        # @HPET_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp559:
+.Ltmp535:
 	.cfi_def_cfa_offset 16
-.Ltmp560:
+.Ltmp536:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp561:
+.Ltmp537:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp562:
+.Ltmp538:
 	.cfi_offset %rbx, -24
 	xorl	%ebx, %ebx
 	movq	$.L.str.50, %rdi
@@ -7676,7 +7604,7 @@ HPET_Initialize:                        # @HPET_Initialize
 	movl	$1, %ecx
 	testq	%rax, %rax
 	je	.LBB105_2
-# BB#1:                                 # %GetVirtualAddress.exit
+# BB#1:                                 # %VirtMemMan_GetVirtualAddress.exit
 	movq	44(%rax), %rax
 	movabsq	$-21474836480, %rcx     # imm = 0xFFFFFFFB00000000
 	addq	%rax, %rcx
@@ -7704,12 +7632,12 @@ HPET_SetCounterEnableStatus:            # @HPET_SetCounterEnableStatus
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp563:
+.Ltmp539:
 	.cfi_def_cfa_offset 16
-.Ltmp564:
+.Ltmp540:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp565:
+.Ltmp541:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	16(%rax), %rcx
@@ -7730,12 +7658,12 @@ HPET_SetCounterValue:                   # @HPET_SetCounterValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp566:
+.Ltmp542:
 	.cfi_def_cfa_offset 16
-.Ltmp567:
+.Ltmp543:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp568:
+.Ltmp544:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	%rdi, 48(%rax)
@@ -7752,12 +7680,12 @@ HPET_GetElapsedTime:                    # @HPET_GetElapsedTime
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp569:
+.Ltmp545:
 	.cfi_def_cfa_offset 16
-.Ltmp570:
+.Ltmp546:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp571:
+.Ltmp547:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movl	4(%rax), %eax
@@ -7779,12 +7707,12 @@ HPET_GetPeriod:                         # @HPET_GetPeriod
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp572:
+.Ltmp548:
 	.cfi_def_cfa_offset 16
-.Ltmp573:
+.Ltmp549:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp574:
+.Ltmp550:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movl	4(%rax), %eax
@@ -7803,12 +7731,12 @@ HPET_GetCounterValue:                   # @HPET_GetCounterValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp575:
+.Ltmp551:
 	.cfi_def_cfa_offset 16
-.Ltmp576:
+.Ltmp552:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp577:
+.Ltmp553:
 	.cfi_def_cfa_register %rbp
 	movq	hpet_regs, %rax
 	movq	48(%rax), %rax
@@ -7825,12 +7753,12 @@ APIC_LockPIC:                           # @APIC_LockPIC
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp578:
+.Ltmp554:
 	.cfi_def_cfa_offset 16
-.Ltmp579:
+.Ltmp555:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp580:
+.Ltmp556:
 	.cfi_def_cfa_register %rbp
 	movb	$17, %al
 	#APP
@@ -7885,12 +7813,12 @@ APIC_LocalInitialize:                   # @APIC_LocalInitialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp581:
+.Ltmp557:
 	.cfi_def_cfa_offset 16
-.Ltmp582:
+.Ltmp558:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp583:
+.Ltmp559:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	.align	16, 0x90
@@ -7932,19 +7860,19 @@ APIC_LocalInitialize:                   # @APIC_LocalInitialize
 	lock
 	xaddw	%si, 2(%rcx)
 	cmpw	%si, (%rcx)
-	je	.Ltmp584
-.Ltmp585:
+	je	.Ltmp560
+.Ltmp561:
 	btq	$25, %rsi
-	jae	.Ltmp586
-.Ltmp586:
+	jae	.Ltmp562
+.Ltmp562:
 	pause
 	cmpw	%si, (%rcx)
-	jne	.Ltmp585
-.Ltmp584:
+	jne	.Ltmp561
+.Ltmp560:
 	btq	$25, %rsi
-	jae	.Ltmp587
+	jae	.Ltmp563
 	orw	$1, 4(%rcx)
-.Ltmp587:
+.Ltmp563:
 	cli
 
 	#NO_APP
@@ -7969,10 +7897,10 @@ APIC_LocalInitialize:                   # @APIC_LocalInitialize
 	lock
 	incw	(%rsi)
 	btw	$0, 4(%rsi)
-	jae	.Ltmp588
+	jae	.Ltmp564
 	sti
 	movw	$0, 4(%rsi)
-.Ltmp588:
+.Ltmp564:
 
 	#NO_APP
 .LBB112_9:                              # %AllocateAPLSMemory.exit
@@ -8020,12 +7948,12 @@ APIC_Read:                              # @APIC_Read
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp589:
+.Ltmp565:
 	.cfi_def_cfa_offset 16
-.Ltmp590:
+.Ltmp566:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp591:
+.Ltmp567:
 	.cfi_def_cfa_register %rbp
 	andl	$-4, %edi
 	movq	apic_data, %rax
@@ -8044,12 +7972,12 @@ APIC_Write:                             # @APIC_Write
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp592:
+.Ltmp568:
 	.cfi_def_cfa_offset 16
-.Ltmp593:
+.Ltmp569:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp594:
+.Ltmp570:
 	.cfi_def_cfa_register %rbp
 	andl	$-4, %edi
 	movq	apic_data, %rax
@@ -8068,12 +7996,12 @@ APIC_SetEnableMode:                     # @APIC_SetEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp595:
+.Ltmp571:
 	.cfi_def_cfa_offset 16
-.Ltmp596:
+.Ltmp572:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp597:
+.Ltmp573:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
@@ -8098,12 +8026,12 @@ APIC_CallibrateTimer:                   # @APIC_CallibrateTimer
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp598:
+.Ltmp574:
 	.cfi_def_cfa_offset 16
-.Ltmp599:
+.Ltmp575:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp600:
+.Ltmp576:
 	.cfi_def_cfa_register %rbp
 	movl	$0, rollover_cnt
 	movl	$-1, pit_ticks
@@ -8205,12 +8133,12 @@ APIC_SetVector:                         # @APIC_SetVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp601:
+.Ltmp577:
 	.cfi_def_cfa_offset 16
-.Ltmp602:
+.Ltmp578:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp603:
+.Ltmp579:
 	.cfi_def_cfa_register %rbp
 	leal	-800(%rdi), %eax
 	cmpl	$80, %eax
@@ -8238,12 +8166,12 @@ APIC_SetTimerValue:                     # @APIC_SetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp604:
+.Ltmp580:
 	.cfi_def_cfa_offset 16
-.Ltmp605:
+.Ltmp581:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp606:
+.Ltmp582:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	(%rax), %rax
@@ -8261,12 +8189,12 @@ APIC_SetTimerDivisor:                   # @APIC_SetTimerDivisor
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp607:
+.Ltmp583:
 	.cfi_def_cfa_offset 16
-.Ltmp608:
+.Ltmp584:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp609:
+.Ltmp585:
 	.cfi_def_cfa_register %rbp
 	cmpl	$16, %edi
 	seta	%cl
@@ -8309,12 +8237,12 @@ APIC_SetTimerMode:                      # @APIC_SetTimerMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp610:
+.Ltmp586:
 	.cfi_def_cfa_offset 16
-.Ltmp611:
+.Ltmp587:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp612:
+.Ltmp588:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
@@ -8337,12 +8265,12 @@ APIC_SetEnableInterrupt:                # @APIC_SetEnableInterrupt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp613:
+.Ltmp589:
 	.cfi_def_cfa_offset 16
-.Ltmp614:
+.Ltmp590:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp615:
+.Ltmp591:
 	.cfi_def_cfa_register %rbp
 	leal	-800(%rdi), %eax
 	cmpl	$80, %eax
@@ -8373,12 +8301,12 @@ APIC_GetTimerFrequency:                 # @APIC_GetTimerFrequency
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp616:
+.Ltmp592:
 	.cfi_def_cfa_offset 16
-.Ltmp617:
+.Ltmp593:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp618:
+.Ltmp594:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	8(%rax), %rax
@@ -8395,12 +8323,12 @@ APIC_SetDeliveryMode:                   # @APIC_SetDeliveryMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp619:
+.Ltmp595:
 	.cfi_def_cfa_offset 16
-.Ltmp620:
+.Ltmp596:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp621:
+.Ltmp597:
 	.cfi_def_cfa_register %rbp
 	leal	-800(%rdi), %eax
 	cmpl	$64, %eax
@@ -8430,12 +8358,12 @@ APIC_SetTriggerMode:                    # @APIC_SetTriggerMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp622:
+.Ltmp598:
 	.cfi_def_cfa_offset 16
-.Ltmp623:
+.Ltmp599:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp624:
+.Ltmp600:
 	.cfi_def_cfa_register %rbp
 	leal	-848(%rdi), %eax
 	cmpl	$16, %eax
@@ -8465,12 +8393,12 @@ APIC_SetPolarity:                       # @APIC_SetPolarity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp625:
+.Ltmp601:
 	.cfi_def_cfa_offset 16
-.Ltmp626:
+.Ltmp602:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp627:
+.Ltmp603:
 	.cfi_def_cfa_register %rbp
 	leal	-848(%rdi), %eax
 	cmpl	$16, %eax
@@ -8500,12 +8428,12 @@ APIC_GetTimerValue:                     # @APIC_GetTimerValue
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp628:
+.Ltmp604:
 	.cfi_def_cfa_offset 16
-.Ltmp629:
+.Ltmp605:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp630:
+.Ltmp606:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	(%rax), %rax
@@ -8523,12 +8451,12 @@ APIC_GetID:                             # @APIC_GetID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp631:
+.Ltmp607:
 	.cfi_def_cfa_offset 16
-.Ltmp632:
+.Ltmp608:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp633:
+.Ltmp609:
 	.cfi_def_cfa_register %rbp
 	movq	apic_data, %rax
 	movq	(%rax), %rcx
@@ -8547,12 +8475,12 @@ APIC_SendEOI:                           # @APIC_SendEOI
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp634:
+.Ltmp610:
 	.cfi_def_cfa_offset 16
-.Ltmp635:
+.Ltmp611:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp636:
+.Ltmp612:
 	.cfi_def_cfa_register %rbp
 	movl	%edi, %ecx
 	movb	%cl, %al
@@ -8584,12 +8512,12 @@ APIC_SendIPI:                           # @APIC_SendIPI
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp637:
+.Ltmp613:
 	.cfi_def_cfa_offset 16
-.Ltmp638:
+.Ltmp614:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp639:
+.Ltmp615:
 	.cfi_def_cfa_register %rbp
 	shll	$24, %edi
 	andl	$7, %edx
@@ -8614,12 +8542,12 @@ APIC_TimerCallibrateRollover:           # @APIC_TimerCallibrateRollover
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp640:
+.Ltmp616:
 	.cfi_def_cfa_offset 16
-.Ltmp641:
+.Ltmp617:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp642:
+.Ltmp618:
 	.cfi_def_cfa_register %rbp
 	cmpl	$33, %edi
 	jne	.LBB130_2
@@ -8638,12 +8566,12 @@ APIC_TimerCallibrate:                   # @APIC_TimerCallibrate
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp643:
+.Ltmp619:
 	.cfi_def_cfa_offset 16
-.Ltmp644:
+.Ltmp620:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp645:
+.Ltmp621:
 	.cfi_def_cfa_register %rbp
 	cmpl	$32, %edi
 	jne	.LBB131_4
@@ -8674,12 +8602,12 @@ IOAPIC_Initialize:                      # @IOAPIC_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp646:
+.Ltmp622:
 	.cfi_def_cfa_offset 16
-.Ltmp647:
+.Ltmp623:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp648:
+.Ltmp624:
 	.cfi_def_cfa_register %rbp
 	movl	curIOAPIC_index, %ecx
 	movb	$-1, %al
@@ -8723,12 +8651,12 @@ IOAPIC_Read:                            # @IOAPIC_Read
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp649:
+.Ltmp625:
 	.cfi_def_cfa_offset 16
-.Ltmp650:
+.Ltmp626:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp651:
+.Ltmp627:
 	.cfi_def_cfa_register %rbp
 	movl	%esi, (%rdi)
 	movl	16(%rdi), %eax
@@ -8745,12 +8673,12 @@ IOAPIC_Write:                           # @IOAPIC_Write
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp652:
+.Ltmp628:
 	.cfi_def_cfa_offset 16
-.Ltmp653:
+.Ltmp629:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp654:
+.Ltmp630:
 	.cfi_def_cfa_register %rbp
 	movl	%esi, (%rdi)
 	movl	%edx, 16(%rdi)
@@ -8767,12 +8695,12 @@ IOAPIC_GetVector:                       # @IOAPIC_GetVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp655:
+.Ltmp631:
 	.cfi_def_cfa_offset 16
-.Ltmp656:
+.Ltmp632:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp657:
+.Ltmp633:
 	.cfi_def_cfa_register %rbp
 	movb	$-1, %r8b
 	cmpl	$0, curIOAPIC_index
@@ -8825,21 +8753,21 @@ IOAPIC_MapIRQ:                          # @IOAPIC_MapIRQ
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp658:
+.Ltmp634:
 	.cfi_def_cfa_offset 16
-.Ltmp659:
+.Ltmp635:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp660:
+.Ltmp636:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
-.Ltmp661:
+.Ltmp637:
 	.cfi_offset %rbx, -40
-.Ltmp662:
+.Ltmp638:
 	.cfi_offset %r14, -32
-.Ltmp663:
+.Ltmp639:
 	.cfi_offset %r15, -24
 	cmpl	$0, curIOAPIC_index
 	je	.LBB136_8
@@ -8919,12 +8847,12 @@ IOAPIC_SetEnableMode:                   # @IOAPIC_SetEnableMode
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp664:
+.Ltmp640:
 	.cfi_def_cfa_offset 16
-.Ltmp665:
+.Ltmp641:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp666:
+.Ltmp642:
 	.cfi_def_cfa_register %rbp
 	movl	ioapic_interruptMap(,%rdi,8), %eax
 	cmpl	$-1, %eax
@@ -8959,12 +8887,12 @@ APIC_Initialize:                        # @APIC_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp667:
+.Ltmp643:
 	.cfi_def_cfa_offset 16
-.Ltmp668:
+.Ltmp644:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp669:
+.Ltmp645:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -8972,15 +8900,15 @@ APIC_Initialize:                        # @APIC_Initialize
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp670:
+.Ltmp646:
 	.cfi_offset %rbx, -56
-.Ltmp671:
+.Ltmp647:
 	.cfi_offset %r12, -48
-.Ltmp672:
+.Ltmp648:
 	.cfi_offset %r13, -40
-.Ltmp673:
+.Ltmp649:
 	.cfi_offset %r14, -32
-.Ltmp674:
+.Ltmp650:
 	.cfi_offset %r15, -24
 	movl	$1, %eax
 	xorl	%ecx, %ecx
@@ -9340,12 +9268,12 @@ MemMan_Initialize:                      # @MemMan_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp675:
+.Ltmp651:
 	.cfi_def_cfa_offset 16
-.Ltmp676:
+.Ltmp652:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp677:
+.Ltmp653:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -9353,15 +9281,15 @@ MemMan_Initialize:                      # @MemMan_Initialize
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp678:
+.Ltmp654:
 	.cfi_offset %rbx, -56
-.Ltmp679:
+.Ltmp655:
 	.cfi_offset %r12, -48
-.Ltmp680:
+.Ltmp656:
 	.cfi_offset %r13, -40
-.Ltmp681:
+.Ltmp657:
 	.cfi_offset %r14, -32
-.Ltmp682:
+.Ltmp658:
 	.cfi_offset %r15, -24
 	movq	bootInfo, %rdx
 	movq	%rdx, %rax
@@ -9548,9 +9476,9 @@ MemMan_Initialize:                      # @MemMan_Initialize
 	cmpl	%r8d, %esi
 	jb	.LBB139_16
 .LBB139_21:                             # %._crit_edge
-	movq	bootInfo+72, %rsi
 	movq	virtMemData, %rax
 	movq	8(%rax), %rdi
+	movq	bootInfo+72, %rsi
 	callq	VirtMemMan_GetPhysicalAddress
 	movl	bootInfo+88, %ecx
 	imull	bootInfo+80, %ecx
@@ -9791,12 +9719,12 @@ MemMan_MarkFree:                        # @MemMan_MarkFree
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp683:
+.Ltmp659:
 	.cfi_def_cfa_offset 16
-.Ltmp684:
+.Ltmp660:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp685:
+.Ltmp661:
 	.cfi_def_cfa_register %rbp
 	testq	%rsi, %rsi
 	je	.LBB140_8
@@ -9866,12 +9794,12 @@ MemMan_MarkUsed:                        # @MemMan_MarkUsed
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp686:
+.Ltmp662:
 	.cfi_def_cfa_offset 16
-.Ltmp687:
+.Ltmp663:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp688:
+.Ltmp664:
 	.cfi_def_cfa_register %rbp
 	testq	%rsi, %rsi
 	je	.LBB141_8
@@ -9941,12 +9869,12 @@ MemMan_Alloc:                           # @MemMan_Alloc
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp689:
+.Ltmp665:
 	.cfi_def_cfa_offset 16
-.Ltmp690:
+.Ltmp666:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp691:
+.Ltmp667:
 	.cfi_def_cfa_register %rbp
 	movq	freePageCount, %r8
 	xorl	%eax, %eax
@@ -10034,12 +9962,12 @@ MemMan_Alloc2MiBPage:                   # @MemMan_Alloc2MiBPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp692:
+.Ltmp668:
 	.cfi_def_cfa_offset 16
-.Ltmp693:
+.Ltmp669:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp694:
+.Ltmp670:
 	.cfi_def_cfa_register %rbp
 	movl	$512, %edi              # imm = 0x200
 	popq	%rbp
@@ -10055,18 +9983,18 @@ MemMan_Alloc4KiBPageCont:               # @MemMan_Alloc4KiBPageCont
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp695:
+.Ltmp671:
 	.cfi_def_cfa_offset 16
-.Ltmp696:
+.Ltmp672:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp697:
+.Ltmp673:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp698:
+.Ltmp674:
 	.cfi_offset %rbx, -32
-.Ltmp699:
+.Ltmp675:
 	.cfi_offset %r14, -24
 	movq	freePageCount, %r8
 	xorl	%ecx, %ecx
@@ -10200,12 +10128,12 @@ MemMan_Alloc2MiBPageCont:               # @MemMan_Alloc2MiBPageCont
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp700:
+.Ltmp676:
 	.cfi_def_cfa_offset 16
-.Ltmp701:
+.Ltmp677:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp702:
+.Ltmp678:
 	.cfi_def_cfa_register %rbp
 	shll	$9, %edi
 	popq	%rbp
@@ -10221,12 +10149,12 @@ MemMan_Free:                            # @MemMan_Free
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp703:
+.Ltmp679:
 	.cfi_def_cfa_offset 16
-.Ltmp704:
+.Ltmp680:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp705:
+.Ltmp681:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %rcx
 	shrq	$12, %rcx
@@ -10250,12 +10178,12 @@ MemMan_FreeCont:                        # @MemMan_FreeCont
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp706:
+.Ltmp682:
 	.cfi_def_cfa_offset 16
-.Ltmp707:
+.Ltmp683:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp708:
+.Ltmp684:
 	.cfi_def_cfa_register %rbp
 	testl	%esi, %esi
 	je	.LBB147_8
@@ -10324,16 +10252,16 @@ VirtMemMan_InitializeBootstrap:         # @VirtMemMan_InitializeBootstrap
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp709:
+.Ltmp685:
 	.cfi_def_cfa_offset 16
-.Ltmp710:
+.Ltmp686:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp711:
+.Ltmp687:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp712:
+.Ltmp688:
 	.cfi_offset %rbx, -24
 	movl	pos, %eax
 	movq	%rax, %rcx
@@ -10409,12 +10337,12 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp713:
+.Ltmp689:
 	.cfi_def_cfa_offset 16
-.Ltmp714:
+.Ltmp690:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp715:
+.Ltmp691:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -10422,15 +10350,15 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	pushq	%r12
 	pushq	%rbx
 	subq	$56, %rsp
-.Ltmp716:
+.Ltmp692:
 	.cfi_offset %rbx, -56
-.Ltmp717:
+.Ltmp693:
 	.cfi_offset %r12, -48
-.Ltmp718:
+.Ltmp694:
 	.cfi_offset %r13, -40
-.Ltmp719:
+.Ltmp695:
 	.cfi_offset %r14, -32
-.Ltmp720:
+.Ltmp696:
 	.cfi_offset %r15, -24
 	movl	$-2147483647, %eax      # imm = 0xFFFFFFFF80000001
 	xorl	%ecx, %ecx
@@ -11530,7 +11458,7 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 .LBB149_134:                            # %VirtMemMan_MapHPage.exit97
 	movq	$8160, coreLocalSpace   # imm = 0x1FE0
 	movabsq	$-8589930496, %r12      # imm = 0xFFFFFFFE00001000
-.LBB149_136:                            # %.preheader.i
+.LBB149_136:                            # %.preheader.i.3
 	movabsq	$-1099511627776, %r14   # imm = 0xFFFFFF0000000000
 	movl	$2, %edi
 	callq	MemMan_Alloc4KiBPageCont
@@ -11584,9 +11512,9 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	incq	%rbx
 	cmpq	$512, %rbx              # imm = 0x200
 	jne	.LBB149_137
-# BB#142:                               # %VirtMemMan_SetCurrent.exit
-	movq	(%rax), %rsi
+# BB#142:                               # %VirtMemMan_SetCurrent.exit7
 	movq	8(%rax), %rdi
+	movq	(%rax), %rsi
 	callq	VirtMemMan_GetPhysicalAddress
 	#APP
 	movq	%rax, %cr3
@@ -11635,7 +11563,7 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	leaq	4096(%rcx,%rdx), %rcx
 	movq	%rcx, (%rax)
 	movq	virtMemData, %rax
-.LBB149_146:                            # %.preheader.i.3
+.LBB149_146:                            # %.preheader.i
 	movq	24(%rax), %rcx
 	movq	(%rax), %rdx
 	movq	%rcx, 4080(%rdx)
@@ -11665,9 +11593,9 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	incq	%rsi
 	cmpq	$512, %rsi              # imm = 0x200
 	jne	.LBB149_147
-# BB#152:                               # %VirtMemMan_SetCurrent.exit7
-	movq	(%rax), %rsi
+# BB#152:                               # %VirtMemMan_SetCurrent.exit
 	movq	8(%rax), %rdi
+	movq	(%rax), %rsi
 	callq	VirtMemMan_GetPhysicalAddress
 	#APP
 	movq	%rax, %cr3
@@ -11686,6 +11614,64 @@ VirtMemMan_Initialize:                  # @VirtMemMan_Initialize
 	.size	VirtMemMan_Initialize, .Lfunc_end149-VirtMemMan_Initialize
 	.cfi_endproc
 
+	.globl	VirtMemMan_GetVirtualAddress
+	.align	16, 0x90
+	.type	VirtMemMan_GetVirtualAddress,@function
+VirtMemMan_GetVirtualAddress:           # @VirtMemMan_GetVirtualAddress
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp697:
+	.cfi_def_cfa_offset 16
+.Ltmp698:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp699:
+	.cfi_def_cfa_register %rbp
+	movabsq	$-17179869184, %rcx     # imm = 0xFFFFFFFC00000000
+	movabsq	$4294967296, %rdx       # imm = 0x100000000
+	xorl	%eax, %eax
+	cmpl	$2, %edi
+	je	.LBB150_4
+# BB#1:
+	cmpl	$1, %edi
+	jne	.LBB150_2
+# BB#6:
+	xorl	%eax, %eax
+	cmpq	%rdx, %rsi
+	jae	.LBB150_9
+# BB#7:
+	movabsq	$-21474836480, %rax     # imm = 0xFFFFFFFB00000000
+	addq	%rax, %rsi
+	jmp	.LBB150_8
+.LBB150_4:
+	xorl	%eax, %eax
+	cmpq	%rdx, %rsi
+	jae	.LBB150_9
+# BB#5:
+	addq	%rcx, %rsi
+.LBB150_8:
+	movq	%rsi, %rax
+	jmp	.LBB150_9
+.LBB150_2:
+	testl	%edi, %edi
+	jne	.LBB150_9
+# BB#3:
+	cmpq	%rdx, %rsi
+	leaq	(%rcx,%rsi), %rcx
+	sbbq	%rax, %rax
+	andl	$1, %eax
+	shlq	$33, %rax
+	addq	%rcx, %rax
+	popq	%rbp
+	retq
+.LBB150_9:
+	popq	%rbp
+	retq
+.Lfunc_end150:
+	.size	VirtMemMan_GetVirtualAddress, .Lfunc_end150-VirtMemMan_GetVirtualAddress
+	.cfi_endproc
+
 	.globl	VirtMemMan_MapHPage
 	.align	16, 0x90
 	.type	VirtMemMan_MapHPage,@function
@@ -11693,12 +11679,12 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp721:
+.Ltmp700:
 	.cfi_def_cfa_offset 16
-.Ltmp722:
+.Ltmp701:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp723:
+.Ltmp702:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -11706,15 +11692,15 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	pushq	%r12
 	pushq	%rbx
 	subq	$56, %rsp
-.Ltmp724:
+.Ltmp703:
 	.cfi_offset %rbx, -56
-.Ltmp725:
+.Ltmp704:
 	.cfi_offset %r12, -48
-.Ltmp726:
+.Ltmp705:
 	.cfi_offset %r13, -40
-.Ltmp727:
+.Ltmp706:
 	.cfi_offset %r14, -32
-.Ltmp728:
+.Ltmp707:
 	.cfi_offset %r15, -24
 	movl	%r9d, %r15d
 	movq	%rdx, %rbx
@@ -11722,7 +11708,7 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	andq	$-1073741824, %rbx      # imm = 0xFFFFFFFFC0000000
 	movq	virtMemData, %r9
 	cmpb	$0, 16(%r9)
-	je	.LBB150_1
+	je	.LBB151_1
 # BB#3:
 	movabsq	$1152921504606842880, %rdx # imm = 0xFFFFFFFFFFFF000
 	movq	%rsi, %r10
@@ -11734,7 +11720,7 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	movq	(%rdi,%r10,8), %rax
 	movabsq	$9223372036854775675, %r11 # imm = 0x7FFFFFFFFFFFFF7B
 	testq	%rdx, %rax
-	jne	.LBB150_5
+	jne	.LBB151_5
 # BB#4:
 	movq	%rsi, -56(%rbp)         # 8-byte Spill
 	movq	%rdi, %r12
@@ -11753,7 +11739,7 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	movq	-56(%rbp), %rsi         # 8-byte Reload
 	orq	$7, %rax
 	movq	%rax, (%rdi,%r10,8)
-.LBB150_5:                              # %VirtMemMan_SetupPDPTEntry.exit
+.LBB151_5:                              # %VirtMemMan_SetupPDPTEntry.exit
 	andq	%rdx, %rax
 	movq	%rax, %rdx
 	shrq	$32, %rdx
@@ -11784,7 +11770,7 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	movq	%r13, (%rcx,%rax)
 	movq	8(%r9), %rax
 	cmpq	%rdi, %rax
-	jne	.LBB150_7
+	jne	.LBB151_7
 # BB#6:
 	movq	(%rdi,%r10,8), %rax
 	movq	(%r9), %rcx
@@ -11792,14 +11778,14 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	#APP
 	invlpg	(%rsi)
 	#NO_APP
-	jmp	.LBB150_7
-.LBB150_1:                              # %.preheader.preheader
+	jmp	.LBB151_7
+.LBB151_1:                              # %.preheader.preheader
 	xorl	%r12d, %r12d
 	movzbl	%cl, %eax
 	movl	%eax, -48(%rbp)         # 4-byte Spill
 	movl	%r15d, -56(%rbp)        # 4-byte Spill
 	.align	16, 0x90
-.LBB150_2:                              # %.preheader
+.LBB151_2:                              # %.preheader
                                         # =>This Inner Loop Header: Depth=1
 	leaq	(%rbx,%r12), %rdx
 	movq	%rsi, %r13
@@ -11816,8 +11802,8 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	movq	%r13, %rsi
 	addq	$2097152, %r12          # imm = 0x200000
 	cmpq	$1073741824, %r12       # imm = 0x40000000
-	jne	.LBB150_2
-.LBB150_7:                              # %.loopexit
+	jne	.LBB151_2
+.LBB151_7:                              # %.loopexit
 	addq	$56, %rsp
 	popq	%rbx
 	popq	%r12
@@ -11826,8 +11812,8 @@ VirtMemMan_MapHPage:                    # @VirtMemMan_MapHPage
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end150:
-	.size	VirtMemMan_MapHPage, .Lfunc_end150-VirtMemMan_MapHPage
+.Lfunc_end151:
+	.size	VirtMemMan_MapHPage, .Lfunc_end151-VirtMemMan_MapHPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_Map
@@ -11837,12 +11823,12 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp729:
+.Ltmp708:
 	.cfi_def_cfa_offset 16
-.Ltmp730:
+.Ltmp709:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp731:
+.Ltmp710:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -11850,15 +11836,15 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	pushq	%r12
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp732:
+.Ltmp711:
 	.cfi_offset %rbx, -56
-.Ltmp733:
+.Ltmp712:
 	.cfi_offset %r12, -48
-.Ltmp734:
+.Ltmp713:
 	.cfi_offset %r13, -40
-.Ltmp735:
+.Ltmp714:
 	.cfi_offset %r14, -32
-.Ltmp736:
+.Ltmp715:
 	.cfi_offset %r15, -24
 	movl	%r9d, -44(%rbp)         # 4-byte Spill
 	movq	%rcx, %r14
@@ -11866,9 +11852,9 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	movq	%rsi, %rbx
 	movq	%rdi, %r12
 	movzbl	%r8b, %r13d
-	jmp	.LBB151_1
+	jmp	.LBB152_1
 	.align	16, 0x90
-.LBB151_11:                             #   in Loop: Header=BB151_1 Depth=1
+.LBB152_11:                             #   in Loop: Header=BB152_1 Depth=1
 	movl	24(%rbp), %eax
 	movl	%eax, (%rsp)
 	movq	%r12, %rdi
@@ -11879,19 +11865,19 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	movl	16(%rbp), %r9d
 	callq	VirtMemMan_MapLPage
 	xorl	%r14d, %r14d
-.LBB151_1:                              # %.backedge
+.LBB152_1:                              # %.backedge
                                         # =>This Inner Loop Header: Depth=1
 	cmpq	$2097151, %r14          # imm = 0x1FFFFF
-	jle	.LBB151_2
+	jle	.LBB152_2
 # BB#7:                                 # %.backedge
-                                        #   in Loop: Header=BB151_1 Depth=1
+                                        #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$2097152, %r14          # imm = 0x200000
-	je	.LBB151_11
+	je	.LBB152_11
 # BB#8:                                 # %.backedge
-                                        #   in Loop: Header=BB151_1 Depth=1
+                                        #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$1073741824, %r14       # imm = 0x40000000
-	jne	.LBB151_4
-# BB#9:                                 #   in Loop: Header=BB151_1 Depth=1
+	jne	.LBB152_4
+# BB#9:                                 #   in Loop: Header=BB152_1 Depth=1
 	movl	24(%rbp), %eax
 	movl	%eax, (%rsp)
 	movq	%r12, %rdi
@@ -11902,13 +11888,13 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	movl	16(%rbp), %r9d
 	callq	VirtMemMan_MapHPage
 	xorl	%r14d, %r14d
-	jmp	.LBB151_1
+	jmp	.LBB152_1
 	.align	16, 0x90
-.LBB151_2:                              # %.backedge
-                                        #   in Loop: Header=BB151_1 Depth=1
+.LBB152_2:                              # %.backedge
+                                        #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$4096, %r14             # imm = 0x1000
-	jne	.LBB151_3
-# BB#10:                                #   in Loop: Header=BB151_1 Depth=1
+	jne	.LBB152_3
+# BB#10:                                #   in Loop: Header=BB152_1 Depth=1
 	movl	24(%rbp), %eax
 	movl	%eax, (%rsp)
 	movq	%r12, %rdi
@@ -11919,20 +11905,20 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	movl	16(%rbp), %r9d
 	callq	VirtMemMan_MapSPage
 	xorl	%r14d, %r14d
-	jmp	.LBB151_1
-.LBB151_3:                              # %.backedge
-                                        #   in Loop: Header=BB151_1 Depth=1
+	jmp	.LBB152_1
+.LBB152_3:                              # %.backedge
+                                        #   in Loop: Header=BB152_1 Depth=1
 	testq	%r14, %r14
-	je	.LBB151_18
-.LBB151_4:                              #   in Loop: Header=BB151_1 Depth=1
+	je	.LBB152_18
+.LBB152_4:                              #   in Loop: Header=BB152_1 Depth=1
 	movq	%rbx, %rax
 	orq	%r15, %rax
 	testl	$1073741823, %eax       # imm = 0x3FFFFFFF
-	jne	.LBB151_12
-# BB#5:                                 #   in Loop: Header=BB151_1 Depth=1
+	jne	.LBB152_12
+# BB#5:                                 #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$1073741824, %r14       # imm = 0x40000000
-	jb	.LBB151_12
-# BB#6:                                 #   in Loop: Header=BB151_1 Depth=1
+	jb	.LBB152_12
+# BB#6:                                 #   in Loop: Header=BB152_1 Depth=1
 	addq	$-1073741824, %r14      # imm = 0xFFFFFFFFC0000000
 	movl	24(%rbp), %eax
 	movl	%eax, 8(%rsp)
@@ -11947,14 +11933,14 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	callq	VirtMemMan_Map
 	addq	$1073741824, %rbx       # imm = 0x40000000
 	addq	$1073741824, %r15       # imm = 0x40000000
-	jmp	.LBB151_1
-.LBB151_12:                             #   in Loop: Header=BB151_1 Depth=1
+	jmp	.LBB152_1
+.LBB152_12:                             #   in Loop: Header=BB152_1 Depth=1
 	testl	$2097151, %eax          # imm = 0x1FFFFF
-	jne	.LBB151_15
-# BB#13:                                #   in Loop: Header=BB151_1 Depth=1
+	jne	.LBB152_15
+# BB#13:                                #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$2097152, %r14          # imm = 0x200000
-	jb	.LBB151_15
-# BB#14:                                #   in Loop: Header=BB151_1 Depth=1
+	jb	.LBB152_15
+# BB#14:                                #   in Loop: Header=BB152_1 Depth=1
 	addq	$-2097152, %r14         # imm = 0xFFFFFFFFFFE00000
 	movl	24(%rbp), %eax
 	movl	%eax, 8(%rsp)
@@ -11969,14 +11955,14 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	callq	VirtMemMan_Map
 	addq	$2097152, %rbx          # imm = 0x200000
 	addq	$2097152, %r15          # imm = 0x200000
-	jmp	.LBB151_1
-.LBB151_15:                             #   in Loop: Header=BB151_1 Depth=1
+	jmp	.LBB152_1
+.LBB152_15:                             #   in Loop: Header=BB152_1 Depth=1
 	testw	$4095, %ax              # imm = 0xFFF
-	jne	.LBB151_18
-# BB#16:                                #   in Loop: Header=BB151_1 Depth=1
+	jne	.LBB152_18
+# BB#16:                                #   in Loop: Header=BB152_1 Depth=1
 	cmpq	$4096, %r14             # imm = 0x1000
-	jb	.LBB151_18
-# BB#17:                                #   in Loop: Header=BB151_1 Depth=1
+	jb	.LBB152_18
+# BB#17:                                #   in Loop: Header=BB152_1 Depth=1
 	addq	$-4096, %r14            # imm = 0xFFFFFFFFFFFFF000
 	movl	24(%rbp), %eax
 	movl	%eax, 8(%rsp)
@@ -11991,8 +11977,8 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	callq	VirtMemMan_Map
 	addq	$4096, %rbx             # imm = 0x1000
 	addq	$4096, %r15             # imm = 0x1000
-	jmp	.LBB151_1
-.LBB151_18:                             # %.loopexit
+	jmp	.LBB152_1
+.LBB152_18:                             # %.loopexit
 	addq	$24, %rsp
 	popq	%rbx
 	popq	%r12
@@ -12001,8 +11987,8 @@ VirtMemMan_Map:                         # @VirtMemMan_Map
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end151:
-	.size	VirtMemMan_Map, .Lfunc_end151-VirtMemMan_Map
+.Lfunc_end152:
+	.size	VirtMemMan_Map, .Lfunc_end152-VirtMemMan_Map
 	.cfi_endproc
 
 	.globl	VirtMemMan_SetCurrent
@@ -12012,31 +11998,31 @@ VirtMemMan_SetCurrent:                  # @VirtMemMan_SetCurrent
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp737:
+.Ltmp716:
 	.cfi_def_cfa_offset 16
-.Ltmp738:
+.Ltmp717:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp739:
+.Ltmp718:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp740:
+.Ltmp719:
 	.cfi_offset %rbx, -32
-.Ltmp741:
+.Ltmp720:
 	.cfi_offset %r14, -24
 	movq	%rdi, %rbx
 	movq	virtMemData, %rax
 	movq	8(%rax), %r14
 	testq	%rbx, %rbx
-	jne	.LBB152_2
+	jne	.LBB153_2
 # BB#1:
 	#APP
 	cli
 	hlt
 	#NO_APP
 	movq	virtMemData, %rax
-.LBB152_2:                              # %.preheader
+.LBB153_2:                              # %.preheader
 	movabsq	$-8589930496, %rcx      # imm = 0xFFFFFFFE00001000
 	cmpq	%rcx, %r14
 	sete	%dl
@@ -12045,27 +12031,27 @@ VirtMemMan_SetCurrent:                  # @VirtMemMan_SetCurrent
 	orb	%dl, %cl
 	xorl	%edx, %edx
 	.align	16, 0x90
-.LBB152_3:                              # =>This Inner Loop Header: Depth=1
+.LBB153_3:                              # =>This Inner Loop Header: Depth=1
 	cmpl	$510, %edx              # imm = 0x1FE
-	je	.LBB152_7
-# BB#4:                                 #   in Loop: Header=BB152_3 Depth=1
+	je	.LBB153_7
+# BB#4:                                 #   in Loop: Header=BB153_3 Depth=1
 	testb	%cl, %cl
-	jne	.LBB152_6
-# BB#5:                                 #   in Loop: Header=BB152_3 Depth=1
+	jne	.LBB153_6
+# BB#5:                                 #   in Loop: Header=BB153_3 Depth=1
 	movq	(%rax), %rsi
 	movq	(%rsi,%rdx,8), %rsi
 	movq	%rsi, (%r14,%rdx,8)
-.LBB152_6:                              #   in Loop: Header=BB152_3 Depth=1
+.LBB153_6:                              #   in Loop: Header=BB153_3 Depth=1
 	movq	(%rbx,%rdx,8), %rsi
 	movq	(%rax), %rdi
 	movq	%rsi, (%rdi,%rdx,8)
-.LBB152_7:                              #   in Loop: Header=BB152_3 Depth=1
+.LBB153_7:                              #   in Loop: Header=BB153_3 Depth=1
 	incq	%rdx
 	cmpq	$512, %rdx              # imm = 0x200
-	jne	.LBB152_3
+	jne	.LBB153_3
 # BB#8:
-	movq	(%rax), %rsi
 	movq	8(%rax), %rdi
+	movq	(%rax), %rsi
 	callq	VirtMemMan_GetPhysicalAddress
 	#APP
 	movq	%rax, %cr3
@@ -12077,8 +12063,8 @@ VirtMemMan_SetCurrent:                  # @VirtMemMan_SetCurrent
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end152:
-	.size	VirtMemMan_SetCurrent, .Lfunc_end152-VirtMemMan_SetCurrent
+.Lfunc_end153:
+	.size	VirtMemMan_SetCurrent, .Lfunc_end153-VirtMemMan_SetCurrent
 	.cfi_endproc
 
 	.globl	VirtMemMan_AllocCoreLocalData
@@ -12088,31 +12074,31 @@ VirtMemMan_AllocCoreLocalData:          # @VirtMemMan_AllocCoreLocalData
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp742:
+.Ltmp721:
 	.cfi_def_cfa_offset 16
-.Ltmp743:
+.Ltmp722:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp744:
+.Ltmp723:
 	.cfi_def_cfa_register %rbp
 	movq	coreLocalSpace, %rcx
 	xorl	%eax, %eax
 	movq	%rcx, %rdx
 	subq	%rdi, %rdx
-	jb	.LBB153_3
+	jb	.LBB154_3
 # BB#1:
 	testq	%rcx, %rcx
-	je	.LBB153_3
+	je	.LBB154_3
 # BB#2:
 	movl	$8192, %eax             # imm = 0x2000
 	subq	%rcx, %rax
 	addq	virtMemData, %rax
 	movq	%rdx, coreLocalSpace
-.LBB153_3:
+.LBB154_3:
 	popq	%rbp
 	retq
-.Lfunc_end153:
-	.size	VirtMemMan_AllocCoreLocalData, .Lfunc_end153-VirtMemMan_AllocCoreLocalData
+.Lfunc_end154:
+	.size	VirtMemMan_AllocCoreLocalData, .Lfunc_end154-VirtMemMan_AllocCoreLocalData
 	.cfi_endproc
 
 	.globl	VirtMemMan_CreateInstance
@@ -12122,18 +12108,18 @@ VirtMemMan_CreateInstance:              # @VirtMemMan_CreateInstance
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp745:
+.Ltmp724:
 	.cfi_def_cfa_offset 16
-.Ltmp746:
+.Ltmp725:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp747:
+.Ltmp726:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp748:
+.Ltmp727:
 	.cfi_offset %rbx, -32
-.Ltmp749:
+.Ltmp728:
 	.cfi_offset %r14, -24
 	callq	MemMan_Alloc
 	movq	%rax, %rcx
@@ -12157,8 +12143,120 @@ VirtMemMan_CreateInstance:              # @VirtMemMan_CreateInstance
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end154:
-	.size	VirtMemMan_CreateInstance, .Lfunc_end154-VirtMemMan_CreateInstance
+.Lfunc_end155:
+	.size	VirtMemMan_CreateInstance, .Lfunc_end155-VirtMemMan_CreateInstance
+	.cfi_endproc
+
+	.globl	VirtMemMan_GetPhysicalAddress
+	.align	16, 0x90
+	.type	VirtMemMan_GetPhysicalAddress,@function
+VirtMemMan_GetPhysicalAddress:          # @VirtMemMan_GetPhysicalAddress
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp729:
+	.cfi_def_cfa_offset 16
+.Ltmp730:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp731:
+	.cfi_def_cfa_register %rbp
+	pushq	%r14
+	pushq	%rbx
+.Ltmp732:
+	.cfi_offset %rbx, -32
+.Ltmp733:
+	.cfi_offset %r14, -24
+	movq	%rsi, %rax
+	shrq	$36, %rax
+	movq	%rsi, %rdx
+	shrq	$21, %rdx
+	andl	$511, %edx              # imm = 0x1FF
+	movq	%rsi, %r14
+	shrq	$12, %r14
+	andl	$511, %r14d             # imm = 0x1FF
+	andl	$4088, %eax             # imm = 0xFF8
+	movq	(%rdi,%rax), %rcx
+	xorl	%eax, %eax
+	testb	$1, %cl
+	je	.LBB156_10
+# BB#1:
+	movabsq	$-17179869184, %r8      # imm = 0xFFFFFFFC00000000
+	movabsq	$1152921504606842880, %r10 # imm = 0xFFFFFFFFFFFF000
+	movq	%rsi, %rax
+	shrq	$27, %rax
+	andq	%r10, %rcx
+	movq	%rcx, %rdi
+	shrq	$32, %rdi
+	sete	%bl
+	movzbl	%bl, %edi
+	shlq	$33, %rdi
+	addq	%rcx, %rdi
+	addq	%r8, %rdi
+	andl	$4088, %eax             # imm = 0xFF8
+	orq	%rdi, %rax
+	movq	(%rax), %rdi
+	movl	%edi, %eax
+	andl	$129, %eax
+	cmpq	$129, %rax
+	jne	.LBB156_3
+# BB#2:
+	addq	$-1073737728, %r10      # imm = 0xFFFFFFFFC0001000
+	andq	%r10, %rdi
+	andl	$1073741823, %esi       # imm = 0x3FFFFFFF
+	orq	%rdi, %rsi
+	jmp	.LBB156_9
+.LBB156_3:
+	xorl	%eax, %eax
+	testb	$1, %dil
+	je	.LBB156_10
+# BB#4:
+	movabsq	$8589934592, %r9        # imm = 0x200000000
+	movabsq	$4294967296, %r11       # imm = 0x100000000
+	andq	%r10, %rdi
+	xorl	%eax, %eax
+	cmpq	%r11, %rdi
+	leaq	(%rdi,%r8), %rcx
+	cmovbq	%r9, %rax
+	addq	%rcx, %rax
+	movq	(%rax,%rdx,8), %rdx
+	movl	%edx, %eax
+	andl	$129, %eax
+	cmpq	$129, %rax
+	jne	.LBB156_6
+# BB#5:
+	addq	$-1044480, %r10         # imm = 0xFFFFFFFFFFF01000
+	andq	%r10, %rdx
+	andl	$2097151, %esi          # imm = 0x1FFFFF
+	addq	%rdx, %rsi
+	jmp	.LBB156_9
+.LBB156_6:
+	xorl	%eax, %eax
+	testb	$1, %dl
+	je	.LBB156_10
+# BB#7:
+	andq	%r10, %rdx
+	xorl	%eax, %eax
+	cmpq	%r11, %rdx
+	leaq	(%r8,%rdx), %rcx
+	cmovaeq	%rax, %r9
+	addq	%rcx, %r9
+	movq	(%r9,%r14,8), %rcx
+	testb	$1, %cl
+	je	.LBB156_10
+# BB#8:
+	andq	%r10, %rcx
+	andl	$4095, %esi             # imm = 0xFFF
+	orq	%rcx, %rsi
+.LBB156_9:                              # %.thread21
+	movq	%rsi, %rax
+.LBB156_10:                             # %.thread21
+	popq	%rbx
+	popq	%r14
+	popq	%rbp
+	retq
+.Lfunc_end156:
+	.size	VirtMemMan_GetPhysicalAddress, .Lfunc_end156-VirtMemMan_GetPhysicalAddress
 	.cfi_endproc
 
 	.globl	VirtMemMan_GetCurrent
@@ -12168,19 +12266,19 @@ VirtMemMan_GetCurrent:                  # @VirtMemMan_GetCurrent
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp750:
+.Ltmp734:
 	.cfi_def_cfa_offset 16
-.Ltmp751:
+.Ltmp735:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp752:
+.Ltmp736:
 	.cfi_def_cfa_register %rbp
 	movq	virtMemData, %rax
 	movq	8(%rax), %rax
 	popq	%rbp
 	retq
-.Lfunc_end155:
-	.size	VirtMemMan_GetCurrent, .Lfunc_end155-VirtMemMan_GetCurrent
+.Lfunc_end157:
+	.size	VirtMemMan_GetCurrent, .Lfunc_end157-VirtMemMan_GetCurrent
 	.cfi_endproc
 
 	.globl	VirtMemMan_MapLPage
@@ -12190,12 +12288,12 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp753:
+.Ltmp737:
 	.cfi_def_cfa_offset 16
-.Ltmp754:
+.Ltmp738:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp755:
+.Ltmp739:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -12203,15 +12301,15 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	pushq	%r12
 	pushq	%rbx
 	subq	$56, %rsp
-.Ltmp756:
+.Ltmp740:
 	.cfi_offset %rbx, -56
-.Ltmp757:
+.Ltmp741:
 	.cfi_offset %r12, -48
-.Ltmp758:
+.Ltmp742:
 	.cfi_offset %r13, -40
-.Ltmp759:
+.Ltmp743:
 	.cfi_offset %r14, -32
-.Ltmp760:
+.Ltmp744:
 	.cfi_offset %r15, -24
 	movl	%r9d, -52(%rbp)         # 4-byte Spill
 	movq	%r8, -64(%rbp)          # 8-byte Spill
@@ -12229,7 +12327,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	movq	(%rdi,%rax,8), %r9
 	movabsq	$8589934592, %r10       # imm = 0x200000000
 	testq	%r14, %r9
-	jne	.LBB156_2
+	jne	.LBB158_2
 # BB#1:
 	movq	%rdi, -72(%rbp)         # 8-byte Spill
 	movq	%rsi, -80(%rbp)         # 8-byte Spill
@@ -12245,7 +12343,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	orq	$7, %r9
 	movq	-48(%rbp), %rax         # 8-byte Reload
 	movq	%r9, (%rdi,%rax,8)
-.LBB156_2:                              # %VirtMemMan_SetupPDPTEntry.exit.i
+.LBB158_2:                              # %VirtMemMan_SetupPDPTEntry.exit.i
 	movl	16(%rbp), %r13d
 	andq	$-2097152, %rdx         # imm = 0xFFFFFFFFFFE00000
 	movq	%r9, %rax
@@ -12258,7 +12356,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	cmovbq	%r10, %r15
 	addq	%rbx, %r15
 	testq	(%r15,%r12,8), %r14
-	jne	.LBB156_4
+	jne	.LBB158_4
 # BB#3:
 	movq	%rdi, -72(%rbp)         # 8-byte Spill
 	movq	%rsi, -80(%rbp)         # 8-byte Spill
@@ -12273,7 +12371,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	movq	%rax, (%r15,%r12,8)
 	movq	-48(%rbp), %rax         # 8-byte Reload
 	movq	(%rdi,%rax,8), %r9
-.LBB156_4:                              # %VirtMemMan_SetupPDEntry.exit
+.LBB158_4:                              # %VirtMemMan_SetupPDEntry.exit
 	andq	%r14, %r9
 	xorl	%r11d, %r11d
 	movabsq	$4294967296, %r8        # imm = 0x100000000
@@ -12316,7 +12414,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	movq	virtMemData, %rax
 	movq	8(%rax), %rcx
 	cmpq	%rdi, %rcx
-	jne	.LBB156_6
+	jne	.LBB158_6
 # BB#5:
 	movq	-48(%rbp), %rdx         # 8-byte Reload
 	movq	(%rdi,%rdx,8), %rcx
@@ -12326,7 +12424,7 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	#APP
 	invlpg	(%rax)
 	#NO_APP
-.LBB156_6:
+.LBB158_6:
 	addq	$56, %rsp
 	popq	%rbx
 	popq	%r12
@@ -12335,8 +12433,8 @@ VirtMemMan_MapLPage:                    # @VirtMemMan_MapLPage
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end156:
-	.size	VirtMemMan_MapLPage, .Lfunc_end156-VirtMemMan_MapLPage
+.Lfunc_end158:
+	.size	VirtMemMan_MapLPage, .Lfunc_end158-VirtMemMan_MapLPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_MapSPage
@@ -12346,12 +12444,12 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp761:
+.Ltmp745:
 	.cfi_def_cfa_offset 16
-.Ltmp762:
+.Ltmp746:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp763:
+.Ltmp747:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -12359,15 +12457,15 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	pushq	%r12
 	pushq	%rbx
 	subq	$72, %rsp
-.Ltmp764:
+.Ltmp748:
 	.cfi_offset %rbx, -56
-.Ltmp765:
+.Ltmp749:
 	.cfi_offset %r12, -48
-.Ltmp766:
+.Ltmp750:
 	.cfi_offset %r13, -40
-.Ltmp767:
+.Ltmp751:
 	.cfi_offset %r14, -32
-.Ltmp768:
+.Ltmp752:
 	.cfi_offset %r15, -24
 	movl	%r9d, -60(%rbp)         # 4-byte Spill
 	movq	%r8, -72(%rbp)          # 8-byte Spill
@@ -12391,7 +12489,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	movabsq	$8589934592, %r9        # imm = 0x200000000
 	testq	%r13, %rax
 	movabsq	$-17179869184, %r11     # imm = 0xFFFFFFFC00000000
-	jne	.LBB157_2
+	jne	.LBB159_2
 # BB#1:
 	movq	%rdi, -48(%rbp)         # 8-byte Spill
 	movq	%rdx, %rbx
@@ -12406,7 +12504,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	movq	-48(%rbp), %rdi         # 8-byte Reload
 	orq	$7, %rax
 	movq	%rax, (%rdi,%r15,8)
-.LBB157_2:                              # %VirtMemMan_SetupPDPTEntry.exit.i.i
+.LBB159_2:                              # %VirtMemMan_SetupPDPTEntry.exit.i.i
 	movq	%rax, %rcx
 	andq	%r13, %rcx
 	xorl	%ebx, %ebx
@@ -12415,7 +12513,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	cmovbq	%r9, %rbx
 	addq	%rcx, %rbx
 	testq	(%rbx,%r14,8), %r13
-	jne	.LBB157_4
+	jne	.LBB159_4
 # BB#3:
 	movq	%rdi, -48(%rbp)         # 8-byte Spill
 	movq	%rdx, %r12
@@ -12430,7 +12528,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	orq	$7, %rax
 	movq	%rax, (%rbx,%r14,8)
 	movq	(%rdi,%r15,8), %rax
-.LBB157_4:                              # %VirtMemMan_SetupPDEntry.exit.i
+.LBB159_4:                              # %VirtMemMan_SetupPDEntry.exit.i
 	movq	%r15, -96(%rbp)         # 8-byte Spill
 	movl	16(%rbp), %r15d
 	andq	$-4096, %rdx            # imm = 0xFFFFFFFFFFFFF000
@@ -12450,7 +12548,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	addq	%rcx, %r12
 	movabsq	$9223372036854775803, %rbx # imm = 0x7FFFFFFFFFFFFFFB
 	testq	(%r12,%r8,8), %r13
-	jne	.LBB157_6
+	jne	.LBB159_6
 # BB#5:
 	movq	%rdi, -48(%rbp)         # 8-byte Spill
 	movq	%rdx, %rbx
@@ -12467,7 +12565,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	movq	%rax, (%r12,%r8,8)
 	movq	-96(%rbp), %rax         # 8-byte Reload
 	movq	(%rdi,%rax,8), %rax
-.LBB157_6:                              # %VirtMemMan_SetupPTEntry.exit
+.LBB159_6:                              # %VirtMemMan_SetupPTEntry.exit
 	andq	%r13, %rax
 	xorl	%ecx, %ecx
 	cmpq	%r10, %rax
@@ -12512,7 +12610,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	movq	virtMemData, %rax
 	movq	8(%rax), %rcx
 	cmpq	%rdi, %rcx
-	jne	.LBB157_8
+	jne	.LBB159_8
 # BB#7:
 	movq	-96(%rbp), %rbx         # 8-byte Reload
 	movq	(%rdi,%rbx,8), %rcx
@@ -12522,7 +12620,7 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	#APP
 	invlpg	(%rax)
 	#NO_APP
-.LBB157_8:
+.LBB159_8:
 	addq	$72, %rsp
 	popq	%rbx
 	popq	%r12
@@ -12531,8 +12629,8 @@ VirtMemMan_MapSPage:                    # @VirtMemMan_MapSPage
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end157:
-	.size	VirtMemMan_MapSPage, .Lfunc_end157-VirtMemMan_MapSPage
+.Lfunc_end159:
+	.size	VirtMemMan_MapSPage, .Lfunc_end159-VirtMemMan_MapSPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_UnmapSPage
@@ -12542,18 +12640,18 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp769:
+.Ltmp753:
 	.cfi_def_cfa_offset 16
-.Ltmp770:
+.Ltmp754:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp771:
+.Ltmp755:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp772:
+.Ltmp756:
 	.cfi_offset %rbx, -32
-.Ltmp773:
+.Ltmp757:
 	.cfi_offset %r14, -24
 	movabsq	$1152921504606842880, %r8 # imm = 0xFFFFFFFFFFFF000
 	movq	%rsi, %r11
@@ -12567,7 +12665,7 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	andl	$511, %r14d             # imm = 0x1FF
 	movq	(%rdi,%r11,8), %rdx
 	andq	%r8, %rdx
-	je	.LBB158_5
+	je	.LBB160_5
 # BB#1:
 	movabsq	$-17179869184, %r9      # imm = 0xFFFFFFFC00000000
 	movq	%rsi, %rbx
@@ -12582,7 +12680,7 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	addq	%rax, %rbx
 	movq	(%r9,%rbx), %rbx
 	andq	%r8, %rbx
-	je	.LBB158_5
+	je	.LBB160_5
 # BB#2:
 	movabsq	$8589934592, %r10       # imm = 0x200000000
 	movabsq	$4294967296, %rax       # imm = 0x100000000
@@ -12592,7 +12690,7 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	cmovbq	%r10, %rdx
 	addq	%rbx, %rdx
 	andq	(%rdx,%rcx,8), %r8
-	je	.LBB158_5
+	je	.LBB160_5
 # BB#3:
 	xorl	%ecx, %ecx
 	cmpq	%rax, %r8
@@ -12603,7 +12701,7 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	movq	virtMemData, %rax
 	movq	8(%rax), %rcx
 	cmpq	%rdi, %rcx
-	jne	.LBB158_5
+	jne	.LBB160_5
 # BB#4:
 	movq	(%rdi,%r11,8), %rcx
 	movq	(%rax), %rax
@@ -12611,13 +12709,13 @@ VirtMemMan_UnmapSPage:                  # @VirtMemMan_UnmapSPage
 	#APP
 	invlpg	(%rsi)
 	#NO_APP
-.LBB158_5:
+.LBB160_5:
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end158:
-	.size	VirtMemMan_UnmapSPage, .Lfunc_end158-VirtMemMan_UnmapSPage
+.Lfunc_end160:
+	.size	VirtMemMan_UnmapSPage, .Lfunc_end160-VirtMemMan_UnmapSPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_UnmapLPage
@@ -12627,12 +12725,12 @@ VirtMemMan_UnmapLPage:                  # @VirtMemMan_UnmapLPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp774:
+.Ltmp758:
 	.cfi_def_cfa_offset 16
-.Ltmp775:
+.Ltmp759:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp776:
+.Ltmp760:
 	.cfi_def_cfa_register %rbp
 	movabsq	$1152921504606842880, %r9 # imm = 0xFFFFFFFFFFFF000
 	movq	%rsi, %r10
@@ -12643,7 +12741,7 @@ VirtMemMan_UnmapLPage:                  # @VirtMemMan_UnmapLPage
 	andl	$511, %r11d             # imm = 0x1FF
 	movq	(%rdi,%r10,8), %rdx
 	andq	%r9, %rdx
-	je	.LBB159_4
+	je	.LBB161_4
 # BB#1:
 	movabsq	$-17179869184, %r8      # imm = 0xFFFFFFFC00000000
 	movq	%rsi, %rax
@@ -12657,7 +12755,7 @@ VirtMemMan_UnmapLPage:                  # @VirtMemMan_UnmapLPage
 	andl	$4088, %eax             # imm = 0xFF8
 	addq	%rcx, %rax
 	andq	(%r8,%rax), %r9
-	je	.LBB159_4
+	je	.LBB161_4
 # BB#2:
 	movabsq	$8589934592, %rax       # imm = 0x200000000
 	movabsq	$4294967296, %rcx       # imm = 0x100000000
@@ -12670,7 +12768,7 @@ VirtMemMan_UnmapLPage:                  # @VirtMemMan_UnmapLPage
 	movq	virtMemData, %rcx
 	movq	8(%rcx), %rax
 	cmpq	%rdi, %rax
-	jne	.LBB159_4
+	jne	.LBB161_4
 # BB#3:
 	movq	(%rdi,%r10,8), %rax
 	movq	(%rcx), %rcx
@@ -12678,11 +12776,11 @@ VirtMemMan_UnmapLPage:                  # @VirtMemMan_UnmapLPage
 	#APP
 	invlpg	(%rsi)
 	#NO_APP
-.LBB159_4:
+.LBB161_4:
 	popq	%rbp
 	retq
-.Lfunc_end159:
-	.size	VirtMemMan_UnmapLPage, .Lfunc_end159-VirtMemMan_UnmapLPage
+.Lfunc_end161:
+	.size	VirtMemMan_UnmapLPage, .Lfunc_end161-VirtMemMan_UnmapLPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_UnmapHPage
@@ -12692,19 +12790,19 @@ VirtMemMan_UnmapHPage:                  # @VirtMemMan_UnmapHPage
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp777:
+.Ltmp761:
 	.cfi_def_cfa_offset 16
-.Ltmp778:
+.Ltmp762:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp779:
+.Ltmp763:
 	.cfi_def_cfa_register %rbp
 	movq	%rsi, %r8
 	shrq	$39, %r8
 	andl	$511, %r8d              # imm = 0x1FF
 	movabsq	$1152921504606842880, %rax # imm = 0xFFFFFFFFFFFF000
 	andq	(%rdi,%r8,8), %rax
-	je	.LBB160_3
+	je	.LBB162_3
 # BB#1:
 	movq	%rsi, %rdx
 	shrq	$27, %rdx
@@ -12721,7 +12819,7 @@ VirtMemMan_UnmapHPage:                  # @VirtMemMan_UnmapHPage
 	movq	virtMemData, %rcx
 	movq	8(%rcx), %rax
 	cmpq	%rdi, %rax
-	jne	.LBB160_3
+	jne	.LBB162_3
 # BB#2:
 	movq	(%rdi,%r8,8), %rax
 	movq	(%rcx), %rcx
@@ -12729,11 +12827,11 @@ VirtMemMan_UnmapHPage:                  # @VirtMemMan_UnmapHPage
 	#APP
 	invlpg	(%rsi)
 	#NO_APP
-.LBB160_3:
+.LBB162_3:
 	popq	%rbp
 	retq
-.Lfunc_end160:
-	.size	VirtMemMan_UnmapHPage, .Lfunc_end160-VirtMemMan_UnmapHPage
+.Lfunc_end162:
+	.size	VirtMemMan_UnmapHPage, .Lfunc_end162-VirtMemMan_UnmapHPage
 	.cfi_endproc
 
 	.globl	VirtMemMan_Unmap
@@ -12743,12 +12841,12 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp780:
+.Ltmp764:
 	.cfi_def_cfa_offset 16
-.Ltmp781:
+.Ltmp765:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp782:
+.Ltmp766:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -12756,37 +12854,37 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp783:
+.Ltmp767:
 	.cfi_offset %rbx, -56
-.Ltmp784:
+.Ltmp768:
 	.cfi_offset %r12, -48
-.Ltmp785:
+.Ltmp769:
 	.cfi_offset %r13, -40
-.Ltmp786:
+.Ltmp770:
 	.cfi_offset %r14, -32
-.Ltmp787:
+.Ltmp771:
 	.cfi_offset %r15, -24
 	movq	%rdx, %rbx
 	movq	%rsi, %r15
 	movq	%rdi, %r14
 	movabsq	$1152921504606842880, %r12 # imm = 0xFFFFFFFFFFFF000
 	movabsq	$-17179869184, %r13     # imm = 0xFFFFFFFC00000000
-	jmp	.LBB161_1
+	jmp	.LBB163_1
 	.align	16, 0x90
-.LBB161_12:                             #   in Loop: Header=BB161_1 Depth=1
+.LBB163_12:                             #   in Loop: Header=BB163_1 Depth=1
 	movq	%r14, %rdi
 	movq	%r15, %rsi
 	callq	VirtMemMan_UnmapSPage
 	xorl	%ebx, %ebx
-.LBB161_1:                              # %VirtMemMan_UnmapLPage.exit
+.LBB163_1:                              # %VirtMemMan_UnmapLPage.exit
                                         # =>This Inner Loop Header: Depth=1
 	cmpq	$2097151, %rbx          # imm = 0x1FFFFF
-	jle	.LBB161_2
+	jle	.LBB163_2
 # BB#7:                                 # %VirtMemMan_UnmapLPage.exit
-                                        #   in Loop: Header=BB161_1 Depth=1
+                                        #   in Loop: Header=BB163_1 Depth=1
 	cmpq	$2097152, %rbx          # imm = 0x200000
-	jne	.LBB161_8
-# BB#13:                                #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_8
+# BB#13:                                #   in Loop: Header=BB163_1 Depth=1
 	movq	%r15, %rax
 	shrq	$39, %rax
 	andl	$511, %eax              # imm = 0x1FF
@@ -12796,8 +12894,8 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	movq	(%r14,%rax,8), %rdx
 	andq	%r12, %rdx
 	movl	$0, %ebx
-	je	.LBB161_1
-# BB#14:                                #   in Loop: Header=BB161_1 Depth=1
+	je	.LBB163_1
+# BB#14:                                #   in Loop: Header=BB163_1 Depth=1
 	movq	%r15, %rsi
 	shrq	$27, %rsi
 	movabsq	$4294967296, %rdi       # imm = 0x100000000
@@ -12811,8 +12909,8 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	movq	(%rsi,%rdi), %rdx
 	andq	%r12, %rdx
 	movl	$0, %ebx
-	je	.LBB161_1
-# BB#15:                                #   in Loop: Header=BB161_1 Depth=1
+	je	.LBB163_1
+# BB#15:                                #   in Loop: Header=BB163_1 Depth=1
 	movabsq	$4294967296, %rsi       # imm = 0x100000000
 	cmpq	%rsi, %rdx
 	leaq	(%rdx,%r13), %rdx
@@ -12825,8 +12923,8 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	movq	8(%rcx), %rdx
 	cmpq	%r14, %rdx
 	movl	$0, %ebx
-	jne	.LBB161_1
-# BB#16:                                #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_1
+# BB#16:                                #   in Loop: Header=BB163_1 Depth=1
 	movq	(%r14,%rax,8), %rdx
 	movq	(%rcx), %rcx
 	movq	%rdx, (%rcx,%rax,8)
@@ -12834,31 +12932,31 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	invlpg	(%r15)
 	#NO_APP
 	xorl	%ebx, %ebx
-	jmp	.LBB161_1
+	jmp	.LBB163_1
 	.align	16, 0x90
-.LBB161_2:                              # %VirtMemMan_UnmapLPage.exit
-                                        #   in Loop: Header=BB161_1 Depth=1
+.LBB163_2:                              # %VirtMemMan_UnmapLPage.exit
+                                        #   in Loop: Header=BB163_1 Depth=1
 	cmpq	$4096, %rbx             # imm = 0x1000
-	je	.LBB161_12
+	je	.LBB163_12
 # BB#3:                                 # %VirtMemMan_UnmapLPage.exit
-                                        #   in Loop: Header=BB161_1 Depth=1
+                                        #   in Loop: Header=BB163_1 Depth=1
 	testq	%rbx, %rbx
-	jne	.LBB161_4
-	jmp	.LBB161_23
+	jne	.LBB163_4
+	jmp	.LBB163_23
 	.align	16, 0x90
-.LBB161_8:                              # %VirtMemMan_UnmapLPage.exit
-                                        #   in Loop: Header=BB161_1 Depth=1
+.LBB163_8:                              # %VirtMemMan_UnmapLPage.exit
+                                        #   in Loop: Header=BB163_1 Depth=1
 	cmpq	$1073741824, %rbx       # imm = 0x40000000
-	jne	.LBB161_4
-# BB#9:                                 #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_4
+# BB#9:                                 #   in Loop: Header=BB163_1 Depth=1
 	movq	%r15, %rax
 	shrq	$39, %rax
 	andl	$511, %eax              # imm = 0x1FF
 	movq	(%r14,%rax,8), %rcx
 	andq	%r12, %rcx
 	movl	$0, %ebx
-	je	.LBB161_1
-# BB#10:                                #   in Loop: Header=BB161_1 Depth=1
+	je	.LBB163_1
+# BB#10:                                #   in Loop: Header=BB163_1 Depth=1
 	movq	%r15, %rdx
 	shrq	$27, %rdx
 	movabsq	$4294967296, %rsi       # imm = 0x100000000
@@ -12874,8 +12972,8 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	movq	8(%rcx), %rdx
 	cmpq	%r14, %rdx
 	movl	$0, %ebx
-	jne	.LBB161_1
-# BB#11:                                #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_1
+# BB#11:                                #   in Loop: Header=BB163_1 Depth=1
 	movq	(%r14,%rax,8), %rdx
 	movq	(%rcx), %rcx
 	movq	%rdx, (%rcx,%rax,8)
@@ -12883,56 +12981,56 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	invlpg	(%r15)
 	#NO_APP
 	xorl	%ebx, %ebx
-	jmp	.LBB161_1
-.LBB161_4:                              #   in Loop: Header=BB161_1 Depth=1
+	jmp	.LBB163_1
+.LBB163_4:                              #   in Loop: Header=BB163_1 Depth=1
 	movl	%r15d, %eax
 	andl	$1073741823, %eax       # imm = 0x3FFFFFFF
 	cmpq	$1073741824, %rbx       # imm = 0x40000000
-	jb	.LBB161_17
-# BB#5:                                 #   in Loop: Header=BB161_1 Depth=1
+	jb	.LBB163_17
+# BB#5:                                 #   in Loop: Header=BB163_1 Depth=1
 	testq	%rax, %rax
-	jne	.LBB161_17
-# BB#6:                                 #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_17
+# BB#6:                                 #   in Loop: Header=BB163_1 Depth=1
 	addq	$-1073741824, %rbx      # imm = 0xFFFFFFFFC0000000
 	movl	$1073741824, %edx       # imm = 0x40000000
 	movq	%r14, %rdi
 	movq	%r15, %rsi
 	callq	VirtMemMan_Unmap
 	addq	$1073741824, %r15       # imm = 0x40000000
-	jmp	.LBB161_1
-.LBB161_17:                             #   in Loop: Header=BB161_1 Depth=1
+	jmp	.LBB163_1
+.LBB163_17:                             #   in Loop: Header=BB163_1 Depth=1
 	movl	%r15d, %eax
 	andl	$2097151, %eax          # imm = 0x1FFFFF
 	cmpq	$2097152, %rbx          # imm = 0x200000
-	jb	.LBB161_20
-# BB#18:                                #   in Loop: Header=BB161_1 Depth=1
+	jb	.LBB163_20
+# BB#18:                                #   in Loop: Header=BB163_1 Depth=1
 	testq	%rax, %rax
-	jne	.LBB161_20
-# BB#19:                                #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_20
+# BB#19:                                #   in Loop: Header=BB163_1 Depth=1
 	addq	$-2097152, %rbx         # imm = 0xFFFFFFFFFFE00000
 	movl	$2097152, %edx          # imm = 0x200000
 	movq	%r14, %rdi
 	movq	%r15, %rsi
 	callq	VirtMemMan_Unmap
 	addq	$2097152, %r15          # imm = 0x200000
-	jmp	.LBB161_1
-.LBB161_20:                             #   in Loop: Header=BB161_1 Depth=1
+	jmp	.LBB163_1
+.LBB163_20:                             #   in Loop: Header=BB163_1 Depth=1
 	movl	%r15d, %eax
 	andl	$4095, %eax             # imm = 0xFFF
 	cmpq	$4096, %rbx             # imm = 0x1000
-	jb	.LBB161_23
-# BB#21:                                #   in Loop: Header=BB161_1 Depth=1
+	jb	.LBB163_23
+# BB#21:                                #   in Loop: Header=BB163_1 Depth=1
 	testq	%rax, %rax
-	jne	.LBB161_23
-# BB#22:                                #   in Loop: Header=BB161_1 Depth=1
+	jne	.LBB163_23
+# BB#22:                                #   in Loop: Header=BB163_1 Depth=1
 	addq	$-4096, %rbx            # imm = 0xFFFFFFFFFFFFF000
 	movl	$4096, %edx             # imm = 0x1000
 	movq	%r14, %rdi
 	movq	%r15, %rsi
 	callq	VirtMemMan_Unmap
 	addq	$4096, %r15             # imm = 0x1000
-	jmp	.LBB161_1
-.LBB161_23:
+	jmp	.LBB163_1
+.LBB163_23:
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%r12
@@ -12941,178 +13039,130 @@ VirtMemMan_Unmap:                       # @VirtMemMan_Unmap
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end161:
-	.size	VirtMemMan_Unmap, .Lfunc_end161-VirtMemMan_Unmap
+.Lfunc_end163:
+	.size	VirtMemMan_Unmap, .Lfunc_end163-VirtMemMan_Unmap
 	.cfi_endproc
 
-	.globl	VirtMemMan_GetPhysicalAddress
+	.globl	VirtMemMan_GetAllocTypeBase
 	.align	16, 0x90
-	.type	VirtMemMan_GetPhysicalAddress,@function
-VirtMemMan_GetPhysicalAddress:          # @VirtMemMan_GetPhysicalAddress
+	.type	VirtMemMan_GetAllocTypeBase,@function
+VirtMemMan_GetAllocTypeBase:            # @VirtMemMan_GetAllocTypeBase
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp788:
+.Ltmp772:
 	.cfi_def_cfa_offset 16
-.Ltmp789:
+.Ltmp773:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp790:
+.Ltmp774:
 	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-.Ltmp791:
-	.cfi_offset %rbx, -32
-.Ltmp792:
-	.cfi_offset %r14, -24
-	movq	%rsi, %rax
-	shrq	$36, %rax
-	movq	%rsi, %rdx
-	shrq	$21, %rdx
-	andl	$511, %edx              # imm = 0x1FF
-	movq	%rsi, %r14
-	shrq	$12, %r14
-	andl	$511, %r14d             # imm = 0x1FF
-	andl	$4088, %eax             # imm = 0xFF8
-	movq	(%rdi,%rax), %rcx
-	xorl	%eax, %eax
-	testb	$1, %cl
-	je	.LBB162_10
-# BB#1:
-	movabsq	$-17179869184, %r8      # imm = 0xFFFFFFFC00000000
-	movabsq	$1152921504606842880, %r10 # imm = 0xFFFFFFFFFFFF000
-	movq	%rsi, %rax
-	shrq	$27, %rax
-	andq	%r10, %rcx
-	movq	%rcx, %rdi
-	shrq	$32, %rdi
-	sete	%bl
-	movzbl	%bl, %edi
-	shlq	$33, %rdi
-	addq	%rcx, %rdi
-	addq	%r8, %rdi
-	andl	$4088, %eax             # imm = 0xFF8
-	orq	%rdi, %rax
-	movq	(%rax), %rdi
-	movl	%edi, %eax
-	andl	$129, %eax
-	cmpq	$129, %rax
-	jne	.LBB162_3
-# BB#2:
-	addq	$-1073737728, %r10      # imm = 0xFFFFFFFFC0001000
-	andq	%r10, %rdi
-	andl	$1073741823, %esi       # imm = 0x3FFFFFFF
-	orq	%rdi, %rsi
-	jmp	.LBB162_9
-.LBB162_3:
-	xorl	%eax, %eax
-	testb	$1, %dil
-	je	.LBB162_10
-# BB#4:
-	movabsq	$8589934592, %r9        # imm = 0x200000000
-	movabsq	$4294967296, %r11       # imm = 0x100000000
-	andq	%r10, %rdi
-	xorl	%eax, %eax
-	cmpq	%r11, %rdi
-	leaq	(%rdi,%r8), %rcx
-	cmovbq	%r9, %rax
-	addq	%rcx, %rax
-	movq	(%rax,%rdx,8), %rdx
-	movl	%edx, %eax
-	andl	$129, %eax
-	cmpq	$129, %rax
-	jne	.LBB162_6
-# BB#5:
-	addq	$-1044480, %r10         # imm = 0xFFFFFFFFFFF01000
-	andq	%r10, %rdx
-	andl	$2097151, %esi          # imm = 0x1FFFFF
-	addq	%rdx, %rsi
-	jmp	.LBB162_9
-.LBB162_6:
-	xorl	%eax, %eax
-	testb	$1, %dl
-	je	.LBB162_10
-# BB#7:
-	andq	%r10, %rdx
-	xorl	%eax, %eax
-	cmpq	%r11, %rdx
-	leaq	(%r8,%rdx), %rcx
-	cmovaeq	%rax, %r9
-	addq	%rcx, %r9
-	movq	(%r9,%r14,8), %rcx
-	testb	$1, %cl
-	je	.LBB162_10
-# BB#8:
-	andq	%r10, %rcx
-	andl	$4095, %esi             # imm = 0xFFF
-	orq	%rcx, %rsi
-.LBB162_9:                              # %.thread21
-	movq	%rsi, %rax
-.LBB162_10:                             # %.thread21
-	popq	%rbx
-	popq	%r14
-	popq	%rbp
-	retq
-.Lfunc_end162:
-	.size	VirtMemMan_GetPhysicalAddress, .Lfunc_end162-VirtMemMan_GetPhysicalAddress
-	.cfi_endproc
-
-	.globl	VirtMemMan_GetVirtualAddress
-	.align	16, 0x90
-	.type	VirtMemMan_GetVirtualAddress,@function
-VirtMemMan_GetVirtualAddress:           # @VirtMemMan_GetVirtualAddress
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp793:
-	.cfi_def_cfa_offset 16
-.Ltmp794:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp795:
-	.cfi_def_cfa_register %rbp
-	movabsq	$-17179869184, %rcx     # imm = 0xFFFFFFFC00000000
-	movabsq	$4294967296, %rdx       # imm = 0x100000000
-	xorl	%eax, %eax
-	cmpl	$2, %edi
-	je	.LBB163_4
+	testl	%edi, %edi
+	movabsq	$280925220896768, %rcx  # imm = 0xFF8000000000
+	movabsq	$140737488355328, %rax  # imm = 0x800000000000
+	cmoveq	%rcx, %rax
+	testb	$1, %sil
+	je	.LBB164_12
 # BB#1:
 	cmpl	$1, %edi
-	jne	.LBB163_2
-# BB#6:
-	xorl	%eax, %eax
-	cmpq	%rdx, %rsi
-	jae	.LBB163_9
-# BB#7:
-	movabsq	$-21474836480, %rax     # imm = 0xFFFFFFFB00000000
-	addq	%rax, %rsi
-	jmp	.LBB163_8
-.LBB163_4:
-	xorl	%eax, %eax
-	cmpq	%rdx, %rsi
-	jae	.LBB163_9
+	jle	.LBB164_2
+# BB#4:
+	cmpl	$2, %edi
+	je	.LBB164_10
 # BB#5:
-	addq	%rcx, %rsi
-.LBB163_8:
-	movq	%rsi, %rax
-	jmp	.LBB163_9
-.LBB163_2:
+	cmpl	$256, %edi              # imm = 0x100
+	je	.LBB164_11
+# BB#6:
+	cmpl	$64, %edi
+	jne	.LBB164_11
+# BB#7:
+	movabsq	$10995116277760, %rax   # imm = 0xA0000000000
+	popq	%rbp
+	retq
+.LBB164_2:
 	testl	%edi, %edi
-	jne	.LBB163_9
+	jne	.LBB164_8
 # BB#3:
-	cmpq	%rdx, %rsi
-	leaq	(%rcx,%rsi), %rcx
-	sbbq	%rax, %rax
-	andl	$1, %eax
-	shlq	$33, %rax
+	movabsq	$549755813888, %rax     # imm = 0x8000000000
+	popq	%rbp
+	retq
+.LBB164_10:
+	movabsq	$1649267441664, %rax    # imm = 0x18000000000
+	popq	%rbp
+	retq
+.LBB164_8:
+	cmpl	$1, %edi
+	jne	.LBB164_11
+# BB#9:
+	movabsq	$1099511627776, %rax    # imm = 0x10000000000
+	popq	%rbp
+	retq
+.LBB164_11:
+	xorl	%eax, %eax
+.LBB164_12:
+	popq	%rbp
+	retq
+.Lfunc_end164:
+	.size	VirtMemMan_GetAllocTypeBase, .Lfunc_end164-VirtMemMan_GetAllocTypeBase
+	.cfi_endproc
+
+	.globl	VirtMemMan_GetAllocTypeTop
+	.align	16, 0x90
+	.type	VirtMemMan_GetAllocTypeTop,@function
+VirtMemMan_GetAllocTypeTop:             # @VirtMemMan_GetAllocTypeTop
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp775:
+	.cfi_def_cfa_offset 16
+.Ltmp776:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp777:
+	.cfi_def_cfa_register %rbp
+	movabsq	$549755813888, %rcx     # imm = 0x8000000000
+	testl	%edi, %edi
+	movabsq	$280925220896768, %rdx  # imm = 0xFF8000000000
+	movabsq	$140737488355328, %rax  # imm = 0x800000000000
+	cmoveq	%rdx, %rax
+	testb	$1, %sil
+	je	.LBB165_11
+# BB#1:
+	cmpl	$1, %edi
+	jle	.LBB165_2
+# BB#5:
+	cmpl	$2, %edi
+	je	.LBB165_9
+# BB#6:
+	cmpl	$256, %edi              # imm = 0x100
+	je	.LBB165_10
+# BB#7:
+	cmpl	$64, %edi
+	jne	.LBB165_10
+# BB#8:
+	movabsq	$10995116277760, %rax   # imm = 0xA0000000000
+	jmp	.LBB165_11
+.LBB165_2:
+	testl	%edi, %edi
+	movq	%rcx, %rax
+	je	.LBB165_11
+# BB#3:
+	cmpl	$1, %edi
+	jne	.LBB165_10
+# BB#4:
+	movabsq	$1099511627776, %rax    # imm = 0x10000000000
+	jmp	.LBB165_11
+.LBB165_10:
+	xorl	%eax, %eax
+	jmp	.LBB165_11
+.LBB165_9:
+	movabsq	$1649267441664, %rax    # imm = 0x18000000000
+.LBB165_11:
 	addq	%rcx, %rax
 	popq	%rbp
 	retq
-.LBB163_9:
-	popq	%rbp
-	retq
-.Lfunc_end163:
-	.size	VirtMemMan_GetVirtualAddress, .Lfunc_end163-VirtMemMan_GetVirtualAddress
+.Lfunc_end165:
+	.size	VirtMemMan_GetAllocTypeTop, .Lfunc_end165-VirtMemMan_GetAllocTypeTop
 	.cfi_endproc
 
 	.globl	VirtMemMan_FindFreeAddress
@@ -13122,12 +13172,12 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp796:
+.Ltmp778:
 	.cfi_def_cfa_offset 16
-.Ltmp797:
+.Ltmp779:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp798:
+.Ltmp780:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -13135,15 +13185,15 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	pushq	%r12
 	pushq	%rbx
 	subq	$56, %rsp
-.Ltmp799:
+.Ltmp781:
 	.cfi_offset %rbx, -56
-.Ltmp800:
+.Ltmp782:
 	.cfi_offset %r12, -48
-.Ltmp801:
+.Ltmp783:
 	.cfi_offset %r13, -40
-.Ltmp802:
+.Ltmp784:
 	.cfi_offset %r14, -32
-.Ltmp803:
+.Ltmp785:
 	.cfi_offset %r15, -24
 	movq	%rdi, -80(%rbp)         # 8-byte Spill
 	leaq	4096(%rsi), %rax
@@ -13156,67 +13206,67 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmovel	%edi, %esi
 	xorl	%edi, %edi
 	testb	$1, %cl
-	je	.LBB164_13
+	je	.LBB166_13
 # BB#1:
 	xorl	%edi, %edi
 	cmpl	$1, %edx
-	jle	.LBB164_2
+	jle	.LBB166_2
 # BB#5:
 	cmpl	$2, %edx
-	je	.LBB164_9
+	je	.LBB166_9
 # BB#6:
 	cmpl	$256, %edx              # imm = 0x100
-	jne	.LBB164_7
+	jne	.LBB166_7
 # BB#10:
 	xorl	%esi, %esi
 	movl	$1, %edi
-	jmp	.LBB164_13
-.LBB164_2:
+	jmp	.LBB166_13
+.LBB166_2:
 	movl	$1, %esi
 	testl	%edx, %edx
-	je	.LBB164_13
+	je	.LBB166_13
 # BB#3:
 	cmpl	$1, %edx
-	jne	.LBB164_11
+	jne	.LBB166_11
 # BB#4:
 	movl	$2, %esi
-	jmp	.LBB164_12
-.LBB164_9:
+	jmp	.LBB166_12
+.LBB166_9:
 	movl	$3, %esi
-	jmp	.LBB164_12
-.LBB164_7:
+	jmp	.LBB166_12
+.LBB166_7:
 	cmpl	$64, %edx
-	jne	.LBB164_11
+	jne	.LBB166_11
 # BB#8:
 	movl	$20, %esi
-	jmp	.LBB164_12
-.LBB164_11:
+	jmp	.LBB166_12
+.LBB166_11:
 	xorl	%esi, %esi
-.LBB164_12:
+.LBB166_12:
 	xorl	%edi, %edi
-.LBB164_13:
+.LBB166_13:
 	movq	%rdi, -96(%rbp)         # 8-byte Spill
 	movl	%esi, %ecx
 	subl	$-128, %ecx
 	movq	%rcx, -88(%rbp)         # 8-byte Spill
 	xorl	%edx, %edx
 	testq	%rax, %rax
-	je	.LBB164_44
+	je	.LBB166_44
 # BB#14:                                # %.lr.ph65
 	movl	%esi, %r9d
 	xorl	%ecx, %ecx
 	xorl	%r11d, %r11d
 	xorl	%edx, %edx
 	.align	16, 0x90
-.LBB164_15:                             # =>This Loop Header: Depth=1
-                                        #     Child Loop BB164_21 Depth 2
-                                        #       Child Loop BB164_26 Depth 3
-                                        #         Child Loop BB164_32 Depth 4
+.LBB166_15:                             # =>This Loop Header: Depth=1
+                                        #     Child Loop BB166_21 Depth 2
+                                        #       Child Loop BB166_26 Depth 3
+                                        #         Child Loop BB166_32 Depth 4
 	movq	-80(%rbp), %rsi         # 8-byte Reload
 	movq	(%rsi,%r9,8), %rdi
 	testb	$1, %dil
-	jne	.LBB164_17
-# BB#16:                                #   in Loop: Header=BB164_15 Depth=1
+	jne	.LBB166_17
+# BB#16:                                #   in Loop: Header=BB166_15 Depth=1
 	movq	%r9, %rsi
 	shlq	$39, %rsi
 	testq	%rcx, %rcx
@@ -13225,12 +13275,12 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	addq	%rsi, %rcx
 	movq	%r9, %r11
 	movq	%r9, -72(%rbp)          # 8-byte Spill
-	jmp	.LBB164_41
+	jmp	.LBB166_41
 	.align	16, 0x90
-.LBB164_17:                             #   in Loop: Header=BB164_15 Depth=1
+.LBB166_17:                             #   in Loop: Header=BB166_15 Depth=1
 	testb	$-128, %dil
-	jne	.LBB164_40
-# BB#18:                                #   in Loop: Header=BB164_15 Depth=1
+	jne	.LBB166_40
+# BB#18:                                #   in Loop: Header=BB166_15 Depth=1
 	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
 	andq	%rsi, %rdi
 	movq	%rdi, %rsi
@@ -13246,9 +13296,9 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmpq	%r11, %rsi
 	cmovneq	%rbx, %rcx
 	cmpq	%rax, %rcx
-	jae	.LBB164_19
+	jae	.LBB166_19
 # BB#20:                                # %.lr.ph55
-                                        #   in Loop: Header=BB164_15 Depth=1
+                                        #   in Loop: Header=BB166_15 Depth=1
 	shlq	$33, %r8
 	addq	%r8, %rdi
 	movabsq	$-17179869184, %rsi     # imm = 0xFFFFFFFC00000000
@@ -13260,14 +13310,14 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	movq	%rsi, -56(%rbp)         # 8-byte Spill
 	movq	-96(%rbp), %r10         # 8-byte Reload
 	.align	16, 0x90
-.LBB164_21:                             #   Parent Loop BB164_15 Depth=1
+.LBB166_21:                             #   Parent Loop BB166_15 Depth=1
                                         # =>  This Loop Header: Depth=2
-                                        #       Child Loop BB164_26 Depth 3
-                                        #         Child Loop BB164_32 Depth 4
+                                        #       Child Loop BB166_26 Depth 3
+                                        #         Child Loop BB166_32 Depth 4
 	movq	(%rdi,%r10,8), %r13
 	testb	$1, %r13b
-	jne	.LBB164_23
-# BB#22:                                #   in Loop: Header=BB164_21 Depth=2
+	jne	.LBB166_23
+# BB#22:                                #   in Loop: Header=BB166_21 Depth=2
 	movq	%r10, %rsi
 	shlq	$30, %rsi
 	orq	-56(%rbp), %rsi         # 8-byte Folded Reload
@@ -13275,12 +13325,12 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmoveq	%rsi, %rdx
 	addq	$1073741824, %rcx       # imm = 0x40000000
 	movq	%r10, %r11
-	jmp	.LBB164_38
+	jmp	.LBB166_38
 	.align	16, 0x90
-.LBB164_23:                             #   in Loop: Header=BB164_21 Depth=2
+.LBB166_23:                             #   in Loop: Header=BB166_21 Depth=2
 	testb	$-128, %r13b
-	jne	.LBB164_38
-# BB#24:                                #   in Loop: Header=BB164_21 Depth=2
+	jne	.LBB166_38
+# BB#24:                                #   in Loop: Header=BB166_21 Depth=2
 	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
 	andq	%rsi, %r13
 	movabsq	$4294967296, %rsi       # imm = 0x100000000
@@ -13297,9 +13347,9 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmpq	%r11, %r9
 	cmovneq	%rbx, %rcx
 	cmpq	%rax, %rcx
-	jae	.LBB164_38
+	jae	.LBB166_38
 # BB#25:                                # %.lr.ph46
-                                        #   in Loop: Header=BB164_21 Depth=2
+                                        #   in Loop: Header=BB166_21 Depth=2
 	movabsq	$-17179869184, %rbx     # imm = 0xFFFFFFFC00000000
 	addq	%rbx, %r13
 	addq	%rsi, %r13
@@ -13311,14 +13361,14 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	movq	%rsi, -64(%rbp)         # 8-byte Spill
 	xorl	%r8d, %r8d
 	.align	16, 0x90
-.LBB164_26:                             #   Parent Loop BB164_15 Depth=1
-                                        #     Parent Loop BB164_21 Depth=2
+.LBB166_26:                             #   Parent Loop BB166_15 Depth=1
+                                        #     Parent Loop BB166_21 Depth=2
                                         # =>    This Loop Header: Depth=3
-                                        #         Child Loop BB164_32 Depth 4
+                                        #         Child Loop BB166_32 Depth 4
 	movq	(%r13,%r8,8), %r12
 	testb	$1, %r12b
-	jne	.LBB164_28
-# BB#27:                                #   in Loop: Header=BB164_26 Depth=3
+	jne	.LBB166_28
+# BB#27:                                #   in Loop: Header=BB166_26 Depth=3
 	movq	%r8, %rsi
 	shlq	$21, %rsi
 	orq	%rbx, %rsi
@@ -13326,12 +13376,12 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmoveq	%rsi, %rdx
 	addq	$2097152, %rcx          # imm = 0x200000
 	movq	%r8, %r11
-	jmp	.LBB164_36
+	jmp	.LBB166_36
 	.align	16, 0x90
-.LBB164_28:                             #   in Loop: Header=BB164_26 Depth=3
+.LBB166_28:                             #   in Loop: Header=BB166_26 Depth=3
 	testb	$-128, %r12b
-	jne	.LBB164_36
-# BB#29:                                #   in Loop: Header=BB164_26 Depth=3
+	jne	.LBB166_36
+# BB#29:                                #   in Loop: Header=BB166_26 Depth=3
 	movq	%rbx, %rdi
 	movabsq	$1152921504606842880, %rsi # imm = 0xFFFFFFFFFFFF000
 	andq	%rsi, %r12
@@ -13349,9 +13399,9 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	testq	%r8, %r8
 	cmovneq	%rsi, %rcx
 	cmpq	%rax, %rcx
-	jae	.LBB164_30
+	jae	.LBB166_30
 # BB#31:                                # %.lr.ph
-                                        #   in Loop: Header=BB164_26 Depth=3
+                                        #   in Loop: Header=BB166_26 Depth=3
 	movabsq	$-17179869184, %rsi     # imm = 0xFFFFFFFC00000000
 	addq	%rsi, %r12
 	addq	%rbx, %r12
@@ -13364,9 +13414,9 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	xorl	%r15d, %r15d
 	movl	$1, %edi
 	.align	16, 0x90
-.LBB164_32:                             #   Parent Loop BB164_15 Depth=1
-                                        #     Parent Loop BB164_21 Depth=2
-                                        #       Parent Loop BB164_26 Depth=3
+.LBB166_32:                             #   Parent Loop BB166_15 Depth=1
+                                        #     Parent Loop BB166_21 Depth=2
+                                        #       Parent Loop BB166_26 Depth=3
                                         # =>      This Inner Loop Header: Depth=4
 	movq	%rcx, %rsi
 	movq	%r9, %rcx
@@ -13379,8 +13429,8 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	testq	%r15, %r15
 	cmoveq	%rsi, %rcx
 	testb	$1, (%r12,%r15,8)
-	jne	.LBB164_34
-# BB#33:                                #   in Loop: Header=BB164_32 Depth=4
+	jne	.LBB166_34
+# BB#33:                                #   in Loop: Header=BB166_32 Depth=4
 	movq	%r15, %rsi
 	shlq	$12, %rsi
 	orq	%r14, %rsi
@@ -13388,64 +13438,64 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	cmoveq	%rsi, %rdx
 	addq	$4096, %rcx             # imm = 0x1000
 	movq	%r15, %r11
-.LBB164_34:                             #   in Loop: Header=BB164_32 Depth=4
+.LBB166_34:                             #   in Loop: Header=BB166_32 Depth=4
 	incq	%r15
 	cmpq	$511, %r15              # imm = 0x1FF
-	ja	.LBB164_36
-# BB#35:                                #   in Loop: Header=BB164_32 Depth=4
+	ja	.LBB166_36
+# BB#35:                                #   in Loop: Header=BB166_32 Depth=4
 	cmpq	%rax, %rcx
-	jb	.LBB164_32
-	jmp	.LBB164_36
-.LBB164_30:                             #   in Loop: Header=BB164_26 Depth=3
+	jb	.LBB166_32
+	jmp	.LBB166_36
+.LBB166_30:                             #   in Loop: Header=BB166_26 Depth=3
 	movq	%rdi, %rbx
 	.align	16, 0x90
-.LBB164_36:                             # %.critedge10
-                                        #   in Loop: Header=BB164_26 Depth=3
+.LBB166_36:                             # %.critedge10
+                                        #   in Loop: Header=BB166_26 Depth=3
 	incq	%r8
 	cmpq	$511, %r8               # imm = 0x1FF
-	ja	.LBB164_38
+	ja	.LBB166_38
 # BB#37:                                # %.critedge10
-                                        #   in Loop: Header=BB164_26 Depth=3
+                                        #   in Loop: Header=BB166_26 Depth=3
 	cmpq	%rax, %rcx
-	jb	.LBB164_26
+	jb	.LBB166_26
 	.align	16, 0x90
-.LBB164_38:                             # %.critedge7
-                                        #   in Loop: Header=BB164_21 Depth=2
+.LBB166_38:                             # %.critedge7
+                                        #   in Loop: Header=BB166_21 Depth=2
 	incq	%r10
 	cmpq	$511, %r10              # imm = 0x1FF
-	ja	.LBB164_41
+	ja	.LBB166_41
 # BB#39:                                # %.critedge7
-                                        #   in Loop: Header=BB164_21 Depth=2
+                                        #   in Loop: Header=BB166_21 Depth=2
 	cmpq	%rax, %rcx
 	movq	-48(%rbp), %rdi         # 8-byte Reload
-	jb	.LBB164_21
-	jmp	.LBB164_41
+	jb	.LBB166_21
+	jmp	.LBB166_41
 	.align	16, 0x90
-.LBB164_40:                             #   in Loop: Header=BB164_15 Depth=1
+.LBB166_40:                             #   in Loop: Header=BB166_15 Depth=1
 	movq	%r9, %rsi
 	movq	%r9, -72(%rbp)          # 8-byte Spill
 	shlq	$39, %rsi
 	testq	%rcx, %rcx
 	cmoveq	%rsi, %rdx
-	jmp	.LBB164_41
-.LBB164_19:                             #   in Loop: Header=BB164_15 Depth=1
+	jmp	.LBB166_41
+.LBB166_19:                             #   in Loop: Header=BB166_15 Depth=1
 	movq	%r9, -72(%rbp)          # 8-byte Spill
 	.align	16, 0x90
-.LBB164_41:                             # %.critedge4
-                                        #   in Loop: Header=BB164_15 Depth=1
+.LBB166_41:                             # %.critedge4
+                                        #   in Loop: Header=BB166_15 Depth=1
 	movq	-72(%rbp), %r9          # 8-byte Reload
 	incq	%r9
 	cmpq	-88(%rbp), %r9          # 8-byte Folded Reload
-	jae	.LBB164_44
+	jae	.LBB166_44
 # BB#42:                                # %.critedge4
-                                        #   in Loop: Header=BB164_15 Depth=1
+                                        #   in Loop: Header=BB166_15 Depth=1
 	cmpq	$511, %r9               # imm = 0x1FF
-	ja	.LBB164_44
+	ja	.LBB166_44
 # BB#43:                                # %.critedge4
-                                        #   in Loop: Header=BB164_15 Depth=1
+                                        #   in Loop: Header=BB166_15 Depth=1
 	cmpq	%rax, %rcx
-	jb	.LBB164_15
-.LBB164_44:                             # %.critedge
+	jb	.LBB166_15
+.LBB166_44:                             # %.critedge
 	movabsq	$-281474976710656, %rcx # imm = 0xFFFF000000000000
 	orq	%rdx, %rcx
 	btq	$47, %rdx
@@ -13461,8 +13511,8 @@ VirtMemMan_FindFreeAddress:             # @VirtMemMan_FindFreeAddress
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end164:
-	.size	VirtMemMan_FindFreeAddress, .Lfunc_end164-VirtMemMan_FindFreeAddress
+.Lfunc_end166:
+	.size	VirtMemMan_FindFreeAddress, .Lfunc_end166-VirtMemMan_FindFreeAddress
 	.cfi_endproc
 
 	.globl	VirtMemMan_ReturnPermissions
@@ -13472,18 +13522,18 @@ VirtMemMan_ReturnPermissions:           # @VirtMemMan_ReturnPermissions
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp804:
+.Ltmp786:
 	.cfi_def_cfa_offset 16
-.Ltmp805:
+.Ltmp787:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp806:
+.Ltmp788:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	testb	$1, %dil
 	movl	$0, %r8d
 	movl	$0, %r9d
-	je	.LBB165_2
+	je	.LBB167_2
 # BB#1:
 	movl	%edi, %r8d
 	shrl	$2, %r8d
@@ -13498,26 +13548,26 @@ VirtMemMan_ReturnPermissions:           # @VirtMemMan_ReturnPermissions
 	shrl	$3, %edi
 	andl	$3, %edi
 	movl	%edi, %r9d
-.LBB165_2:
+.LBB167_2:
 	testq	%rsi, %rsi
-	je	.LBB165_4
+	je	.LBB167_4
 # BB#3:
 	movl	%r9d, (%rsi)
-.LBB165_4:
+.LBB167_4:
 	testq	%rdx, %rdx
-	je	.LBB165_6
+	je	.LBB167_6
 # BB#5:
 	movl	%eax, (%rdx)
-.LBB165_6:
+.LBB167_6:
 	testq	%rcx, %rcx
-	je	.LBB165_8
+	je	.LBB167_8
 # BB#7:
 	movl	%r8d, (%rcx)
-.LBB165_8:
+.LBB167_8:
 	popq	%rbp
 	retq
-.Lfunc_end165:
-	.size	VirtMemMan_ReturnPermissions, .Lfunc_end165-VirtMemMan_ReturnPermissions
+.Lfunc_end167:
+	.size	VirtMemMan_ReturnPermissions, .Lfunc_end167-VirtMemMan_ReturnPermissions
 	.cfi_endproc
 
 	.globl	VirtMemMan_CheckAddressPermissions
@@ -13527,21 +13577,21 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp807:
+.Ltmp789:
 	.cfi_def_cfa_offset 16
-.Ltmp808:
+.Ltmp790:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp809:
+.Ltmp791:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
-.Ltmp810:
+.Ltmp792:
 	.cfi_offset %rbx, -40
-.Ltmp811:
+.Ltmp793:
 	.cfi_offset %r14, -32
-.Ltmp812:
+.Ltmp794:
 	.cfi_offset %r15, -24
 	movq	%rsi, %rax
 	shrq	$39, %rax
@@ -13555,24 +13605,24 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	shrq	$12, %rsi
 	andl	$511, %esi              # imm = 0x1FF
 	testq	%rdx, %rdx
-	je	.LBB166_2
+	je	.LBB168_2
 # BB#1:
 	movl	$0, (%rdx)
-.LBB166_2:
+.LBB168_2:
 	testq	%rcx, %rcx
-	je	.LBB166_4
+	je	.LBB168_4
 # BB#3:
 	movl	$0, (%rcx)
-.LBB166_4:
+.LBB168_4:
 	testq	%r8, %r8
-	je	.LBB166_6
+	je	.LBB168_6
 # BB#5:
 	movl	$0, (%r8)
-.LBB166_6:
+.LBB168_6:
 	movabsq	$1152921504606842880, %r10 # imm = 0xFFFFFFFFFFFF000
 	movq	(%rdi,%rax,8), %rax
 	andq	%r10, %rax
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#7:
 	movabsq	$-17179869184, %r11     # imm = 0xFFFFFFFC00000000
 	movq	%rax, %rdi
@@ -13584,10 +13634,10 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	leaq	(%rdi,%r14,8), %rax
 	movq	(%r11,%rax), %rdi
 	testb	$-128, %dil
-	jne	.LBB166_8
+	jne	.LBB168_8
 # BB#16:
 	andq	%r10, %rdi
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#17:
 	movabsq	$8589934592, %rbx       # imm = 0x200000000
 	movabsq	$4294967296, %r14       # imm = 0x100000000
@@ -13599,10 +13649,10 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	addq	%rdi, %rax
 	movq	(%rax,%r9,8), %rdi
 	testb	$-128, %dil
-	jne	.LBB166_18
+	jne	.LBB168_18
 # BB#26:
 	andq	%r10, %rdi
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#27:
 	xorl	%eax, %eax
 	cmpq	%r14, %rdi
@@ -13613,7 +13663,7 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	testb	$1, %sil
 	movl	$0, %edi
 	movl	$0, %ebx
-	je	.LBB166_29
+	je	.LBB168_29
 # BB#28:
 	movl	%esi, %edi
 	shrl	$2, %edi
@@ -13628,28 +13678,28 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	shrl	$3, %esi
 	andl	$3, %esi
 	movl	%esi, %ebx
-.LBB166_29:
+.LBB168_29:
 	testq	%rdx, %rdx
-	je	.LBB166_31
+	je	.LBB168_31
 # BB#30:
 	movl	%ebx, (%rdx)
-.LBB166_31:
+.LBB168_31:
 	testq	%rcx, %rcx
-	je	.LBB166_33
+	je	.LBB168_33
 # BB#32:
 	movl	%eax, (%rcx)
-.LBB166_33:
+.LBB168_33:
 	testq	%r8, %r8
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#34:
 	movl	%edi, (%r8)
-	jmp	.LBB166_35
-.LBB166_8:
+	jmp	.LBB168_35
+.LBB168_8:
 	xorl	%esi, %esi
 	testb	$1, %dil
 	movl	$0, %r9d
 	movl	$0, %ebx
-	je	.LBB166_10
+	je	.LBB168_10
 # BB#9:
 	movl	%edi, %r9d
 	shrl	$2, %r9d
@@ -13664,27 +13714,27 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	shrl	$3, %edi
 	andl	$3, %edi
 	movl	%edi, %ebx
-.LBB166_10:
+.LBB168_10:
 	testq	%rdx, %rdx
-	je	.LBB166_12
+	je	.LBB168_12
 # BB#11:
 	movl	%ebx, (%rdx)
-.LBB166_12:
+.LBB168_12:
 	testq	%rcx, %rcx
-	je	.LBB166_14
+	je	.LBB168_14
 # BB#13:
 	movl	%esi, (%rcx)
-.LBB166_14:
+.LBB168_14:
 	testq	%r8, %r8
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#15:
 	movl	%r9d, (%r8)
-	jmp	.LBB166_35
-.LBB166_18:
+	jmp	.LBB168_35
+.LBB168_18:
 	testb	$1, %dil
 	movl	$0, %esi
 	movl	$0, %ebx
-	je	.LBB166_20
+	je	.LBB168_20
 # BB#19:
 	movl	%edi, %esi
 	shrl	$2, %esi
@@ -13699,29 +13749,29 @@ VirtMemMan_CheckAddressPermissions:     # @VirtMemMan_CheckAddressPermissions
 	shrl	$3, %edi
 	andl	$3, %edi
 	movl	%edi, %ebx
-.LBB166_20:
+.LBB168_20:
 	testq	%rdx, %rdx
-	je	.LBB166_22
+	je	.LBB168_22
 # BB#21:
 	movl	%ebx, (%rdx)
-.LBB166_22:
+.LBB168_22:
 	testq	%rcx, %rcx
-	je	.LBB166_24
+	je	.LBB168_24
 # BB#23:
 	movl	%r15d, (%rcx)
-.LBB166_24:
+.LBB168_24:
 	testq	%r8, %r8
-	je	.LBB166_35
+	je	.LBB168_35
 # BB#25:
 	movl	%esi, (%r8)
-.LBB166_35:                             # %VirtMemMan_ReturnPermissions.exit
+.LBB168_35:                             # %VirtMemMan_ReturnPermissions.exit23
 	popq	%rbx
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end166:
-	.size	VirtMemMan_CheckAddressPermissions, .Lfunc_end166-VirtMemMan_CheckAddressPermissions
+.Lfunc_end168:
+	.size	VirtMemMan_CheckAddressPermissions, .Lfunc_end168-VirtMemMan_CheckAddressPermissions
 	.cfi_endproc
 
 	.globl	VirtMemMan_FreePageTable
@@ -13731,12 +13781,12 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp813:
+.Ltmp795:
 	.cfi_def_cfa_offset 16
-.Ltmp814:
+.Ltmp796:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp815:
+.Ltmp797:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -13744,15 +13794,15 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp816:
+.Ltmp798:
 	.cfi_offset %rbx, -56
-.Ltmp817:
+.Ltmp799:
 	.cfi_offset %r12, -48
-.Ltmp818:
+.Ltmp800:
 	.cfi_offset %r13, -40
-.Ltmp819:
+.Ltmp801:
 	.cfi_offset %r14, -32
-.Ltmp820:
+.Ltmp802:
 	.cfi_offset %r15, -24
 	movq	%rdi, -48(%rbp)         # 8-byte Spill
 	movq	KB4_Blocks_Bitmap, %r13
@@ -13761,9 +13811,9 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	movabsq	$1152921504606842880, %r12 # imm = 0xFFFFFFFFFFFF000
 	xorl	%r11d, %r11d
 	.align	16, 0x90
-.LBB167_1:                              # =>This Loop Header: Depth=1
-                                        #     Child Loop BB167_3 Depth 2
-                                        #       Child Loop BB167_6 Depth 3
+.LBB169_1:                              # =>This Loop Header: Depth=1
+                                        #     Child Loop BB169_3 Depth 2
+                                        #       Child Loop BB169_6 Depth 3
 	movq	-48(%rbp), %rax         # 8-byte Reload
 	movq	(%rax,%r11,8), %r14
 	movq	%r12, %r15
@@ -13772,45 +13822,45 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	movl	$0, %eax
 	cmovbq	%r10, %rax
 	andq	%r12, %r14
-	je	.LBB167_13
-# BB#2:                                 #   in Loop: Header=BB167_1 Depth=1
+	je	.LBB169_13
+# BB#2:                                 #   in Loop: Header=BB169_1 Depth=1
 	movabsq	$-17179869184, %rcx     # imm = 0xFFFFFFFC00000000
 	addq	%rcx, %r15
 	addq	%rax, %r15
 	xorl	%esi, %esi
 	.align	16, 0x90
-.LBB167_3:                              # %.preheader5
-                                        #   Parent Loop BB167_1 Depth=1
+.LBB169_3:                              # %.preheader5
+                                        #   Parent Loop BB169_1 Depth=1
                                         # =>  This Loop Header: Depth=2
-                                        #       Child Loop BB167_6 Depth 3
+                                        #       Child Loop BB169_6 Depth 3
 	movq	(%r15,%rsi,8), %rdx
 	testb	$-128, %dl
-	jne	.LBB167_11
-# BB#4:                                 #   in Loop: Header=BB167_3 Depth=2
+	jne	.LBB169_11
+# BB#4:                                 #   in Loop: Header=BB169_3 Depth=2
 	movq	%rdx, %rbx
 	andq	%r12, %rbx
 	cmpq	%r8, %rbx
 	movl	$0, %eax
 	cmovbq	%r10, %rax
 	andq	%r12, %rdx
-	je	.LBB167_11
-# BB#5:                                 #   in Loop: Header=BB167_3 Depth=2
+	je	.LBB169_11
+# BB#5:                                 #   in Loop: Header=BB169_3 Depth=2
 	movabsq	$-17179869184, %rcx     # imm = 0xFFFFFFFC00000000
 	addq	%rcx, %rbx
 	addq	%rax, %rbx
 	xorl	%eax, %eax
 	.align	16, 0x90
-.LBB167_6:                              # %.preheader
-                                        #   Parent Loop BB167_1 Depth=1
-                                        #     Parent Loop BB167_3 Depth=2
+.LBB169_6:                              # %.preheader
+                                        #   Parent Loop BB169_1 Depth=1
+                                        #     Parent Loop BB169_3 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
 	movq	(%rbx,%rax,8), %r9
 	testb	$-128, %r9b
-	jne	.LBB167_9
-# BB#7:                                 #   in Loop: Header=BB167_6 Depth=3
+	jne	.LBB169_9
+# BB#7:                                 #   in Loop: Header=BB169_6 Depth=3
 	andq	%r12, %r9
-	je	.LBB167_9
-# BB#8:                                 #   in Loop: Header=BB167_6 Depth=3
+	je	.LBB169_9
+# BB#8:                                 #   in Loop: Header=BB169_6 Depth=3
 	movq	%r9, %rcx
 	shrq	$12, %rcx
 	movl	$-2, %edi
@@ -13819,11 +13869,11 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	andl	%edi, (%r13,%r9,4)
 	incq	freePageCount
 	movq	%r9, lastNonFullPage
-.LBB167_9:                              #   in Loop: Header=BB167_6 Depth=3
+.LBB169_9:                              #   in Loop: Header=BB169_6 Depth=3
 	incq	%rax
 	cmpq	$512, %rax              # imm = 0x200
-	jne	.LBB167_6
-# BB#10:                                #   in Loop: Header=BB167_3 Depth=2
+	jne	.LBB169_6
+# BB#10:                                #   in Loop: Header=BB169_3 Depth=2
 	movq	%rdx, %rcx
 	shrq	$12, %rcx
 	movl	$-2, %eax
@@ -13832,11 +13882,11 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	andl	%eax, (%r13,%rdx,4)
 	incq	freePageCount
 	movq	%rdx, lastNonFullPage
-.LBB167_11:                             #   in Loop: Header=BB167_3 Depth=2
+.LBB169_11:                             #   in Loop: Header=BB169_3 Depth=2
 	incq	%rsi
 	cmpq	$512, %rsi              # imm = 0x200
-	jne	.LBB167_3
-# BB#12:                                #   in Loop: Header=BB167_1 Depth=1
+	jne	.LBB169_3
+# BB#12:                                #   in Loop: Header=BB169_1 Depth=1
 	movq	%r14, %rcx
 	shrq	$12, %rcx
 	movl	$-2, %eax
@@ -13845,10 +13895,10 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	andl	%eax, (%r13,%r14,4)
 	incq	freePageCount
 	movq	%r14, lastNonFullPage
-.LBB167_13:                             #   in Loop: Header=BB167_1 Depth=1
+.LBB169_13:                             #   in Loop: Header=BB169_1 Depth=1
 	incq	%r11
 	cmpq	$512, %r11              # imm = 0x200
-	jne	.LBB167_1
+	jne	.LBB169_1
 # BB#14:
 	addq	$8, %rsp
 	popq	%rbx
@@ -13858,234 +13908,8 @@ VirtMemMan_FreePageTable:               # @VirtMemMan_FreePageTable
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end167:
-	.size	VirtMemMan_FreePageTable, .Lfunc_end167-VirtMemMan_FreePageTable
-	.cfi_endproc
-
-	.globl	VirtMemMan_LockPageToUser
-	.align	16, 0x90
-	.type	VirtMemMan_LockPageToUser,@function
-VirtMemMan_LockPageToUser:              # @VirtMemMan_LockPageToUser
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp821:
-	.cfi_def_cfa_offset 16
-.Ltmp822:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp823:
-	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-.Ltmp824:
-	.cfi_offset %rbx, -32
-.Ltmp825:
-	.cfi_offset %r14, -24
-	movabsq	$1152921504606842880, %r8 # imm = 0xFFFFFFFFFFFF000
-	movq	virtMemData, %rax
-	movq	8(%rax), %rax
-	movq	%rdi, %rcx
-	shrq	$36, %rcx
-	movq	%rdi, %rdx
-	shrq	$21, %rdx
-	andl	$511, %edx              # imm = 0x1FF
-	movq	%rdi, %r14
-	shrq	$12, %r14
-	andl	$511, %r14d             # imm = 0x1FF
-	andl	$4088, %ecx             # imm = 0xFF8
-	movq	(%rax,%rcx), %rax
-	andq	%r8, %rax
-	je	.LBB168_1
-# BB#2:
-	movabsq	$-17179869184, %r9      # imm = 0xFFFFFFFC00000000
-	movq	%rax, %rcx
-	shrq	$32, %rcx
-	sete	%cl
-	movzbl	%cl, %ecx
-	shlq	$33, %rcx
-	addq	%rax, %rcx
-	addq	%r9, %rcx
-	movq	%rdi, %rbx
-	shrq	$30, %rbx
-	andl	$511, %ebx              # imm = 0x1FF
-	movq	(%rcx,%rbx,8), %rax
-	testb	$-128, %al
-	jne	.LBB168_3
-# BB#6:
-	andq	%r8, %rax
-	je	.LBB168_7
-# BB#8:
-	movabsq	$8589934592, %r10       # imm = 0x200000000
-	movabsq	$4294967296, %r11       # imm = 0x100000000
-	xorl	%ecx, %ecx
-	cmpq	%r11, %rax
-	leaq	(%rax,%r9), %rax
-	cmovbq	%r10, %rcx
-	addq	%rax, %rcx
-	movq	(%rcx,%rdx,8), %rax
-	testb	$-128, %al
-	jne	.LBB168_9
-# BB#12:
-	movq	%rax, %rcx
-	andq	%r8, %rcx
-	movq	$-1, %rax
-	je	.LBB168_16
-# BB#13:
-	xorl	%edx, %edx
-	cmpq	%r11, %rcx
-	leaq	(%r9,%rcx), %rax
-	cmovbq	%r10, %rdx
-	addq	%rax, %rdx
-	movq	(%rdx,%r14,8), %rax
-	movq	%rax, %rcx
-	andq	$-3, %rcx
-	movq	%rcx, (%rdx,%r14,8)
-	testq	%rsi, %rsi
-	je	.LBB168_15
-# BB#14:
-	movq	$4096, (%rsi)           # imm = 0x1000
-.LBB168_15:
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-	jmp	.LBB168_16
-.LBB168_1:
-	movq	$-1, %rax
-	jmp	.LBB168_16
-.LBB168_3:
-	movq	%rax, %rdx
-	andq	$-3, %rdx
-	movq	%rdx, (%rcx,%rbx,8)
-	testq	%rsi, %rsi
-	je	.LBB168_5
-# BB#4:
-	movq	$1073741824, (%rsi)     # imm = 0x40000000
-.LBB168_5:
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-	jmp	.LBB168_16
-.LBB168_7:
-	movq	$-1, %rax
-	jmp	.LBB168_16
-.LBB168_9:
-	movq	%rax, %rbx
-	andq	$-3, %rbx
-	movq	%rbx, (%rcx,%rdx,8)
-	testq	%rsi, %rsi
-	je	.LBB168_11
-# BB#10:
-	movq	$2097152, (%rsi)        # imm = 0x200000
-.LBB168_11:
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-.LBB168_16:
-	popq	%rbx
-	popq	%r14
-	popq	%rbp
-	retq
-.Lfunc_end168:
-	.size	VirtMemMan_LockPageToUser, .Lfunc_end168-VirtMemMan_LockPageToUser
-	.cfi_endproc
-
-	.globl	VirtMemMan_UnlockPageToUser
-	.align	16, 0x90
-	.type	VirtMemMan_UnlockPageToUser,@function
-VirtMemMan_UnlockPageToUser:            # @VirtMemMan_UnlockPageToUser
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp826:
-	.cfi_def_cfa_offset 16
-.Ltmp827:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp828:
-	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-.Ltmp829:
-	.cfi_offset %rbx, -32
-.Ltmp830:
-	.cfi_offset %r14, -24
-	movabsq	$1152921504606842880, %r11 # imm = 0xFFFFFFFFFFFF000
-	movq	virtMemData, %rax
-	movq	8(%rax), %rax
-	movq	%rdi, %rcx
-	shrq	$36, %rcx
-	movq	%rdi, %rdx
-	shrq	$21, %rdx
-	andl	$511, %edx              # imm = 0x1FF
-	movq	%rdi, %r14
-	shrq	$12, %r14
-	andl	$511, %r14d             # imm = 0x1FF
-	andl	$4088, %ecx             # imm = 0xFF8
-	movq	(%rax,%rcx), %rax
-	andq	%r11, %rax
-	je	.LBB169_8
-# BB#1:
-	movabsq	$-17179869184, %r8      # imm = 0xFFFFFFFC00000000
-	movq	%rax, %rcx
-	shrq	$32, %rcx
-	sete	%cl
-	movzbl	%cl, %ecx
-	shlq	$33, %rcx
-	addq	%rax, %rcx
-	addq	%r8, %rcx
-	movq	%rdi, %rbx
-	shrq	$30, %rbx
-	andl	$511, %ebx              # imm = 0x1FF
-	movq	(%rcx,%rbx,8), %rax
-	testb	$-128, %al
-	jne	.LBB169_2
-# BB#3:
-	andq	%r11, %rax
-	je	.LBB169_8
-# BB#4:
-	movabsq	$8589934592, %r9        # imm = 0x200000000
-	movabsq	$4294967296, %r10       # imm = 0x100000000
-	xorl	%ecx, %ecx
-	cmpq	%r10, %rax
-	leaq	(%rax,%r8), %rax
-	cmovbq	%r9, %rcx
-	addq	%rax, %rcx
-	movq	(%rcx,%rdx,8), %rax
-	testb	$-128, %al
-	jne	.LBB169_5
-# BB#6:
-	andq	%r11, %rax
-	je	.LBB169_8
-# BB#7:
-	xorl	%ecx, %ecx
-	cmpq	%r10, %rax
-	leaq	(%r8,%rax), %rax
-	cmovbq	%r9, %rcx
-	addq	%rax, %rcx
-	movq	%rsi, (%rcx,%r14,8)
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-	jmp	.LBB169_8
-.LBB169_2:
-	movq	%rsi, (%rcx,%rbx,8)
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-	jmp	.LBB169_8
-.LBB169_5:
-	movq	%rsi, (%rcx,%rdx,8)
-	#APP
-	invlpg	(%rdi)
-	#NO_APP
-.LBB169_8:
-	popq	%rbx
-	popq	%r14
-	popq	%rbp
-	retq
 .Lfunc_end169:
-	.size	VirtMemMan_UnlockPageToUser, .Lfunc_end169-VirtMemMan_UnlockPageToUser
+	.size	VirtMemMan_FreePageTable, .Lfunc_end169-VirtMemMan_FreePageTable
 	.cfi_endproc
 
 	.globl	VirtMemMan_HandlePageFault
@@ -14095,16 +13919,18 @@ VirtMemMan_HandlePageFault:             # @VirtMemMan_HandlePageFault
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp831:
+.Ltmp803:
 	.cfi_def_cfa_offset 16
-.Ltmp832:
+.Ltmp804:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp833:
+.Ltmp805:
 	.cfi_def_cfa_register %rbp
 	#APP
 	movq	%cr2, %rdi
 	#NO_APP
+	movq	regs_saved, %rax
+	movq	144(%rax), %rsi
 	popq	%rbp
 	jmp	HandlePageFault         # TAILCALL
 .Lfunc_end170:
@@ -14118,12 +13944,12 @@ SMP_IncrementCoreCount:                 # @SMP_IncrementCoreCount
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp834:
+.Ltmp806:
 	.cfi_def_cfa_offset 16
-.Ltmp835:
+.Ltmp807:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp836:
+.Ltmp808:
 	.cfi_def_cfa_register %rbp
 	incl	smp_coreCount
 	popq	%rbp
@@ -14139,12 +13965,12 @@ SMP_GetCoreCount:                       # @SMP_GetCoreCount
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp837:
+.Ltmp809:
 	.cfi_def_cfa_offset 16
-.Ltmp838:
+.Ltmp810:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp839:
+.Ltmp811:
 	.cfi_def_cfa_register %rbp
 	movl	smp_coreCount, %eax
 	popq	%rbp
@@ -14160,12 +13986,12 @@ SMP_WaitForCoreCountIncrement:          # @SMP_WaitForCoreCountIncrement
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp840:
+.Ltmp812:
 	.cfi_def_cfa_offset 16
-.Ltmp841:
+.Ltmp813:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp842:
+.Ltmp814:
 	.cfi_def_cfa_register %rbp
 	subq	$4, %rsp
 	movl	smp_coreCount, %eax
@@ -14190,22 +14016,22 @@ SMP_LockTrampoline:                     # @SMP_LockTrampoline
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp843:
+.Ltmp815:
 	.cfi_def_cfa_offset 16
-.Ltmp844:
+.Ltmp816:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp845:
+.Ltmp817:
 	.cfi_def_cfa_register %rbp
 	movq	$smp_lock139, %rax
 	#APP
-.Ltmp846:
+.Ltmp818:
 	pause
 	testl	$1, (%rax)
-	jne	.Ltmp846
+	jne	.Ltmp818
 	lock
 	btsl	$0, (%rax)
-	jb	.Ltmp846
+	jb	.Ltmp818
 	#NO_APP
 	popq	%rbp
 	retq
@@ -14220,12 +14046,12 @@ SMP_UnlockTrampoline:                   # @SMP_UnlockTrampoline
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp847:
+.Ltmp819:
 	.cfi_def_cfa_offset 16
-.Ltmp848:
+.Ltmp820:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp849:
+.Ltmp821:
 	.cfi_def_cfa_register %rbp
 	movq	$smp_lock139, %rax
 	#APP
@@ -14244,12 +14070,12 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp850:
+.Ltmp822:
 	.cfi_def_cfa_offset 16
-.Ltmp851:
+.Ltmp823:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp852:
+.Ltmp824:
 	.cfi_def_cfa_register %rbp
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
@@ -14266,19 +14092,19 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp853
-.Ltmp854:
+	je	.Ltmp825
+.Ltmp826:
 	btq	$25, %rcx
-	jae	.Ltmp855
-.Ltmp855:
+	jae	.Ltmp827
+.Ltmp827:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp854
-.Ltmp853:
+	jne	.Ltmp826
+.Ltmp825:
 	btq	$25, %rcx
-	jae	.Ltmp856
+	jae	.Ltmp828
 	orw	$1, 4(%rax)
-.Ltmp856:
+.Ltmp828:
 	cli
 
 	#NO_APP
@@ -14292,10 +14118,10 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp857
+	jae	.Ltmp829
 	sti
 	movw	$0, 4(%rax)
-.Ltmp857:
+.Ltmp829:
 
 	#NO_APP
 	movq	syscall_lock, %rax
@@ -14313,19 +14139,19 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp858
-.Ltmp859:
+	je	.Ltmp830
+.Ltmp831:
 	btq	$25, %rcx
-	jae	.Ltmp860
-.Ltmp860:
+	jae	.Ltmp832
+.Ltmp832:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp859
-.Ltmp858:
+	jne	.Ltmp831
+.Ltmp830:
 	btq	$25, %rcx
-	jae	.Ltmp861
+	jae	.Ltmp833
 	orw	$1, 4(%rax)
-.Ltmp861:
+.Ltmp833:
 	cli
 
 	#NO_APP
@@ -14339,10 +14165,10 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp862
+	jae	.Ltmp834
 	sti
 	movw	$0, 4(%rax)
-.Ltmp862:
+.Ltmp834:
 
 	#NO_APP
 	movq	syscall_lock, %rax
@@ -14360,19 +14186,19 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp863
-.Ltmp864:
+	je	.Ltmp835
+.Ltmp836:
 	btq	$25, %rcx
-	jae	.Ltmp865
-.Ltmp865:
+	jae	.Ltmp837
+.Ltmp837:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp864
-.Ltmp863:
+	jne	.Ltmp836
+.Ltmp835:
 	btq	$25, %rcx
-	jae	.Ltmp866
+	jae	.Ltmp838
 	orw	$1, 4(%rax)
-.Ltmp866:
+.Ltmp838:
 	cli
 
 	#NO_APP
@@ -14386,10 +14212,10 @@ SetupSecurityMonitor:                   # @SetupSecurityMonitor
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp867
+	jae	.Ltmp839
 	sti
 	movw	$0, 4(%rax)
-.Ltmp867:
+.Ltmp839:
 
 	#NO_APP
 .LBB176_10:                             # %RegisterSyscall.exit8
@@ -14421,25 +14247,25 @@ SecurityMonitor_IOPL:                   # @SecurityMonitor_IOPL
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp868:
+.Ltmp840:
 	.cfi_def_cfa_offset 16
-.Ltmp869:
+.Ltmp841:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp870:
+.Ltmp842:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
 	subq	$16, %rsp
-.Ltmp871:
+.Ltmp843:
 	.cfi_offset %rbx, -32
-.Ltmp872:
+.Ltmp844:
 	.cfi_offset %r14, -24
 	movq	%rdx, %rbx
 	movq	%rsi, %r14
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB177_1
 # BB#2:                                 # %LockSpinlock.exit.i
@@ -14454,24 +14280,24 @@ SecurityMonitor_IOPL:                   # @SecurityMonitor_IOPL
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp873
-.Ltmp874:
+	je	.Ltmp845
+.Ltmp846:
 	btq	$25, %rdx
-	jae	.Ltmp875
-.Ltmp875:
+	jae	.Ltmp847
+.Ltmp847:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp874
-.Ltmp873:
+	jne	.Ltmp846
+.Ltmp845:
 	btq	$25, %rdx
-	jae	.Ltmp876
+	jae	.Ltmp848
 	orw	$1, 4(%rax)
-.Ltmp876:
+.Ltmp848:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB177_4
 # BB#3:
@@ -14480,15 +14306,15 @@ SecurityMonitor_IOPL:                   # @SecurityMonitor_IOPL
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp877
+	jae	.Ltmp849
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp877:
+.Ltmp849:
 
 	#NO_APP
 	jmp	.LBB177_4
 .LBB177_1:                              # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
+	movq	8(%rcx), %rax
 .LBB177_4:                              # %GetCurrentProcessUID.exit
 	movq	(%rax), %rdi
 	leaq	-24(%rbp), %rsi
@@ -14500,7 +14326,7 @@ SecurityMonitor_IOPL:                   # @SecurityMonitor_IOPL
 # BB#5:
 	movq	-24(%rbp), %rcx
 	movl	$13, %eax
-	testb	$1, 480(%rcx)
+	testb	$1, 280(%rcx)
 	jne	.LBB177_11
 # BB#6:
 	movl	$22, %eax
@@ -14544,25 +14370,25 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp878:
+.Ltmp850:
 	.cfi_def_cfa_offset 16
-.Ltmp879:
+.Ltmp851:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp880:
+.Ltmp852:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
 	subq	$16, %rsp
-.Ltmp881:
+.Ltmp853:
 	.cfi_offset %rbx, -32
-.Ltmp882:
+.Ltmp854:
 	.cfi_offset %r14, -24
 	movq	%rdx, %r14
 	movq	%rsi, %rbx
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB178_1
 # BB#2:                                 # %LockSpinlock.exit.i
@@ -14577,24 +14403,24 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp883
-.Ltmp884:
+	je	.Ltmp855
+.Ltmp856:
 	btq	$25, %rdx
-	jae	.Ltmp885
-.Ltmp885:
+	jae	.Ltmp857
+.Ltmp857:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp884
-.Ltmp883:
+	jne	.Ltmp856
+.Ltmp855:
 	btq	$25, %rdx
-	jae	.Ltmp886
+	jae	.Ltmp858
 	orw	$1, 4(%rax)
-.Ltmp886:
+.Ltmp858:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB178_4
 # BB#3:
@@ -14603,15 +14429,15 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp887
+	jae	.Ltmp859
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp887:
+.Ltmp859:
 
 	#NO_APP
 	jmp	.LBB178_4
 .LBB178_1:                              # %LockSpinlock.exit.i.thread
-	movq	16(%rcx), %rax
+	movq	8(%rcx), %rax
 .LBB178_4:                              # %GetCurrentProcessUID.exit
 	movq	(%rax), %rdi
 	leaq	-24(%rbp), %rsi
@@ -14623,7 +14449,7 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 # BB#5:
 	movq	-24(%rbp), %rcx
 	movl	$13, %eax
-	testb	$1, 480(%rcx)
+	testb	$1, 280(%rcx)
 	jne	.LBB178_13
 # BB#6:
 	movl	$38, %eax
@@ -14634,7 +14460,7 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 	cmpq	$0, 16(%r14)
 	jne	.LBB178_13
 # BB#11:
-	orb	$2, 272(%rcx)
+	orb	$2, 268(%rcx)
 	jmp	.LBB178_12
 .LBB178_7:
 	cmpq	$2, %rbx
@@ -14644,7 +14470,7 @@ SecurityMonitor_SyscallReceived:        # @SecurityMonitor_SyscallReceived
 	cmpq	$0, 16(%r14)
 	jne	.LBB178_13
 # BB#9:
-	orb	$1, 272(%rcx)
+	orb	$1, 268(%rcx)
 .LBB178_12:
 	xorl	%eax, %eax
 .LBB178_13:
@@ -14664,16 +14490,16 @@ ArchPrctl_Syscall:                      # @ArchPrctl_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp888:
+.Ltmp860:
 	.cfi_def_cfa_offset 16
-.Ltmp889:
+.Ltmp861:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp890:
+.Ltmp862:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp891:
+.Ltmp863:
 	.cfi_offset %rbx, -24
 	movq	%rdx, %rbx
 	movl	$38, %eax
@@ -14715,7 +14541,9 @@ ArchPrctl_Syscall:                      # @ArchPrctl_Syscall
 .LBB179_9:
 	movl	$0, -16(%rbp)
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rdi
 	movq	8(%rcx), %rsi
 	leaq	-16(%rbp), %rcx
 	xorl	%edx, %edx
@@ -14733,7 +14561,9 @@ ArchPrctl_Syscall:                      # @ArchPrctl_Syscall
 .LBB179_6:
 	movl	$0, -12(%rbp)
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rdi
 	movq	8(%rcx), %rsi
 	leaq	-12(%rbp), %rcx
 	xorl	%edx, %edx
@@ -14780,12 +14610,12 @@ pci_getDeviceCount:                     # @pci_getDeviceCount
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp892:
+.Ltmp864:
 	.cfi_def_cfa_offset 16
-.Ltmp893:
+.Ltmp865:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp894:
+.Ltmp866:
 	.cfi_def_cfa_register %rbp
 	movl	pci_deviceCount, %eax
 	popq	%rbp
@@ -14801,12 +14631,12 @@ pci_getDeviceInfo:                      # @pci_getDeviceInfo
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp895:
+.Ltmp867:
 	.cfi_def_cfa_offset 16
-.Ltmp896:
+.Ltmp868:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp897:
+.Ltmp869:
 	.cfi_def_cfa_register %rbp
 	testq	%rsi, %rsi
 	sete	%al
@@ -14855,12 +14685,12 @@ pci_readDWord:                          # @pci_readDWord
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp898:
+.Ltmp870:
 	.cfi_def_cfa_offset 16
-.Ltmp899:
+.Ltmp871:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp900:
+.Ltmp872:
 	.cfi_def_cfa_register %rbp
 	shll	$16, %edi
 	shll	$11, %esi
@@ -14891,12 +14721,12 @@ pci_writeDWord:                         # @pci_writeDWord
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp901:
+.Ltmp873:
 	.cfi_def_cfa_offset 16
-.Ltmp902:
+.Ltmp874:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp903:
+.Ltmp875:
 	.cfi_def_cfa_register %rbp
 	shll	$16, %edi
 	shll	$11, %esi
@@ -14928,12 +14758,12 @@ pci_enableMSI:                          # @pci_enableMSI
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp904:
+.Ltmp876:
 	.cfi_def_cfa_offset 16
-.Ltmp905:
+.Ltmp877:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp906:
+.Ltmp878:
 	.cfi_def_cfa_register %rbp
 	movl	%edi, %edi
 	shlq	$7, %rdi
@@ -15131,18 +14961,18 @@ pci_regMSIVector:                       # @pci_regMSIVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp907:
+.Ltmp879:
 	.cfi_def_cfa_offset 16
-.Ltmp908:
+.Ltmp880:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp909:
+.Ltmp881:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp910:
+.Ltmp882:
 	.cfi_offset %rbx, -32
-.Ltmp911:
+.Ltmp883:
 	.cfi_offset %r14, -24
 	movl	%edi, %ecx
 	shlq	$7, %rcx
@@ -15298,12 +15128,12 @@ pci_Initialize:                         # @pci_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp912:
+.Ltmp884:
 	.cfi_def_cfa_offset 16
-.Ltmp913:
+.Ltmp885:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp914:
+.Ltmp886:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -15311,15 +15141,15 @@ pci_Initialize:                         # @pci_Initialize
 	pushq	%r12
 	pushq	%rbx
 	subq	$136, %rsp
-.Ltmp915:
+.Ltmp887:
 	.cfi_offset %rbx, -56
-.Ltmp916:
+.Ltmp888:
 	.cfi_offset %r12, -48
-.Ltmp917:
+.Ltmp889:
 	.cfi_offset %r13, -40
-.Ltmp918:
+.Ltmp890:
 	.cfi_offset %r14, -32
-.Ltmp919:
+.Ltmp891:
 	.cfi_offset %r15, -24
 	movq	$.L.str.124, %rdi
 	xorl	%esi, %esi
@@ -15748,12 +15578,12 @@ pci_GetPCIClass3:                       # @pci_GetPCIClass3
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp920:
+.Ltmp892:
 	.cfi_def_cfa_offset 16
-.Ltmp921:
+.Ltmp893:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp922:
+.Ltmp894:
 	.cfi_def_cfa_register %rbp
 	movq	$.L.str.9, (%r9)
 	movq	$.L.str.9, (%r8)
@@ -15815,12 +15645,12 @@ pci_GetPCIClass:                        # @pci_GetPCIClass
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp923:
+.Ltmp895:
 	.cfi_def_cfa_offset 16
-.Ltmp924:
+.Ltmp896:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp925:
+.Ltmp897:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, %r9
 	shrq	$24, %r9
@@ -15887,12 +15717,12 @@ pci_GetPCIVendor:                       # @pci_GetPCIVendor
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp926:
+.Ltmp898:
 	.cfi_def_cfa_offset 16
-.Ltmp927:
+.Ltmp899:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp928:
+.Ltmp900:
 	.cfi_def_cfa_register %rbp
 	movq	$.L.str.2512, (%rdx)
 	movq	$.L.str.2512, (%rsi)
@@ -15955,12 +15785,12 @@ pci_GetPCIDevice:                       # @pci_GetPCIDevice
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp929:
+.Ltmp901:
 	.cfi_def_cfa_offset 16
-.Ltmp930:
+.Ltmp902:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp931:
+.Ltmp903:
 	.cfi_def_cfa_register %rbp
 	movq	$.L.str.2512, (%rcx)
 	movq	$.L.str.2512, (%rdx)
@@ -16013,12 +15843,12 @@ UHCI_DetectController:                  # @UHCI_DetectController
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp932:
+.Ltmp904:
 	.cfi_def_cfa_offset 16
-.Ltmp933:
+.Ltmp905:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp934:
+.Ltmp906:
 	.cfi_def_cfa_register %rbp
 	movzbl	(%rdi), %eax
 	cmpl	$12, %eax
@@ -16051,12 +15881,12 @@ UHCI_InitializeController:              # @UHCI_InitializeController
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp935:
+.Ltmp907:
 	.cfi_def_cfa_offset 16
-.Ltmp936:
+.Ltmp908:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp937:
+.Ltmp909:
 	.cfi_def_cfa_register %rbp
 	movzbl	20(%rdi), %ecx
 	testq	%rcx, %rcx
@@ -16098,12 +15928,12 @@ UHCI_ActivationStateChange:             # @UHCI_ActivationStateChange
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp938:
+.Ltmp910:
 	.cfi_def_cfa_offset 16
-.Ltmp939:
+.Ltmp911:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp940:
+.Ltmp912:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
@@ -16118,12 +15948,12 @@ sleep_kernel:                           # @sleep_kernel
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp941:
+.Ltmp913:
 	.cfi_def_cfa_offset 16
-.Ltmp942:
+.Ltmp914:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp943:
+.Ltmp915:
 	.cfi_def_cfa_register %rbp
 	movl	$-559041729, %eax       # imm = 0xFFFFFFFFDEADB33F
 	#APP
@@ -16143,12 +15973,12 @@ hlt_kernel:                             # @hlt_kernel
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp944:
+.Ltmp916:
 	.cfi_def_cfa_offset 16
-.Ltmp945:
+.Ltmp917:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp946:
+.Ltmp918:
 	.cfi_def_cfa_register %rbp
 	.align	16, 0x90
 .LBB195_1:                              # =>This Inner Loop Header: Depth=1
@@ -16164,12 +15994,12 @@ hlt2_kernel:                            # @hlt2_kernel
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp947:
+.Ltmp919:
 	.cfi_def_cfa_offset 16
-.Ltmp948:
+.Ltmp920:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp949:
+.Ltmp921:
 	.cfi_def_cfa_register %rbp
 	.align	16, 0x90
 .LBB196_1:                              # =>This Inner Loop Header: Depth=1
@@ -16185,47 +16015,19 @@ kernel_main_init:                       # @kernel_main_init
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp950:
+.Ltmp922:
 	.cfi_def_cfa_offset 16
-.Ltmp951:
+.Ltmp923:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp952:
+.Ltmp924:
 	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-.Ltmp953:
-	.cfi_offset %rbx, -24
-	movl	pos, %eax
-	movq	%rax, %rcx
-	addq	$64, %rcx
-	cmpq	$5242881, %rcx          # imm = 0x500001
-	jb	.LBB197_2
-# BB#1:
-	#APP
-	cli
-	hlt
-	#NO_APP
-	movl	pos, %eax
-.LBB197_2:                              # %bootstrap_malloc.exit
-	movl	%eax, %ecx
-	leaq	mem_pool(%rcx), %rbx
-	addl	$64, %eax
-	movl	%eax, pos
-	movq	$0, mem_pool+48(%rcx)
-	movq	$0, mem_pool+40(%rcx)
-	movq	$0, mem_pool+32(%rcx)
-	movq	$0, mem_pool+24(%rcx)
-	movq	$0, mem_pool+16(%rcx)
-	movq	$0, mem_pool+8(%rcx)
-	movq	$0, mem_pool(%rcx)
-	movq	$0, mem_pool+56(%rcx)
 	movq	$.L.str.50, %rdi
 	xorl	%esi, %esi
 	callq	ACPITables_FindTable
 	testq	%rax, %rax
-	je	.LBB197_4
-# BB#3:                                 # %HPET_Initialize.exit.i
+	je	.LBB197_2
+# BB#1:                                 # %HPET_Initialize.exit.i
 	movq	44(%rax), %rax
 	movabsq	$-21474836480, %rcx     # imm = 0xFFFFFFFB00000000
 	addq	%rax, %rcx
@@ -16237,19 +16039,17 @@ kernel_main_init:                       # @kernel_main_init
 	movq	%rax, hpet_regs
 	andb	$-2, 16(%rax)
 	movq	$0, 48(%rax)
-	jmp	.LBB197_5
-.LBB197_4:
+	jmp	.LBB197_3
+.LBB197_2:
 	#APP
 	cli
 	hlt
 	#NO_APP
 	movq	hpet_regs, %rax
-.LBB197_5:                              # %InitializeTimer.exit
+.LBB197_3:                              # %InitializeTimer.exit
 	movq	$0, 48(%rax)
 	orb	$1, 16(%rax)
-	movq	%rbx, %rdi
 	callq	kmalloc_init
-	movq	%rbx, %rdi
 	callq	ProcessSys_Initialize
 	callq	Thread_Initialize
 	xorl	%edi, %edi
@@ -16259,9 +16059,9 @@ kernel_main_init:                       # @kernel_main_init
 	movq	$kernel_main, %rsi
 	callq	CreateThread
 	.align	16, 0x90
-.LBB197_6:                              # =>This Inner Loop Header: Depth=1
+.LBB197_4:                              # =>This Inner Loop Header: Depth=1
 	callq	SwitchThread
-	jmp	.LBB197_6
+	jmp	.LBB197_4
 .Lfunc_end197:
 	.size	kernel_main_init, .Lfunc_end197-kernel_main_init
 	.cfi_endproc
@@ -16273,19 +16073,19 @@ kernel_main:                            # @kernel_main
 	.cfi_startproc
 # BB#0:                                 # %SyscallMan_Initialize.exit
 	pushq	%rbp
-.Ltmp954:
+.Ltmp925:
 	.cfi_def_cfa_offset 16
-.Ltmp955:
+.Ltmp926:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp956:
+.Ltmp927:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-	subq	$512, %rsp              # imm = 0x200
-.Ltmp957:
+	subq	$304, %rsp              # imm = 0x130
+.Ltmp928:
 	.cfi_offset %rbx, -32
-.Ltmp958:
+.Ltmp929:
 	.cfi_offset %r14, -24
 	incl	coreCount
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
@@ -16366,19 +16166,19 @@ kernel_main:                            # @kernel_main
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp959
-.Ltmp960:
+	je	.Ltmp930
+.Ltmp931:
 	btq	$25, %rcx
-	jae	.Ltmp961
-.Ltmp961:
+	jae	.Ltmp932
+.Ltmp932:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp960
-.Ltmp959:
+	jne	.Ltmp931
+.Ltmp930:
 	btq	$25, %rcx
-	jae	.Ltmp962
+	jae	.Ltmp933
 	orw	$1, 4(%rax)
-.Ltmp962:
+.Ltmp933:
 	cli
 
 	#NO_APP
@@ -16392,10 +16192,10 @@ kernel_main:                            # @kernel_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp963
+	jae	.Ltmp934
 	sti
 	movw	$0, 4(%rax)
-.Ltmp963:
+.Ltmp934:
 
 	#NO_APP
 	movq	syscall_lock, %rax
@@ -16413,19 +16213,19 @@ kernel_main:                            # @kernel_main
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp964
-.Ltmp965:
+	je	.Ltmp935
+.Ltmp936:
 	btq	$25, %rcx
-	jae	.Ltmp966
-.Ltmp966:
+	jae	.Ltmp937
+.Ltmp937:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp965
-.Ltmp964:
+	jne	.Ltmp936
+.Ltmp935:
 	btq	$25, %rcx
-	jae	.Ltmp967
+	jae	.Ltmp938
 	orw	$1, 4(%rax)
-.Ltmp967:
+.Ltmp938:
 	cli
 
 	#NO_APP
@@ -16439,10 +16239,10 @@ kernel_main:                            # @kernel_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp968
+	jae	.Ltmp939
 	sti
 	movw	$0, 4(%rax)
-.Ltmp968:
+.Ltmp939:
 
 	#NO_APP
 	movq	syscall_lock, %rax
@@ -16460,19 +16260,19 @@ kernel_main:                            # @kernel_main
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp969
-.Ltmp970:
+	je	.Ltmp940
+.Ltmp941:
 	btq	$25, %rcx
-	jae	.Ltmp971
-.Ltmp971:
+	jae	.Ltmp942
+.Ltmp942:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp970
-.Ltmp969:
+	jne	.Ltmp941
+.Ltmp940:
 	btq	$25, %rcx
-	jae	.Ltmp972
+	jae	.Ltmp943
 	orw	$1, 4(%rax)
-.Ltmp972:
+.Ltmp943:
 	cli
 
 	#NO_APP
@@ -16486,10 +16286,10 @@ kernel_main:                            # @kernel_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp973
+	jae	.Ltmp944
 	sti
 	movw	$0, 4(%rax)
-.Ltmp973:
+.Ltmp944:
 
 	#NO_APP
 	jmp	.LBB198_10
@@ -16548,19 +16348,19 @@ kernel_main:                            # @kernel_main
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp974
-.Ltmp975:
+	je	.Ltmp945
+.Ltmp946:
 	btq	$25, %rcx
-	jae	.Ltmp976
-.Ltmp976:
+	jae	.Ltmp947
+.Ltmp947:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp975
-.Ltmp974:
+	jne	.Ltmp946
+.Ltmp945:
 	btq	$25, %rcx
-	jae	.Ltmp977
+	jae	.Ltmp948
 	orw	$1, 4(%r14)
-.Ltmp977:
+.Ltmp948:
 	cli
 
 	#NO_APP
@@ -16575,10 +16375,10 @@ kernel_main:                            # @kernel_main
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp978
+	jae	.Ltmp949
 	sti
 	movw	$0, 4(%r14)
-.Ltmp978:
+.Ltmp949:
 
 	#NO_APP
 	jmp	.LBB198_13
@@ -16660,14 +16460,14 @@ kernel_main:                            # @kernel_main
 	andl	$-65537, %ecx           # imm = 0xFFFFFFFFFFFEFFFF
 	movq	(%rax), %rax
 	movl	%ecx, 800(%rax)
-	leaq	-512(%rbp), %rbx
+	leaq	-312(%rbp), %rbx
 	xorl	%edi, %edi
 	movq	%rbx, %rsi
 	callq	GetProcessInformation
-	leaq	-520(%rbp), %rsi
+	leaq	-320(%rbp), %rsi
 	movq	%rbx, %rdi
 	callq	ForkProcess
-	movq	-520(%rbp), %rax
+	movq	-320(%rbp), %rax
 	movq	(%rax), %rdi
 	movq	$load_elf, %rsi
 	callq	CreateThread
@@ -16681,7 +16481,7 @@ kernel_main:                            # @kernel_main
 .LBB198_17:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB198_18
 # BB#19:                                # %LockSpinlock.exit.i
@@ -16696,24 +16496,24 @@ kernel_main:                            # @kernel_main
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp979
-.Ltmp980:
+	je	.Ltmp950
+.Ltmp951:
 	btq	$25, %rdx
-	jae	.Ltmp981
-.Ltmp981:
+	jae	.Ltmp952
+.Ltmp952:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp980
-.Ltmp979:
+	jne	.Ltmp951
+.Ltmp950:
 	btq	$25, %rdx
-	jae	.Ltmp982
+	jae	.Ltmp953
 	orw	$1, 4(%rcx)
-.Ltmp982:
+.Ltmp953:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rdi
-	movq	168(%rax), %rax
+	movq	(%rax), %rdi
+	movq	152(%rax), %rax
 	testq	%rax, %rax
 	je	.LBB198_21
 # BB#20:
@@ -16722,15 +16522,15 @@ kernel_main:                            # @kernel_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp983
+	jae	.Ltmp954
 	sti
 	movw	$0, 4(%rax)
-.Ltmp983:
+.Ltmp954:
 
 	#NO_APP
 	jmp	.LBB198_21
 .LBB198_18:                             # %LockSpinlock.exit.i.thread
-	movq	8(%rax), %rdi
+	movq	(%rax), %rdi
 .LBB198_21:                             # %GetCurrentThreadUID.exit
 	movl	$4, %esi
 	callq	SetThreadState
@@ -16748,12 +16548,12 @@ load_elf:                               # @load_elf
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp984:
+.Ltmp955:
 	.cfi_def_cfa_offset 16
-.Ltmp985:
+.Ltmp956:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp986:
+.Ltmp957:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movq	$0, -8(%rbp)
@@ -16783,12 +16583,12 @@ smp_main:                               # @smp_main
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp987:
+.Ltmp958:
 	.cfi_def_cfa_offset 16
-.Ltmp988:
+.Ltmp959:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp989:
+.Ltmp960:
 	.cfi_def_cfa_register %rbp
 	movq	smp_lock, %rax
 	testq	%rax, %rax
@@ -16805,19 +16605,19 @@ smp_main:                               # @smp_main
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp990
-.Ltmp991:
+	je	.Ltmp961
+.Ltmp962:
 	btq	$25, %rcx
-	jae	.Ltmp992
-.Ltmp992:
+	jae	.Ltmp963
+.Ltmp963:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp991
-.Ltmp990:
+	jne	.Ltmp962
+.Ltmp961:
 	btq	$25, %rcx
-	jae	.Ltmp993
+	jae	.Ltmp964
 	orw	$1, 4(%rax)
-.Ltmp993:
+.Ltmp964:
 	cli
 
 	#NO_APP
@@ -16832,10 +16632,10 @@ smp_main:                               # @smp_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp994
+	jae	.Ltmp965
 	sti
 	movw	$0, 4(%rax)
-.Ltmp994:
+.Ltmp965:
 
 	#NO_APP
 .LBB200_4:                              # %UnlockSpinlock.exit
@@ -16878,7 +16678,7 @@ smp_main:                               # @smp_main
 	callq	CreateThread
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB200_5
 # BB#6:                                 # %LockSpinlock.exit.i
@@ -16893,24 +16693,24 @@ smp_main:                               # @smp_main
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp995
-.Ltmp996:
+	je	.Ltmp966
+.Ltmp967:
 	btq	$25, %rdx
-	jae	.Ltmp997
-.Ltmp997:
+	jae	.Ltmp968
+.Ltmp968:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp996
-.Ltmp995:
+	jne	.Ltmp967
+.Ltmp966:
 	btq	$25, %rdx
-	jae	.Ltmp998
+	jae	.Ltmp969
 	orw	$1, 4(%rcx)
-.Ltmp998:
+.Ltmp969:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rdi
-	movq	168(%rax), %rax
+	movq	(%rax), %rdi
+	movq	152(%rax), %rax
 	testq	%rax, %rax
 	je	.LBB200_8
 # BB#7:
@@ -16919,15 +16719,15 @@ smp_main:                               # @smp_main
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp999
+	jae	.Ltmp970
 	sti
 	movw	$0, 4(%rax)
-.Ltmp999:
+.Ltmp970:
 
 	#NO_APP
 	jmp	.LBB200_8
 .LBB200_5:                              # %LockSpinlock.exit.i.thread
-	movq	8(%rax), %rdi
+	movq	(%rax), %rdi
 .LBB200_8:                              # %GetCurrentThreadUID.exit
 	movl	$4, %esi
 	callq	SetThreadState
@@ -16945,12 +16745,12 @@ smp_core_main:                          # @smp_core_main
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1000:
+.Ltmp971:
 	.cfi_def_cfa_offset 16
-.Ltmp1001:
+.Ltmp972:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1002:
+.Ltmp973:
 	.cfi_def_cfa_register %rbp
 	movl	$-1073741696, %ecx      # imm = 0xFFFFFFFFC0000080
 	#APP
@@ -17006,12 +16806,12 @@ memcpy:                                 # @memcpy
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1003:
+.Ltmp974:
 	.cfi_def_cfa_offset 16
-.Ltmp1004:
+.Ltmp975:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1005:
+.Ltmp976:
 	.cfi_def_cfa_register %rbp
 	testq	%rdx, %rdx
 	je	.LBB202_9
@@ -17087,12 +16887,12 @@ memset:                                 # @memset
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1006:
+.Ltmp977:
 	.cfi_def_cfa_offset 16
-.Ltmp1007:
+.Ltmp978:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1008:
+.Ltmp979:
 	.cfi_def_cfa_register %rbp
 	testq	%rdx, %rdx
 	je	.LBB203_9
@@ -17150,15 +16950,15 @@ memmove:                                # @memmove
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1009:
+.Ltmp980:
 	.cfi_def_cfa_offset 16
-.Ltmp1010:
+.Ltmp981:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1011:
+.Ltmp982:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
-.Ltmp1012:
+.Ltmp983:
 	.cfi_offset %rbx, -24
 	cmpq	%rdi, %rsi
 	je	.LBB204_17
@@ -17293,12 +17093,12 @@ strrev:                                 # @strrev
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1013:
+.Ltmp984:
 	.cfi_def_cfa_offset 16
-.Ltmp1014:
+.Ltmp985:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1015:
+.Ltmp986:
 	.cfi_def_cfa_register %rbp
 	testq	%rdi, %rdi
 	je	.LBB205_8
@@ -17353,12 +17153,12 @@ strlen:                                 # @strlen
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1016:
+.Ltmp987:
 	.cfi_def_cfa_offset 16
-.Ltmp1017:
+.Ltmp988:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1018:
+.Ltmp989:
 	.cfi_def_cfa_register %rbp
 	movq	$-1, %rax
 	.align	16, 0x90
@@ -17380,12 +17180,12 @@ strncmp:                                # @strncmp
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1019:
+.Ltmp990:
 	.cfi_def_cfa_offset 16
-.Ltmp1020:
+.Ltmp991:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1021:
+.Ltmp992:
 	.cfi_def_cfa_register %rbp
 	.align	16, 0x90
 .LBB207_1:                              # =>This Inner Loop Header: Depth=1
@@ -17414,12 +17214,12 @@ strcpy:                                 # @strcpy
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1022:
+.Ltmp993:
 	.cfi_def_cfa_offset 16
-.Ltmp1023:
+.Ltmp994:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1024:
+.Ltmp995:
 	.cfi_def_cfa_register %rbp
 	movq	$-1, %rax
 	.align	16, 0x90
@@ -17502,12 +17302,12 @@ strcpy_s:                               # @strcpy_s
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1025:
+.Ltmp996:
 	.cfi_def_cfa_offset 16
-.Ltmp1026:
+.Ltmp997:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1027:
+.Ltmp998:
 	.cfi_def_cfa_register %rbp
 	cmpq	%rcx, %rsi
 	movq	%rcx, %r8
@@ -17547,12 +17347,12 @@ strchr:                                 # @strchr
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1028:
+.Ltmp999:
 	.cfi_def_cfa_offset 16
-.Ltmp1029:
+.Ltmp1000:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1030:
+.Ltmp1001:
 	.cfi_def_cfa_register %rbp
 	movsbl	%sil, %ecx
 	xorl	%eax, %eax
@@ -17583,12 +17383,12 @@ strrchr:                                # @strrchr
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1031:
+.Ltmp1002:
 	.cfi_def_cfa_offset 16
-.Ltmp1032:
+.Ltmp1003:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1033:
+.Ltmp1004:
 	.cfi_def_cfa_register %rbp
 	leaq	-1(%rdi), %rcx
 	.align	16, 0x90
@@ -17632,12 +17432,12 @@ find_first_zero:                        # @find_first_zero
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1034:
+.Ltmp1005:
 	.cfi_def_cfa_offset 16
-.Ltmp1035:
+.Ltmp1006:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1036:
+.Ltmp1007:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	testl	%edi, %edi
@@ -17646,9 +17446,9 @@ find_first_zero:                        # @find_first_zero
 	notl	%edi
 	#APP
 	bsfl	%edi, %eax
-	jne	.Ltmp1037
+	jne	.Ltmp1008
 	movl	$32, %eax
-.Ltmp1037:
+.Ltmp1008:
 	#NO_APP
 	movzwl	%ax, %eax
 .LBB212_2:
@@ -17665,12 +17465,12 @@ set_bit_cnt:                            # @set_bit_cnt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1038:
+.Ltmp1009:
 	.cfi_def_cfa_offset 16
-.Ltmp1039:
+.Ltmp1010:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1040:
+.Ltmp1011:
 	.cfi_def_cfa_register %rbp
 	xorl	%ecx, %ecx
 	xorl	%eax, %eax
@@ -17707,12 +17507,12 @@ new_uid:                                # @new_uid
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1041:
+.Ltmp1012:
 	.cfi_def_cfa_offset 16
-.Ltmp1042:
+.Ltmp1013:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1043:
+.Ltmp1014:
 	.cfi_def_cfa_register %rbp
 	movq	uids_base, %rax
 	incq	%rax
@@ -17731,12 +17531,12 @@ rand:                                   # @rand
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1044:
+.Ltmp1015:
 	.cfi_def_cfa_offset 16
-.Ltmp1045:
+.Ltmp1016:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1046:
+.Ltmp1017:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
@@ -17752,12 +17552,12 @@ ffs:                                    # @ffs
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1047:
+.Ltmp1018:
 	.cfi_def_cfa_offset 16
-.Ltmp1048:
+.Ltmp1019:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1049:
+.Ltmp1020:
 	.cfi_def_cfa_register %rbp
 	movl	$-1, %eax
 	.align	16, 0x90
@@ -17779,12 +17579,12 @@ itoa:                                   # @itoa
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1050:
+.Ltmp1021:
 	.cfi_def_cfa_offset 16
-.Ltmp1051:
+.Ltmp1022:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1052:
+.Ltmp1023:
 	.cfi_def_cfa_register %rbp
 	subq	$256, %rsp              # imm = 0x100
 	cmpl	$16, %edx
@@ -18007,12 +17807,12 @@ utoa:                                   # @utoa
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1053:
+.Ltmp1024:
 	.cfi_def_cfa_offset 16
-.Ltmp1054:
+.Ltmp1025:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1055:
+.Ltmp1026:
 	.cfi_def_cfa_register %rbp
 	subq	$256, %rsp              # imm = 0x100
 	movq	%rdi, %rax
@@ -18248,12 +18048,12 @@ vsnprintf:                              # @vsnprintf
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1056:
+.Ltmp1027:
 	.cfi_def_cfa_offset 16
-.Ltmp1057:
+.Ltmp1028:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1058:
+.Ltmp1029:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -18261,15 +18061,15 @@ vsnprintf:                              # @vsnprintf
 	pushq	%r12
 	pushq	%rbx
 	subq	$56, %rsp
-.Ltmp1059:
+.Ltmp1030:
 	.cfi_offset %rbx, -56
-.Ltmp1060:
+.Ltmp1031:
 	.cfi_offset %r12, -48
-.Ltmp1061:
+.Ltmp1032:
 	.cfi_offset %r13, -40
-.Ltmp1062:
+.Ltmp1033:
 	.cfi_offset %r14, -32
-.Ltmp1063:
+.Ltmp1034:
 	.cfi_offset %r15, -24
 	movq	%rdx, %r14
 	movq	%rsi, %r12
@@ -18830,12 +18630,12 @@ sprintf:                                # @sprintf
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1064:
+.Ltmp1035:
 	.cfi_def_cfa_offset 16
-.Ltmp1065:
+.Ltmp1036:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1066:
+.Ltmp1037:
 	.cfi_def_cfa_register %rbp
 	subq	$80, %rsp
 	movq	%r9, -40(%rbp)
@@ -18865,16 +18665,16 @@ List_Create:                            # @List_Create
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1067:
+.Ltmp1038:
 	.cfi_def_cfa_offset 16
-.Ltmp1068:
+.Ltmp1039:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1069:
+.Ltmp1040:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1070:
+.Ltmp1041:
 	.cfi_offset %rbx, -24
 	movq	%rdi, %rbx
 	movl	$48, %edi
@@ -18893,19 +18693,19 @@ List_Create:                            # @List_Create
 	lock
 	xaddw	%cx, 2(%rbx)
 	cmpw	%cx, (%rbx)
-	je	.Ltmp1071
-.Ltmp1072:
+	je	.Ltmp1042
+.Ltmp1043:
 	btq	$25, %rcx
-	jae	.Ltmp1073
-.Ltmp1073:
+	jae	.Ltmp1044
+.Ltmp1044:
 	pause
 	cmpw	%cx, (%rbx)
-	jne	.Ltmp1072
-.Ltmp1071:
+	jne	.Ltmp1043
+.Ltmp1042:
 	btq	$25, %rcx
-	jae	.Ltmp1074
+	jae	.Ltmp1045
 	orw	$1, 4(%rbx)
-.Ltmp1074:
+.Ltmp1045:
 	cli
 
 	#NO_APP
@@ -18920,10 +18720,10 @@ List_Create:                            # @List_Create
 	lock
 	incw	(%rbx)
 	btw	$0, 4(%rbx)
-	jae	.Ltmp1075
+	jae	.Ltmp1046
 	sti
 	movw	$0, 4(%rbx)
-.Ltmp1075:
+.Ltmp1046:
 
 	#NO_APP
 	jmp	.LBB221_3
@@ -18950,18 +18750,18 @@ List_AddEntry:                          # @List_AddEntry
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1076:
+.Ltmp1047:
 	.cfi_def_cfa_offset 16
-.Ltmp1077:
+.Ltmp1048:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1078:
+.Ltmp1049:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp1079:
+.Ltmp1050:
 	.cfi_offset %rbx, -32
-.Ltmp1080:
+.Ltmp1051:
 	.cfi_offset %r14, -24
 	movq	%rsi, %r14
 	movq	%rdi, %rbx
@@ -18986,19 +18786,19 @@ List_AddEntry:                          # @List_AddEntry
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1081
-.Ltmp1082:
+	je	.Ltmp1052
+.Ltmp1053:
 	btq	$25, %rdx
-	jae	.Ltmp1083
-.Ltmp1083:
+	jae	.Ltmp1054
+.Ltmp1054:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1082
-.Ltmp1081:
+	jne	.Ltmp1053
+.Ltmp1052:
 	btq	$25, %rdx
-	jae	.Ltmp1084
+	jae	.Ltmp1055
 	orw	$1, 4(%rcx)
-.Ltmp1084:
+.Ltmp1055:
 	cli
 
 	#NO_APP
@@ -19037,10 +18837,10 @@ List_AddEntry:                          # @List_AddEntry
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1085
+	jae	.Ltmp1056
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1085:
+.Ltmp1056:
 
 	#NO_APP
 .LBB222_11:                             # %UnlockSpinlock.exit
@@ -19060,12 +18860,12 @@ List_Length:                            # @List_Length
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1086:
+.Ltmp1057:
 	.cfi_def_cfa_offset 16
-.Ltmp1087:
+.Ltmp1058:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1088:
+.Ltmp1059:
 	.cfi_def_cfa_register %rbp
 	movq	40(%rdi), %rax
 	testq	%rax, %rax
@@ -19082,19 +18882,19 @@ List_Length:                            # @List_Length
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1089
-.Ltmp1090:
+	je	.Ltmp1060
+.Ltmp1061:
 	btq	$25, %rcx
-	jae	.Ltmp1091
-.Ltmp1091:
+	jae	.Ltmp1062
+.Ltmp1062:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1090
-.Ltmp1089:
+	jne	.Ltmp1061
+.Ltmp1060:
 	btq	$25, %rcx
-	jae	.Ltmp1092
+	jae	.Ltmp1063
 	orw	$1, 4(%rax)
-.Ltmp1092:
+.Ltmp1063:
 	cli
 
 	#NO_APP
@@ -19108,10 +18908,10 @@ List_Length:                            # @List_Length
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1093
+	jae	.Ltmp1064
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1093:
+.Ltmp1064:
 
 	#NO_APP
 .LBB223_4:                              # %UnlockSpinlock.exit
@@ -19132,12 +18932,12 @@ List_Remove:                            # @List_Remove
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1094:
+.Ltmp1065:
 	.cfi_def_cfa_offset 16
-.Ltmp1095:
+.Ltmp1066:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1096:
+.Ltmp1067:
 	.cfi_def_cfa_register %rbp
 	movq	40(%rdi), %rax
 	testq	%rax, %rax
@@ -19154,19 +18954,19 @@ List_Remove:                            # @List_Remove
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1097
-.Ltmp1098:
+	je	.Ltmp1068
+.Ltmp1069:
 	btq	$25, %rcx
-	jae	.Ltmp1099
-.Ltmp1099:
+	jae	.Ltmp1070
+.Ltmp1070:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1098
-.Ltmp1097:
+	jne	.Ltmp1069
+.Ltmp1068:
 	btq	$25, %rcx
-	jae	.Ltmp1100
+	jae	.Ltmp1071
 	orw	$1, 4(%rax)
-.Ltmp1100:
+.Ltmp1071:
 	cli
 
 	#NO_APP
@@ -19190,10 +18990,10 @@ List_Remove:                            # @List_Remove
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1101
+	jae	.Ltmp1072
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1101:
+.Ltmp1072:
 
 	#NO_APP
 	popq	%rbp
@@ -19353,19 +19153,19 @@ List_Remove:                            # @List_Remove
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1102
-.Ltmp1103:
+	je	.Ltmp1073
+.Ltmp1074:
 	btq	$25, %rdx
-	jae	.Ltmp1104
-.Ltmp1104:
+	jae	.Ltmp1075
+.Ltmp1075:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1103
-.Ltmp1102:
+	jne	.Ltmp1074
+.Ltmp1073:
 	btq	$25, %rdx
-	jae	.Ltmp1105
+	jae	.Ltmp1076
 	orw	$1, 4(%rcx)
-.Ltmp1105:
+.Ltmp1076:
 	cli
 
 	#NO_APP
@@ -19411,10 +19211,10 @@ List_Remove:                            # @List_Remove
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1106
+	jae	.Ltmp1077
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1106:
+.Ltmp1077:
 
 	#NO_APP
 .LBB224_42:                             # %kfree.exit
@@ -19428,10 +19228,10 @@ List_Remove:                            # @List_Remove
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1107
+	jae	.Ltmp1078
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1107:
+.Ltmp1078:
 
 	#NO_APP
 .LBB224_44:                             # %UnlockSpinlock.exit
@@ -19448,22 +19248,22 @@ List_Free:                              # @List_Free
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1108:
+.Ltmp1079:
 	.cfi_def_cfa_offset 16
-.Ltmp1109:
+.Ltmp1080:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1110:
+.Ltmp1081:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1111:
+.Ltmp1082:
 	.cfi_offset %rbx, -40
-.Ltmp1112:
+.Ltmp1083:
 	.cfi_offset %r14, -32
-.Ltmp1113:
+.Ltmp1084:
 	.cfi_offset %r15, -24
 	movq	%rdi, %rbx
 	movq	40(%rbx), %rax
@@ -19481,19 +19281,19 @@ List_Free:                              # @List_Free
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1114
-.Ltmp1115:
+	je	.Ltmp1085
+.Ltmp1086:
 	btq	$25, %rcx
-	jae	.Ltmp1116
-.Ltmp1116:
+	jae	.Ltmp1087
+.Ltmp1087:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1115
-.Ltmp1114:
+	jne	.Ltmp1086
+.Ltmp1085:
 	btq	$25, %rcx
-	jae	.Ltmp1117
+	jae	.Ltmp1088
 	orw	$1, 4(%rax)
-.Ltmp1117:
+.Ltmp1088:
 	cli
 
 	#NO_APP
@@ -19508,10 +19308,10 @@ List_Free:                              # @List_Free
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1118
+	jae	.Ltmp1089
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1118:
+.Ltmp1089:
 
 	#NO_APP
 	jmp	.LBB225_4
@@ -19544,19 +19344,19 @@ List_Free:                              # @List_Free
 	lock
 	xaddw	%r15w, 2(%rax)
 	cmpw	%r15w, (%rax)
-	je	.Ltmp1119
-.Ltmp1120:
+	je	.Ltmp1090
+.Ltmp1091:
 	btq	$25, %r15
-	jae	.Ltmp1121
-.Ltmp1121:
+	jae	.Ltmp1092
+.Ltmp1092:
 	pause
 	cmpw	%r15w, (%rax)
-	jne	.Ltmp1120
-.Ltmp1119:
+	jne	.Ltmp1091
+.Ltmp1090:
 	btq	$25, %r15
-	jae	.Ltmp1122
+	jae	.Ltmp1093
 	orw	$1, 4(%rax)
-.Ltmp1122:
+.Ltmp1093:
 	cli
 
 	#NO_APP
@@ -19570,10 +19370,10 @@ List_Free:                              # @List_Free
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1123
+	jae	.Ltmp1094
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1123:
+.Ltmp1094:
 
 	#NO_APP
 	jmp	.LBB225_10
@@ -19602,19 +19402,19 @@ List_Free:                              # @List_Free
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1124
-.Ltmp1125:
+	je	.Ltmp1095
+.Ltmp1096:
 	btq	$25, %rdx
-	jae	.Ltmp1126
-.Ltmp1126:
+	jae	.Ltmp1097
+.Ltmp1097:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1125
-.Ltmp1124:
+	jne	.Ltmp1096
+.Ltmp1095:
 	btq	$25, %rdx
-	jae	.Ltmp1127
+	jae	.Ltmp1098
 	orw	$1, 4(%rax)
-.Ltmp1127:
+.Ltmp1098:
 	cli
 
 	#NO_APP
@@ -19661,10 +19461,10 @@ List_Free:                              # @List_Free
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1128
+	jae	.Ltmp1099
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1128:
+.Ltmp1099:
 
 	#NO_APP
 .LBB225_22:                             # %kfree.exit
@@ -19686,19 +19486,19 @@ List_Free:                              # @List_Free
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1129
-.Ltmp1130:
+	je	.Ltmp1100
+.Ltmp1101:
 	btq	$25, %rdx
-	jae	.Ltmp1131
-.Ltmp1131:
+	jae	.Ltmp1102
+.Ltmp1102:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1130
-.Ltmp1129:
+	jne	.Ltmp1101
+.Ltmp1100:
 	btq	$25, %rdx
-	jae	.Ltmp1132
+	jae	.Ltmp1103
 	orw	$1, 4(%rax)
-.Ltmp1132:
+.Ltmp1103:
 	cli
 
 	#NO_APP
@@ -19744,10 +19544,10 @@ List_Free:                              # @List_Free
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1133
+	jae	.Ltmp1104
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1133:
+.Ltmp1104:
 
 	#NO_APP
 .LBB225_34:                             # %FreeSpinlock.exit
@@ -19768,12 +19568,12 @@ List_EntryAt:                           # @List_EntryAt
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1134:
+.Ltmp1105:
 	.cfi_def_cfa_offset 16
-.Ltmp1135:
+.Ltmp1106:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1136:
+.Ltmp1107:
 	.cfi_def_cfa_register %rbp
 	movq	40(%rdi), %rax
 	testq	%rax, %rax
@@ -19790,19 +19590,19 @@ List_EntryAt:                           # @List_EntryAt
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1137
-.Ltmp1138:
+	je	.Ltmp1108
+.Ltmp1109:
 	btq	$25, %rcx
-	jae	.Ltmp1139
-.Ltmp1139:
+	jae	.Ltmp1110
+.Ltmp1110:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1138
-.Ltmp1137:
+	jne	.Ltmp1109
+.Ltmp1108:
 	btq	$25, %rcx
-	jae	.Ltmp1140
+	jae	.Ltmp1111
 	orw	$1, 4(%rax)
-.Ltmp1140:
+.Ltmp1111:
 	cli
 
 	#NO_APP
@@ -19876,10 +19676,10 @@ List_EntryAt:                           # @List_EntryAt
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1141
+	jae	.Ltmp1112
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1141:
+.Ltmp1112:
 
 	#NO_APP
 	xorl	%eax, %eax
@@ -19948,10 +19748,10 @@ List_EntryAt:                           # @List_EntryAt
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1142
+	jae	.Ltmp1113
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1142:
+.Ltmp1113:
 
 	#NO_APP
 	popq	%rbp
@@ -19970,12 +19770,12 @@ List_Next:                              # @List_Next
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1143:
+.Ltmp1114:
 	.cfi_def_cfa_offset 16
-.Ltmp1144:
+.Ltmp1115:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1145:
+.Ltmp1116:
 	.cfi_def_cfa_register %rbp
 	movq	40(%rdi), %rax
 	testq	%rax, %rax
@@ -19992,19 +19792,19 @@ List_Next:                              # @List_Next
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1146
-.Ltmp1147:
+	je	.Ltmp1117
+.Ltmp1118:
 	btq	$25, %rcx
-	jae	.Ltmp1148
-.Ltmp1148:
+	jae	.Ltmp1119
+.Ltmp1119:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1147
-.Ltmp1146:
+	jne	.Ltmp1118
+.Ltmp1117:
 	btq	$25, %rcx
-	jae	.Ltmp1149
+	jae	.Ltmp1120
 	orw	$1, 4(%rax)
-.Ltmp1149:
+.Ltmp1120:
 	cli
 
 	#NO_APP
@@ -20034,10 +19834,10 @@ List_Next:                              # @List_Next
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1150
+	jae	.Ltmp1121
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1150:
+.Ltmp1121:
 
 	#NO_APP
 .LBB227_7:                              # %UnlockSpinlock.exit
@@ -20054,12 +19854,12 @@ List_Prev:                              # @List_Prev
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1151:
+.Ltmp1122:
 	.cfi_def_cfa_offset 16
-.Ltmp1152:
+.Ltmp1123:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1153:
+.Ltmp1124:
 	.cfi_def_cfa_register %rbp
 	movq	40(%rdi), %rax
 	testq	%rax, %rax
@@ -20076,19 +19876,19 @@ List_Prev:                              # @List_Prev
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1154
-.Ltmp1155:
+	je	.Ltmp1125
+.Ltmp1126:
 	btq	$25, %rcx
-	jae	.Ltmp1156
-.Ltmp1156:
+	jae	.Ltmp1127
+.Ltmp1127:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1155
-.Ltmp1154:
+	jne	.Ltmp1126
+.Ltmp1125:
 	btq	$25, %rcx
-	jae	.Ltmp1157
+	jae	.Ltmp1128
 	orw	$1, 4(%rax)
-.Ltmp1157:
+.Ltmp1128:
 	cli
 
 	#NO_APP
@@ -20116,10 +19916,10 @@ List_Prev:                              # @List_Prev
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1158
+	jae	.Ltmp1129
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1158:
+.Ltmp1129:
 
 	#NO_APP
 .LBB228_7:                              # %UnlockSpinlock.exit
@@ -20136,12 +19936,12 @@ VerifyElf:                              # @VerifyElf
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1159:
+.Ltmp1130:
 	.cfi_def_cfa_offset 16
-.Ltmp1160:
+.Ltmp1131:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1161:
+.Ltmp1132:
 	.cfi_def_cfa_register %rbp
 	cmpq	$24, %rsi
 	jae	.LBB229_2
@@ -20241,14 +20041,13 @@ LoadElf32:                              # @LoadElf32
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1162:
+.Ltmp1133:
 	.cfi_def_cfa_offset 16
-.Ltmp1163:
+.Ltmp1134:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1164:
+.Ltmp1135:
 	.cfi_def_cfa_register %rbp
-	movq	$0, (%r8)
 	cmpq	$52, %rsi
 	sbbl	%eax, %eax
 	andl	$2, %eax
@@ -20265,466 +20064,338 @@ LoadElf64:                              # @LoadElf64
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1165:
+.Ltmp1136:
 	.cfi_def_cfa_offset 16
-.Ltmp1166:
+.Ltmp1137:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1167:
+.Ltmp1138:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$152, %rsp
-.Ltmp1168:
+	subq	$120, %rsp
+.Ltmp1139:
 	.cfi_offset %rbx, -56
-.Ltmp1169:
+.Ltmp1140:
 	.cfi_offset %r12, -48
-.Ltmp1170:
+.Ltmp1141:
 	.cfi_offset %r13, -40
-.Ltmp1171:
+.Ltmp1142:
 	.cfi_offset %r14, -32
-.Ltmp1172:
+.Ltmp1143:
 	.cfi_offset %r15, -24
-	movq	%r8, -120(%rbp)         # 8-byte Spill
-	movq	%r8, %rbx
-	movq	%rcx, -136(%rbp)        # 8-byte Spill
-	movl	$2, %eax
+	movq	%rcx, -112(%rbp)        # 8-byte Spill
+	movl	$2, %r12d
 	cmpq	$64, %rsi
-	jb	.LBB231_52
+	jb	.LBB231_36
 # BB#1:
 	movq	24(%rdi), %rax
-	movq	%rax, (%r9)
+	movq	%rax, (%r8)
 	movq	32(%rdi), %rax
 	addq	%rdi, %rax
-	movq	%rax, 8(%r9)
+	movq	%rax, 8(%r8)
 	movzwl	56(%rdi), %eax
-	movq	%rax, 16(%r9)
+	movq	%rax, 16(%r8)
 	movzwl	54(%rdi), %eax
 	movq	%rdi, %r15
-	movq	%rax, 24(%r9)
+	movq	%rax, 24(%r8)
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB231_2
-# BB#3:                                 # %LockSpinlock.exit.i.2
-	movq	%rbx, %r14
-	xorl	%ecx, %ecx
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
+	movq	vmem_lock, %rcx
+	xorl	%r14d, %r14d
+	testq	%rcx, %rcx
+	je	.LBB231_3
+# BB#2:
+	xorl	%edx, %edx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
 	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1173
-.Ltmp1174:
-	btq	$25, %rcx
-	jae	.Ltmp1175
-.Ltmp1175:
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1144
+.Ltmp1145:
+	btq	$25, %rdx
+	jae	.Ltmp1146
+.Ltmp1146:
 	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1174
-.Ltmp1173:
-	btq	$25, %rcx
-	jae	.Ltmp1176
-	orw	$1, 4(%rax)
-.Ltmp1176:
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1145
+.Ltmp1144:
+	btq	$25, %rdx
+	jae	.Ltmp1147
+	orw	$1, 4(%rcx)
+.Ltmp1147:
 	cli
 
 	#NO_APP
-	movq	vmem_lock, %rbx
+	movq	vmem_lock, %r14
+.LBB231_3:                              # %LockSpinlock.exit.i.2
+	movq	(%rax), %rdi
+	xorl	%r12d, %r12d
 	movl	$4096, %esi             # imm = 0x1000
 	xorl	%edx, %edx
 	xorl	%ecx, %ecx
 	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, -48(%rbp)         # 8-byte Spill
-	testq	%rbx, %rbx
+	movq	%rax, -56(%rbp)         # 8-byte Spill
+	testq	%r14, %r14
 	je	.LBB231_5
 # BB#4:
 	#APP
 	mfence
 	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp1177
+	incw	(%r14)
+	btw	$0, 4(%r14)
+	jae	.Ltmp1148
 	sti
-	movw	$0, 4(%rbx)
-.Ltmp1177:
+	movw	$0, 4(%r14)
+.Ltmp1148:
 
 	#NO_APP
 .LBB231_5:                              # %FindFreeVirtualAddress.exit
-	movq	%r14, %rbx
-	jmp	.LBB231_6
-.LBB231_2:                              # %LockSpinlock.exit.i.2.thread
-	movl	$4096, %esi             # imm = 0x1000
-	xorl	%edx, %edx
-	xorl	%ecx, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, -48(%rbp)         # 8-byte Spill
-.LBB231_6:                              # %FindFreeVirtualAddress.exit
-	movw	56(%r15), %r9w
-	xorl	%eax, %eax
-	testw	%r9w, %r9w
-	je	.LBB231_52
-# BB#7:                                 # %.lr.ph11
-	movq	%r15, -144(%rbp)        # 8-byte Spill
-	movq	32(%r15), %rdi
-	addq	%r15, %rdi
-	movabsq	$17592186040320, %r8    # imm = 0xFFFFFFFF000
-	xorl	%ecx, %ecx
-	.align	16, 0x90
-.LBB231_8:                              # =>This Loop Header: Depth=1
-                                        #     Child Loop BB231_11 Depth 2
-                                        #       Child Loop BB231_33 Depth 3
-                                        #       Child Loop BB231_35 Depth 3
-                                        #       Child Loop BB231_40 Depth 3
-                                        #       Child Loop BB231_42 Depth 3
-	cmpl	$1, (%rdi)
-	jne	.LBB231_51
-# BB#9:                                 #   in Loop: Header=BB231_8 Depth=1
-	movl	4(%rdi), %r10d
-	andl	$3, %r10d
-	movq	16(%rdi), %r11
-	movl	%r11d, %eax
-	andl	$4095, %eax             # imm = 0xFFF
-	movq	40(%rdi), %r14
-	addq	%r14, %rax
-	movq	%rax, %rdx
-	shrq	$12, %rdx
-	movq	%rax, %rsi
-	andq	%r8, %rsi
-	cmpq	%rax, %rsi
-	sbbl	%eax, %eax
-	andl	$1, %eax
-	addl	%edx, %eax
-	movl	%eax, -100(%rbp)        # 4-byte Spill
-	je	.LBB231_51
-# BB#10:                                # %.lr.ph
-                                        #   in Loop: Header=BB231_8 Depth=1
-	movl	%ecx, -164(%rbp)        # 4-byte Spill
-	leal	8(%r10,%r10), %eax
-	movl	%eax, -148(%rbp)        # 4-byte Spill
-	movq	%r10, -128(%rbp)        # 8-byte Spill
-	movq	8(%rdi), %rax
-	movq	%rax, -96(%rbp)         # 8-byte Spill
-	movq	32(%rdi), %rsi
-	movq	%rdi, -112(%rbp)        # 8-byte Spill
-	xorl	%edi, %edi
-	movq	%r11, %rcx
-	movq	%r14, %rax
-	movq	%rbx, %rdx
-	.align	16, 0x90
-.LBB231_11:                             #   Parent Loop BB231_8 Depth=1
-                                        # =>  This Loop Header: Depth=2
-                                        #       Child Loop BB231_33 Depth 3
-                                        #       Child Loop BB231_35 Depth 3
-                                        #       Child Loop BB231_40 Depth 3
-                                        #       Child Loop BB231_42 Depth 3
-	movl	%edi, -84(%rbp)         # 4-byte Spill
-	movq	%rsi, -80(%rbp)         # 8-byte Spill
-	movq	%rax, -72(%rbp)         # 8-byte Spill
-	movl	%ecx, %r13d
-	movq	%rcx, %r14
-	andl	$4095, %r13d            # imm = 0xFFF
-	movl	$4096, %r15d            # imm = 0x1000
-	subq	%r13, %r15
-	cmpq	%r15, %rax
-	movq	%rax, %r12
-	cmovaq	%r15, %r12
-	cmpq	%r15, %rsi
-	cmovbeq	%rsi, %r15
-	testq	%rdx, %rdx
-	movl	$0, %eax
-	je	.LBB231_13
-# BB#12:                                #   in Loop: Header=BB231_11 Depth=2
-	movl	$64, %edi
-	callq	kmalloc
-.LBB231_13:                             #   in Loop: Header=BB231_11 Depth=2
-	movq	vmem_lock, %rdx
-	testq	%rdx, %rdx
-	je	.LBB231_14
-# BB#15:                                # %LockSpinlock.exit.i.5
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	%rax, -64(%rbp)         # 8-byte Spill
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rdx)
-	cmpw	%cx, (%rdx)
-	je	.Ltmp1178
-.Ltmp1179:
-	btq	$25, %rcx
-	jae	.Ltmp1180
-.Ltmp1180:
-	pause
-	cmpw	%cx, (%rdx)
-	jne	.Ltmp1179
-.Ltmp1178:
-	btq	$25, %rcx
-	jae	.Ltmp1181
-	orw	$1, 4(%rdx)
-.Ltmp1181:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	MemMan_Alloc
-	testq	%rbx, %rbx
-	je	.LBB231_17
-# BB#16:                                #   in Loop: Header=BB231_11 Depth=2
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp1182
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp1182:
-
-	#NO_APP
-	jmp	.LBB231_17
-	.align	16, 0x90
-.LBB231_14:                             # %LockSpinlock.exit.i.5.thread
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	%rax, -64(%rbp)         # 8-byte Spill
-	callq	MemMan_Alloc
-.LBB231_17:                             # %AllocatePhysicalPage.exit
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	%rax, %rbx
-	movq	%r14, -56(%rbp)         # 8-byte Spill
-	testq	%r14, %r14
-	je	.LBB231_24
-# BB#18:                                #   in Loop: Header=BB231_11 Depth=2
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	movq	-56(%rbp), %rsi         # 8-byte Reload
-	je	.LBB231_20
-# BB#19:                                #   in Loop: Header=BB231_11 Depth=2
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1183
-.Ltmp1184:
-	btq	$25, %rcx
-	jae	.Ltmp1185
-.Ltmp1185:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1184
-.Ltmp1183:
-	btq	$25, %rcx
-	jae	.Ltmp1186
-	orw	$1, 4(%rax)
-.Ltmp1186:
-	cli
-
-	#NO_APP
-.LBB231_20:                             # %LockSpinlock.exit.i.8
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	-64(%rbp), %rcx         # 8-byte Reload
-	testq	%rcx, %rcx
-	je	.LBB231_22
-# BB#21:                                #   in Loop: Header=BB231_11 Depth=2
-	movl	$0, (%rcx)
-	movq	%rsi, 8(%rcx)
-	movq	%rbx, 16(%rcx)
-	movq	$4096, 24(%rcx)         # imm = 0x1000
-	movl	-148(%rbp), %eax        # 4-byte Reload
-	movl	%eax, 32(%rcx)
-	movl	$64, 36(%rcx)
-	movq	$0, 48(%rcx)
-	movq	$0, 40(%rcx)
-.LBB231_22:                             #   in Loop: Header=BB231_11 Depth=2
-	movq	-128(%rbp), %rax        # 8-byte Reload
-	movl	%eax, (%rsp)
-	movl	$1, 8(%rsp)
-	movl	$4096, %ecx             # imm = 0x1000
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
-	movq	-136(%rbp), %rdi        # 8-byte Reload
-	movq	%rbx, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB231_24
-# BB#23:                                #   in Loop: Header=BB231_11 Depth=2
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1187
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1187:
-
-	#NO_APP
-.LBB231_24:                             # %MapPage.exit
-                                        #   in Loop: Header=BB231_11 Depth=2
-	cmpq	$0, -48(%rbp)           # 8-byte Folded Reload
-	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	je	.LBB231_29
-# BB#25:                                #   in Loop: Header=BB231_11 Depth=2
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB231_27
-# BB#26:                                #   in Loop: Header=BB231_11 Depth=2
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1188
-.Ltmp1189:
-	btq	$25, %rcx
-	jae	.Ltmp1190
-.Ltmp1190:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1189
-.Ltmp1188:
-	btq	$25, %rcx
-	jae	.Ltmp1191
-	orw	$1, 4(%rax)
-.Ltmp1191:
-	cli
-
-	#NO_APP
-.LBB231_27:                             # %LockSpinlock.exit.i.11
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movl	$0, 8(%rsp)
-	movl	$2, (%rsp)
-	movl	$4096, %ecx             # imm = 0x1000
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
-	movq	-48(%rbp), %rsi         # 8-byte Reload
-	movq	%rbx, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB231_29
-# BB#28:                                #   in Loop: Header=BB231_11 Depth=2
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1192
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1192:
-
-	#NO_APP
-.LBB231_29:                             # %MapPage.exit15
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	-112(%rbp), %rax        # 8-byte Reload
-	cmpl	$1, (%rax)
-	jne	.LBB231_43
-# BB#30:                                #   in Loop: Header=BB231_11 Depth=2
-	movq	-48(%rbp), %rax         # 8-byte Reload
-	leaq	(%r13,%rax), %rbx
-	testq	%r12, %r12
+	movw	56(%r15), %r8w
+	testw	%r8w, %r8w
 	je	.LBB231_36
-# BB#31:                                # %.lr.ph.i
-                                        #   in Loop: Header=BB231_11 Depth=2
-	leaq	-1(%r12), %rdx
-	testb	$7, %r12b
-	movq	%r12, %rax
+# BB#6:                                 # %.lr.ph11
+	movq	%r15, -128(%rbp)        # 8-byte Spill
+	movq	32(%r15), %rax
+	addq	%r15, %rax
+	movabsq	$17592186040320, %r9    # imm = 0xFFFFFFFF000
+	xorl	%ebx, %ebx
+	.align	16, 0x90
+.LBB231_7:                              # =>This Loop Header: Depth=1
+                                        #     Child Loop BB231_10 Depth 2
+                                        #       Child Loop BB231_19 Depth 3
+                                        #       Child Loop BB231_21 Depth 3
+                                        #       Child Loop BB231_26 Depth 3
+                                        #       Child Loop BB231_28 Depth 3
+	cmpl	$1, (%rax)
+	jne	.LBB231_35
+# BB#8:                                 #   in Loop: Header=BB231_7 Depth=1
+	movl	4(%rax), %r10d
+	andl	$3, %r10d
+	movq	16(%rax), %rcx
+	movl	%ecx, %edx
+	andl	$4095, %edx             # imm = 0xFFF
+	movq	40(%rax), %r11
+	addq	%r11, %rdx
+	movq	%rdx, %rsi
+	shrq	$12, %rsi
+	movq	%rdx, %rdi
+	andq	%r9, %rdi
+	cmpq	%rdx, %rdi
+	sbbl	%r13d, %r13d
+	andl	$1, %r13d
+	addl	%esi, %r13d
+	movl	%r13d, -116(%rbp)       # 4-byte Spill
+	je	.LBB231_35
+# BB#9:                                 # %.lr.ph
+                                        #   in Loop: Header=BB231_7 Depth=1
+	movl	%ebx, -140(%rbp)        # 4-byte Spill
+	leal	8(%r10,%r10), %edx
+	movl	%edx, -100(%rbp)        # 4-byte Spill
+	movq	8(%rax), %rdx
+	movq	%rdx, -88(%rbp)         # 8-byte Spill
+	movq	32(%rax), %rsi
+	movq	%rax, -96(%rbp)         # 8-byte Spill
+	xorl	%edi, %edi
+	movq	%r11, %rdx
+	.align	16, 0x90
+.LBB231_10:                             #   Parent Loop BB231_7 Depth=1
+                                        # =>  This Loop Header: Depth=2
+                                        #       Child Loop BB231_19 Depth 3
+                                        #       Child Loop BB231_21 Depth 3
+                                        #       Child Loop BB231_26 Depth 3
+                                        #       Child Loop BB231_28 Depth 3
+	movl	%ecx, %r12d
+	andl	$4095, %r12d            # imm = 0xFFF
+	movl	$4096, %r14d            # imm = 0x1000
+	subq	%r12, %r14
+	cmpq	%r14, %rdx
+	movq	%rdx, %r15
+	cmovaq	%r14, %r15
+	cmpq	%r14, %rsi
+	cmovbeq	%rsi, %r14
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB231_11
+# BB#12:                                # %LockSpinlock.exit.i.5
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movl	%edi, -76(%rbp)         # 4-byte Spill
+	movq	%rsi, -72(%rbp)         # 8-byte Spill
+	movq	%rdx, -64(%rbp)         # 8-byte Spill
+	movq	%rcx, -48(%rbp)         # 8-byte Spill
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1149
+.Ltmp1150:
+	btq	$25, %rcx
+	jae	.Ltmp1151
+.Ltmp1151:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1150
+.Ltmp1149:
+	btq	$25, %rcx
+	jae	.Ltmp1152
+	orw	$1, 4(%rax)
+.Ltmp1152:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %r13
+	callq	MemMan_Alloc
+	movq	%rax, %rbx
+	testq	%r13, %r13
+	je	.LBB231_14
+# BB#13:                                #   in Loop: Header=BB231_10 Depth=2
+	#APP
+	mfence
+	lock
+	incw	(%r13)
+	btw	$0, 4(%r13)
+	jae	.Ltmp1153
+	sti
+	movw	$0, 4(%r13)
+.Ltmp1153:
+
+	#NO_APP
+.LBB231_14:                             # %AllocatePhysicalPage.exit
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	-48(%rbp), %rdx         # 8-byte Reload
+	movl	-116(%rbp), %r13d       # 4-byte Reload
+	jmp	.LBB231_15
+	.align	16, 0x90
+.LBB231_11:                             # %LockSpinlock.exit.i.5.thread
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movl	%edi, -76(%rbp)         # 4-byte Spill
+	movq	%rsi, -72(%rbp)         # 8-byte Spill
+	movq	%rdx, -64(%rbp)         # 8-byte Spill
+	movq	%rcx, %rbx
+	callq	MemMan_Alloc
+	movq	%rbx, %rdx
+	movq	%rax, %rbx
+.LBB231_15:                             # %AllocatePhysicalPage.exit
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	%rdx, -48(%rbp)         # 8-byte Spill
+	movl	-100(%rbp), %eax        # 4-byte Reload
+	movl	%eax, (%rsp)
+	movl	$4096, %ecx             # imm = 0x1000
+	xorl	%r8d, %r8d
+	movl	$64, %r9d
+	movq	-112(%rbp), %rdi        # 8-byte Reload
+	movq	%rbx, %rsi
+	callq	MapPage
+	movq	virtMemData, %rax
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rdi
+	movl	$4, (%rsp)
+	movl	$4096, %ecx             # imm = 0x1000
+	xorl	%r8d, %r8d
+	xorl	%r9d, %r9d
+	movq	%rbx, %rsi
+	movq	-56(%rbp), %rdx         # 8-byte Reload
+	callq	MapPage
+	movq	-96(%rbp), %rax         # 8-byte Reload
+	cmpl	$1, (%rax)
+	jne	.LBB231_29
+# BB#16:                                #   in Loop: Header=BB231_10 Depth=2
+	movq	-56(%rbp), %rax         # 8-byte Reload
+	leaq	(%r12,%rax), %rbx
+	testq	%r15, %r15
+	je	.LBB231_22
+# BB#17:                                # %.lr.ph.i
+                                        #   in Loop: Header=BB231_10 Depth=2
+	leaq	-1(%r15), %rdx
+	testb	$7, %r15b
+	movq	%r15, %rax
 	movq	%rbx, %rcx
-	je	.LBB231_34
-# BB#32:                                # %.preheader.i.preheader
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	-56(%rbp), %r13         # 8-byte Reload
-	andl	$4095, %r13d            # imm = 0xFFF
-	movq	-48(%rbp), %rax         # 8-byte Reload
-	leaq	(%rax,%r13), %rdi
-	movq	%rdx, -160(%rbp)        # 8-byte Spill
+	je	.LBB231_20
+# BB#18:                                # %.preheader.i.preheader
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	-48(%rbp), %r12         # 8-byte Reload
+	andl	$4095, %r12d            # imm = 0xFFF
+	movq	-56(%rbp), %rax         # 8-byte Reload
+	leaq	(%rax,%r12), %rdi
+	movq	%rdx, -136(%rbp)        # 8-byte Spill
 	movl	$4096, %edx             # imm = 0x1000
-	subq	%r13, %rdx
-	movq	-72(%rbp), %r14         # 8-byte Reload
-	cmpq	%rdx, %r14
-	cmovbeq	%r14, %rdx
+	subq	%r12, %rdx
+	movq	-64(%rbp), %r13         # 8-byte Reload
+	cmpq	%rdx, %r13
+	cmovbeq	%r13, %rdx
 	andl	$7, %edx
 	xorl	%esi, %esi
 	callq	memset
-	movq	-160(%rbp), %rdx        # 8-byte Reload
-	notq	%r14
-	addq	$-4097, %r13            # imm = 0xFFFFFFFFFFFFEFFF
-	cmpq	%r13, %r14
-	cmoval	%r14d, %r13d
-	notl	%r13d
-	andl	$7, %r13d
-	negq	%r13
-	movq	%r12, %rax
+	movq	-136(%rbp), %rdx        # 8-byte Reload
+	movq	%r13, %rax
+	movl	-116(%rbp), %r13d       # 4-byte Reload
+	notq	%rax
+	addq	$-4097, %r12            # imm = 0xFFFFFFFFFFFFEFFF
+	cmpq	%r12, %rax
+	cmoval	%eax, %r12d
+	notl	%r12d
+	andl	$7, %r12d
+	negq	%r12
+	movq	%r15, %rax
 	movq	%rbx, %rcx
 	.align	16, 0x90
-.LBB231_33:                             # %.preheader.i
-                                        #   Parent Loop BB231_8 Depth=1
-                                        #     Parent Loop BB231_11 Depth=2
+.LBB231_19:                             # %.preheader.i
+                                        #   Parent Loop BB231_7 Depth=1
+                                        #     Parent Loop BB231_10 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
 	decq	%rax
 	incq	%rcx
-	incq	%r13
-	jne	.LBB231_33
-.LBB231_34:                             # %.lr.ph.split.i
-                                        #   in Loop: Header=BB231_11 Depth=2
+	incq	%r12
+	jne	.LBB231_19
+.LBB231_20:                             # %.lr.ph.split.i
+                                        #   in Loop: Header=BB231_10 Depth=2
 	cmpq	$7, %rdx
-	jb	.LBB231_36
+	jb	.LBB231_22
 	.align	16, 0x90
-.LBB231_35:                             # %.lr.ph.split.split.i
-                                        #   Parent Loop BB231_8 Depth=1
-                                        #     Parent Loop BB231_11 Depth=2
+.LBB231_21:                             # %.lr.ph.split.split.i
+                                        #   Parent Loop BB231_7 Depth=1
+                                        #     Parent Loop BB231_10 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
 	addq	$-8, %rax
 	movq	$0, (%rcx)
 	leaq	8(%rcx), %rcx
-	jne	.LBB231_35
-.LBB231_36:                             # %memset.exit
-                                        #   in Loop: Header=BB231_11 Depth=2
-	testq	%r15, %r15
-	je	.LBB231_43
-# BB#37:                                # %.lr.ph.preheader.i
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	-144(%rbp), %rax        # 8-byte Reload
-	movq	-96(%rbp), %rcx         # 8-byte Reload
+	jne	.LBB231_21
+.LBB231_22:                             # %memset.exit
+                                        #   in Loop: Header=BB231_10 Depth=2
+	testq	%r14, %r14
+	je	.LBB231_29
+# BB#23:                                # %.lr.ph.preheader.i
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	-128(%rbp), %rax        # 8-byte Reload
+	movq	-88(%rbp), %rcx         # 8-byte Reload
 	leaq	(%rax,%rcx), %rax
-	leaq	-1(%r15), %rdi
-	testb	$7, %r15b
-	je	.LBB231_38
-# BB#39:                                # %.lr.ph.prol.i.preheader
-                                        #   in Loop: Header=BB231_11 Depth=2
-	movq	-80(%rbp), %rcx         # 8-byte Reload
+	leaq	-1(%r14), %rdi
+	testb	$7, %r14b
+	je	.LBB231_24
+# BB#25:                                # %.lr.ph.prol.i.preheader
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	-72(%rbp), %rcx         # 8-byte Reload
 	notq	%rcx
-	movq	-56(%rbp), %rsi         # 8-byte Reload
+	movq	-48(%rbp), %rsi         # 8-byte Reload
 	andl	$4095, %esi             # imm = 0xFFF
 	addq	$-4097, %rsi            # imm = 0xFFFFFFFFFFFFEFFF
 	cmpq	%rsi, %rcx
@@ -20732,11 +20403,11 @@ LoadElf64:                              # @LoadElf64
 	notl	%esi
 	andl	$7, %esi
 	negq	%rsi
-	movq	%r15, %rcx
+	movq	%r14, %rcx
 	.align	16, 0x90
-.LBB231_40:                             # %.lr.ph.prol.i
-                                        #   Parent Loop BB231_8 Depth=1
-                                        #     Parent Loop BB231_11 Depth=2
+.LBB231_26:                             # %.lr.ph.prol.i
+                                        #   Parent Loop BB231_7 Depth=1
+                                        #     Parent Loop BB231_10 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
 	decq	%rcx
 	movb	(%rax), %dl
@@ -20744,18 +20415,18 @@ LoadElf64:                              # @LoadElf64
 	movb	%dl, (%rbx)
 	incq	%rbx
 	incq	%rsi
-	jne	.LBB231_40
-	jmp	.LBB231_41
-.LBB231_38:                             #   in Loop: Header=BB231_11 Depth=2
-	movq	%r15, %rcx
-.LBB231_41:                             # %.lr.ph.preheader.split.i
-                                        #   in Loop: Header=BB231_11 Depth=2
+	jne	.LBB231_26
+	jmp	.LBB231_27
+.LBB231_24:                             #   in Loop: Header=BB231_10 Depth=2
+	movq	%r14, %rcx
+.LBB231_27:                             # %.lr.ph.preheader.split.i
+                                        #   in Loop: Header=BB231_10 Depth=2
 	cmpq	$7, %rdi
-	jb	.LBB231_43
+	jb	.LBB231_29
 	.align	16, 0x90
-.LBB231_42:                             # %.lr.ph.i.21
-                                        #   Parent Loop BB231_8 Depth=1
-                                        #     Parent Loop BB231_11 Depth=2
+.LBB231_28:                             # %.lr.ph.i.12
+                                        #   Parent Loop BB231_7 Depth=1
+                                        #     Parent Loop BB231_10 Depth=2
                                         # =>    This Inner Loop Header: Depth=3
 	movb	(%rax), %dl
 	movb	%dl, (%rbx)
@@ -20776,108 +20447,101 @@ LoadElf64:                              # @LoadElf64
 	leaq	8(%rax), %rax
 	movb	%dl, 7(%rbx)
 	leaq	8(%rbx), %rbx
-	jne	.LBB231_42
+	jne	.LBB231_28
 	.align	16, 0x90
-.LBB231_43:                             # %memcpy.exit
-                                        #   in Loop: Header=BB231_11 Depth=2
+.LBB231_29:                             # %memcpy.exit
+                                        #   in Loop: Header=BB231_10 Depth=2
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB231_45
-# BB#44:                                #   in Loop: Header=BB231_11 Depth=2
-	xorl	%ecx, %ecx
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB231_31
+# BB#30:                                #   in Loop: Header=BB231_10 Depth=2
+	xorl	%edx, %edx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
 	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1193
-.Ltmp1194:
-	btq	$25, %rcx
-	jae	.Ltmp1195
-.Ltmp1195:
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1154
+.Ltmp1155:
+	btq	$25, %rdx
+	jae	.Ltmp1156
+.Ltmp1156:
 	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1194
-.Ltmp1193:
-	btq	$25, %rcx
-	jae	.Ltmp1196
-	orw	$1, 4(%rax)
-.Ltmp1196:
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1155
+.Ltmp1154:
+	btq	$25, %rdx
+	jae	.Ltmp1157
+	orw	$1, 4(%rcx)
+.Ltmp1157:
 	cli
 
 	#NO_APP
-.LBB231_45:                             # %LockSpinlock.exit.i
-                                        #   in Loop: Header=BB231_11 Depth=2
+.LBB231_31:                             # %LockSpinlock.exit.i
+                                        #   in Loop: Header=BB231_10 Depth=2
+	movq	(%rax), %rdi
 	movl	$4096, %edx             # imm = 0x1000
-	movq	-48(%rbp), %rsi         # 8-byte Reload
+	movq	-56(%rbp), %rsi         # 8-byte Reload
 	callq	VirtMemMan_Unmap
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	movq	-120(%rbp), %rdx        # 8-byte Reload
-	je	.LBB231_47
-# BB#46:                                #   in Loop: Header=BB231_11 Depth=2
+	movq	-64(%rbp), %rdx         # 8-byte Reload
+	je	.LBB231_33
+# BB#32:                                #   in Loop: Header=BB231_10 Depth=2
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1197
+	jae	.Ltmp1158
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1197:
+.Ltmp1158:
 
 	#NO_APP
-.LBB231_47:                             # %UnmapPage.exit
-                                        #   in Loop: Header=BB231_11 Depth=2
-	testq	%rdx, %rdx
-	movq	-56(%rbp), %rcx         # 8-byte Reload
-	movl	-100(%rbp), %r8d        # 4-byte Reload
-	movq	-80(%rbp), %rsi         # 8-byte Reload
-	movl	-84(%rbp), %edi         # 4-byte Reload
-	je	.LBB231_49
-# BB#48:                                #   in Loop: Header=BB231_11 Depth=2
-	movq	(%rdx), %rax
-	movq	-64(%rbp), %rbx         # 8-byte Reload
-	movq	%rax, 56(%rbx)
-	movq	%rbx, (%rdx)
-.LBB231_49:                             #   in Loop: Header=BB231_11 Depth=2
-	movq	-72(%rbp), %rax         # 8-byte Reload
-	subq	%r12, %rax
-	subq	%r15, %rsi
-	cmpq	%r12, %r15
-	cmovaq	%r15, %r12
-	addq	%r12, %rcx
-	addq	%r15, -96(%rbp)         # 8-byte Folded Spill
+.LBB231_33:                             # %UnmapPage.exit
+                                        #   in Loop: Header=BB231_10 Depth=2
+	subq	%r15, %rdx
+	movq	-72(%rbp), %rsi         # 8-byte Reload
+	subq	%r14, %rsi
+	cmpq	%r15, %r14
+	cmovaq	%r14, %r15
+	movq	-48(%rbp), %rcx         # 8-byte Reload
+	addq	%r15, %rcx
+	addq	%r14, -88(%rbp)         # 8-byte Folded Spill
+	movl	-76(%rbp), %edi         # 4-byte Reload
 	incl	%edi
-	cmpl	%r8d, %edi
-	jne	.LBB231_11
-# BB#50:                                # %..loopexit_crit_edge
-                                        #   in Loop: Header=BB231_8 Depth=1
-	movq	%rdx, %rbx
-	movq	-144(%rbp), %rax        # 8-byte Reload
-	movzwl	56(%rax), %r9d
-	movq	-112(%rbp), %rdi        # 8-byte Reload
-	movabsq	$17592186040320, %r8    # imm = 0xFFFFFFFF000
-	movl	-164(%rbp), %ecx        # 4-byte Reload
-.LBB231_51:                             # %.loopexit
-                                        #   in Loop: Header=BB231_8 Depth=1
-	incl	%ecx
-	movq	-144(%rbp), %rax        # 8-byte Reload
-	movzwl	54(%rax), %eax
-	addq	%rax, %rdi
-	movzwl	%r9w, %edx
-	xorl	%eax, %eax
-	cmpl	%edx, %ecx
-	jl	.LBB231_8
-.LBB231_52:                             # %._crit_edge
-	addq	$152, %rsp
+	cmpl	%r13d, %edi
+	jne	.LBB231_10
+# BB#34:                                # %..loopexit_crit_edge
+                                        #   in Loop: Header=BB231_7 Depth=1
+	movq	-128(%rbp), %rax        # 8-byte Reload
+	movzwl	56(%rax), %r8d
+	movq	-96(%rbp), %rax         # 8-byte Reload
+	movabsq	$17592186040320, %r9    # imm = 0xFFFFFFFF000
+	movl	-140(%rbp), %ebx        # 4-byte Reload
+.LBB231_35:                             # %.loopexit
+                                        #   in Loop: Header=BB231_7 Depth=1
+	incl	%ebx
+	movq	-128(%rbp), %rcx        # 8-byte Reload
+	movzwl	54(%rcx), %ecx
+	addq	%rcx, %rax
+	movzwl	%r8w, %ecx
+	xorl	%r12d, %r12d
+	cmpl	%ecx, %ebx
+	jl	.LBB231_7
+.LBB231_36:                             # %._crit_edge
+	movl	%r12d, %eax
+	addq	$120, %rsp
 	popq	%rbx
 	popq	%r12
 	popq	%r13
@@ -20896,21 +20560,19 @@ LoadElf:                                # @LoadElf
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1198:
+.Ltmp1159:
 	.cfi_def_cfa_offset 16
-.Ltmp1199:
+.Ltmp1160:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1200:
+.Ltmp1161:
 	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-.Ltmp1201:
-	.cfi_offset %rbx, -24
 	cmpq	$24, %rsi
 	jae	.LBB232_2
 # BB#1:
 	movl	$2, %eax
-	jmp	.LBB232_20
+	popq	%rbp
+	retq
 .LBB232_2:
 	movzbl	(%rdi), %eax
 	cmpl	$127, %eax
@@ -20928,22 +20590,22 @@ LoadElf:                                # @LoadElf
 	cmpl	$70, %eax
 	jne	.LBB232_9
 # BB#10:
-	movzbl	4(%rdi), %r10d
-	cmpl	$1, %r10d
-	sete	%r11b
-	movl	%edx, %ebx
-	andl	$1, %ebx
+	movzbl	4(%rdi), %r9d
+	cmpl	$1, %r9d
+	sete	%r10b
+	movl	%edx, %r11d
+	andl	$1, %r11d
 	movl	$4, %eax
-	xorb	%r11b, %bl
+	xorb	%r10b, %r11b
 	jne	.LBB232_20
 # BB#11:
 	movzbl	5(%rdi), %eax
 	cmpl	$2, %eax
-	sete	%bl
+	sete	%r10b
 	andl	$2, %edx
 	shrl	%edx
 	movl	$1, %eax
-	xorb	%bl, %dl
+	xorb	%r10b, %dl
 	jne	.LBB232_20
 # BB#12:
 	cmpw	$0, 16(%rdi)
@@ -20965,37 +20627,39 @@ LoadElf:                                # @LoadElf
 	movl	$3, %eax
 	jne	.LBB232_20
 .LBB232_18:
-	movzbl	%r10b, %eax
+	movzbl	%r9b, %eax
 	cmpl	$2, %eax
 	jne	.LBB232_19
 # BB#21:
-	popq	%rbx
 	popq	%rbp
 	jmp	LoadElf64               # TAILCALL
 .LBB232_3:
 	movl	$2, %eax
-	jmp	.LBB232_20
+	popq	%rbp
+	retq
 .LBB232_5:
 	movl	$2, %eax
-	jmp	.LBB232_20
+	popq	%rbp
+	retq
 .LBB232_7:
 	movl	$2, %eax
-	jmp	.LBB232_20
+	popq	%rbp
+	retq
 .LBB232_9:
 	movl	$2, %eax
-.LBB232_20:                             # %VerifyElf.exit.thread
-	popq	%rbx
 	popq	%rbp
 	retq
 .LBB232_13:
 	movl	$2, %eax
-	jmp	.LBB232_20
+	popq	%rbp
+	retq
 .LBB232_19:
-	movq	$0, (%r8)
 	cmpq	$52, %rsi
 	sbbl	%eax, %eax
 	andl	$2, %eax
-	jmp	.LBB232_20
+.LBB232_20:                             # %VerifyElf.exit.thread
+	popq	%rbp
+	retq
 .Lfunc_end232:
 	.size	LoadElf, .Lfunc_end232-LoadElf
 	.cfi_endproc
@@ -21007,21 +20671,21 @@ getsize:                                # @getsize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1202:
+.Ltmp1162:
 	.cfi_def_cfa_offset 16
-.Ltmp1203:
+.Ltmp1163:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1204:
+.Ltmp1164:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
-.Ltmp1205:
+.Ltmp1165:
 	.cfi_offset %rbx, -40
-.Ltmp1206:
+.Ltmp1166:
 	.cfi_offset %r14, -32
-.Ltmp1207:
+.Ltmp1167:
 	.cfi_offset %r15, -24
 	movsbl	10(%rdi), %r8d
 	movsbl	9(%rdi), %r9d
@@ -21070,12 +20734,12 @@ Initrd_GetFile:                         # @Initrd_GetFile
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1208:
+.Ltmp1168:
 	.cfi_def_cfa_offset 16
-.Ltmp1209:
+.Ltmp1169:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1210:
+.Ltmp1170:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -21083,15 +20747,15 @@ Initrd_GetFile:                         # @Initrd_GetFile
 	pushq	%r12
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp1211:
+.Ltmp1171:
 	.cfi_offset %rbx, -56
-.Ltmp1212:
+.Ltmp1172:
 	.cfi_offset %r12, -48
-.Ltmp1213:
+.Ltmp1173:
 	.cfi_offset %r13, -40
-.Ltmp1214:
+.Ltmp1174:
 	.cfi_offset %r14, -32
-.Ltmp1215:
+.Ltmp1175:
 	.cfi_offset %r15, -24
 	cmpq	$0, bootInfo+48
 	sete	%al
@@ -21272,12 +20936,12 @@ bootstrap_malloc:                       # @bootstrap_malloc
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1216:
+.Ltmp1176:
 	.cfi_def_cfa_offset 16
-.Ltmp1217:
+.Ltmp1177:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1218:
+.Ltmp1178:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -21285,15 +20949,15 @@ bootstrap_malloc:                       # @bootstrap_malloc
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1219:
+.Ltmp1179:
 	.cfi_offset %rbx, -56
-.Ltmp1220:
+.Ltmp1180:
 	.cfi_offset %r12, -48
-.Ltmp1221:
+.Ltmp1181:
 	.cfi_offset %r13, -40
-.Ltmp1222:
+.Ltmp1182:
 	.cfi_offset %r14, -32
-.Ltmp1223:
+.Ltmp1183:
 	.cfi_offset %r15, -24
 	leaq	4(%rdi), %rbx
 	andq	$-4, %rbx
@@ -21365,27 +21029,27 @@ ParseAndSaveBootInformation:            # @ParseAndSaveBootInformation
 	.cfi_startproc
 # BB#0:                                 # %memset.exit
 	pushq	%rbp
-.Ltmp1224:
+.Ltmp1184:
 	.cfi_def_cfa_offset 16
-.Ltmp1225:
+.Ltmp1185:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1226:
+.Ltmp1186:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-.Ltmp1227:
+.Ltmp1187:
 	.cfi_offset %rbx, -56
-.Ltmp1228:
+.Ltmp1188:
 	.cfi_offset %r12, -48
-.Ltmp1229:
+.Ltmp1189:
 	.cfi_offset %r13, -40
-.Ltmp1230:
+.Ltmp1190:
 	.cfi_offset %r14, -32
-.Ltmp1231:
+.Ltmp1191:
 	.cfi_offset %r15, -24
 	movl	(%rdi), %r9d
 	movq	$0, bootInfo+88
@@ -21578,12 +21242,12 @@ GetBootInfo:                            # @GetBootInfo
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1232:
+.Ltmp1192:
 	.cfi_def_cfa_offset 16
-.Ltmp1233:
+.Ltmp1193:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1234:
+.Ltmp1194:
 	.cfi_def_cfa_register %rbp
 	movq	$bootInfo, %rax
 	popq	%rbp
@@ -21599,12 +21263,12 @@ ACPITables_Initialize:                  # @ACPITables_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1235:
+.Ltmp1195:
 	.cfi_def_cfa_offset 16
-.Ltmp1236:
+.Ltmp1196:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1237:
+.Ltmp1197:
 	.cfi_def_cfa_register %rbp
 	movq	$0, rsdp
 	movq	bootInfo+40, %rax
@@ -21684,12 +21348,12 @@ ACPITables_ValidateChecksum:            # @ACPITables_ValidateChecksum
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1238:
+.Ltmp1198:
 	.cfi_def_cfa_offset 16
-.Ltmp1239:
+.Ltmp1199:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1240:
+.Ltmp1200:
 	.cfi_def_cfa_register %rbp
 	movl	4(%rdi), %r10d
 	testq	%r10, %r10
@@ -21755,12 +21419,12 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1241:
+.Ltmp1201:
 	.cfi_def_cfa_offset 16
-.Ltmp1242:
+.Ltmp1202:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1243:
+.Ltmp1203:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -21768,15 +21432,15 @@ ACPITables_FindTable:                   # @ACPITables_FindTable
 	pushq	%r12
 	pushq	%rbx
 	subq	$16, %rsp
-.Ltmp1244:
+.Ltmp1204:
 	.cfi_offset %rbx, -56
-.Ltmp1245:
+.Ltmp1205:
 	.cfi_offset %r12, -48
-.Ltmp1246:
+.Ltmp1206:
 	.cfi_offset %r13, -40
-.Ltmp1247:
+.Ltmp1207:
 	.cfi_offset %r14, -32
-.Ltmp1248:
+.Ltmp1208:
 	.cfi_offset %r15, -24
 	movl	%esi, -44(%rbp)         # 4-byte Spill
 	movq	rsdp, %rax
@@ -22160,24 +21824,20 @@ kmalloc_init:                           # @kmalloc_init
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1249:
+.Ltmp1209:
 	.cfi_def_cfa_offset 16
-.Ltmp1250:
+.Ltmp1210:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1251:
+.Ltmp1211:
 	.cfi_def_cfa_register %rbp
-	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
-	subq	$24, %rsp
-.Ltmp1252:
-	.cfi_offset %rbx, -40
-.Ltmp1253:
-	.cfi_offset %r14, -32
-.Ltmp1254:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r14
+	subq	$16, %rsp
+.Ltmp1212:
+	.cfi_offset %rbx, -32
+.Ltmp1213:
+	.cfi_offset %r14, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -22210,6 +21870,7 @@ kmalloc_init:                           # @kmalloc_init
 	movq	$0, mem_pool+16(%rsi)
 	movq	$0, mem_pool+8(%rsi)
 	movq	$0, mem_pool(%rsi)
+	xorl	%r14d, %r14d
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -22228,126 +21889,13 @@ kmalloc_init:                           # @kmalloc_init
 	movq	$0, mem_pool(%rsi)
 	movq	%rdi, alloc_sync
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB241_3
-# BB#4:                                 # %LockSpinlock.exit.i.2
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1255
-.Ltmp1256:
-	btq	$25, %rcx
-	jae	.Ltmp1257
-.Ltmp1257:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1256
-.Ltmp1255:
-	btq	$25, %rcx
-	jae	.Ltmp1258
-	orw	$1, 4(%rax)
-.Ltmp1258:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r15
-	movl	$16777216, %esi         # imm = 0x1000000
-	xorl	%edx, %edx
-	xorl	%ecx, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, %rbx
-	testq	%r15, %r15
-	je	.LBB241_6
-# BB#5:                                 # %FindFreeVirtualAddress.exit
-	#APP
-	mfence
-	lock
-	incw	(%r15)
-	btw	$0, 4(%r15)
-	jae	.Ltmp1259
-	sti
-	movw	$0, 4(%r15)
-.Ltmp1259:
-
-	#NO_APP
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB241_6
-# BB#7:                                 # %LockSpinlock.exit.i.6
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1260
-.Ltmp1261:
-	btq	$25, %rcx
-	jae	.Ltmp1262
-.Ltmp1262:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1261
-.Ltmp1260:
-	btq	$25, %rcx
-	jae	.Ltmp1263
-	orw	$1, 4(%rax)
-.Ltmp1263:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r15
-	movl	$4096, %edi             # imm = 0x1000
-	callq	MemMan_Alloc4KiBPageCont
-	testq	%r15, %r15
-	je	.LBB241_9
-# BB#8:
-	#APP
-	mfence
-	lock
-	incw	(%r15)
-	btw	$0, 4(%r15)
-	jae	.Ltmp1264
-	sti
-	movw	$0, 4(%r15)
-.Ltmp1264:
-
-	#NO_APP
-	jmp	.LBB241_9
-.LBB241_3:                              # %LockSpinlock.exit.i.2.thread
-	movl	$16777216, %esi         # imm = 0x1000000
-	xorl	%edx, %edx
-	xorl	%ecx, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	movq	%rax, %rbx
-.LBB241_6:                              # %LockSpinlock.exit.i.6.thread
-	movl	$4096, %edi             # imm = 0x1000
-	callq	MemMan_Alloc4KiBPageCont
-.LBB241_9:                              # %AllocatePhysicalPageCont.exit
-	movq	virtMemData, %rcx
-	movq	8(%rcx), %rdi
-	testq	%rbx, %rbx
-	je	.LBB241_14
-# BB#10:
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
 	movq	vmem_lock, %rcx
 	testq	%rcx, %rcx
-	je	.LBB241_12
-# BB#11:
+	je	.LBB241_4
+# BB#3:
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -22359,56 +21907,112 @@ kmalloc_init:                           # @kmalloc_init
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1265
-.Ltmp1266:
+	je	.Ltmp1214
+.Ltmp1215:
 	btq	$25, %rdx
-	jae	.Ltmp1267
-.Ltmp1267:
+	jae	.Ltmp1216
+.Ltmp1216:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1266
-.Ltmp1265:
+	jne	.Ltmp1215
+.Ltmp1214:
 	btq	$25, %rdx
-	jae	.Ltmp1268
+	jae	.Ltmp1217
 	orw	$1, 4(%rcx)
-.Ltmp1268:
+.Ltmp1217:
 	cli
 
 	#NO_APP
-.LBB241_12:                             # %LockSpinlock.exit.i
-	movl	$0, 8(%rsp)
-	movl	$2, (%rsp)
-	movl	$16777216, %ecx         # imm = 0x1000000
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
-	movq	%rbx, %rsi
-	movq	%rax, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB241_14
-# BB#13:
+	movq	vmem_lock, %r14
+.LBB241_4:                              # %LockSpinlock.exit.i
+	movq	(%rax), %rdi
+	movl	$16777216, %esi         # imm = 0x1000000
+	xorl	%edx, %edx
+	xorl	%ecx, %ecx
+	callq	VirtMemMan_FindFreeAddress
+	movq	%rax, %rbx
+	testq	%r14, %r14
+	je	.LBB241_6
+# BB#5:                                 # %FindFreeVirtualAddress.exit
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1269
+	incw	(%r14)
+	btw	$0, 4(%r14)
+	jae	.Ltmp1218
 	sti
-	movw	$0, 4(%rax)
-.Ltmp1269:
+	movw	$0, 4(%r14)
+.Ltmp1218:
 
 	#NO_APP
-.LBB241_14:                             # %MapPage.exit
-	movl	$0, (%r14)
-	movq	%rbx, 8(%r14)
-	movq	$0, 24(%r14)
-	movl	$0, 52(%r14)
-	movq	$0, 44(%r14)
-	movq	$0, 36(%r14)
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB241_6
+# BB#7:                                 # %LockSpinlock.exit.i.2
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1219
+.Ltmp1220:
+	btq	$25, %rcx
+	jae	.Ltmp1221
+.Ltmp1221:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1220
+.Ltmp1219:
+	btq	$25, %rcx
+	jae	.Ltmp1222
+	orw	$1, 4(%rax)
+.Ltmp1222:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %r14
+	movl	$4096, %edi             # imm = 0x1000
+	callq	MemMan_Alloc4KiBPageCont
+	testq	%r14, %r14
+	je	.LBB241_9
+# BB#8:
+	#APP
+	mfence
+	lock
+	incw	(%r14)
+	btw	$0, 4(%r14)
+	jae	.Ltmp1223
+	sti
+	movw	$0, 4(%r14)
+.Ltmp1223:
+
+	#NO_APP
+	jmp	.LBB241_9
+.LBB241_6:                              # %LockSpinlock.exit.i.2.thread
+	movl	$4096, %edi             # imm = 0x1000
+	callq	MemMan_Alloc4KiBPageCont
+.LBB241_9:                              # %AllocatePhysicalPageCont.exit
+	movq	virtMemData, %rcx
+	movq	8(%rcx), %rcx
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rdi
+	movl	$4, (%rsp)
+	movl	$16777216, %ecx         # imm = 0x1000000
+	xorl	%r8d, %r8d
+	xorl	%r9d, %r9d
+	movq	%rax, %rsi
+	movq	%rbx, %rdx
+	callq	MapPage
 	movq	%rbx, allocation_info
 	movq	%rbx, next_free_block
-	leaq	1048576(%rbx), %rax
+	movq	%rbx, %rax
+	addq	$1048576, %rax          # imm = 0x100000
 	movq	%rax, k_pages_base_addr
 	movl	$43690, max_allocs      # imm = 0xAAAA
 	movl	$15728640, free_space   # imm = 0xF00000
@@ -22423,10 +22027,9 @@ kmalloc_init:                           # @kmalloc_init
 	movq	allocation_info, %rax
 	andq	$-2, (%rax)
 	addq	$24, next_free_block
-	addq	$24, %rsp
+	addq	$16, %rsp
 	popq	%rbx
 	popq	%r14
-	popq	%r15
 	popq	%rbp
 	retq
 .Lfunc_end241:
@@ -22440,12 +22043,12 @@ kcompact:                               # @kcompact
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1270:
+.Ltmp1224:
 	.cfi_def_cfa_offset 16
-.Ltmp1271:
+.Ltmp1225:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1272:
+.Ltmp1226:
 	.cfi_def_cfa_register %rbp
 	movq	allocation_info, %rcx
 	movq	16(%rcx), %rax
@@ -22488,24 +22091,24 @@ kmalloc:                                # @kmalloc
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1273:
+.Ltmp1227:
 	.cfi_def_cfa_offset 16
-.Ltmp1274:
+.Ltmp1228:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1275:
+.Ltmp1229:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp1276:
+.Ltmp1230:
 	.cfi_offset %rbx, -48
-.Ltmp1277:
+.Ltmp1231:
 	.cfi_offset %r12, -40
-.Ltmp1278:
+.Ltmp1232:
 	.cfi_offset %r14, -32
-.Ltmp1279:
+.Ltmp1233:
 	.cfi_offset %r15, -24
 	movq	%rdi, %r12
 	movq	alloc_sync, %rax
@@ -22523,49 +22126,47 @@ kmalloc:                                # @kmalloc
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1280
-.Ltmp1281:
+	je	.Ltmp1234
+.Ltmp1235:
 	btq	$25, %rcx
-	jae	.Ltmp1282
-.Ltmp1282:
+	jae	.Ltmp1236
+.Ltmp1236:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1281
-.Ltmp1280:
+	jne	.Ltmp1235
+.Ltmp1234:
 	btq	$25, %rcx
-	jae	.Ltmp1283
+	jae	.Ltmp1237
 	orw	$1, 4(%rax)
-.Ltmp1283:
+.Ltmp1237:
 	cli
 
 	#NO_APP
 .LBB243_2:                              # %LockSpinlock.exit
+	movq	allocation_info, %rax
+	testq	%rax, %rax
+	je	.LBB243_3
+# BB#5:                                 # %.lr.ph
 	leaq	48(%r12), %rdi
-	movq	allocation_info, %rdx
-	xorl	%eax, %eax
-	testq	%rdx, %rdx
-	je	.LBB243_7
-# BB#3:                                 # %.lr.ph.preheader
-	movq	16(%rdx), %rcx
-	movq	%rdx, %rax
+	movq	16(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB243_7
+	je	.LBB243_9
 	.align	16, 0x90
-.LBB243_4:                              # %.lr.ph11
+.LBB243_6:                              # %.lr.ph10
                                         # =>This Inner Loop Header: Depth=1
 	movq	%rcx, %rdx
 	testb	$1, (%rax)
-	jne	.LBB243_6
-# BB#5:                                 #   in Loop: Header=BB243_4 Depth=1
+	jne	.LBB243_8
+# BB#7:                                 #   in Loop: Header=BB243_6 Depth=1
 	cmpq	%rdi, 8(%rax)
-	jae	.LBB243_7
-.LBB243_6:                              # %.lr.ph.backedge
-                                        #   in Loop: Header=BB243_4 Depth=1
+	jae	.LBB243_9
+.LBB243_8:                              # %.backedge.backedge
+                                        #   in Loop: Header=BB243_6 Depth=1
 	movq	16(%rdx), %rcx
 	testq	%rcx, %rcx
 	movq	%rdx, %rax
-	jne	.LBB243_4
-.LBB243_7:                              # %.critedge
+	jne	.LBB243_6
+.LBB243_9:                              # %.critedge
 	movabsq	$-2401053089206453570, %r15 # imm = 0xDEADBEEFCAFEBABE
 	movabsq	$-2401050963649814811, %r14 # imm = 0xDEADC0DEB00B1EE5
 	movq	(%rax), %rdx
@@ -22576,28 +22177,28 @@ kmalloc:                                # @kmalloc
 	sbbl	%ebx, %ebx
 	andl	$1, %ebx
 	orl	%ecx, %ebx
-	je	.LBB243_12
-# BB#8:
+	je	.LBB243_14
+# BB#10:
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB243_10
-# BB#9:
+	je	.LBB243_12
+# BB#11:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1284
+	jae	.Ltmp1238
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1284:
+.Ltmp1238:
 
 	#NO_APP
-.LBB243_10:                             # %UnlockSpinlock.exit
+.LBB243_12:                             # %UnlockSpinlock.exit3
 	xorl	%eax, %eax
 	cmpb	$0, retry
-	jne	.LBB243_17
-# BB#11:
+	jne	.LBB243_19
+# BB#13:
 	movb	$1, retry
 	callq	kmalloc
 	movb	$0, retry
@@ -22608,13 +22209,32 @@ kmalloc:                                # @kmalloc
 	movq	%r12, 32(%rax,%r12)
 	movq	%r14, 40(%rax,%r12)
 	leaq	24(%rax), %rax
-	jmp	.LBB243_17
-.LBB243_12:
+	jmp	.LBB243_19
+.LBB243_3:
+	movq	alloc_sync, %rcx
+	xorl	%eax, %eax
+	testq	%rcx, %rcx
+	je	.LBB243_19
+# BB#4:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1239
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1239:
+
+	#NO_APP
+	xorl	%eax, %eax
+	jmp	.LBB243_19
+.LBB243_14:
 	movq	%rdx, %rcx
 	andq	$-2, %rcx
 	subq	%rdi, %rsi
-	je	.LBB243_14
-# BB#13:
+	je	.LBB243_16
+# BB#15:
 	leaq	(%rcx,%rdi), %rdx
 	movq	next_free_block, %rbx
 	movq	%rdx, (%rbx)
@@ -22626,26 +22246,26 @@ kmalloc:                                # @kmalloc
 	movq	%rdx, 16(%rax)
 	addq	$24, next_free_block
 	movq	(%rax), %rdx
-.LBB243_14:
+.LBB243_16:
 	orq	$1, %rdx
 	movq	%rdx, (%rax)
 	movq	%rdi, 8(%rax)
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB243_16
-# BB#15:
+	je	.LBB243_18
+# BB#17:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1285
+	jae	.Ltmp1240
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1285:
+.Ltmp1240:
 
 	#NO_APP
-.LBB243_16:                             # %UnlockSpinlock.exit3
+.LBB243_18:                             # %UnlockSpinlock.exit5
 	movq	%r15, (%rcx)
 	movq	%r12, 8(%rcx)
 	movq	%r15, 16(%rcx)
@@ -22653,7 +22273,7 @@ kmalloc:                                # @kmalloc
 	movq	%r12, 32(%rcx,%r12)
 	movq	%r14, 40(%rcx,%r12)
 	leaq	24(%rcx), %rax
-.LBB243_17:
+.LBB243_19:                             # %UnlockSpinlock.exit
 	popq	%rbx
 	popq	%r12
 	popq	%r14
@@ -22671,12 +22291,12 @@ kfree:                                  # @kfree
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1286:
+.Ltmp1241:
 	.cfi_def_cfa_offset 16
-.Ltmp1287:
+.Ltmp1242:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1288:
+.Ltmp1243:
 	.cfi_def_cfa_register %rbp
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
@@ -22693,19 +22313,19 @@ kfree:                                  # @kfree
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1289
-.Ltmp1290:
+	je	.Ltmp1244
+.Ltmp1245:
 	btq	$25, %rcx
-	jae	.Ltmp1291
-.Ltmp1291:
+	jae	.Ltmp1246
+.Ltmp1246:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1290
-.Ltmp1289:
+	jne	.Ltmp1245
+.Ltmp1244:
 	btq	$25, %rcx
-	jae	.Ltmp1292
+	jae	.Ltmp1247
 	orw	$1, 4(%rax)
-.Ltmp1292:
+.Ltmp1247:
 	cli
 
 	#NO_APP
@@ -22752,10 +22372,10 @@ kfree:                                  # @kfree
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1293
+	jae	.Ltmp1248
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1293:
+.Ltmp1248:
 
 	#NO_APP
 .LBB244_11:                             # %UnlockSpinlock.exit
@@ -22772,12 +22392,12 @@ Balloc_Initialize:                      # @Balloc_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1294:
+.Ltmp1249:
 	.cfi_def_cfa_offset 16
-.Ltmp1295:
+.Ltmp1250:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1296:
+.Ltmp1251:
 	.cfi_def_cfa_register %rbp
 	movb	initialized, %al
 	andb	$1, %al
@@ -22808,12 +22428,12 @@ _allocBlockSet:                         # @_allocBlockSet
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1297:
+.Ltmp1252:
 	.cfi_def_cfa_offset 16
-.Ltmp1298:
+.Ltmp1253:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1299:
+.Ltmp1254:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -22821,15 +22441,15 @@ _allocBlockSet:                         # @_allocBlockSet
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1300:
+.Ltmp1255:
 	.cfi_offset %rbx, -56
-.Ltmp1301:
+.Ltmp1256:
 	.cfi_offset %r12, -48
-.Ltmp1302:
+.Ltmp1257:
 	.cfi_offset %r13, -40
-.Ltmp1303:
+.Ltmp1258:
 	.cfi_offset %r14, -32
-.Ltmp1304:
+.Ltmp1259:
 	.cfi_offset %r15, -24
 	movq	%rdx, %r14
 	movq	%rsi, %r13
@@ -22955,12 +22575,12 @@ Balloc_Alloc:                           # @Balloc_Alloc
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1305:
+.Ltmp1260:
 	.cfi_def_cfa_offset 16
-.Ltmp1306:
+.Ltmp1261:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1307:
+.Ltmp1262:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -22968,15 +22588,15 @@ Balloc_Alloc:                           # @Balloc_Alloc
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1308:
+.Ltmp1263:
 	.cfi_offset %rbx, -56
-.Ltmp1309:
+.Ltmp1264:
 	.cfi_offset %r12, -48
-.Ltmp1310:
+.Ltmp1265:
 	.cfi_offset %r13, -40
-.Ltmp1311:
+.Ltmp1266:
 	.cfi_offset %r14, -32
-.Ltmp1312:
+.Ltmp1267:
 	.cfi_offset %r15, -24
 	movq	%rdi, %r14
 	movb	initialized, %al
@@ -23125,12 +22745,12 @@ Balloc_GetBaseAddress:                  # @Balloc_GetBaseAddress
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1313:
+.Ltmp1268:
 	.cfi_def_cfa_offset 16
-.Ltmp1314:
+.Ltmp1269:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1315:
+.Ltmp1270:
 	.cfi_def_cfa_register %rbp
 	shlq	$5, %rdi
 	addq	_smallH_Loc, %rdi
@@ -23148,12 +22768,12 @@ Balloc_GetUID:                          # @Balloc_GetUID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1316:
+.Ltmp1271:
 	.cfi_def_cfa_offset 16
-.Ltmp1317:
+.Ltmp1272:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1318:
+.Ltmp1273:
 	.cfi_def_cfa_register %rbp
 	movq	_smallH_Loc, %rcx
 	movq	%rdi, %rdx
@@ -23178,12 +22798,12 @@ Balloc_Free:                            # @Balloc_Free
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1319:
+.Ltmp1274:
 	.cfi_def_cfa_offset 16
-.Ltmp1320:
+.Ltmp1275:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1321:
+.Ltmp1276:
 	.cfi_def_cfa_register %rbp
 	movb	_smallH_Blocks(%rdi), %al
 	testb	$2, %al
@@ -23215,21 +22835,20 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	.cfi_startproc
 # BB#0:                                 # %.lr.ph.i.preheader.i.thread
 	pushq	%rbp
-.Ltmp1322:
+.Ltmp1277:
 	.cfi_def_cfa_offset 16
-.Ltmp1323:
+.Ltmp1278:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1324:
+.Ltmp1279:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp1325:
+.Ltmp1280:
 	.cfi_offset %rbx, -32
-.Ltmp1326:
+.Ltmp1281:
 	.cfi_offset %r14, -24
-	movq	%rdi, %rbx
-	movl	$496, %edi              # imm = 0x1F0
+	movl	$296, %edi              # imm = 0x128
 	callq	kmalloc
 	movq	%rax, root
 	movq	$0, (%rax)
@@ -23251,100 +22870,13 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	movb	$101, 17(%rax)
 	movb	$115, 18(%rax)
 	movb	$115, 19(%rax)
-	movabsq	$4294967299, %rcx       # imm = 0x100000003
-	movq	%rcx, 264(%rax)
-	movl	$0, 272(%rax)
+	movq	$3, 264(%rax)
 	movq	virtMemData, %rcx
 	movq	8(%rcx), %rcx
-	movq	%rcx, 456(%rax)
-	movq	%rbx, 464(%rax)
-	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
-	xorl	%ecx, %ecx
-	#APP
-	cpuid
-
-	#NO_APP
-	movl	%ebx, ebx
-	movl	%edx, edx
-	movl	$64, %edi
-	callq	kmalloc
-	movq	%rax, %r14
-	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
-	xorl	%ecx, %ecx
-	#APP
-	cpuid
-
-	#NO_APP
-	movl	%ebx, ebx
-	movl	%edx, edx
-	movq	$0, 56(%r14)
-	movq	$0, 48(%r14)
-	movq	$0, 40(%r14)
-	movq	$0, 32(%r14)
-	movq	$0, 24(%r14)
-	movq	$0, 16(%r14)
-	movq	$0, 8(%r14)
-	movq	$0, (%r14)
-	movl	$48, %edi
-	callq	kmalloc
-	testq	%r14, %r14
-	je	.LBB251_3
-# BB#4:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%r14)
-	cmpw	%cx, (%r14)
-	je	.Ltmp1327
-.Ltmp1328:
-	btq	$25, %rcx
-	jae	.Ltmp1329
-.Ltmp1329:
-	pause
-	cmpw	%cx, (%r14)
-	jne	.Ltmp1328
-.Ltmp1327:
-	btq	$25, %rcx
-	jae	.Ltmp1330
-	orw	$1, 4(%r14)
-.Ltmp1330:
-	cli
-
-	#NO_APP
-	movq	$0, 32(%rax)
-	movq	$0, 24(%rax)
-	movq	$0, 16(%rax)
-	movq	$0, 8(%rax)
-	movq	$0, (%rax)
-	movq	%r14, 40(%rax)
-	#APP
-	mfence
-	lock
-	incw	(%r14)
-	btw	$0, 4(%r14)
-	jae	.Ltmp1331
-	sti
-	movw	$0, 4(%r14)
-.Ltmp1331:
-
-	#NO_APP
-	jmp	.LBB251_5
-.LBB251_3:                              # %LockSpinlock.exit.i.3.thread
-	movq	$0, 40(%rax)
-	movq	$0, 32(%rax)
-	movq	$0, 24(%rax)
-	movq	$0, 16(%rax)
-	movq	$0, 8(%rax)
-	movq	$0, (%rax)
-.LBB251_5:                              # %List_Create.exit
-	movq	root, %rcx
-	movq	%rax, 472(%rcx)
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rcx
+	movq	%rcx, 272(%rax)
+	movl	$0, 284(%rax)
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -23373,7 +22905,7 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	movq	$0, 8(%rsi)
 	movq	$0, (%rsi)
 	movq	root, %rax
-	movq	%rsi, 488(%rax)
+	movq	%rsi, 288(%rax)
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -23405,8 +22937,8 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	callq	kmalloc
 	movq	%rax, %rbx
 	testq	%r14, %r14
-	je	.LBB251_7
-# BB#6:
+	je	.LBB251_4
+# BB#3:
 	xorl	%eax, %eax
 	#APP
 	mfence
@@ -23418,23 +22950,23 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	lock
 	xaddw	%ax, 2(%r14)
 	cmpw	%ax, (%r14)
-	je	.Ltmp1332
-.Ltmp1333:
+	je	.Ltmp1282
+.Ltmp1283:
 	btq	$25, %rax
-	jae	.Ltmp1334
-.Ltmp1334:
+	jae	.Ltmp1284
+.Ltmp1284:
 	pause
 	cmpw	%ax, (%r14)
-	jne	.Ltmp1333
-.Ltmp1332:
+	jne	.Ltmp1283
+.Ltmp1282:
 	btq	$25, %rax
-	jae	.Ltmp1335
+	jae	.Ltmp1285
 	orw	$1, 4(%r14)
-.Ltmp1335:
+.Ltmp1285:
 	cli
 
 	#NO_APP
-.LBB251_7:                              # %LockSpinlock.exit.i.17
+.LBB251_4:                              # %LockSpinlock.exit.i.8
 	testq	%r14, %r14
 	movq	$0, 32(%rbx)
 	movq	$0, 24(%rbx)
@@ -23442,31 +22974,31 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	movq	$0, 8(%rbx)
 	movq	$0, (%rbx)
 	movq	%r14, 40(%rbx)
-	je	.LBB251_9
-# BB#8:
+	je	.LBB251_6
+# BB#5:
 	#APP
 	mfence
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1336
+	jae	.Ltmp1286
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1336:
+.Ltmp1286:
 
 	#NO_APP
-.LBB251_9:                              # %List_Create.exit20
+.LBB251_6:                              # %List_Create.exit
 	movq	%rbx, processes
 	movq	root, %r14
 	movl	$24, %edi
 	callq	kmalloc
 	testq	%rax, %rax
-	je	.LBB251_20
-# BB#10:
+	je	.LBB251_17
+# BB#7:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB251_12
-# BB#11:
+	je	.LBB251_9
+# BB#8:
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -23478,63 +23010,63 @@ ProcessSys_Initialize:                  # @ProcessSys_Initialize
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1337
-.Ltmp1338:
+	je	.Ltmp1287
+.Ltmp1288:
 	btq	$25, %rdx
-	jae	.Ltmp1339
-.Ltmp1339:
+	jae	.Ltmp1289
+.Ltmp1289:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1338
-.Ltmp1337:
+	jne	.Ltmp1288
+.Ltmp1287:
 	btq	$25, %rdx
-	jae	.Ltmp1340
+	jae	.Ltmp1290
 	orw	$1, 4(%rcx)
-.Ltmp1340:
+.Ltmp1290:
 	cli
 
 	#NO_APP
-.LBB251_12:                             # %LockSpinlock.exit.i
+.LBB251_9:                              # %LockSpinlock.exit.i
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r14, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB251_14
-# BB#13:
+	je	.LBB251_11
+# BB#10:
 	movq	%rax, 8(%rcx)
-.LBB251_14:
+.LBB251_11:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB251_16
-# BB#15:
+	jne	.LBB251_13
+# BB#12:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB251_16:
+.LBB251_13:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB251_18
-# BB#17:
+	jne	.LBB251_15
+# BB#14:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB251_18:
+.LBB251_15:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	testq	%rax, %rax
-	je	.LBB251_20
-# BB#19:
+	je	.LBB251_17
+# BB#16:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1341
+	jae	.Ltmp1291
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1341:
+.Ltmp1291:
 
 	#NO_APP
-.LBB251_20:                             # %List_AddEntry.exit
+.LBB251_17:                             # %List_AddEntry.exit
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
@@ -23550,12 +23082,12 @@ ProcessSys_IsInitialized:               # @ProcessSys_IsInitialized
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1342:
+.Ltmp1292:
 	.cfi_def_cfa_offset 16
-.Ltmp1343:
+.Ltmp1293:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1344:
+.Ltmp1294:
 	.cfi_def_cfa_register %rbp
 	cmpq	$0, root
 	setne	%al
@@ -23573,32 +23105,28 @@ ForkProcess:                            # @ForkProcess
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1345:
+.Ltmp1295:
 	.cfi_def_cfa_offset 16
-.Ltmp1346:
+.Ltmp1296:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1347:
+.Ltmp1297:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
-	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	pushq	%rax
-.Ltmp1348:
-	.cfi_offset %rbx, -56
-.Ltmp1349:
-	.cfi_offset %r12, -48
-.Ltmp1350:
-	.cfi_offset %r13, -40
-.Ltmp1351:
+.Ltmp1298:
+	.cfi_offset %rbx, -48
+.Ltmp1299:
+	.cfi_offset %r12, -40
+.Ltmp1300:
 	.cfi_offset %r14, -32
-.Ltmp1352:
+.Ltmp1301:
 	.cfi_offset %r15, -24
 	movq	%rsi, %r14
 	movq	%rdi, %r12
-	movq	488(%r12), %rax
+	movq	288(%r12), %rax
 	testq	%rax, %rax
 	je	.LBB253_2
 # BB#1:
@@ -23613,24 +23141,24 @@ ForkProcess:                            # @ForkProcess
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1353
-.Ltmp1354:
+	je	.Ltmp1302
+.Ltmp1303:
 	btq	$25, %rcx
-	jae	.Ltmp1355
-.Ltmp1355:
+	jae	.Ltmp1304
+.Ltmp1304:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1354
-.Ltmp1353:
+	jne	.Ltmp1303
+.Ltmp1302:
 	btq	$25, %rcx
-	jae	.Ltmp1356
+	jae	.Ltmp1305
 	orw	$1, 4(%rax)
-.Ltmp1356:
+.Ltmp1305:
 	cli
 
 	#NO_APP
 .LBB253_2:                              # %LockSpinlock.exit
-	movl	$496, %edi              # imm = 0x1F0
+	movl	$296, %edi              # imm = 0x128
 	callq	kmalloc
 	movq	%rax, %r15
 	movq	uids_base, %rax
@@ -23640,6 +23168,15 @@ ForkProcess:                            # @ForkProcess
 	movq	%rax, (%r15)
 	movl	264(%r12), %eax
 	movl	%eax, 264(%r15)
+	movl	268(%r12), %eax
+	movl	%eax, 268(%r15)
+	movl	$32, %edi
+	callq	kmalloc
+	movq	%rax, 272(%r15)
+	movq	272(%r12), %rdi
+	movq	%rax, %rsi
+	callq	ForkTable
+	movl	$0, 284(%r15)
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -23667,172 +23204,33 @@ ForkProcess:                            # @ForkProcess
 	movq	$0, 16(%rsi)
 	movq	$0, 8(%rsi)
 	movq	$0, (%rsi)
-	movq	%rsi, 488(%r15)
-	movl	268(%r12), %eax
-	movl	%eax, 268(%r15)
-	movl	272(%r12), %eax
-	movl	%eax, 272(%r15)
-	movq	280(%r12), %rax
-	movq	%rax, 280(%r15)
+	movq	%rsi, 288(%r15)
 	movq	288(%r12), %rax
-	movq	%rax, 288(%r15)
-	movq	296(%r12), %rax
-	movq	%rax, 296(%r15)
-	movq	304(%r12), %rax
-	movq	%rax, 304(%r15)
-	movq	312(%r12), %rax
-	movq	%rax, 312(%r15)
-	movq	320(%r12), %rax
-	movq	%rax, 320(%r15)
-	movq	328(%r12), %rax
-	movq	%rax, 328(%r15)
-	movq	336(%r12), %rax
-	movq	%rax, 336(%r15)
-	movq	344(%r12), %rax
-	movq	%rax, 344(%r15)
-	movq	352(%r12), %rax
-	movq	%rax, 352(%r15)
-	movq	360(%r12), %rax
-	movq	%rax, 360(%r15)
-	movq	368(%r12), %rax
-	movq	%rax, 368(%r15)
-	movq	376(%r12), %rax
-	movq	%rax, 376(%r15)
-	movq	384(%r12), %rax
-	movq	%rax, 384(%r15)
-	movq	392(%r12), %rax
-	movq	%rax, 392(%r15)
-	movq	400(%r12), %rax
-	movq	%rax, 400(%r15)
-	movq	408(%r12), %rax
-	movq	%rax, 408(%r15)
-	movq	416(%r12), %rax
-	movq	%rax, 416(%r15)
-	movq	424(%r12), %rax
-	movq	%rax, 424(%r15)
-	movq	432(%r12), %rax
-	movq	%rax, 432(%r15)
-	movq	440(%r12), %rax
-	movq	%rax, 440(%r15)
-	movq	448(%r12), %rax
-	movq	%rax, 448(%r15)
-	movq	456(%r12), %rdi
-	movq	464(%r12), %rsi
-	leaq	456(%r15), %rdx
-	leaq	464(%r15), %rcx
-	callq	ForkTable
-	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
-	xorl	%ecx, %ecx
-	#APP
-	cpuid
-
-	#NO_APP
-	movl	%ebx, ebx
-	movl	%edx, edx
-	movl	$64, %edi
-	callq	kmalloc
-	movq	%rax, %r13
-	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
-	xorl	%ecx, %ecx
-	#APP
-	cpuid
-
-	#NO_APP
-	movl	%ebx, ebx
-	movl	%edx, edx
-	movq	$0, 56(%r13)
-	movq	$0, 48(%r13)
-	movq	$0, 40(%r13)
-	movq	$0, 32(%r13)
-	movq	$0, 24(%r13)
-	movq	$0, 16(%r13)
-	movq	$0, 8(%r13)
-	movq	$0, (%r13)
-	movl	$48, %edi
-	callq	kmalloc
-	testq	%r13, %r13
-	je	.LBB253_3
-# BB#4:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%r13)
-	cmpw	%cx, (%r13)
-	je	.Ltmp1357
-.Ltmp1358:
-	btq	$25, %rcx
-	jae	.Ltmp1359
-.Ltmp1359:
-	pause
-	cmpw	%cx, (%r13)
-	jne	.Ltmp1358
-.Ltmp1357:
-	btq	$25, %rcx
-	jae	.Ltmp1360
-	orw	$1, 4(%r13)
-.Ltmp1360:
-	cli
-
-	#NO_APP
-	movq	$0, 32(%rax)
-	movq	$0, 24(%rax)
-	movq	$0, 16(%rax)
-	movq	$0, 8(%rax)
-	movq	$0, (%rax)
-	movq	%r13, 40(%rax)
-	#APP
-	mfence
-	lock
-	incw	(%r13)
-	btw	$0, 4(%r13)
-	jae	.Ltmp1361
-	sti
-	movw	$0, 4(%r13)
-.Ltmp1361:
-
-	#NO_APP
-	jmp	.LBB253_5
-.LBB253_3:                              # %LockSpinlock.exit.i.8.thread
-	movq	$0, 40(%rax)
-	movq	$0, 32(%rax)
-	movq	$0, 24(%rax)
-	movq	$0, 16(%rax)
-	movq	$0, 8(%rax)
-	movq	$0, (%rax)
-.LBB253_5:                              # %List_Create.exit
-	movq	%rax, 472(%r15)
-	movq	488(%r12), %rax
 	testq	%rax, %rax
-	je	.LBB253_7
-# BB#6:
+	je	.LBB253_4
+# BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1362
+	jae	.Ltmp1306
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1362:
+.Ltmp1306:
 
 	#NO_APP
-.LBB253_7:                              # %UnlockSpinlock.exit
+.LBB253_4:                              # %UnlockSpinlock.exit
 	movq	processes, %rbx
 	movl	$24, %edi
 	callq	kmalloc
 	testq	%rax, %rax
-	je	.LBB253_18
-# BB#8:
+	je	.LBB253_15
+# BB#5:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB253_10
-# BB#9:
+	je	.LBB253_7
+# BB#6:
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -23844,69 +23242,67 @@ ForkProcess:                            # @ForkProcess
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1363
-.Ltmp1364:
+	je	.Ltmp1307
+.Ltmp1308:
 	btq	$25, %rdx
-	jae	.Ltmp1365
-.Ltmp1365:
+	jae	.Ltmp1309
+.Ltmp1309:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1364
-.Ltmp1363:
+	jne	.Ltmp1308
+.Ltmp1307:
 	btq	$25, %rdx
-	jae	.Ltmp1366
+	jae	.Ltmp1310
 	orw	$1, 4(%rcx)
-.Ltmp1366:
+.Ltmp1310:
 	cli
 
 	#NO_APP
-.LBB253_10:                             # %LockSpinlock.exit.i
+.LBB253_7:                              # %LockSpinlock.exit.i
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r15, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB253_12
-# BB#11:
+	je	.LBB253_9
+# BB#8:
 	movq	%rax, 8(%rcx)
-.LBB253_12:
+.LBB253_9:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB253_14
-# BB#13:
+	jne	.LBB253_11
+# BB#10:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB253_14:
+.LBB253_11:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB253_16
-# BB#15:
+	jne	.LBB253_13
+# BB#12:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB253_16:
+.LBB253_13:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	testq	%rax, %rax
-	je	.LBB253_18
-# BB#17:
+	je	.LBB253_15
+# BB#14:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1367
+	jae	.Ltmp1311
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1367:
+.Ltmp1311:
 
 	#NO_APP
-.LBB253_18:                             # %List_AddEntry.exit
+.LBB253_15:                             # %List_AddEntry.exit
 	movq	%r15, (%r14)
 	xorl	%eax, %eax
-	addq	$8, %rsp
 	popq	%rbx
 	popq	%r12
-	popq	%r13
 	popq	%r14
 	popq	%r15
 	popq	%rbp
@@ -23922,12 +23318,12 @@ GetProcessInformation:                  # @GetProcessInformation
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1368:
+.Ltmp1312:
 	.cfi_def_cfa_offset 16
-.Ltmp1369:
+.Ltmp1313:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1370:
+.Ltmp1314:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -23935,15 +23331,15 @@ GetProcessInformation:                  # @GetProcessInformation
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1371:
+.Ltmp1315:
 	.cfi_offset %rbx, -56
-.Ltmp1372:
+.Ltmp1316:
 	.cfi_offset %r12, -48
-.Ltmp1373:
+.Ltmp1317:
 	.cfi_offset %r13, -40
-.Ltmp1374:
+.Ltmp1318:
 	.cfi_offset %r14, -32
-.Ltmp1375:
+.Ltmp1319:
 	.cfi_offset %r15, -24
 	movq	%rsi, %rbx
 	movq	%rdi, %r14
@@ -23963,19 +23359,19 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1376
-.Ltmp1377:
+	je	.Ltmp1320
+.Ltmp1321:
 	btq	$25, %rdx
-	jae	.Ltmp1378
-.Ltmp1378:
+	jae	.Ltmp1322
+.Ltmp1322:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1377
-.Ltmp1376:
+	jne	.Ltmp1321
+.Ltmp1320:
 	btq	$25, %rdx
-	jae	.Ltmp1379
+	jae	.Ltmp1323
 	orw	$1, 4(%rax)
-.Ltmp1379:
+.Ltmp1323:
 	cli
 
 	#NO_APP
@@ -23989,10 +23385,10 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1380
+	jae	.Ltmp1324
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1380:
+.Ltmp1324:
 
 	#NO_APP
 	jmp	.LBB254_4
@@ -24011,7 +23407,7 @@ GetProcessInformation:                  # @GetProcessInformation
 	movq	processes, %rdi
 	movq	%r12, %rsi
 	callq	List_EntryAt
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB254_12
 # BB#13:                                # %LockSpinlock.exit
@@ -24026,24 +23422,24 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	xaddw	%r13w, 2(%rcx)
 	cmpw	%r13w, (%rcx)
-	je	.Ltmp1381
-.Ltmp1382:
+	je	.Ltmp1325
+.Ltmp1326:
 	btq	$25, %r13
-	jae	.Ltmp1383
-.Ltmp1383:
+	jae	.Ltmp1327
+.Ltmp1327:
 	pause
 	cmpw	%r13w, (%rcx)
-	jne	.Ltmp1382
-.Ltmp1381:
+	jne	.Ltmp1326
+.Ltmp1325:
 	btq	$25, %r13
-	jae	.Ltmp1384
+	jae	.Ltmp1328
 	orw	$1, 4(%rcx)
-.Ltmp1384:
+.Ltmp1328:
 	cli
 
 	#NO_APP
 	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
+	movq	288(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB254_15
 # BB#14:                                #   in Loop: Header=BB254_11 Depth=1
@@ -24052,10 +23448,10 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp1385
+	jae	.Ltmp1329
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp1385:
+.Ltmp1329:
 
 	#NO_APP
 	jmp	.LBB254_15
@@ -24085,19 +23481,19 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	xaddw	%r13w, 2(%rax)
 	cmpw	%r13w, (%rax)
-	je	.Ltmp1386
-.Ltmp1387:
+	je	.Ltmp1330
+.Ltmp1331:
 	btq	$25, %r13
-	jae	.Ltmp1388
-.Ltmp1388:
+	jae	.Ltmp1332
+.Ltmp1332:
 	pause
 	cmpw	%r13w, (%rax)
-	jne	.Ltmp1387
-.Ltmp1386:
+	jne	.Ltmp1331
+.Ltmp1330:
 	btq	$25, %r13
-	jae	.Ltmp1389
+	jae	.Ltmp1333
 	orw	$1, 4(%rax)
-.Ltmp1389:
+.Ltmp1333:
 	cli
 
 	#NO_APP
@@ -24111,10 +23507,10 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1390
+	jae	.Ltmp1334
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1390:
+.Ltmp1334:
 
 	#NO_APP
 	jmp	.LBB254_10
@@ -24128,7 +23524,7 @@ GetProcessInformation:                  # @GetProcessInformation
 	jb	.LBB254_11
 	jmp	.LBB254_22
 .LBB254_16:
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB254_18
 # BB#17:
@@ -24143,19 +23539,19 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp1391
-.Ltmp1392:
+	je	.Ltmp1335
+.Ltmp1336:
 	btq	$25, %rdx
-	jae	.Ltmp1393
-.Ltmp1393:
+	jae	.Ltmp1337
+.Ltmp1337:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp1392
-.Ltmp1391:
+	jne	.Ltmp1336
+.Ltmp1335:
 	btq	$25, %rdx
-	jae	.Ltmp1394
+	jae	.Ltmp1338
 	orw	$1, 4(%rcx)
-.Ltmp1394:
+.Ltmp1338:
 	cli
 
 	#NO_APP
@@ -24181,10 +23577,10 @@ GetProcessInformation:                  # @GetProcessInformation
 	movb	7(%rax,%rcx), %dl
 	movb	%dl, 7(%rbx,%rcx)
 	addq	$8, %rcx
-	cmpq	$496, %rcx              # imm = 0x1F0
+	cmpq	$296, %rcx              # imm = 0x128
 	jne	.LBB254_19
 # BB#20:                                # %memcpy.exit
-	movq	488(%rax), %rax
+	movq	288(%rax), %rax
 	xorl	%r15d, %r15d
 	testq	%rax, %rax
 	je	.LBB254_22
@@ -24194,10 +23590,10 @@ GetProcessInformation:                  # @GetProcessInformation
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1395
+	jae	.Ltmp1339
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1395:
+.Ltmp1339:
 
 	#NO_APP
 .LBB254_22:                             # %.loopexit
@@ -24221,12 +23617,12 @@ GetProcessReference:                    # @GetProcessReference
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1396:
+.Ltmp1340:
 	.cfi_def_cfa_offset 16
-.Ltmp1397:
+.Ltmp1341:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1398:
+.Ltmp1342:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -24234,15 +23630,15 @@ GetProcessReference:                    # @GetProcessReference
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1399:
+.Ltmp1343:
 	.cfi_offset %rbx, -56
-.Ltmp1400:
+.Ltmp1344:
 	.cfi_offset %r12, -48
-.Ltmp1401:
+.Ltmp1345:
 	.cfi_offset %r13, -40
-.Ltmp1402:
+.Ltmp1346:
 	.cfi_offset %r14, -32
-.Ltmp1403:
+.Ltmp1347:
 	.cfi_offset %r15, -24
 	movq	%rsi, %r14
 	movq	%rdi, %r12
@@ -24262,19 +23658,19 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1404
-.Ltmp1405:
+	je	.Ltmp1348
+.Ltmp1349:
 	btq	$25, %rdx
-	jae	.Ltmp1406
-.Ltmp1406:
+	jae	.Ltmp1350
+.Ltmp1350:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1405
-.Ltmp1404:
+	jne	.Ltmp1349
+.Ltmp1348:
 	btq	$25, %rdx
-	jae	.Ltmp1407
+	jae	.Ltmp1351
 	orw	$1, 4(%rax)
-.Ltmp1407:
+.Ltmp1351:
 	cli
 
 	#NO_APP
@@ -24288,10 +23684,10 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1408
+	jae	.Ltmp1352
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1408:
+.Ltmp1352:
 
 	#NO_APP
 	jmp	.LBB255_4
@@ -24310,7 +23706,7 @@ GetProcessReference:                    # @GetProcessReference
 	movq	processes, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB255_12
 # BB#13:                                # %LockSpinlock.exit
@@ -24325,24 +23721,24 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	xaddw	%r13w, 2(%rcx)
 	cmpw	%r13w, (%rcx)
-	je	.Ltmp1409
-.Ltmp1410:
+	je	.Ltmp1353
+.Ltmp1354:
 	btq	$25, %r13
-	jae	.Ltmp1411
-.Ltmp1411:
+	jae	.Ltmp1355
+.Ltmp1355:
 	pause
 	cmpw	%r13w, (%rcx)
-	jne	.Ltmp1410
-.Ltmp1409:
+	jne	.Ltmp1354
+.Ltmp1353:
 	btq	$25, %r13
-	jae	.Ltmp1412
+	jae	.Ltmp1356
 	orw	$1, 4(%rcx)
-.Ltmp1412:
+.Ltmp1356:
 	cli
 
 	#NO_APP
 	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
+	movq	288(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB255_15
 # BB#14:                                #   in Loop: Header=BB255_11 Depth=1
@@ -24351,10 +23747,10 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp1413
+	jae	.Ltmp1357
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp1413:
+.Ltmp1357:
 
 	#NO_APP
 	jmp	.LBB255_15
@@ -24384,19 +23780,19 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	xaddw	%r13w, 2(%rax)
 	cmpw	%r13w, (%rax)
-	je	.Ltmp1414
-.Ltmp1415:
+	je	.Ltmp1358
+.Ltmp1359:
 	btq	$25, %r13
-	jae	.Ltmp1416
-.Ltmp1416:
+	jae	.Ltmp1360
+.Ltmp1360:
 	pause
 	cmpw	%r13w, (%rax)
-	jne	.Ltmp1415
-.Ltmp1414:
+	jne	.Ltmp1359
+.Ltmp1358:
 	btq	$25, %r13
-	jae	.Ltmp1417
+	jae	.Ltmp1361
 	orw	$1, 4(%rax)
-.Ltmp1417:
+.Ltmp1361:
 	cli
 
 	#NO_APP
@@ -24410,10 +23806,10 @@ GetProcessReference:                    # @GetProcessReference
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1418
+	jae	.Ltmp1362
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1418:
+.Ltmp1362:
 
 	#NO_APP
 	jmp	.LBB255_10
@@ -24450,12 +23846,12 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1419:
+.Ltmp1363:
 	.cfi_def_cfa_offset 16
-.Ltmp1420:
+.Ltmp1364:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1421:
+.Ltmp1365:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -24463,15 +23859,15 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1422:
+.Ltmp1366:
 	.cfi_offset %rbx, -56
-.Ltmp1423:
+.Ltmp1367:
 	.cfi_offset %r12, -48
-.Ltmp1424:
+.Ltmp1368:
 	.cfi_offset %r13, -40
-.Ltmp1425:
+.Ltmp1369:
 	.cfi_offset %r14, -32
-.Ltmp1426:
+.Ltmp1370:
 	.cfi_offset %r15, -24
 	movl	%esi, %r14d
 	movq	%rdi, %r12
@@ -24491,19 +23887,19 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1427
-.Ltmp1428:
+	je	.Ltmp1371
+.Ltmp1372:
 	btq	$25, %rdx
-	jae	.Ltmp1429
-.Ltmp1429:
+	jae	.Ltmp1373
+.Ltmp1373:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1428
-.Ltmp1427:
+	jne	.Ltmp1372
+.Ltmp1371:
 	btq	$25, %rdx
-	jae	.Ltmp1430
+	jae	.Ltmp1374
 	orw	$1, 4(%rax)
-.Ltmp1430:
+.Ltmp1374:
 	cli
 
 	#NO_APP
@@ -24517,10 +23913,10 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1431
+	jae	.Ltmp1375
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1431:
+.Ltmp1375:
 
 	#NO_APP
 	jmp	.LBB256_4
@@ -24539,7 +23935,7 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	movq	processes, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB256_12
 # BB#13:                                # %LockSpinlock.exit
@@ -24554,24 +23950,24 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	xaddw	%r13w, 2(%rcx)
 	cmpw	%r13w, (%rcx)
-	je	.Ltmp1432
-.Ltmp1433:
+	je	.Ltmp1376
+.Ltmp1377:
 	btq	$25, %r13
-	jae	.Ltmp1434
-.Ltmp1434:
+	jae	.Ltmp1378
+.Ltmp1378:
 	pause
 	cmpw	%r13w, (%rcx)
-	jne	.Ltmp1433
-.Ltmp1432:
+	jne	.Ltmp1377
+.Ltmp1376:
 	btq	$25, %r13
-	jae	.Ltmp1435
+	jae	.Ltmp1379
 	orw	$1, 4(%rcx)
-.Ltmp1435:
+.Ltmp1379:
 	cli
 
 	#NO_APP
 	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
+	movq	288(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB256_15
 # BB#14:                                #   in Loop: Header=BB256_11 Depth=1
@@ -24580,10 +23976,10 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp1436
+	jae	.Ltmp1380
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp1436:
+.Ltmp1380:
 
 	#NO_APP
 	jmp	.LBB256_15
@@ -24613,19 +24009,19 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	xaddw	%r13w, 2(%rax)
 	cmpw	%r13w, (%rax)
-	je	.Ltmp1437
-.Ltmp1438:
+	je	.Ltmp1381
+.Ltmp1382:
 	btq	$25, %r13
-	jae	.Ltmp1439
-.Ltmp1439:
+	jae	.Ltmp1383
+.Ltmp1383:
 	pause
 	cmpw	%r13w, (%rax)
-	jne	.Ltmp1438
-.Ltmp1437:
+	jne	.Ltmp1382
+.Ltmp1381:
 	btq	$25, %r13
-	jae	.Ltmp1440
+	jae	.Ltmp1384
 	orw	$1, 4(%rax)
-.Ltmp1440:
+.Ltmp1384:
 	cli
 
 	#NO_APP
@@ -24639,10 +24035,10 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1441
+	jae	.Ltmp1385
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1441:
+.Ltmp1385:
 
 	#NO_APP
 	jmp	.LBB256_10
@@ -24656,7 +24052,7 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	jb	.LBB256_11
 	jmp	.LBB256_20
 .LBB256_16:
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB256_17
 # BB#18:                                # %LockSpinlock.exit7
@@ -24671,24 +24067,24 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	xaddw	%r15w, 2(%rcx)
 	cmpw	%r15w, (%rcx)
-	je	.Ltmp1442
-.Ltmp1443:
+	je	.Ltmp1386
+.Ltmp1387:
 	btq	$25, %r15
-	jae	.Ltmp1444
-.Ltmp1444:
+	jae	.Ltmp1388
+.Ltmp1388:
 	pause
 	cmpw	%r15w, (%rcx)
-	jne	.Ltmp1443
-.Ltmp1442:
+	jne	.Ltmp1387
+.Ltmp1386:
 	btq	$25, %r15
-	jae	.Ltmp1445
+	jae	.Ltmp1389
 	orw	$1, 4(%rcx)
-.Ltmp1445:
+.Ltmp1389:
 	cli
 
 	#NO_APP
-	movq	488(%rax), %rcx
-	movl	%r14d, 272(%rax)
+	movq	288(%rax), %rcx
+	movl	%r14d, 268(%rax)
 	testq	%rcx, %rcx
 	je	.LBB256_20
 # BB#19:
@@ -24697,15 +24093,15 @@ SetProcessPermissions:                  # @SetProcessPermissions
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1446
+	jae	.Ltmp1390
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1446:
+.Ltmp1390:
 
 	#NO_APP
 	jmp	.LBB256_20
 .LBB256_17:                             # %LockSpinlock.exit7.thread
-	movl	%r14d, 272(%rax)
+	movl	%r14d, 268(%rax)
 	xorl	%r15d, %r15d
 .LBB256_20:                             # %.loopexit
 	movl	%r15d, %eax
@@ -24728,12 +24124,12 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1447:
+.Ltmp1391:
 	.cfi_def_cfa_offset 16
-.Ltmp1448:
+.Ltmp1392:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1449:
+.Ltmp1393:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -24741,15 +24137,15 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-.Ltmp1450:
+.Ltmp1394:
 	.cfi_offset %rbx, -56
-.Ltmp1451:
+.Ltmp1395:
 	.cfi_offset %r12, -48
-.Ltmp1452:
+.Ltmp1396:
 	.cfi_offset %r13, -40
-.Ltmp1453:
+.Ltmp1397:
 	.cfi_offset %r14, -32
-.Ltmp1454:
+.Ltmp1398:
 	.cfi_offset %r15, -24
 	movl	%esi, %r14d
 	movq	%rdi, %r12
@@ -24769,19 +24165,19 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1455
-.Ltmp1456:
+	je	.Ltmp1399
+.Ltmp1400:
 	btq	$25, %rdx
-	jae	.Ltmp1457
-.Ltmp1457:
+	jae	.Ltmp1401
+.Ltmp1401:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1456
-.Ltmp1455:
+	jne	.Ltmp1400
+.Ltmp1399:
 	btq	$25, %rdx
-	jae	.Ltmp1458
+	jae	.Ltmp1402
 	orw	$1, 4(%rax)
-.Ltmp1458:
+.Ltmp1402:
 	cli
 
 	#NO_APP
@@ -24795,10 +24191,10 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1459
+	jae	.Ltmp1403
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1459:
+.Ltmp1403:
 
 	#NO_APP
 	jmp	.LBB257_4
@@ -24817,7 +24213,7 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	movq	processes, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB257_12
 # BB#13:                                # %LockSpinlock.exit
@@ -24832,24 +24228,24 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	xaddw	%r13w, 2(%rcx)
 	cmpw	%r13w, (%rcx)
-	je	.Ltmp1460
-.Ltmp1461:
+	je	.Ltmp1404
+.Ltmp1405:
 	btq	$25, %r13
-	jae	.Ltmp1462
-.Ltmp1462:
+	jae	.Ltmp1406
+.Ltmp1406:
 	pause
 	cmpw	%r13w, (%rcx)
-	jne	.Ltmp1461
-.Ltmp1460:
+	jne	.Ltmp1405
+.Ltmp1404:
 	btq	$25, %r13
-	jae	.Ltmp1463
+	jae	.Ltmp1407
 	orw	$1, 4(%rcx)
-.Ltmp1463:
+.Ltmp1407:
 	cli
 
 	#NO_APP
 	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
+	movq	288(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB257_15
 # BB#14:                                #   in Loop: Header=BB257_11 Depth=1
@@ -24858,10 +24254,10 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp1464
+	jae	.Ltmp1408
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp1464:
+.Ltmp1408:
 
 	#NO_APP
 	jmp	.LBB257_15
@@ -24891,19 +24287,19 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	xaddw	%r13w, 2(%rax)
 	cmpw	%r13w, (%rax)
-	je	.Ltmp1465
-.Ltmp1466:
+	je	.Ltmp1409
+.Ltmp1410:
 	btq	$25, %r13
-	jae	.Ltmp1467
-.Ltmp1467:
+	jae	.Ltmp1411
+.Ltmp1411:
 	pause
 	cmpw	%r13w, (%rax)
-	jne	.Ltmp1466
-.Ltmp1465:
+	jne	.Ltmp1410
+.Ltmp1409:
 	btq	$25, %r13
-	jae	.Ltmp1468
+	jae	.Ltmp1412
 	orw	$1, 4(%rax)
-.Ltmp1468:
+.Ltmp1412:
 	cli
 
 	#NO_APP
@@ -24917,10 +24313,10 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1469
+	jae	.Ltmp1413
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1469:
+.Ltmp1413:
 
 	#NO_APP
 	jmp	.LBB257_10
@@ -24934,7 +24330,7 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	jb	.LBB257_11
 	jmp	.LBB257_20
 .LBB257_16:
-	movq	488(%rax), %rcx
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB257_17
 # BB#18:                                # %LockSpinlock.exit7
@@ -24949,24 +24345,24 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	xaddw	%r15w, 2(%rcx)
 	cmpw	%r15w, (%rcx)
-	je	.Ltmp1470
-.Ltmp1471:
+	je	.Ltmp1414
+.Ltmp1415:
 	btq	$25, %r15
-	jae	.Ltmp1472
-.Ltmp1472:
+	jae	.Ltmp1416
+.Ltmp1416:
 	pause
 	cmpw	%r15w, (%rcx)
-	jne	.Ltmp1471
-.Ltmp1470:
+	jne	.Ltmp1415
+.Ltmp1414:
 	btq	$25, %r15
-	jae	.Ltmp1473
+	jae	.Ltmp1417
 	orw	$1, 4(%rcx)
-.Ltmp1473:
+.Ltmp1417:
 	cli
 
 	#NO_APP
-	movq	488(%rax), %rcx
-	movl	%r14d, 480(%rax)
+	movq	288(%rax), %rcx
+	movl	%r14d, 280(%rax)
 	testq	%rcx, %rcx
 	je	.LBB257_20
 # BB#19:
@@ -24975,15 +24371,15 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1474
+	jae	.Ltmp1418
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1474:
+.Ltmp1418:
 
 	#NO_APP
 	jmp	.LBB257_20
 .LBB257_17:                             # %LockSpinlock.exit7.thread
-	movl	%r14d, 480(%rax)
+	movl	%r14d, 280(%rax)
 	xorl	%r15d, %r15d
 .LBB257_20:                             # %.loopexit
 	movl	%r15d, %eax
@@ -24999,223 +24395,24 @@ SetProcessSyscallStatus:                # @SetProcessSyscallStatus
 	.size	SetProcessSyscallStatus, .Lfunc_end257-SetProcessSyscallStatus
 	.cfi_endproc
 
-	.globl	KillProcess
+	.globl	get_proc_ID
 	.align	16, 0x90
-	.type	KillProcess,@function
-KillProcess:                            # @KillProcess
+	.type	get_proc_ID,@function
+get_proc_ID:                            # @get_proc_ID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1475:
+.Ltmp1419:
 	.cfi_def_cfa_offset 16
-.Ltmp1476:
+.Ltmp1420:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1477:
+.Ltmp1421:
 	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r13
-	pushq	%r12
-	pushq	%rbx
-	pushq	%rax
-.Ltmp1478:
-	.cfi_offset %rbx, -56
-.Ltmp1479:
-	.cfi_offset %r12, -48
-.Ltmp1480:
-	.cfi_offset %r13, -40
-.Ltmp1481:
-	.cfi_offset %r14, -32
-.Ltmp1482:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r12
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
+	movq	288(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB258_1
-# BB#2:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp1483
-.Ltmp1484:
-	btq	$25, %rdx
-	jae	.Ltmp1485
-.Ltmp1485:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp1484
-.Ltmp1483:
-	btq	$25, %rdx
-	jae	.Ltmp1486
-	orw	$1, 4(%rax)
-.Ltmp1486:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB258_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1487
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1487:
-
-	#NO_APP
-	jmp	.LBB258_4
-.LBB258_1:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB258_4:                              # %List_Length.exit
-	movl	$2, %r14d
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB258_88
-# BB#5:
-	xorl	%r13d, %r13d
-	.align	16, 0x90
-.LBB258_6:                              # %.lr.ph19
-                                        # =>This Inner Loop Header: Depth=1
-	movq	processes, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	%rax, %r15
-	movq	488(%r15), %rax
-	testq	%rax, %rax
-	je	.LBB258_7
-# BB#8:                                 # %LockSpinlock.exit
-                                        #   in Loop: Header=BB258_6 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r13
-	shlq	$16, %r13
-	movw	$1, %r13w
-	lock
-	xaddw	%r13w, 2(%rax)
-	cmpw	%r13w, (%rax)
-	je	.Ltmp1488
-.Ltmp1489:
-	btq	$25, %r13
-	jae	.Ltmp1490
-.Ltmp1490:
-	pause
-	cmpw	%r13w, (%rax)
-	jne	.Ltmp1489
-.Ltmp1488:
-	btq	$25, %r13
-	jae	.Ltmp1491
-	orw	$1, 4(%rax)
-.Ltmp1491:
-	cli
-
-	#NO_APP
-	movq	(%r15), %rax
-	movq	488(%r15), %rcx
-	testq	%rcx, %rcx
-	je	.LBB258_10
-# BB#9:                                 #   in Loop: Header=BB258_6 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1492
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1492:
-
-	#NO_APP
-	jmp	.LBB258_10
-	.align	16, 0x90
-.LBB258_7:                              # %LockSpinlock.exit.thread
-                                        #   in Loop: Header=BB258_6 Depth=1
-	movq	(%r15), %rax
-.LBB258_10:                             # %UnlockSpinlock.exit
-                                        #   in Loop: Header=BB258_6 Depth=1
-	cmpq	%r12, %rax
-	je	.LBB258_11
-# BB#83:                                #   in Loop: Header=BB258_6 Depth=1
-	incq	%rbx
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB258_84
-# BB#85:                                # %LockSpinlock.exit.i.43
-                                        #   in Loop: Header=BB258_6 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r13
-	shlq	$16, %r13
-	movw	$1, %r13w
-	lock
-	xaddw	%r13w, 2(%rax)
-	cmpw	%r13w, (%rax)
-	je	.Ltmp1493
-.Ltmp1494:
-	btq	$25, %r13
-	jae	.Ltmp1495
-.Ltmp1495:
-	pause
-	cmpw	%r13w, (%rax)
-	jne	.Ltmp1494
-.Ltmp1493:
-	btq	$25, %r13
-	jae	.Ltmp1496
-	orw	$1, 4(%rax)
-.Ltmp1496:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB258_87
-# BB#86:                                #   in Loop: Header=BB258_6 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1497
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1497:
-
-	#NO_APP
-	jmp	.LBB258_87
-	.align	16, 0x90
-.LBB258_84:                             # %LockSpinlock.exit.i.43.thread
-                                        #   in Loop: Header=BB258_6 Depth=1
-	movq	32(%rcx), %rax
-.LBB258_87:                             # %List_Length.exit46
-                                        #   in Loop: Header=BB258_6 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB258_6
-	jmp	.LBB258_88
-.LBB258_11:
-	movq	488(%r15), %rax
-	testq	%rax, %rax
-	je	.LBB258_13
-# BB#12:
+# BB#2:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -25227,60 +24424,747 @@ KillProcess:                            # @KillProcess
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1498
-.Ltmp1499:
+	je	.Ltmp1422
+.Ltmp1423:
 	btq	$25, %rcx
-	jae	.Ltmp1500
-.Ltmp1500:
+	jae	.Ltmp1424
+.Ltmp1424:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1499
-.Ltmp1498:
+	jne	.Ltmp1423
+.Ltmp1422:
 	btq	$25, %rcx
-	jae	.Ltmp1501
+	jae	.Ltmp1425
 	orw	$1, 4(%rax)
-.Ltmp1501:
+.Ltmp1425:
 	cli
 
 	#NO_APP
-.LBB258_13:                             # %LockSpinlock.exit3
-	movq	472(%r15), %rcx
-	movq	40(%rcx), %rax
+	movq	(%rdi), %rax
+	movq	288(%rdi), %rcx
+	testq	%rcx, %rcx
+	je	.LBB258_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1426
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1426:
+
+	#NO_APP
+.LBB258_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB258_1:                              # %LockSpinlock.exit.thread
+	movq	(%rdi), %rax
+	popq	%rbp
+	retq
+.Lfunc_end258:
+	.size	get_proc_ID, .Lfunc_end258-get_proc_ID
+	.cfi_endproc
+
+	.globl	get_proc_PageTable
+	.align	16, 0x90
+	.type	get_proc_PageTable,@function
+get_proc_PageTable:                     # @get_proc_PageTable
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1427:
+	.cfi_def_cfa_offset 16
+.Ltmp1428:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1429:
+	.cfi_def_cfa_register %rbp
+	movq	288(%rdi), %rax
 	testq	%rax, %rax
-	je	.LBB258_14
-# BB#15:                                # %LockSpinlock.exit.i.5
-	xorl	%edx, %edx
+	je	.LBB259_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
 	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1430
+.Ltmp1431:
+	btq	$25, %rcx
+	jae	.Ltmp1432
+.Ltmp1432:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1431
+.Ltmp1430:
+	btq	$25, %rcx
+	jae	.Ltmp1433
+	orw	$1, 4(%rax)
+.Ltmp1433:
+	cli
+
+	#NO_APP
+	movq	272(%rdi), %rax
+	movq	288(%rdi), %rcx
+	testq	%rcx, %rcx
+	je	.LBB259_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1434
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1434:
+
+	#NO_APP
+.LBB259_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB259_1:                              # %LockSpinlock.exit.thread
+	movq	272(%rdi), %rax
+	popq	%rbp
+	retq
+.Lfunc_end259:
+	.size	get_proc_PageTable, .Lfunc_end259-get_proc_PageTable
+	.cfi_endproc
+
+	.globl	get_proc_reference_count
+	.align	16, 0x90
+	.type	get_proc_reference_count,@function
+get_proc_reference_count:               # @get_proc_reference_count
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1435:
+	.cfi_def_cfa_offset 16
+.Ltmp1436:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1437:
+	.cfi_def_cfa_register %rbp
+	movq	288(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB260_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1438
+.Ltmp1439:
+	btq	$25, %rcx
+	jae	.Ltmp1440
+.Ltmp1440:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1439
+.Ltmp1438:
+	btq	$25, %rcx
+	jae	.Ltmp1441
+	orw	$1, 4(%rax)
+.Ltmp1441:
+	cli
+
+	#NO_APP
+	movq	288(%rdi), %rcx
+	movl	284(%rdi), %eax
+	testq	%rcx, %rcx
+	je	.LBB260_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1442
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1442:
+
+	#NO_APP
+.LBB260_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB260_1:                              # %LockSpinlock.exit.thread
+	movl	284(%rdi), %eax
+	popq	%rbp
+	retq
+.Lfunc_end260:
+	.size	get_proc_reference_count, .Lfunc_end260-get_proc_reference_count
+	.cfi_endproc
+
+	.globl	set_proc_reference_count
+	.align	16, 0x90
+	.type	set_proc_reference_count,@function
+set_proc_reference_count:               # @set_proc_reference_count
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1443:
+	.cfi_def_cfa_offset 16
+.Ltmp1444:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1445:
+	.cfi_def_cfa_register %rbp
+	movq	288(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB261_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1446
+.Ltmp1447:
+	btq	$25, %rcx
+	jae	.Ltmp1448
+.Ltmp1448:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1447
+.Ltmp1446:
+	btq	$25, %rcx
+	jae	.Ltmp1449
+	orw	$1, 4(%rax)
+.Ltmp1449:
+	cli
+
+	#NO_APP
+	movq	288(%rdi), %rax
+	movl	%esi, 284(%rdi)
+	testq	%rax, %rax
+	je	.LBB261_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1450
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1450:
+
+	#NO_APP
+.LBB261_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB261_1:                              # %LockSpinlock.exit.thread
+	movl	%esi, 284(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end261:
+	.size	set_proc_reference_count, .Lfunc_end261-set_proc_reference_count
+	.cfi_endproc
+
+	.globl	get_thread_ID
+	.align	16, 0x90
+	.type	get_thread_ID,@function
+get_thread_ID:                          # @get_thread_ID
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1451:
+	.cfi_def_cfa_offset 16
+.Ltmp1452:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1453:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB262_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1454
+.Ltmp1455:
+	btq	$25, %rcx
+	jae	.Ltmp1456
+.Ltmp1456:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1455
+.Ltmp1454:
+	btq	$25, %rcx
+	jae	.Ltmp1457
+	orw	$1, 4(%rax)
+.Ltmp1457:
+	cli
+
+	#NO_APP
+	movq	(%rdi), %rax
+	movq	152(%rdi), %rcx
+	testq	%rcx, %rcx
+	je	.LBB262_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1458
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1458:
+
+	#NO_APP
+.LBB262_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB262_1:                              # %LockSpinlock.exit.thread
+	movq	(%rdi), %rax
+	popq	%rbp
+	retq
+.Lfunc_end262:
+	.size	get_thread_ID, .Lfunc_end262-get_thread_ID
+	.cfi_endproc
+
+	.globl	set_thread_ID
+	.align	16, 0x90
+	.type	set_thread_ID,@function
+set_thread_ID:                          # @set_thread_ID
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1459:
+	.cfi_def_cfa_offset 16
+.Ltmp1460:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1461:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB263_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1462
+.Ltmp1463:
+	btq	$25, %rcx
+	jae	.Ltmp1464
+.Ltmp1464:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1463
+.Ltmp1462:
+	btq	$25, %rcx
+	jae	.Ltmp1465
+	orw	$1, 4(%rax)
+.Ltmp1465:
+	cli
+
+	#NO_APP
+	movq	152(%rdi), %rax
+	movq	%rsi, (%rdi)
+	testq	%rax, %rax
+	je	.LBB263_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1466
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1466:
+
+	#NO_APP
+.LBB263_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB263_1:                              # %LockSpinlock.exit.thread
+	movq	%rsi, (%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end263:
+	.size	set_thread_ID, .Lfunc_end263-set_thread_ID
+	.cfi_endproc
+
+	.globl	get_thread_ParentProcess
+	.align	16, 0x90
+	.type	get_thread_ParentProcess,@function
+get_thread_ParentProcess:               # @get_thread_ParentProcess
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1467:
+	.cfi_def_cfa_offset 16
+.Ltmp1468:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1469:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB264_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1470
+.Ltmp1471:
+	btq	$25, %rcx
+	jae	.Ltmp1472
+.Ltmp1472:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1471
+.Ltmp1470:
+	btq	$25, %rcx
+	jae	.Ltmp1473
+	orw	$1, 4(%rax)
+.Ltmp1473:
+	cli
+
+	#NO_APP
+	movq	8(%rdi), %rax
+	movq	152(%rdi), %rcx
+	testq	%rcx, %rcx
+	je	.LBB264_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1474
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1474:
+
+	#NO_APP
+.LBB264_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB264_1:                              # %LockSpinlock.exit.thread
+	movq	8(%rdi), %rax
+	popq	%rbp
+	retq
+.Lfunc_end264:
+	.size	get_thread_ParentProcess, .Lfunc_end264-get_thread_ParentProcess
+	.cfi_endproc
+
+	.globl	set_thread_ParentProcess
+	.align	16, 0x90
+	.type	set_thread_ParentProcess,@function
+set_thread_ParentProcess:               # @set_thread_ParentProcess
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1475:
+	.cfi_def_cfa_offset 16
+.Ltmp1476:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1477:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB265_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1478
+.Ltmp1479:
+	btq	$25, %rcx
+	jae	.Ltmp1480
+.Ltmp1480:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1479
+.Ltmp1478:
+	btq	$25, %rcx
+	jae	.Ltmp1481
+	orw	$1, 4(%rax)
+.Ltmp1481:
+	cli
+
+	#NO_APP
+	movq	152(%rdi), %rax
+	movq	%rsi, 8(%rdi)
+	testq	%rax, %rax
+	je	.LBB265_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1482
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1482:
+
+	#NO_APP
+.LBB265_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB265_1:                              # %LockSpinlock.exit.thread
+	movq	%rsi, 8(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end265:
+	.size	set_thread_ParentProcess, .Lfunc_end265-set_thread_ParentProcess
+	.cfi_endproc
+
+	.globl	get_thread_entry_point
+	.align	16, 0x90
+	.type	get_thread_entry_point,@function
+get_thread_entry_point:                 # @get_thread_entry_point
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1483:
+	.cfi_def_cfa_offset 16
+.Ltmp1484:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1485:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB266_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1486
+.Ltmp1487:
+	btq	$25, %rcx
+	jae	.Ltmp1488
+.Ltmp1488:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1487
+.Ltmp1486:
+	btq	$25, %rcx
+	jae	.Ltmp1489
+	orw	$1, 4(%rax)
+.Ltmp1489:
+	cli
+
+	#NO_APP
+	movq	16(%rdi), %rax
+	movq	152(%rdi), %rcx
+	testq	%rcx, %rcx
+	je	.LBB266_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1490
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1490:
+
+	#NO_APP
+.LBB266_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB266_1:                              # %LockSpinlock.exit.thread
+	movq	16(%rdi), %rax
+	popq	%rbp
+	retq
+.Lfunc_end266:
+	.size	get_thread_entry_point, .Lfunc_end266-get_thread_entry_point
+	.cfi_endproc
+
+	.globl	set_thread_entry_point
+	.align	16, 0x90
+	.type	set_thread_entry_point,@function
+set_thread_entry_point:                 # @set_thread_entry_point
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1491:
+	.cfi_def_cfa_offset 16
+.Ltmp1492:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1493:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB267_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1494
+.Ltmp1495:
+	btq	$25, %rcx
+	jae	.Ltmp1496
+.Ltmp1496:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1495
+.Ltmp1494:
+	btq	$25, %rcx
+	jae	.Ltmp1497
+	orw	$1, 4(%rax)
+.Ltmp1497:
+	cli
+
+	#NO_APP
+	movq	152(%rdi), %rax
+	movq	%rsi, 16(%rdi)
+	testq	%rax, %rax
+	je	.LBB267_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1498
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1498:
+
+	#NO_APP
+.LBB267_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB267_1:                              # %LockSpinlock.exit.thread
+	movq	%rsi, 16(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end267:
+	.size	set_thread_entry_point, .Lfunc_end267-set_thread_entry_point
+	.cfi_endproc
+
+	.globl	get_thread_state
+	.align	16, 0x90
+	.type	get_thread_state,@function
+get_thread_state:                       # @get_thread_state
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1499:
+	.cfi_def_cfa_offset 16
+.Ltmp1500:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1501:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB268_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
 	je	.Ltmp1502
 .Ltmp1503:
-	btq	$25, %rdx
+	btq	$25, %rcx
 	jae	.Ltmp1504
 .Ltmp1504:
 	pause
-	cmpw	%dx, (%rax)
+	cmpw	%cx, (%rax)
 	jne	.Ltmp1503
 .Ltmp1502:
-	btq	$25, %rdx
+	btq	$25, %rcx
 	jae	.Ltmp1505
 	orw	$1, 4(%rax)
 .Ltmp1505:
 	cli
 
 	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
+	movq	152(%rdi), %rcx
+	movl	24(%rdi), %eax
 	testq	%rcx, %rcx
-	je	.LBB258_17
-# BB#16:
+	je	.LBB268_4
+# BB#3:
 	#APP
 	mfence
 	lock
@@ -25292,68 +25176,35 @@ KillProcess:                            # @KillProcess
 .Ltmp1506:
 
 	#NO_APP
-	jmp	.LBB258_17
-.LBB258_14:                             # %LockSpinlock.exit.i.5.thread
-	movq	32(%rcx), %rax
-.LBB258_17:                             # %List_Length.exit7
-	testq	%rax, %rax
-	je	.LBB258_31
-# BB#18:
-	movl	$2, 264(%r15)
-	movq	472(%r15), %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB258_19
-# BB#20:                                # %LockSpinlock.exit.i.9
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp1507
-.Ltmp1508:
-	btq	$25, %rdx
-	jae	.Ltmp1509
-.Ltmp1509:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp1508
+.LBB268_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB268_1:                              # %LockSpinlock.exit.thread
+	movl	24(%rdi), %eax
+	popq	%rbp
+	retq
+.Lfunc_end268:
+	.size	get_thread_state, .Lfunc_end268-get_thread_state
+	.cfi_endproc
+
+	.globl	set_thread_state
+	.align	16, 0x90
+	.type	set_thread_state,@function
+set_thread_state:                       # @set_thread_state
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
 .Ltmp1507:
-	btq	$25, %rdx
-	jae	.Ltmp1510
-	orw	$1, 4(%rax)
-.Ltmp1510:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB258_22
-# BB#21:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1511
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1511:
-
-	#NO_APP
-	jmp	.LBB258_22
-.LBB258_31:
-	movq	488(%r15), %rax
+	.cfi_def_cfa_offset 16
+.Ltmp1508:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1509:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
-	je	.LBB258_33
-# BB#32:
+	je	.LBB269_1
+# BB#2:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -25365,208 +25216,139 @@ KillProcess:                            # @KillProcess
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1512
-.Ltmp1513:
+	je	.Ltmp1510
+.Ltmp1511:
 	btq	$25, %rcx
-	jae	.Ltmp1514
-.Ltmp1514:
+	jae	.Ltmp1512
+.Ltmp1512:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1513
-.Ltmp1512:
+	jne	.Ltmp1511
+.Ltmp1510:
 	btq	$25, %rcx
-	jae	.Ltmp1515
+	jae	.Ltmp1513
 	orw	$1, 4(%rax)
-.Ltmp1515:
+.Ltmp1513:
 	cli
 
 	#NO_APP
-.LBB258_33:                             # %LockSpinlock.exit19
-	movabsq	$-2401053089206453570, %r14 # imm = 0xDEADBEEFCAFEBABE
-	movq	processes, %rdi
-	movq	%rbx, %rsi
-	callq	List_Remove
-	movq	464(%r15), %rbx
-	testq	%rbx, %rbx
-	je	.LBB258_54
-# BB#34:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB258_35:                             # %.lr.ph
-                                        # =>This Loop Header: Depth=1
-                                        #     Child Loop BB258_47 Depth 2
-	movl	36(%rbx), %eax
-	testb	$4, %al
-	jne	.LBB258_42
-# BB#36:                                #   in Loop: Header=BB258_35 Depth=1
-	movl	%eax, %ecx
-	cmpl	$36, %eax
-	ja	.LBB258_38
-# BB#37:                                #   in Loop: Header=BB258_35 Depth=1
-	movabsq	$73015562496, %rax      # imm = 0x1100111100
-	btq	%rcx, %rax
-	jb	.LBB258_42
-	.align	16, 0x90
-.LBB258_38:                             #   in Loop: Header=BB258_35 Depth=1
-	movq	16(%rbx), %rdi
-	movq	24(%rbx), %rsi
-	shrq	$12, %rsi
-	movq	vmem_lock, %rax
+	movq	152(%rdi), %rax
+	movl	%esi, 24(%rdi)
 	testq	%rax, %rax
-	je	.LBB258_39
-# BB#40:                                # %LockSpinlock.exit.i.21
-                                        #   in Loop: Header=BB258_35 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp1516
-.Ltmp1517:
-	btq	$25, %r12
-	jae	.Ltmp1518
-.Ltmp1518:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp1517
-.Ltmp1516:
-	btq	$25, %r12
-	jae	.Ltmp1519
-	orw	$1, 4(%rax)
-.Ltmp1519:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r13
-	callq	MemMan_FreeCont
-	testq	%r13, %r13
-	je	.LBB258_42
-# BB#41:                                #   in Loop: Header=BB258_35 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%r13)
-	btw	$0, 4(%r13)
-	jae	.Ltmp1520
-	sti
-	movw	$0, 4(%r13)
-.Ltmp1520:
-
-	#NO_APP
-	jmp	.LBB258_42
-.LBB258_39:                             # %LockSpinlock.exit.i.21.thread
-                                        #   in Loop: Header=BB258_35 Depth=1
-	callq	MemMan_FreeCont
-	.align	16, 0x90
-.LBB258_42:                             # %FreePhysicalPageCont.exit
-                                        #   in Loop: Header=BB258_35 Depth=1
-	movq	56(%rbx), %rcx
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB258_44
-# BB#43:                                #   in Loop: Header=BB258_35 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp1521
-.Ltmp1522:
-	btq	$25, %r12
-	jae	.Ltmp1523
-.Ltmp1523:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp1522
-.Ltmp1521:
-	btq	$25, %r12
-	jae	.Ltmp1524
-	orw	$1, 4(%rax)
-.Ltmp1524:
-	cli
-
-	#NO_APP
-.LBB258_44:                             # %LockSpinlock.exit.i.24
-                                        #   in Loop: Header=BB258_35 Depth=1
-	cmpq	%r14, -24(%rbx)
-	je	.LBB258_46
-# BB#45:                                #   in Loop: Header=BB258_35 Depth=1
-	movq	%rbx, %rax
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB258_46:                             # %.preheader.i
-                                        #   in Loop: Header=BB258_35 Depth=1
-	movq	allocation_info, %rsi
-	.align	16, 0x90
-.LBB258_47:                             #   Parent Loop BB258_35 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%rsi, %rax
-	movq	(%rax), %rdx
-	movq	16(%rax), %rsi
-	testq	%rsi, %rsi
-	je	.LBB258_51
-# BB#48:                                #   in Loop: Header=BB258_47 Depth=2
-	movl	%edx, %edi
-	andl	$1, %edi
-	cmpq	%rbx, %rdx
-	jne	.LBB258_47
-# BB#49:                                #   in Loop: Header=BB258_47 Depth=2
-	testq	%rdi, %rdi
-	je	.LBB258_47
-# BB#50:                                #   in Loop: Header=BB258_35 Depth=1
-	movq	%rbx, %rdx
-.LBB258_51:                             # %.loopexit.i
-                                        #   in Loop: Header=BB258_35 Depth=1
-	andq	$-2, %rdx
-	movq	%rdx, (%rax)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB258_53
-# BB#52:                                #   in Loop: Header=BB258_35 Depth=1
+	je	.LBB269_4
+# BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1525
+	jae	.Ltmp1514
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1525:
+.Ltmp1514:
 
 	#NO_APP
-.LBB258_53:                             # %kfree.exit
-                                        #   in Loop: Header=BB258_35 Depth=1
+.LBB269_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB269_1:                              # %LockSpinlock.exit.thread
+	movl	%esi, 24(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end269:
+	.size	set_thread_state, .Lfunc_end269-set_thread_state
+	.cfi_endproc
+
+	.globl	get_thread_wakeCondition
+	.align	16, 0x90
+	.type	get_thread_wakeCondition,@function
+get_thread_wakeCondition:               # @get_thread_wakeCondition
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1515:
+	.cfi_def_cfa_offset 16
+.Ltmp1516:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1517:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
+	testq	%rax, %rax
+	je	.LBB270_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1518
+.Ltmp1519:
+	btq	$25, %rcx
+	jae	.Ltmp1520
+.Ltmp1520:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1519
+.Ltmp1518:
+	btq	$25, %rcx
+	jae	.Ltmp1521
+	orw	$1, 4(%rax)
+.Ltmp1521:
+	cli
+
+	#NO_APP
+	movq	152(%rdi), %rcx
+	movl	28(%rdi), %eax
 	testq	%rcx, %rcx
-	movq	%rcx, %rbx
-	jne	.LBB258_35
-.LBB258_54:                             # %._crit_edge
-	movq	456(%r15), %rdi
-	movl	%edi, %eax
-	andl	$4095, %eax             # imm = 0xFFF
-	testq	%rdi, %rdi
-	je	.LBB258_60
-# BB#55:                                # %._crit_edge
+	je	.LBB270_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1522
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1522:
+
+	#NO_APP
+.LBB270_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB270_1:                              # %LockSpinlock.exit.thread
+	movl	28(%rdi), %eax
+	popq	%rbp
+	retq
+.Lfunc_end270:
+	.size	get_thread_wakeCondition, .Lfunc_end270-get_thread_wakeCondition
+	.cfi_endproc
+
+	.globl	set_thread_wakeCondition
+	.align	16, 0x90
+	.type	set_thread_wakeCondition,@function
+set_thread_wakeCondition:               # @set_thread_wakeCondition
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1523:
+	.cfi_def_cfa_offset 16
+.Ltmp1524:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1525:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
-	jne	.LBB258_60
-# BB#56:
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB258_57
-# BB#58:                                # %LockSpinlock.exit.i.28
+	je	.LBB271_1
+# BB#2:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -25594,209 +25376,123 @@ KillProcess:                            # @KillProcess
 	cli
 
 	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	VirtMemMan_FreePageTable
-	testq	%rbx, %rbx
-	je	.LBB258_60
-# BB#59:
+	movq	152(%rdi), %rax
+	movl	%esi, 28(%rdi)
+	testq	%rax, %rax
+	je	.LBB271_4
+# BB#3:
 	#APP
 	mfence
 	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
+	incw	(%rax)
+	btw	$0, 4(%rax)
 	jae	.Ltmp1530
 	sti
-	movw	$0, 4(%rbx)
+	movw	$0, 4(%rax)
 .Ltmp1530:
 
 	#NO_APP
-	jmp	.LBB258_60
-.LBB258_19:                             # %LockSpinlock.exit.i.9.thread
-	movq	32(%rcx), %rax
-.LBB258_22:                             # %List_Length.exit11
-	xorl	%r14d, %r14d
-	testq	%rax, %rax
-	je	.LBB258_26
-# BB#23:
-	xorl	%r12d, %r12d
-	xorl	%ebx, %ebx
+.LBB271_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB271_1:                              # %LockSpinlock.exit.thread
+	movl	%esi, 28(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end271:
+	.size	set_thread_wakeCondition, .Lfunc_end271-set_thread_wakeCondition
+	.cfi_endproc
+
+	.globl	get_thread_priority
 	.align	16, 0x90
-.LBB258_24:                             # %.lr.ph15
-                                        # =>This Inner Loop Header: Depth=1
-	movq	472(%r15), %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movl	$4, %esi
-	movq	%rax, %rdi
-	callq	SetThreadState
-	incq	%rbx
-	movq	472(%r15), %rcx
-	movq	40(%rcx), %rax
+	.type	get_thread_priority,@function
+get_thread_priority:                    # @get_thread_priority
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1531:
+	.cfi_def_cfa_offset 16
+.Ltmp1532:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1533:
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
-	je	.LBB258_25
-# BB#28:                                # %LockSpinlock.exit.i.15
-                                        #   in Loop: Header=BB258_24 Depth=1
+	je	.LBB272_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%ecx, %ecx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
 	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp1531
-.Ltmp1532:
-	btq	$25, %r12
-	jae	.Ltmp1533
-.Ltmp1533:
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1534
+.Ltmp1535:
+	btq	$25, %rcx
+	jae	.Ltmp1536
+.Ltmp1536:
 	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp1532
-.Ltmp1531:
-	btq	$25, %r12
-	jae	.Ltmp1534
-	orw	$1, 4(%rax)
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1535
 .Ltmp1534:
+	btq	$25, %rcx
+	jae	.Ltmp1537
+	orw	$1, 4(%rax)
+.Ltmp1537:
 	cli
 
 	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
+	movq	152(%rdi), %rcx
+	movl	32(%rdi), %eax
 	testq	%rcx, %rcx
-	je	.LBB258_30
-# BB#29:                                #   in Loop: Header=BB258_24 Depth=1
+	je	.LBB272_4
+# BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1535
+	jae	.Ltmp1538
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1535:
-
-	#NO_APP
-	jmp	.LBB258_30
-	.align	16, 0x90
-.LBB258_25:                             # %LockSpinlock.exit.i.15.thread
-                                        #   in Loop: Header=BB258_24 Depth=1
-	movq	32(%rcx), %rax
-.LBB258_30:                             # %List_Length.exit17
-                                        #   in Loop: Header=BB258_24 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB258_24
-.LBB258_26:                             # %._crit_edge.16
-	movq	488(%r15), %rax
-	testq	%rax, %rax
-	je	.LBB258_88
-# BB#27:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1536
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1536:
-
-	#NO_APP
-	jmp	.LBB258_88
-.LBB258_57:                             # %LockSpinlock.exit.i.28.thread
-	callq	VirtMemMan_FreePageTable
-.LBB258_60:                             # %FreeVirtualMemoryInstance.exit
-	movq	root, %rax
-	movq	472(%rax), %rdi
-	callq	List_Free
-	movq	488(%r15), %rax
-	testq	%rax, %rax
-	je	.LBB258_72
-# BB#61:
-	movq	alloc_sync, %rcx
-	testq	%rcx, %rcx
-	je	.LBB258_63
-# BB#62:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp1537
 .Ltmp1538:
-	btq	$25, %rdx
-	jae	.Ltmp1539
-.Ltmp1539:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp1538
-.Ltmp1537:
-	btq	$25, %rdx
-	jae	.Ltmp1540
-	orw	$1, 4(%rcx)
-.Ltmp1540:
-	cli
 
 	#NO_APP
-.LBB258_63:                             # %LockSpinlock.exit.i.i
-	cmpq	%r14, -24(%rax)
-	je	.LBB258_65
-# BB#64:
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB258_65:                             # %.preheader.i.i
-	movq	allocation_info, %rsi
+.LBB272_4:                              # %UnlockSpinlock.exit
+	popq	%rbp
+	retq
+.LBB272_1:                              # %LockSpinlock.exit.thread
+	movl	32(%rdi), %eax
+	popq	%rbp
+	retq
+.Lfunc_end272:
+	.size	get_thread_priority, .Lfunc_end272-get_thread_priority
+	.cfi_endproc
+
+	.globl	set_thread_priority
 	.align	16, 0x90
-.LBB258_66:                             # =>This Inner Loop Header: Depth=1
-	movq	%rsi, %rcx
-	movq	(%rcx), %rdx
-	movq	16(%rcx), %rsi
-	testq	%rsi, %rsi
-	je	.LBB258_70
-# BB#67:                                #   in Loop: Header=BB258_66 Depth=1
-	movl	%edx, %edi
-	andl	$1, %edi
-	cmpq	%rax, %rdx
-	jne	.LBB258_66
-# BB#68:                                #   in Loop: Header=BB258_66 Depth=1
-	testq	%rdi, %rdi
-	je	.LBB258_66
-# BB#69:
-	movq	%rax, %rdx
-.LBB258_70:                             # %.loopexit.i.i
-	andq	$-2, %rdx
-	movq	%rdx, (%rcx)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB258_74
-# BB#71:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1541
-	sti
-	movw	$0, 4(%rax)
+	.type	set_thread_priority,@function
+set_thread_priority:                    # @set_thread_priority
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1539:
+	.cfi_def_cfa_offset 16
+.Ltmp1540:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
 .Ltmp1541:
-
-	#NO_APP
-.LBB258_72:                             # %FreeSpinlock.exit
-	movq	alloc_sync, %rax
+	.cfi_def_cfa_register %rbp
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
-	je	.LBB258_74
-# BB#73:
+	je	.LBB273_1
+# BB#2:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -25824,44 +25520,11 @@ KillProcess:                            # @KillProcess
 	cli
 
 	#NO_APP
-.LBB258_74:                             # %LockSpinlock.exit.i.31
-	cmpq	%r14, -24(%r15)
-	je	.LBB258_76
-# BB#75:
-	movq	%r15, %rax
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB258_76:                             # %.preheader.i.33
-	movq	allocation_info, %rdx
-	.align	16, 0x90
-.LBB258_77:                             # =>This Inner Loop Header: Depth=1
-	movq	%rdx, %rax
-	movq	(%rax), %rcx
-	movq	16(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB258_81
-# BB#78:                                #   in Loop: Header=BB258_77 Depth=1
-	movl	%ecx, %esi
-	andl	$1, %esi
-	cmpq	%r15, %rcx
-	jne	.LBB258_77
-# BB#79:                                #   in Loop: Header=BB258_77 Depth=1
-	testq	%rsi, %rsi
-	je	.LBB258_77
-# BB#80:
-	movq	%r15, %rcx
-.LBB258_81:                             # %.loopexit.i.38
-	andq	$-2, %rcx
-	movq	%rcx, (%rax)
-	movq	alloc_sync, %rax
-	xorl	%r14d, %r14d
+	movq	152(%rdi), %rax
+	movl	%esi, 32(%rdi)
 	testq	%rax, %rax
-	je	.LBB258_88
-# BB#82:
+	je	.LBB273_4
+# BB#3:
 	#APP
 	mfence
 	lock
@@ -25873,24 +25536,21 @@ KillProcess:                            # @KillProcess
 .Ltmp1546:
 
 	#NO_APP
-.LBB258_88:                             # %.thread
-	movl	%r14d, %eax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r12
-	popq	%r13
-	popq	%r14
-	popq	%r15
+.LBB273_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
-.Lfunc_end258:
-	.size	KillProcess, .Lfunc_end258-KillProcess
+.LBB273_1:                              # %LockSpinlock.exit.thread
+	movl	%esi, 32(%rdi)
+	popq	%rbp
+	retq
+.Lfunc_end273:
+	.size	set_thread_priority, .Lfunc_end273-set_thread_priority
 	.cfi_endproc
 
-	.globl	SleepProcess
+	.globl	get_thread_interrupt_stack_base
 	.align	16, 0x90
-	.type	SleepProcess,@function
-SleepProcess:                           # @SleepProcess
+	.type	get_thread_interrupt_stack_base,@function
+get_thread_interrupt_stack_base:        # @get_thread_interrupt_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
@@ -25901,1504 +25561,7 @@ SleepProcess:                           # @SleepProcess
 	movq	%rsp, %rbp
 .Ltmp1549:
 	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r12
-	pushq	%rbx
-.Ltmp1550:
-	.cfi_offset %rbx, -48
-.Ltmp1551:
-	.cfi_offset %r12, -40
-.Ltmp1552:
-	.cfi_offset %r14, -32
-.Ltmp1553:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r15
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB259_1
-# BB#2:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp1554
-.Ltmp1555:
-	btq	$25, %rdx
-	jae	.Ltmp1556
-.Ltmp1556:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp1555
-.Ltmp1554:
-	btq	$25, %rdx
-	jae	.Ltmp1557
-	orw	$1, 4(%rax)
-.Ltmp1557:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB259_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1558
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1558:
-
-	#NO_APP
-	jmp	.LBB259_4
-.LBB259_1:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB259_4:                              # %List_Length.exit
-	movl	$2, %r14d
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB259_20
-# BB#5:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB259_11:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	processes, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB259_12
-# BB#13:                                # %LockSpinlock.exit
-                                        #   in Loop: Header=BB259_11 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp1559
-.Ltmp1560:
-	btq	$25, %r12
-	jae	.Ltmp1561
-.Ltmp1561:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp1560
-.Ltmp1559:
-	btq	$25, %r12
-	jae	.Ltmp1562
-	orw	$1, 4(%rcx)
-.Ltmp1562:
-	cli
-
-	#NO_APP
-	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB259_15
-# BB#14:                                #   in Loop: Header=BB259_11 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp1563
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp1563:
-
-	#NO_APP
-	jmp	.LBB259_15
-	.align	16, 0x90
-.LBB259_12:                             # %LockSpinlock.exit.thread
-                                        #   in Loop: Header=BB259_11 Depth=1
-	movq	(%rax), %rcx
-.LBB259_15:                             # %UnlockSpinlock.exit
-                                        #   in Loop: Header=BB259_11 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB259_16
-# BB#6:                                 #   in Loop: Header=BB259_11 Depth=1
-	incq	%rbx
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB259_7
-# BB#8:                                 # %LockSpinlock.exit.i.2
-                                        #   in Loop: Header=BB259_11 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp1564
-.Ltmp1565:
-	btq	$25, %r12
-	jae	.Ltmp1566
-.Ltmp1566:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp1565
-.Ltmp1564:
-	btq	$25, %r12
-	jae	.Ltmp1567
-	orw	$1, 4(%rax)
-.Ltmp1567:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB259_10
-# BB#9:                                 #   in Loop: Header=BB259_11 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1568
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1568:
-
-	#NO_APP
-	jmp	.LBB259_10
-	.align	16, 0x90
-.LBB259_7:                              # %LockSpinlock.exit.i.2.thread
-                                        #   in Loop: Header=BB259_11 Depth=1
-	movq	32(%rcx), %rax
-.LBB259_10:                             # %List_Length.exit4
-                                        #   in Loop: Header=BB259_11 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB259_11
-	jmp	.LBB259_20
-.LBB259_16:
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB259_17
-# BB#18:                                # %LockSpinlock.exit7
-	xorl	%r14d, %r14d
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r14
-	shlq	$16, %r14
-	movw	$1, %r14w
-	lock
-	xaddw	%r14w, 2(%rcx)
-	cmpw	%r14w, (%rcx)
-	je	.Ltmp1569
-.Ltmp1570:
-	btq	$25, %r14
-	jae	.Ltmp1571
-.Ltmp1571:
-	pause
-	cmpw	%r14w, (%rcx)
-	jne	.Ltmp1570
-.Ltmp1569:
-	btq	$25, %r14
-	jae	.Ltmp1572
-	orw	$1, 4(%rcx)
-.Ltmp1572:
-	cli
-
-	#NO_APP
-	movq	488(%rax), %rcx
-	movl	$1, 264(%rax)
-	testq	%rcx, %rcx
-	je	.LBB259_20
-# BB#19:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1573
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1573:
-
-	#NO_APP
-	jmp	.LBB259_20
-.LBB259_17:                             # %LockSpinlock.exit7.thread
-	movl	$1, 264(%rax)
-	xorl	%r14d, %r14d
-.LBB259_20:                             # %.loopexit
-	movl	%r14d, %eax
-	popq	%rbx
-	popq	%r12
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end259:
-	.size	SleepProcess, .Lfunc_end259-SleepProcess
-	.cfi_endproc
-
-	.globl	RegisterSignalHandler
-	.align	16, 0x90
-	.type	RegisterSignalHandler,@function
-RegisterSignalHandler:                  # @RegisterSignalHandler
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1574:
-	.cfi_def_cfa_offset 16
-.Ltmp1575:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1576:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r13
-	pushq	%r12
-	pushq	%rbx
-	pushq	%rax
-.Ltmp1577:
-	.cfi_offset %rbx, -56
-.Ltmp1578:
-	.cfi_offset %r12, -48
-.Ltmp1579:
-	.cfi_offset %r13, -40
-.Ltmp1580:
-	.cfi_offset %r14, -32
-.Ltmp1581:
-	.cfi_offset %r15, -24
-	movl	%esi, %r15d
-	movq	%rdi, %r12
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB260_1
-# BB#2:                                 # %LockSpinlock.exit.i
-	xorl	%esi, %esi
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
-	lock
-	xaddw	%si, 2(%rax)
-	cmpw	%si, (%rax)
-	je	.Ltmp1582
-.Ltmp1583:
-	btq	$25, %rsi
-	jae	.Ltmp1584
-.Ltmp1584:
-	pause
-	cmpw	%si, (%rax)
-	jne	.Ltmp1583
-.Ltmp1582:
-	btq	$25, %rsi
-	jae	.Ltmp1585
-	orw	$1, 4(%rax)
-.Ltmp1585:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB260_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1586
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1586:
-
-	#NO_APP
-	jmp	.LBB260_4
-.LBB260_1:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB260_4:                              # %List_Length.exit
-	movl	$2, %r13d
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB260_23
-# BB#5:
-	movq	%rdx, -48(%rbp)         # 8-byte Spill
-	xorl	%r14d, %r14d
-	.align	16, 0x90
-.LBB260_11:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	processes, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB260_12
-# BB#13:                                # %LockSpinlock.exit
-                                        #   in Loop: Header=BB260_11 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r14
-	shlq	$16, %r14
-	movw	$1, %r14w
-	lock
-	xaddw	%r14w, 2(%rcx)
-	cmpw	%r14w, (%rcx)
-	je	.Ltmp1587
-.Ltmp1588:
-	btq	$25, %r14
-	jae	.Ltmp1589
-.Ltmp1589:
-	pause
-	cmpw	%r14w, (%rcx)
-	jne	.Ltmp1588
-.Ltmp1587:
-	btq	$25, %r14
-	jae	.Ltmp1590
-	orw	$1, 4(%rcx)
-.Ltmp1590:
-	cli
-
-	#NO_APP
-	movq	(%rax), %rcx
-	movq	488(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB260_15
-# BB#14:                                #   in Loop: Header=BB260_11 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp1591
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp1591:
-
-	#NO_APP
-	jmp	.LBB260_15
-	.align	16, 0x90
-.LBB260_12:                             # %LockSpinlock.exit.thread
-                                        #   in Loop: Header=BB260_11 Depth=1
-	movq	(%rax), %rcx
-.LBB260_15:                             # %UnlockSpinlock.exit
-                                        #   in Loop: Header=BB260_11 Depth=1
-	cmpq	%r12, %rcx
-	je	.LBB260_16
-# BB#6:                                 #   in Loop: Header=BB260_11 Depth=1
-	incq	%rbx
-	movq	processes, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB260_7
-# BB#8:                                 # %LockSpinlock.exit.i.2
-                                        #   in Loop: Header=BB260_11 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r14
-	shlq	$16, %r14
-	movw	$1, %r14w
-	lock
-	xaddw	%r14w, 2(%rax)
-	cmpw	%r14w, (%rax)
-	je	.Ltmp1592
-.Ltmp1593:
-	btq	$25, %r14
-	jae	.Ltmp1594
-.Ltmp1594:
-	pause
-	cmpw	%r14w, (%rax)
-	jne	.Ltmp1593
-.Ltmp1592:
-	btq	$25, %r14
-	jae	.Ltmp1595
-	orw	$1, 4(%rax)
-.Ltmp1595:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB260_10
-# BB#9:                                 #   in Loop: Header=BB260_11 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1596
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1596:
-
-	#NO_APP
-	jmp	.LBB260_10
-	.align	16, 0x90
-.LBB260_7:                              # %LockSpinlock.exit.i.2.thread
-                                        #   in Loop: Header=BB260_11 Depth=1
-	movq	32(%rcx), %rax
-.LBB260_10:                             # %List_Length.exit4
-                                        #   in Loop: Header=BB260_11 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB260_11
-	jmp	.LBB260_23
-.LBB260_16:                             # %.preheader
-	xorl	%ecx, %ecx
-	xorl	%edx, %edx
-	movq	-48(%rbp), %rdi         # 8-byte Reload
-	xorl	%r13d, %r13d
-	.align	16, 0x90
-.LBB260_17:                             # =>This Inner Loop Header: Depth=1
-	btl	%edx, %r15d
-	jae	.LBB260_22
-# BB#18:                                #   in Loop: Header=BB260_17 Depth=1
-	movq	488(%rax), %rsi
-	testq	%rsi, %rsi
-	je	.LBB260_20
-# BB#19:                                #   in Loop: Header=BB260_17 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rsi)
-	cmpw	%cx, (%rsi)
-	je	.Ltmp1597
-.Ltmp1598:
-	btq	$25, %rcx
-	jae	.Ltmp1599
-.Ltmp1599:
-	pause
-	cmpw	%cx, (%rsi)
-	jne	.Ltmp1598
-.Ltmp1597:
-	btq	$25, %rcx
-	jae	.Ltmp1600
-	orw	$1, 4(%rsi)
-.Ltmp1600:
-	cli
-
-	#NO_APP
-.LBB260_20:                             # %LockSpinlock.exit7
-                                        #   in Loop: Header=BB260_17 Depth=1
-	movq	%rdi, 280(%rax,%rdx,8)
-	movq	488(%rax), %rsi
-	testq	%rsi, %rsi
-	je	.LBB260_22
-# BB#21:                                #   in Loop: Header=BB260_17 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rsi)
-	btw	$0, 4(%rsi)
-	jae	.Ltmp1601
-	sti
-	movw	$0, 4(%rsi)
-.Ltmp1601:
-
-	#NO_APP
-.LBB260_22:                             # %UnlockSpinlock.exit9
-                                        #   in Loop: Header=BB260_17 Depth=1
-	incq	%rdx
-	cmpq	$22, %rdx
-	jne	.LBB260_17
-.LBB260_23:                             # %.thread6
-	movl	%r13d, %eax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r12
-	popq	%r13
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end260:
-	.size	RegisterSignalHandler, .Lfunc_end260-RegisterSignalHandler
-	.cfi_endproc
-
-	.globl	get_thread_Parent
-	.align	16, 0x90
-	.type	get_thread_Parent,@function
-get_thread_Parent:                      # @get_thread_Parent
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1602:
-	.cfi_def_cfa_offset 16
-.Ltmp1603:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1604:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB261_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1605
-.Ltmp1606:
-	btq	$25, %rcx
-	jae	.Ltmp1607
-.Ltmp1607:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1606
-.Ltmp1605:
-	btq	$25, %rcx
-	jae	.Ltmp1608
-	orw	$1, 4(%rax)
-.Ltmp1608:
-	cli
-
-	#NO_APP
-	movq	(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB261_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1609
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1609:
-
-	#NO_APP
-.LBB261_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB261_1:                              # %LockSpinlock.exit.thread
-	movq	(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end261:
-	.size	get_thread_Parent, .Lfunc_end261-get_thread_Parent
-	.cfi_endproc
-
-	.globl	set_thread_Parent
-	.align	16, 0x90
-	.type	set_thread_Parent,@function
-set_thread_Parent:                      # @set_thread_Parent
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1610:
-	.cfi_def_cfa_offset 16
-.Ltmp1611:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1612:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB262_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1613
-.Ltmp1614:
-	btq	$25, %rcx
-	jae	.Ltmp1615
-.Ltmp1615:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1614
-.Ltmp1613:
-	btq	$25, %rcx
-	jae	.Ltmp1616
-	orw	$1, 4(%rax)
-.Ltmp1616:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, (%rdi)
-	testq	%rax, %rax
-	je	.LBB262_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1617
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1617:
-
-	#NO_APP
-.LBB262_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB262_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, (%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end262:
-	.size	set_thread_Parent, .Lfunc_end262-set_thread_Parent
-	.cfi_endproc
-
-	.globl	get_thread_ID
-	.align	16, 0x90
-	.type	get_thread_ID,@function
-get_thread_ID:                          # @get_thread_ID
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1618:
-	.cfi_def_cfa_offset 16
-.Ltmp1619:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1620:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB263_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1621
-.Ltmp1622:
-	btq	$25, %rcx
-	jae	.Ltmp1623
-.Ltmp1623:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1622
-.Ltmp1621:
-	btq	$25, %rcx
-	jae	.Ltmp1624
-	orw	$1, 4(%rax)
-.Ltmp1624:
-	cli
-
-	#NO_APP
-	movq	8(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB263_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1625
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1625:
-
-	#NO_APP
-.LBB263_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB263_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end263:
-	.size	get_thread_ID, .Lfunc_end263-get_thread_ID
-	.cfi_endproc
-
-	.globl	set_thread_ID
-	.align	16, 0x90
-	.type	set_thread_ID,@function
-set_thread_ID:                          # @set_thread_ID
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1626:
-	.cfi_def_cfa_offset 16
-.Ltmp1627:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1628:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB264_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1629
-.Ltmp1630:
-	btq	$25, %rcx
-	jae	.Ltmp1631
-.Ltmp1631:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1630
-.Ltmp1629:
-	btq	$25, %rcx
-	jae	.Ltmp1632
-	orw	$1, 4(%rax)
-.Ltmp1632:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 8(%rdi)
-	testq	%rax, %rax
-	je	.LBB264_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1633
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1633:
-
-	#NO_APP
-.LBB264_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB264_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 8(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end264:
-	.size	set_thread_ID, .Lfunc_end264-set_thread_ID
-	.cfi_endproc
-
-	.globl	get_thread_ParentProcess
-	.align	16, 0x90
-	.type	get_thread_ParentProcess,@function
-get_thread_ParentProcess:               # @get_thread_ParentProcess
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1634:
-	.cfi_def_cfa_offset 16
-.Ltmp1635:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1636:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB265_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1637
-.Ltmp1638:
-	btq	$25, %rcx
-	jae	.Ltmp1639
-.Ltmp1639:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1638
-.Ltmp1637:
-	btq	$25, %rcx
-	jae	.Ltmp1640
-	orw	$1, 4(%rax)
-.Ltmp1640:
-	cli
-
-	#NO_APP
-	movq	16(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB265_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1641
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1641:
-
-	#NO_APP
-.LBB265_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB265_1:                              # %LockSpinlock.exit.thread
-	movq	16(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end265:
-	.size	get_thread_ParentProcess, .Lfunc_end265-get_thread_ParentProcess
-	.cfi_endproc
-
-	.globl	set_thread_ParentProcess
-	.align	16, 0x90
-	.type	set_thread_ParentProcess,@function
-set_thread_ParentProcess:               # @set_thread_ParentProcess
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1642:
-	.cfi_def_cfa_offset 16
-.Ltmp1643:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1644:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB266_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1645
-.Ltmp1646:
-	btq	$25, %rcx
-	jae	.Ltmp1647
-.Ltmp1647:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1646
-.Ltmp1645:
-	btq	$25, %rcx
-	jae	.Ltmp1648
-	orw	$1, 4(%rax)
-.Ltmp1648:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 16(%rdi)
-	testq	%rax, %rax
-	je	.LBB266_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1649
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1649:
-
-	#NO_APP
-.LBB266_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB266_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 16(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end266:
-	.size	set_thread_ParentProcess, .Lfunc_end266-set_thread_ParentProcess
-	.cfi_endproc
-
-	.globl	get_proc_ID
-	.align	16, 0x90
-	.type	get_proc_ID,@function
-get_proc_ID:                            # @get_proc_ID
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1650:
-	.cfi_def_cfa_offset 16
-.Ltmp1651:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1652:
-	.cfi_def_cfa_register %rbp
-	movq	488(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB267_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1653
-.Ltmp1654:
-	btq	$25, %rcx
-	jae	.Ltmp1655
-.Ltmp1655:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1654
-.Ltmp1653:
-	btq	$25, %rcx
-	jae	.Ltmp1656
-	orw	$1, 4(%rax)
-.Ltmp1656:
-	cli
-
-	#NO_APP
-	movq	(%rdi), %rax
-	movq	488(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB267_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1657
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1657:
-
-	#NO_APP
-.LBB267_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB267_1:                              # %LockSpinlock.exit.thread
-	movq	(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end267:
-	.size	get_proc_ID, .Lfunc_end267-get_proc_ID
-	.cfi_endproc
-
-	.globl	get_proc_PageTable
-	.align	16, 0x90
-	.type	get_proc_PageTable,@function
-get_proc_PageTable:                     # @get_proc_PageTable
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1658:
-	.cfi_def_cfa_offset 16
-.Ltmp1659:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1660:
-	.cfi_def_cfa_register %rbp
-	movq	488(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB268_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1661
-.Ltmp1662:
-	btq	$25, %rcx
-	jae	.Ltmp1663
-.Ltmp1663:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1662
-.Ltmp1661:
-	btq	$25, %rcx
-	jae	.Ltmp1664
-	orw	$1, 4(%rax)
-.Ltmp1664:
-	cli
-
-	#NO_APP
-	movq	456(%rdi), %rax
-	movq	488(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB268_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1665
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1665:
-
-	#NO_APP
-.LBB268_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB268_1:                              # %LockSpinlock.exit.thread
-	movq	456(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end268:
-	.size	get_proc_PageTable, .Lfunc_end268-get_proc_PageTable
-	.cfi_endproc
-
-	.globl	get_proc_AllocationMap
-	.align	16, 0x90
-	.type	get_proc_AllocationMap,@function
-get_proc_AllocationMap:                 # @get_proc_AllocationMap
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1666:
-	.cfi_def_cfa_offset 16
-.Ltmp1667:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1668:
-	.cfi_def_cfa_register %rbp
-	movq	488(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB269_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1669
-.Ltmp1670:
-	btq	$25, %rcx
-	jae	.Ltmp1671
-.Ltmp1671:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1670
-.Ltmp1669:
-	btq	$25, %rcx
-	jae	.Ltmp1672
-	orw	$1, 4(%rax)
-.Ltmp1672:
-	cli
-
-	#NO_APP
-	movq	464(%rdi), %rax
-	movq	488(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB269_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1673
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1673:
-
-	#NO_APP
-.LBB269_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB269_1:                              # %LockSpinlock.exit.thread
-	movq	464(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end269:
-	.size	get_proc_AllocationMap, .Lfunc_end269-get_proc_AllocationMap
-	.cfi_endproc
-
-	.globl	get_thread_entry_point
-	.align	16, 0x90
-	.type	get_thread_entry_point,@function
-get_thread_entry_point:                 # @get_thread_entry_point
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1674:
-	.cfi_def_cfa_offset 16
-.Ltmp1675:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1676:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB270_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1677
-.Ltmp1678:
-	btq	$25, %rcx
-	jae	.Ltmp1679
-.Ltmp1679:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1678
-.Ltmp1677:
-	btq	$25, %rcx
-	jae	.Ltmp1680
-	orw	$1, 4(%rax)
-.Ltmp1680:
-	cli
-
-	#NO_APP
-	movq	24(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB270_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1681
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1681:
-
-	#NO_APP
-.LBB270_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB270_1:                              # %LockSpinlock.exit.thread
-	movq	24(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end270:
-	.size	get_thread_entry_point, .Lfunc_end270-get_thread_entry_point
-	.cfi_endproc
-
-	.globl	set_thread_entry_point
-	.align	16, 0x90
-	.type	set_thread_entry_point,@function
-set_thread_entry_point:                 # @set_thread_entry_point
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1682:
-	.cfi_def_cfa_offset 16
-.Ltmp1683:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1684:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB271_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1685
-.Ltmp1686:
-	btq	$25, %rcx
-	jae	.Ltmp1687
-.Ltmp1687:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1686
-.Ltmp1685:
-	btq	$25, %rcx
-	jae	.Ltmp1688
-	orw	$1, 4(%rax)
-.Ltmp1688:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 24(%rdi)
-	testq	%rax, %rax
-	je	.LBB271_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1689
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1689:
-
-	#NO_APP
-.LBB271_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB271_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 24(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end271:
-	.size	set_thread_entry_point, .Lfunc_end271-set_thread_entry_point
-	.cfi_endproc
-
-	.globl	get_thread_state
-	.align	16, 0x90
-	.type	get_thread_state,@function
-get_thread_state:                       # @get_thread_state
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1690:
-	.cfi_def_cfa_offset 16
-.Ltmp1691:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1692:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB272_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1693
-.Ltmp1694:
-	btq	$25, %rcx
-	jae	.Ltmp1695
-.Ltmp1695:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1694
-.Ltmp1693:
-	btq	$25, %rcx
-	jae	.Ltmp1696
-	orw	$1, 4(%rax)
-.Ltmp1696:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rcx
-	movl	32(%rdi), %eax
-	testq	%rcx, %rcx
-	je	.LBB272_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1697
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1697:
-
-	#NO_APP
-.LBB272_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB272_1:                              # %LockSpinlock.exit.thread
-	movl	32(%rdi), %eax
-	popq	%rbp
-	retq
-.Lfunc_end272:
-	.size	get_thread_state, .Lfunc_end272-get_thread_state
-	.cfi_endproc
-
-	.globl	set_thread_state
-	.align	16, 0x90
-	.type	set_thread_state,@function
-set_thread_state:                       # @set_thread_state
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1698:
-	.cfi_def_cfa_offset 16
-.Ltmp1699:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1700:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB273_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1701
-.Ltmp1702:
-	btq	$25, %rcx
-	jae	.Ltmp1703
-.Ltmp1703:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1702
-.Ltmp1701:
-	btq	$25, %rcx
-	jae	.Ltmp1704
-	orw	$1, 4(%rax)
-.Ltmp1704:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movl	%esi, 32(%rdi)
-	testq	%rax, %rax
-	je	.LBB273_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1705
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1705:
-
-	#NO_APP
-.LBB273_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB273_1:                              # %LockSpinlock.exit.thread
-	movl	%esi, 32(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end273:
-	.size	set_thread_state, .Lfunc_end273-set_thread_state
-	.cfi_endproc
-
-	.globl	get_thread_wakeCondition
-	.align	16, 0x90
-	.type	get_thread_wakeCondition,@function
-get_thread_wakeCondition:               # @get_thread_wakeCondition
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1706:
-	.cfi_def_cfa_offset 16
-.Ltmp1707:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1708:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB274_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27413,24 +25576,24 @@ get_thread_wakeCondition:               # @get_thread_wakeCondition
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1709
-.Ltmp1710:
+	je	.Ltmp1550
+.Ltmp1551:
 	btq	$25, %rcx
-	jae	.Ltmp1711
-.Ltmp1711:
+	jae	.Ltmp1552
+.Ltmp1552:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1710
-.Ltmp1709:
+	jne	.Ltmp1551
+.Ltmp1550:
 	btq	$25, %rcx
-	jae	.Ltmp1712
+	jae	.Ltmp1553
 	orw	$1, 4(%rax)
-.Ltmp1712:
+.Ltmp1553:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rcx
-	movl	36(%rdi), %eax
+	movq	40(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB274_4
 # BB#3:
@@ -27439,38 +25602,38 @@ get_thread_wakeCondition:               # @get_thread_wakeCondition
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1713
+	jae	.Ltmp1554
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1713:
+.Ltmp1554:
 
 	#NO_APP
 .LBB274_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB274_1:                              # %LockSpinlock.exit.thread
-	movl	36(%rdi), %eax
+	movq	40(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end274:
-	.size	get_thread_wakeCondition, .Lfunc_end274-get_thread_wakeCondition
+	.size	get_thread_interrupt_stack_base, .Lfunc_end274-get_thread_interrupt_stack_base
 	.cfi_endproc
 
-	.globl	set_thread_wakeCondition
+	.globl	set_thread_interrupt_stack_base
 	.align	16, 0x90
-	.type	set_thread_wakeCondition,@function
-set_thread_wakeCondition:               # @set_thread_wakeCondition
+	.type	set_thread_interrupt_stack_base,@function
+set_thread_interrupt_stack_base:        # @set_thread_interrupt_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1714:
+.Ltmp1555:
 	.cfi_def_cfa_offset 16
-.Ltmp1715:
+.Ltmp1556:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1716:
+.Ltmp1557:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB275_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27485,24 +25648,24 @@ set_thread_wakeCondition:               # @set_thread_wakeCondition
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1717
-.Ltmp1718:
+	je	.Ltmp1558
+.Ltmp1559:
 	btq	$25, %rcx
-	jae	.Ltmp1719
-.Ltmp1719:
+	jae	.Ltmp1560
+.Ltmp1560:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1718
-.Ltmp1717:
+	jne	.Ltmp1559
+.Ltmp1558:
 	btq	$25, %rcx
-	jae	.Ltmp1720
+	jae	.Ltmp1561
 	orw	$1, 4(%rax)
-.Ltmp1720:
+.Ltmp1561:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movl	%esi, 36(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 40(%rdi)
 	testq	%rax, %rax
 	je	.LBB275_4
 # BB#3:
@@ -27511,38 +25674,38 @@ set_thread_wakeCondition:               # @set_thread_wakeCondition
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1721
+	jae	.Ltmp1562
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1721:
+.Ltmp1562:
 
 	#NO_APP
 .LBB275_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB275_1:                              # %LockSpinlock.exit.thread
-	movl	%esi, 36(%rdi)
+	movq	%rsi, 40(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end275:
-	.size	set_thread_wakeCondition, .Lfunc_end275-set_thread_wakeCondition
+	.size	set_thread_interrupt_stack_base, .Lfunc_end275-set_thread_interrupt_stack_base
 	.cfi_endproc
 
-	.globl	get_thread_priority
+	.globl	get_thread_interrupt_stack_aligned
 	.align	16, 0x90
-	.type	get_thread_priority,@function
-get_thread_priority:                    # @get_thread_priority
+	.type	get_thread_interrupt_stack_aligned,@function
+get_thread_interrupt_stack_aligned:     # @get_thread_interrupt_stack_aligned
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1722:
+.Ltmp1563:
 	.cfi_def_cfa_offset 16
-.Ltmp1723:
+.Ltmp1564:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1724:
+.Ltmp1565:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB276_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27557,24 +25720,24 @@ get_thread_priority:                    # @get_thread_priority
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1725
-.Ltmp1726:
+	je	.Ltmp1566
+.Ltmp1567:
 	btq	$25, %rcx
-	jae	.Ltmp1727
-.Ltmp1727:
+	jae	.Ltmp1568
+.Ltmp1568:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1726
-.Ltmp1725:
+	jne	.Ltmp1567
+.Ltmp1566:
 	btq	$25, %rcx
-	jae	.Ltmp1728
+	jae	.Ltmp1569
 	orw	$1, 4(%rax)
-.Ltmp1728:
+.Ltmp1569:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rcx
-	movl	40(%rdi), %eax
+	movq	48(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB276_4
 # BB#3:
@@ -27583,38 +25746,38 @@ get_thread_priority:                    # @get_thread_priority
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1729
+	jae	.Ltmp1570
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1729:
+.Ltmp1570:
 
 	#NO_APP
 .LBB276_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB276_1:                              # %LockSpinlock.exit.thread
-	movl	40(%rdi), %eax
+	movq	48(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end276:
-	.size	get_thread_priority, .Lfunc_end276-get_thread_priority
+	.size	get_thread_interrupt_stack_aligned, .Lfunc_end276-get_thread_interrupt_stack_aligned
 	.cfi_endproc
 
-	.globl	set_thread_priority
+	.globl	set_thread_interrupt_stack_aligned
 	.align	16, 0x90
-	.type	set_thread_priority,@function
-set_thread_priority:                    # @set_thread_priority
+	.type	set_thread_interrupt_stack_aligned,@function
+set_thread_interrupt_stack_aligned:     # @set_thread_interrupt_stack_aligned
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1730:
+.Ltmp1571:
 	.cfi_def_cfa_offset 16
-.Ltmp1731:
+.Ltmp1572:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1732:
+.Ltmp1573:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB277_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27629,24 +25792,24 @@ set_thread_priority:                    # @set_thread_priority
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1733
-.Ltmp1734:
+	je	.Ltmp1574
+.Ltmp1575:
 	btq	$25, %rcx
-	jae	.Ltmp1735
-.Ltmp1735:
+	jae	.Ltmp1576
+.Ltmp1576:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1734
-.Ltmp1733:
+	jne	.Ltmp1575
+.Ltmp1574:
 	btq	$25, %rcx
-	jae	.Ltmp1736
+	jae	.Ltmp1577
 	orw	$1, 4(%rax)
-.Ltmp1736:
+.Ltmp1577:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movl	%esi, 40(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 48(%rdi)
 	testq	%rax, %rax
 	je	.LBB277_4
 # BB#3:
@@ -27655,38 +25818,38 @@ set_thread_priority:                    # @set_thread_priority
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1737
+	jae	.Ltmp1578
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1737:
+.Ltmp1578:
 
 	#NO_APP
 .LBB277_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB277_1:                              # %LockSpinlock.exit.thread
-	movl	%esi, 40(%rdi)
+	movq	%rsi, 48(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end277:
-	.size	set_thread_priority, .Lfunc_end277-set_thread_priority
+	.size	set_thread_interrupt_stack_aligned, .Lfunc_end277-set_thread_interrupt_stack_aligned
 	.cfi_endproc
 
-	.globl	get_thread_interrupt_stack_base
+	.globl	get_thread_kernel_stack_base
 	.align	16, 0x90
-	.type	get_thread_interrupt_stack_base,@function
-get_thread_interrupt_stack_base:        # @get_thread_interrupt_stack_base
+	.type	get_thread_kernel_stack_base,@function
+get_thread_kernel_stack_base:           # @get_thread_kernel_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1738:
+.Ltmp1579:
 	.cfi_def_cfa_offset 16
-.Ltmp1739:
+.Ltmp1580:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1740:
+.Ltmp1581:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB278_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27701,24 +25864,24 @@ get_thread_interrupt_stack_base:        # @get_thread_interrupt_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1741
-.Ltmp1742:
+	je	.Ltmp1582
+.Ltmp1583:
 	btq	$25, %rcx
-	jae	.Ltmp1743
-.Ltmp1743:
+	jae	.Ltmp1584
+.Ltmp1584:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1742
-.Ltmp1741:
+	jne	.Ltmp1583
+.Ltmp1582:
 	btq	$25, %rcx
-	jae	.Ltmp1744
+	jae	.Ltmp1585
 	orw	$1, 4(%rax)
-.Ltmp1744:
+.Ltmp1585:
 	cli
 
 	#NO_APP
-	movq	64(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	56(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB278_4
 # BB#3:
@@ -27727,38 +25890,38 @@ get_thread_interrupt_stack_base:        # @get_thread_interrupt_stack_base
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1745
+	jae	.Ltmp1586
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1745:
+.Ltmp1586:
 
 	#NO_APP
 .LBB278_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB278_1:                              # %LockSpinlock.exit.thread
-	movq	64(%rdi), %rax
+	movq	56(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end278:
-	.size	get_thread_interrupt_stack_base, .Lfunc_end278-get_thread_interrupt_stack_base
+	.size	get_thread_kernel_stack_base, .Lfunc_end278-get_thread_kernel_stack_base
 	.cfi_endproc
 
-	.globl	set_thread_interrupt_stack_base
+	.globl	set_thread_kernel_stack_base
 	.align	16, 0x90
-	.type	set_thread_interrupt_stack_base,@function
-set_thread_interrupt_stack_base:        # @set_thread_interrupt_stack_base
+	.type	set_thread_kernel_stack_base,@function
+set_thread_kernel_stack_base:           # @set_thread_kernel_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1746:
+.Ltmp1587:
 	.cfi_def_cfa_offset 16
-.Ltmp1747:
+.Ltmp1588:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1748:
+.Ltmp1589:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB279_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27773,24 +25936,24 @@ set_thread_interrupt_stack_base:        # @set_thread_interrupt_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1749
-.Ltmp1750:
+	je	.Ltmp1590
+.Ltmp1591:
 	btq	$25, %rcx
-	jae	.Ltmp1751
-.Ltmp1751:
+	jae	.Ltmp1592
+.Ltmp1592:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1750
-.Ltmp1749:
+	jne	.Ltmp1591
+.Ltmp1590:
 	btq	$25, %rcx
-	jae	.Ltmp1752
+	jae	.Ltmp1593
 	orw	$1, 4(%rax)
-.Ltmp1752:
+.Ltmp1593:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 64(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 56(%rdi)
 	testq	%rax, %rax
 	je	.LBB279_4
 # BB#3:
@@ -27799,38 +25962,38 @@ set_thread_interrupt_stack_base:        # @set_thread_interrupt_stack_base
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1753
+	jae	.Ltmp1594
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1753:
+.Ltmp1594:
 
 	#NO_APP
 .LBB279_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB279_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 64(%rdi)
+	movq	%rsi, 56(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end279:
-	.size	set_thread_interrupt_stack_base, .Lfunc_end279-set_thread_interrupt_stack_base
+	.size	set_thread_kernel_stack_base, .Lfunc_end279-set_thread_kernel_stack_base
 	.cfi_endproc
 
-	.globl	get_thread_interrupt_stack_aligned
+	.globl	get_thread_kernel_stack_aligned
 	.align	16, 0x90
-	.type	get_thread_interrupt_stack_aligned,@function
-get_thread_interrupt_stack_aligned:     # @get_thread_interrupt_stack_aligned
+	.type	get_thread_kernel_stack_aligned,@function
+get_thread_kernel_stack_aligned:        # @get_thread_kernel_stack_aligned
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1754:
+.Ltmp1595:
 	.cfi_def_cfa_offset 16
-.Ltmp1755:
+.Ltmp1596:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1756:
+.Ltmp1597:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB280_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27845,24 +26008,24 @@ get_thread_interrupt_stack_aligned:     # @get_thread_interrupt_stack_aligned
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1757
-.Ltmp1758:
+	je	.Ltmp1598
+.Ltmp1599:
 	btq	$25, %rcx
-	jae	.Ltmp1759
-.Ltmp1759:
+	jae	.Ltmp1600
+.Ltmp1600:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1758
-.Ltmp1757:
+	jne	.Ltmp1599
+.Ltmp1598:
 	btq	$25, %rcx
-	jae	.Ltmp1760
+	jae	.Ltmp1601
 	orw	$1, 4(%rax)
-.Ltmp1760:
+.Ltmp1601:
 	cli
 
 	#NO_APP
-	movq	104(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	64(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB280_4
 # BB#3:
@@ -27871,38 +26034,38 @@ get_thread_interrupt_stack_aligned:     # @get_thread_interrupt_stack_aligned
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1761
+	jae	.Ltmp1602
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1761:
+.Ltmp1602:
 
 	#NO_APP
 .LBB280_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB280_1:                              # %LockSpinlock.exit.thread
-	movq	104(%rdi), %rax
+	movq	64(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end280:
-	.size	get_thread_interrupt_stack_aligned, .Lfunc_end280-get_thread_interrupt_stack_aligned
+	.size	get_thread_kernel_stack_aligned, .Lfunc_end280-get_thread_kernel_stack_aligned
 	.cfi_endproc
 
-	.globl	set_thread_interrupt_stack_aligned
+	.globl	set_thread_kernel_stack_aligned
 	.align	16, 0x90
-	.type	set_thread_interrupt_stack_aligned,@function
-set_thread_interrupt_stack_aligned:     # @set_thread_interrupt_stack_aligned
+	.type	set_thread_kernel_stack_aligned,@function
+set_thread_kernel_stack_aligned:        # @set_thread_kernel_stack_aligned
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1762:
+.Ltmp1603:
 	.cfi_def_cfa_offset 16
-.Ltmp1763:
+.Ltmp1604:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1764:
+.Ltmp1605:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB281_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27917,24 +26080,24 @@ set_thread_interrupt_stack_aligned:     # @set_thread_interrupt_stack_aligned
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1765
-.Ltmp1766:
+	je	.Ltmp1606
+.Ltmp1607:
 	btq	$25, %rcx
-	jae	.Ltmp1767
-.Ltmp1767:
+	jae	.Ltmp1608
+.Ltmp1608:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1766
-.Ltmp1765:
+	jne	.Ltmp1607
+.Ltmp1606:
 	btq	$25, %rcx
-	jae	.Ltmp1768
+	jae	.Ltmp1609
 	orw	$1, 4(%rax)
-.Ltmp1768:
+.Ltmp1609:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 104(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 64(%rdi)
 	testq	%rax, %rax
 	je	.LBB281_4
 # BB#3:
@@ -27943,21 +26106,21 @@ set_thread_interrupt_stack_aligned:     # @set_thread_interrupt_stack_aligned
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1769
+	jae	.Ltmp1610
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1769:
+.Ltmp1610:
 
 	#NO_APP
 .LBB281_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB281_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 104(%rdi)
+	movq	%rsi, 64(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end281:
-	.size	set_thread_interrupt_stack_aligned, .Lfunc_end281-set_thread_interrupt_stack_aligned
+	.size	set_thread_kernel_stack_aligned, .Lfunc_end281-set_thread_kernel_stack_aligned
 	.cfi_endproc
 
 	.globl	get_thread_user_stack_base
@@ -27967,14 +26130,14 @@ get_thread_user_stack_base:             # @get_thread_user_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1770:
+.Ltmp1611:
 	.cfi_def_cfa_offset 16
-.Ltmp1771:
+.Ltmp1612:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1772:
+.Ltmp1613:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB282_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -27989,24 +26152,24 @@ get_thread_user_stack_base:             # @get_thread_user_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1773
-.Ltmp1774:
+	je	.Ltmp1614
+.Ltmp1615:
 	btq	$25, %rcx
-	jae	.Ltmp1775
-.Ltmp1775:
+	jae	.Ltmp1616
+.Ltmp1616:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1774
-.Ltmp1773:
+	jne	.Ltmp1615
+.Ltmp1614:
 	btq	$25, %rcx
-	jae	.Ltmp1776
+	jae	.Ltmp1617
 	orw	$1, 4(%rax)
-.Ltmp1776:
+.Ltmp1617:
 	cli
 
 	#NO_APP
-	movq	80(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	72(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB282_4
 # BB#3:
@@ -28015,17 +26178,17 @@ get_thread_user_stack_base:             # @get_thread_user_stack_base
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1777
+	jae	.Ltmp1618
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1777:
+.Ltmp1618:
 
 	#NO_APP
 .LBB282_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB282_1:                              # %LockSpinlock.exit.thread
-	movq	80(%rdi), %rax
+	movq	72(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end282:
@@ -28039,14 +26202,14 @@ set_thread_user_stack_base:             # @set_thread_user_stack_base
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1778:
+.Ltmp1619:
 	.cfi_def_cfa_offset 16
-.Ltmp1779:
+.Ltmp1620:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1780:
+.Ltmp1621:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB283_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28061,24 +26224,24 @@ set_thread_user_stack_base:             # @set_thread_user_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1781
-.Ltmp1782:
+	je	.Ltmp1622
+.Ltmp1623:
 	btq	$25, %rcx
-	jae	.Ltmp1783
-.Ltmp1783:
+	jae	.Ltmp1624
+.Ltmp1624:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1782
-.Ltmp1781:
+	jne	.Ltmp1623
+.Ltmp1622:
 	btq	$25, %rcx
-	jae	.Ltmp1784
+	jae	.Ltmp1625
 	orw	$1, 4(%rax)
-.Ltmp1784:
+.Ltmp1625:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 80(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 72(%rdi)
 	testq	%rax, %rax
 	je	.LBB283_4
 # BB#3:
@@ -28087,38 +26250,38 @@ set_thread_user_stack_base:             # @set_thread_user_stack_base
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1785
+	jae	.Ltmp1626
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1785:
+.Ltmp1626:
 
 	#NO_APP
 .LBB283_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB283_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 80(%rdi)
+	movq	%rsi, 72(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end283:
 	.size	set_thread_user_stack_base, .Lfunc_end283-set_thread_user_stack_base
 	.cfi_endproc
 
-	.globl	get_thread_kernel_stack_base
+	.globl	get_thread_current_stack
 	.align	16, 0x90
-	.type	get_thread_kernel_stack_base,@function
-get_thread_kernel_stack_base:           # @get_thread_kernel_stack_base
+	.type	get_thread_current_stack,@function
+get_thread_current_stack:               # @get_thread_current_stack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1786:
+.Ltmp1627:
 	.cfi_def_cfa_offset 16
-.Ltmp1787:
+.Ltmp1628:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1788:
+.Ltmp1629:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB284_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28133,24 +26296,24 @@ get_thread_kernel_stack_base:           # @get_thread_kernel_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1789
-.Ltmp1790:
+	je	.Ltmp1630
+.Ltmp1631:
 	btq	$25, %rcx
-	jae	.Ltmp1791
-.Ltmp1791:
+	jae	.Ltmp1632
+.Ltmp1632:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1790
-.Ltmp1789:
+	jne	.Ltmp1631
+.Ltmp1630:
 	btq	$25, %rcx
-	jae	.Ltmp1792
+	jae	.Ltmp1633
 	orw	$1, 4(%rax)
-.Ltmp1792:
+.Ltmp1633:
 	cli
 
 	#NO_APP
-	movq	72(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	80(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB284_4
 # BB#3:
@@ -28159,38 +26322,38 @@ get_thread_kernel_stack_base:           # @get_thread_kernel_stack_base
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1793
+	jae	.Ltmp1634
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1793:
+.Ltmp1634:
 
 	#NO_APP
 .LBB284_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB284_1:                              # %LockSpinlock.exit.thread
-	movq	72(%rdi), %rax
+	movq	80(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end284:
-	.size	get_thread_kernel_stack_base, .Lfunc_end284-get_thread_kernel_stack_base
+	.size	get_thread_current_stack, .Lfunc_end284-get_thread_current_stack
 	.cfi_endproc
 
-	.globl	set_thread_kernel_stack_base
+	.globl	set_thread_current_stack
 	.align	16, 0x90
-	.type	set_thread_kernel_stack_base,@function
-set_thread_kernel_stack_base:           # @set_thread_kernel_stack_base
+	.type	set_thread_current_stack,@function
+set_thread_current_stack:               # @set_thread_current_stack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1794:
+.Ltmp1635:
 	.cfi_def_cfa_offset 16
-.Ltmp1795:
+.Ltmp1636:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1796:
+.Ltmp1637:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB285_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28205,24 +26368,24 @@ set_thread_kernel_stack_base:           # @set_thread_kernel_stack_base
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1797
-.Ltmp1798:
+	je	.Ltmp1638
+.Ltmp1639:
 	btq	$25, %rcx
-	jae	.Ltmp1799
-.Ltmp1799:
+	jae	.Ltmp1640
+.Ltmp1640:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1798
-.Ltmp1797:
+	jne	.Ltmp1639
+.Ltmp1638:
 	btq	$25, %rcx
-	jae	.Ltmp1800
+	jae	.Ltmp1641
 	orw	$1, 4(%rax)
-.Ltmp1800:
+.Ltmp1641:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 72(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 80(%rdi)
 	testq	%rax, %rax
 	je	.LBB285_4
 # BB#3:
@@ -28231,38 +26394,38 @@ set_thread_kernel_stack_base:           # @set_thread_kernel_stack_base
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1801
+	jae	.Ltmp1642
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1801:
+.Ltmp1642:
 
 	#NO_APP
 .LBB285_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB285_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 72(%rdi)
+	movq	%rsi, 80(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end285:
-	.size	set_thread_kernel_stack_base, .Lfunc_end285-set_thread_kernel_stack_base
+	.size	set_thread_current_stack, .Lfunc_end285-set_thread_current_stack
 	.cfi_endproc
 
-	.globl	get_thread_kernel_stack_aligned
+	.globl	get_thread_sleep_duration_ns
 	.align	16, 0x90
-	.type	get_thread_kernel_stack_aligned,@function
-get_thread_kernel_stack_aligned:        # @get_thread_kernel_stack_aligned
+	.type	get_thread_sleep_duration_ns,@function
+get_thread_sleep_duration_ns:           # @get_thread_sleep_duration_ns
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1802:
+.Ltmp1643:
 	.cfi_def_cfa_offset 16
-.Ltmp1803:
+.Ltmp1644:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1804:
+.Ltmp1645:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB286_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28277,24 +26440,24 @@ get_thread_kernel_stack_aligned:        # @get_thread_kernel_stack_aligned
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1805
-.Ltmp1806:
+	je	.Ltmp1646
+.Ltmp1647:
 	btq	$25, %rcx
-	jae	.Ltmp1807
-.Ltmp1807:
+	jae	.Ltmp1648
+.Ltmp1648:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1806
-.Ltmp1805:
+	jne	.Ltmp1647
+.Ltmp1646:
 	btq	$25, %rcx
-	jae	.Ltmp1808
+	jae	.Ltmp1649
 	orw	$1, 4(%rax)
-.Ltmp1808:
+.Ltmp1649:
 	cli
 
 	#NO_APP
-	movq	96(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	88(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB286_4
 # BB#3:
@@ -28303,38 +26466,38 @@ get_thread_kernel_stack_aligned:        # @get_thread_kernel_stack_aligned
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1809
+	jae	.Ltmp1650
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1809:
+.Ltmp1650:
 
 	#NO_APP
 .LBB286_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB286_1:                              # %LockSpinlock.exit.thread
-	movq	96(%rdi), %rax
+	movq	88(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end286:
-	.size	get_thread_kernel_stack_aligned, .Lfunc_end286-get_thread_kernel_stack_aligned
+	.size	get_thread_sleep_duration_ns, .Lfunc_end286-get_thread_sleep_duration_ns
 	.cfi_endproc
 
-	.globl	set_thread_kernel_stack_aligned
+	.globl	set_thread_sleep_duration_ns
 	.align	16, 0x90
-	.type	set_thread_kernel_stack_aligned,@function
-set_thread_kernel_stack_aligned:        # @set_thread_kernel_stack_aligned
+	.type	set_thread_sleep_duration_ns,@function
+set_thread_sleep_duration_ns:           # @set_thread_sleep_duration_ns
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1810:
+.Ltmp1651:
 	.cfi_def_cfa_offset 16
-.Ltmp1811:
+.Ltmp1652:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1812:
+.Ltmp1653:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB287_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28349,24 +26512,24 @@ set_thread_kernel_stack_aligned:        # @set_thread_kernel_stack_aligned
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1813
-.Ltmp1814:
+	je	.Ltmp1654
+.Ltmp1655:
 	btq	$25, %rcx
-	jae	.Ltmp1815
-.Ltmp1815:
+	jae	.Ltmp1656
+.Ltmp1656:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1814
-.Ltmp1813:
+	jne	.Ltmp1655
+.Ltmp1654:
 	btq	$25, %rcx
-	jae	.Ltmp1816
+	jae	.Ltmp1657
 	orw	$1, 4(%rax)
-.Ltmp1816:
+.Ltmp1657:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 96(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 88(%rdi)
 	testq	%rax, %rax
 	je	.LBB287_4
 # BB#3:
@@ -28375,38 +26538,38 @@ set_thread_kernel_stack_aligned:        # @set_thread_kernel_stack_aligned
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1817
+	jae	.Ltmp1658
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1817:
+.Ltmp1658:
 
 	#NO_APP
 .LBB287_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB287_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 96(%rdi)
+	movq	%rsi, 88(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end287:
-	.size	set_thread_kernel_stack_aligned, .Lfunc_end287-set_thread_kernel_stack_aligned
+	.size	set_thread_sleep_duration_ns, .Lfunc_end287-set_thread_sleep_duration_ns
 	.cfi_endproc
 
-	.globl	get_thread_current_stack
+	.globl	get_thread_sleep_start_time
 	.align	16, 0x90
-	.type	get_thread_current_stack,@function
-get_thread_current_stack:               # @get_thread_current_stack
+	.type	get_thread_sleep_start_time,@function
+get_thread_sleep_start_time:            # @get_thread_sleep_start_time
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1818:
+.Ltmp1659:
 	.cfi_def_cfa_offset 16
-.Ltmp1819:
+.Ltmp1660:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1820:
+.Ltmp1661:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB288_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28421,24 +26584,24 @@ get_thread_current_stack:               # @get_thread_current_stack
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1821
-.Ltmp1822:
+	je	.Ltmp1662
+.Ltmp1663:
 	btq	$25, %rcx
-	jae	.Ltmp1823
-.Ltmp1823:
+	jae	.Ltmp1664
+.Ltmp1664:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1822
-.Ltmp1821:
+	jne	.Ltmp1663
+.Ltmp1662:
 	btq	$25, %rcx
-	jae	.Ltmp1824
+	jae	.Ltmp1665
 	orw	$1, 4(%rax)
-.Ltmp1824:
+.Ltmp1665:
 	cli
 
 	#NO_APP
-	movq	88(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	96(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB288_4
 # BB#3:
@@ -28447,38 +26610,38 @@ get_thread_current_stack:               # @get_thread_current_stack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1825
+	jae	.Ltmp1666
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1825:
+.Ltmp1666:
 
 	#NO_APP
 .LBB288_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB288_1:                              # %LockSpinlock.exit.thread
-	movq	88(%rdi), %rax
+	movq	96(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end288:
-	.size	get_thread_current_stack, .Lfunc_end288-get_thread_current_stack
+	.size	get_thread_sleep_start_time, .Lfunc_end288-get_thread_sleep_start_time
 	.cfi_endproc
 
-	.globl	set_thread_current_stack
+	.globl	set_thread_sleep_start_time
 	.align	16, 0x90
-	.type	set_thread_current_stack,@function
-set_thread_current_stack:               # @set_thread_current_stack
+	.type	set_thread_sleep_start_time,@function
+set_thread_sleep_start_time:            # @set_thread_sleep_start_time
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1826:
+.Ltmp1667:
 	.cfi_def_cfa_offset 16
-.Ltmp1827:
+.Ltmp1668:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1828:
+.Ltmp1669:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB289_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28493,24 +26656,24 @@ set_thread_current_stack:               # @set_thread_current_stack
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1829
-.Ltmp1830:
+	je	.Ltmp1670
+.Ltmp1671:
 	btq	$25, %rcx
-	jae	.Ltmp1831
-.Ltmp1831:
+	jae	.Ltmp1672
+.Ltmp1672:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1830
-.Ltmp1829:
+	jne	.Ltmp1671
+.Ltmp1670:
 	btq	$25, %rcx
-	jae	.Ltmp1832
+	jae	.Ltmp1673
 	orw	$1, 4(%rax)
-.Ltmp1832:
+.Ltmp1673:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 88(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 96(%rdi)
 	testq	%rax, %rax
 	je	.LBB289_4
 # BB#3:
@@ -28519,21 +26682,21 @@ set_thread_current_stack:               # @set_thread_current_stack
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1833
+	jae	.Ltmp1674
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1833:
+.Ltmp1674:
 
 	#NO_APP
 .LBB289_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB289_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 88(%rdi)
+	movq	%rsi, 96(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end289:
-	.size	set_thread_current_stack, .Lfunc_end289-set_thread_current_stack
+	.size	set_thread_sleep_start_time, .Lfunc_end289-set_thread_sleep_start_time
 	.cfi_endproc
 
 	.globl	get_thread_core_affinity
@@ -28543,14 +26706,14 @@ get_thread_core_affinity:               # @get_thread_core_affinity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1834:
+.Ltmp1675:
 	.cfi_def_cfa_offset 16
-.Ltmp1835:
+.Ltmp1676:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1836:
+.Ltmp1677:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB290_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28565,24 +26728,24 @@ get_thread_core_affinity:               # @get_thread_core_affinity
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1837
-.Ltmp1838:
+	je	.Ltmp1678
+.Ltmp1679:
 	btq	$25, %rcx
-	jae	.Ltmp1839
-.Ltmp1839:
+	jae	.Ltmp1680
+.Ltmp1680:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1838
-.Ltmp1837:
+	jne	.Ltmp1679
+.Ltmp1678:
 	btq	$25, %rcx
-	jae	.Ltmp1840
+	jae	.Ltmp1681
 	orw	$1, 4(%rax)
-.Ltmp1840:
+.Ltmp1681:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rcx
-	movl	112(%rdi), %eax
+	movq	152(%rdi), %rcx
+	movl	104(%rdi), %eax
 	testq	%rcx, %rcx
 	je	.LBB290_4
 # BB#3:
@@ -28591,17 +26754,17 @@ get_thread_core_affinity:               # @get_thread_core_affinity
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1841
+	jae	.Ltmp1682
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1841:
+.Ltmp1682:
 
 	#NO_APP
 .LBB290_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB290_1:                              # %LockSpinlock.exit.thread
-	movl	112(%rdi), %eax
+	movl	104(%rdi), %eax
 	popq	%rbp
 	retq
 .Lfunc_end290:
@@ -28615,14 +26778,14 @@ set_thread_core_affinity:               # @set_thread_core_affinity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1842:
+.Ltmp1683:
 	.cfi_def_cfa_offset 16
-.Ltmp1843:
+.Ltmp1684:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1844:
+.Ltmp1685:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB291_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28637,24 +26800,24 @@ set_thread_core_affinity:               # @set_thread_core_affinity
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1845
-.Ltmp1846:
+	je	.Ltmp1686
+.Ltmp1687:
 	btq	$25, %rcx
-	jae	.Ltmp1847
-.Ltmp1847:
+	jae	.Ltmp1688
+.Ltmp1688:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1846
-.Ltmp1845:
+	jne	.Ltmp1687
+.Ltmp1686:
 	btq	$25, %rcx
-	jae	.Ltmp1848
+	jae	.Ltmp1689
 	orw	$1, 4(%rax)
-.Ltmp1848:
+.Ltmp1689:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movl	%esi, 112(%rdi)
+	movq	152(%rdi), %rax
+	movl	%esi, 104(%rdi)
 	testq	%rax, %rax
 	je	.LBB291_4
 # BB#3:
@@ -28663,38 +26826,38 @@ set_thread_core_affinity:               # @set_thread_core_affinity
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1849
+	jae	.Ltmp1690
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1849:
+.Ltmp1690:
 
 	#NO_APP
 .LBB291_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB291_1:                              # %LockSpinlock.exit.thread
-	movl	%esi, 112(%rdi)
+	movl	%esi, 104(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end291:
 	.size	set_thread_core_affinity, .Lfunc_end291-set_thread_core_affinity
 	.cfi_endproc
 
-	.globl	get_thread_sleep_duration_ns
+	.globl	get_thread_set_child_tid
 	.align	16, 0x90
-	.type	get_thread_sleep_duration_ns,@function
-get_thread_sleep_duration_ns:           # @get_thread_sleep_duration_ns
+	.type	get_thread_set_child_tid,@function
+get_thread_set_child_tid:               # @get_thread_set_child_tid
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1850:
+.Ltmp1691:
 	.cfi_def_cfa_offset 16
-.Ltmp1851:
+.Ltmp1692:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1852:
+.Ltmp1693:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB292_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28709,24 +26872,24 @@ get_thread_sleep_duration_ns:           # @get_thread_sleep_duration_ns
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1853
-.Ltmp1854:
+	je	.Ltmp1694
+.Ltmp1695:
 	btq	$25, %rcx
-	jae	.Ltmp1855
-.Ltmp1855:
+	jae	.Ltmp1696
+.Ltmp1696:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1854
-.Ltmp1853:
+	jne	.Ltmp1695
+.Ltmp1694:
 	btq	$25, %rcx
-	jae	.Ltmp1856
+	jae	.Ltmp1697
 	orw	$1, 4(%rax)
-.Ltmp1856:
+.Ltmp1697:
 	cli
 
 	#NO_APP
-	movq	120(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	112(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB292_4
 # BB#3:
@@ -28735,38 +26898,38 @@ get_thread_sleep_duration_ns:           # @get_thread_sleep_duration_ns
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1857
+	jae	.Ltmp1698
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1857:
+.Ltmp1698:
 
 	#NO_APP
 .LBB292_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB292_1:                              # %LockSpinlock.exit.thread
-	movq	120(%rdi), %rax
+	movq	112(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end292:
-	.size	get_thread_sleep_duration_ns, .Lfunc_end292-get_thread_sleep_duration_ns
+	.size	get_thread_set_child_tid, .Lfunc_end292-get_thread_set_child_tid
 	.cfi_endproc
 
-	.globl	set_thread_sleep_duration_ns
+	.globl	set_thread_set_child_tid
 	.align	16, 0x90
-	.type	set_thread_sleep_duration_ns,@function
-set_thread_sleep_duration_ns:           # @set_thread_sleep_duration_ns
+	.type	set_thread_set_child_tid,@function
+set_thread_set_child_tid:               # @set_thread_set_child_tid
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1858:
+.Ltmp1699:
 	.cfi_def_cfa_offset 16
-.Ltmp1859:
+.Ltmp1700:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1860:
+.Ltmp1701:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB293_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28781,24 +26944,24 @@ set_thread_sleep_duration_ns:           # @set_thread_sleep_duration_ns
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1861
-.Ltmp1862:
+	je	.Ltmp1702
+.Ltmp1703:
 	btq	$25, %rcx
-	jae	.Ltmp1863
-.Ltmp1863:
+	jae	.Ltmp1704
+.Ltmp1704:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1862
-.Ltmp1861:
+	jne	.Ltmp1703
+.Ltmp1702:
 	btq	$25, %rcx
-	jae	.Ltmp1864
+	jae	.Ltmp1705
 	orw	$1, 4(%rax)
-.Ltmp1864:
+.Ltmp1705:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 120(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 112(%rdi)
 	testq	%rax, %rax
 	je	.LBB293_4
 # BB#3:
@@ -28807,38 +26970,38 @@ set_thread_sleep_duration_ns:           # @set_thread_sleep_duration_ns
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1865
+	jae	.Ltmp1706
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1865:
+.Ltmp1706:
 
 	#NO_APP
 .LBB293_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB293_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 120(%rdi)
+	movq	%rsi, 112(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end293:
-	.size	set_thread_sleep_duration_ns, .Lfunc_end293-set_thread_sleep_duration_ns
+	.size	set_thread_set_child_tid, .Lfunc_end293-set_thread_set_child_tid
 	.cfi_endproc
 
-	.globl	get_thread_sleep_start_time
+	.globl	get_thread_clear_child_tid
 	.align	16, 0x90
-	.type	get_thread_sleep_start_time,@function
-get_thread_sleep_start_time:            # @get_thread_sleep_start_time
+	.type	get_thread_clear_child_tid,@function
+get_thread_clear_child_tid:             # @get_thread_clear_child_tid
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1866:
+.Ltmp1707:
 	.cfi_def_cfa_offset 16
-.Ltmp1867:
+.Ltmp1708:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1868:
+.Ltmp1709:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB294_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28853,24 +27016,24 @@ get_thread_sleep_start_time:            # @get_thread_sleep_start_time
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1869
-.Ltmp1870:
+	je	.Ltmp1710
+.Ltmp1711:
 	btq	$25, %rcx
-	jae	.Ltmp1871
-.Ltmp1871:
+	jae	.Ltmp1712
+.Ltmp1712:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1870
-.Ltmp1869:
+	jne	.Ltmp1711
+.Ltmp1710:
 	btq	$25, %rcx
-	jae	.Ltmp1872
+	jae	.Ltmp1713
 	orw	$1, 4(%rax)
-.Ltmp1872:
+.Ltmp1713:
 	cli
 
 	#NO_APP
-	movq	128(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	120(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB294_4
 # BB#3:
@@ -28879,38 +27042,38 @@ get_thread_sleep_start_time:            # @get_thread_sleep_start_time
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1873
+	jae	.Ltmp1714
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1873:
+.Ltmp1714:
 
 	#NO_APP
 .LBB294_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB294_1:                              # %LockSpinlock.exit.thread
-	movq	128(%rdi), %rax
+	movq	120(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end294:
-	.size	get_thread_sleep_start_time, .Lfunc_end294-get_thread_sleep_start_time
+	.size	get_thread_clear_child_tid, .Lfunc_end294-get_thread_clear_child_tid
 	.cfi_endproc
 
-	.globl	set_thread_sleep_start_time
+	.globl	set_thread_clear_child_tid
 	.align	16, 0x90
-	.type	set_thread_sleep_start_time,@function
-set_thread_sleep_start_time:            # @set_thread_sleep_start_time
+	.type	set_thread_clear_child_tid,@function
+set_thread_clear_child_tid:             # @set_thread_clear_child_tid
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1874:
+.Ltmp1715:
 	.cfi_def_cfa_offset 16
-.Ltmp1875:
+.Ltmp1716:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1876:
+.Ltmp1717:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB295_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28925,24 +27088,24 @@ set_thread_sleep_start_time:            # @set_thread_sleep_start_time
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1877
-.Ltmp1878:
+	je	.Ltmp1718
+.Ltmp1719:
 	btq	$25, %rcx
-	jae	.Ltmp1879
-.Ltmp1879:
+	jae	.Ltmp1720
+.Ltmp1720:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1878
-.Ltmp1877:
+	jne	.Ltmp1719
+.Ltmp1718:
 	btq	$25, %rcx
-	jae	.Ltmp1880
+	jae	.Ltmp1721
 	orw	$1, 4(%rax)
-.Ltmp1880:
+.Ltmp1721:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 128(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 120(%rdi)
 	testq	%rax, %rax
 	je	.LBB295_4
 # BB#3:
@@ -28951,38 +27114,38 @@ set_thread_sleep_start_time:            # @set_thread_sleep_start_time
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1881
+	jae	.Ltmp1722
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1881:
+.Ltmp1722:
 
 	#NO_APP
 .LBB295_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB295_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 128(%rdi)
+	movq	%rsi, 120(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end295:
-	.size	set_thread_sleep_start_time, .Lfunc_end295-set_thread_sleep_start_time
+	.size	set_thread_clear_child_tid, .Lfunc_end295-set_thread_clear_child_tid
 	.cfi_endproc
 
-	.globl	get_thread_arch_specific_data
+	.globl	get_thread_fpu_state
 	.align	16, 0x90
-	.type	get_thread_arch_specific_data,@function
-get_thread_arch_specific_data:          # @get_thread_arch_specific_data
+	.type	get_thread_fpu_state,@function
+get_thread_fpu_state:                   # @get_thread_fpu_state
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1882:
+.Ltmp1723:
 	.cfi_def_cfa_offset 16
-.Ltmp1883:
+.Ltmp1724:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1884:
+.Ltmp1725:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB296_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -28997,24 +27160,24 @@ get_thread_arch_specific_data:          # @get_thread_arch_specific_data
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1885
-.Ltmp1886:
+	je	.Ltmp1726
+.Ltmp1727:
 	btq	$25, %rcx
-	jae	.Ltmp1887
-.Ltmp1887:
+	jae	.Ltmp1728
+.Ltmp1728:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1886
-.Ltmp1885:
+	jne	.Ltmp1727
+.Ltmp1726:
 	btq	$25, %rcx
-	jae	.Ltmp1888
+	jae	.Ltmp1729
 	orw	$1, 4(%rax)
-.Ltmp1888:
+.Ltmp1729:
 	cli
 
 	#NO_APP
-	movq	160(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	128(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB296_4
 # BB#3:
@@ -29023,38 +27186,38 @@ get_thread_arch_specific_data:          # @get_thread_arch_specific_data
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1889
+	jae	.Ltmp1730
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1889:
+.Ltmp1730:
 
 	#NO_APP
 .LBB296_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB296_1:                              # %LockSpinlock.exit.thread
-	movq	160(%rdi), %rax
+	movq	128(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end296:
-	.size	get_thread_arch_specific_data, .Lfunc_end296-get_thread_arch_specific_data
+	.size	get_thread_fpu_state, .Lfunc_end296-get_thread_fpu_state
 	.cfi_endproc
 
-	.globl	set_thread_arch_specific_data
+	.globl	set_thread_fpu_state
 	.align	16, 0x90
-	.type	set_thread_arch_specific_data,@function
-set_thread_arch_specific_data:          # @set_thread_arch_specific_data
+	.type	set_thread_fpu_state,@function
+set_thread_fpu_state:                   # @set_thread_fpu_state
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1890:
+.Ltmp1731:
 	.cfi_def_cfa_offset 16
-.Ltmp1891:
+.Ltmp1732:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1892:
+.Ltmp1733:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB297_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -29069,24 +27232,24 @@ set_thread_arch_specific_data:          # @set_thread_arch_specific_data
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1893
-.Ltmp1894:
+	je	.Ltmp1734
+.Ltmp1735:
 	btq	$25, %rcx
-	jae	.Ltmp1895
-.Ltmp1895:
+	jae	.Ltmp1736
+.Ltmp1736:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1894
-.Ltmp1893:
+	jne	.Ltmp1735
+.Ltmp1734:
 	btq	$25, %rcx
-	jae	.Ltmp1896
+	jae	.Ltmp1737
 	orw	$1, 4(%rax)
-.Ltmp1896:
+.Ltmp1737:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 160(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 128(%rdi)
 	testq	%rax, %rax
 	je	.LBB297_4
 # BB#3:
@@ -29095,38 +27258,38 @@ set_thread_arch_specific_data:          # @set_thread_arch_specific_data
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1897
+	jae	.Ltmp1738
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1897:
+.Ltmp1738:
 
 	#NO_APP
 .LBB297_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB297_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 160(%rdi)
+	movq	%rsi, 128(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end297:
-	.size	set_thread_arch_specific_data, .Lfunc_end297-set_thread_arch_specific_data
+	.size	set_thread_fpu_state, .Lfunc_end297-set_thread_fpu_state
 	.cfi_endproc
 
-	.globl	get_thread_fpu_state
+	.globl	get_thread_arch_specific_data
 	.align	16, 0x90
-	.type	get_thread_fpu_state,@function
-get_thread_fpu_state:                   # @get_thread_fpu_state
+	.type	get_thread_arch_specific_data,@function
+get_thread_arch_specific_data:          # @get_thread_arch_specific_data
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1898:
+.Ltmp1739:
 	.cfi_def_cfa_offset 16
-.Ltmp1899:
+.Ltmp1740:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1900:
+.Ltmp1741:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB298_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -29141,24 +27304,24 @@ get_thread_fpu_state:                   # @get_thread_fpu_state
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1901
-.Ltmp1902:
+	je	.Ltmp1742
+.Ltmp1743:
 	btq	$25, %rcx
-	jae	.Ltmp1903
-.Ltmp1903:
+	jae	.Ltmp1744
+.Ltmp1744:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1902
-.Ltmp1901:
+	jne	.Ltmp1743
+.Ltmp1742:
 	btq	$25, %rcx
-	jae	.Ltmp1904
+	jae	.Ltmp1745
 	orw	$1, 4(%rax)
-.Ltmp1904:
+.Ltmp1745:
 	cli
 
 	#NO_APP
-	movq	152(%rdi), %rax
-	movq	168(%rdi), %rcx
+	movq	136(%rdi), %rax
+	movq	152(%rdi), %rcx
 	testq	%rcx, %rcx
 	je	.LBB298_4
 # BB#3:
@@ -29167,38 +27330,38 @@ get_thread_fpu_state:                   # @get_thread_fpu_state
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1905
+	jae	.Ltmp1746
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1905:
+.Ltmp1746:
 
 	#NO_APP
 .LBB298_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB298_1:                              # %LockSpinlock.exit.thread
-	movq	152(%rdi), %rax
+	movq	136(%rdi), %rax
 	popq	%rbp
 	retq
 .Lfunc_end298:
-	.size	get_thread_fpu_state, .Lfunc_end298-get_thread_fpu_state
+	.size	get_thread_arch_specific_data, .Lfunc_end298-get_thread_arch_specific_data
 	.cfi_endproc
 
-	.globl	set_thread_fpu_state
+	.globl	set_thread_arch_specific_data
 	.align	16, 0x90
-	.type	set_thread_fpu_state,@function
-set_thread_fpu_state:                   # @set_thread_fpu_state
+	.type	set_thread_arch_specific_data,@function
+set_thread_arch_specific_data:          # @set_thread_arch_specific_data
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1906:
+.Ltmp1747:
 	.cfi_def_cfa_offset 16
-.Ltmp1907:
+.Ltmp1748:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1908:
+.Ltmp1749:
 	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
+	movq	152(%rdi), %rax
 	testq	%rax, %rax
 	je	.LBB299_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -29213,24 +27376,24 @@ set_thread_fpu_state:                   # @set_thread_fpu_state
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp1909
-.Ltmp1910:
+	je	.Ltmp1750
+.Ltmp1751:
 	btq	$25, %rcx
-	jae	.Ltmp1911
-.Ltmp1911:
+	jae	.Ltmp1752
+.Ltmp1752:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp1910
-.Ltmp1909:
+	jne	.Ltmp1751
+.Ltmp1750:
 	btq	$25, %rcx
-	jae	.Ltmp1912
+	jae	.Ltmp1753
 	orw	$1, 4(%rax)
-.Ltmp1912:
+.Ltmp1753:
 	cli
 
 	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 152(%rdi)
+	movq	152(%rdi), %rax
+	movq	%rsi, 136(%rdi)
 	testq	%rax, %rax
 	je	.LBB299_4
 # BB#3:
@@ -29239,309 +27402,21 @@ set_thread_fpu_state:                   # @set_thread_fpu_state
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp1913
+	jae	.Ltmp1754
 	sti
 	movw	$0, 4(%rax)
-.Ltmp1913:
+.Ltmp1754:
 
 	#NO_APP
 .LBB299_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
 .LBB299_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 152(%rdi)
+	movq	%rsi, 136(%rdi)
 	popq	%rbp
 	retq
 .Lfunc_end299:
-	.size	set_thread_fpu_state, .Lfunc_end299-set_thread_fpu_state
-	.cfi_endproc
-
-	.globl	get_thread_set_child_tid
-	.align	16, 0x90
-	.type	get_thread_set_child_tid,@function
-get_thread_set_child_tid:               # @get_thread_set_child_tid
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1914:
-	.cfi_def_cfa_offset 16
-.Ltmp1915:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1916:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB300_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1917
-.Ltmp1918:
-	btq	$25, %rcx
-	jae	.Ltmp1919
-.Ltmp1919:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1918
-.Ltmp1917:
-	btq	$25, %rcx
-	jae	.Ltmp1920
-	orw	$1, 4(%rax)
-.Ltmp1920:
-	cli
-
-	#NO_APP
-	movq	136(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB300_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1921
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1921:
-
-	#NO_APP
-.LBB300_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB300_1:                              # %LockSpinlock.exit.thread
-	movq	136(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end300:
-	.size	get_thread_set_child_tid, .Lfunc_end300-get_thread_set_child_tid
-	.cfi_endproc
-
-	.globl	set_thread_set_child_tid
-	.align	16, 0x90
-	.type	set_thread_set_child_tid,@function
-set_thread_set_child_tid:               # @set_thread_set_child_tid
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1922:
-	.cfi_def_cfa_offset 16
-.Ltmp1923:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1924:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB301_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1925
-.Ltmp1926:
-	btq	$25, %rcx
-	jae	.Ltmp1927
-.Ltmp1927:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1926
-.Ltmp1925:
-	btq	$25, %rcx
-	jae	.Ltmp1928
-	orw	$1, 4(%rax)
-.Ltmp1928:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 136(%rdi)
-	testq	%rax, %rax
-	je	.LBB301_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1929
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1929:
-
-	#NO_APP
-.LBB301_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB301_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 136(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end301:
-	.size	set_thread_set_child_tid, .Lfunc_end301-set_thread_set_child_tid
-	.cfi_endproc
-
-	.globl	get_thread_clear_child_tid
-	.align	16, 0x90
-	.type	get_thread_clear_child_tid,@function
-get_thread_clear_child_tid:             # @get_thread_clear_child_tid
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1930:
-	.cfi_def_cfa_offset 16
-.Ltmp1931:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1932:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB302_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1933
-.Ltmp1934:
-	btq	$25, %rcx
-	jae	.Ltmp1935
-.Ltmp1935:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1934
-.Ltmp1933:
-	btq	$25, %rcx
-	jae	.Ltmp1936
-	orw	$1, 4(%rax)
-.Ltmp1936:
-	cli
-
-	#NO_APP
-	movq	144(%rdi), %rax
-	movq	168(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB302_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp1937
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp1937:
-
-	#NO_APP
-.LBB302_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB302_1:                              # %LockSpinlock.exit.thread
-	movq	144(%rdi), %rax
-	popq	%rbp
-	retq
-.Lfunc_end302:
-	.size	get_thread_clear_child_tid, .Lfunc_end302-get_thread_clear_child_tid
-	.cfi_endproc
-
-	.globl	set_thread_clear_child_tid
-	.align	16, 0x90
-	.type	set_thread_clear_child_tid,@function
-set_thread_clear_child_tid:             # @set_thread_clear_child_tid
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp1938:
-	.cfi_def_cfa_offset 16
-.Ltmp1939:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp1940:
-	.cfi_def_cfa_register %rbp
-	movq	168(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB303_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp1941
-.Ltmp1942:
-	btq	$25, %rcx
-	jae	.Ltmp1943
-.Ltmp1943:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp1942
-.Ltmp1941:
-	btq	$25, %rcx
-	jae	.Ltmp1944
-	orw	$1, 4(%rax)
-.Ltmp1944:
-	cli
-
-	#NO_APP
-	movq	168(%rdi), %rax
-	movq	%rsi, 144(%rdi)
-	testq	%rax, %rax
-	je	.LBB303_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp1945
-	sti
-	movw	$0, 4(%rax)
-.Ltmp1945:
-
-	#NO_APP
-.LBB303_4:                              # %UnlockSpinlock.exit
-	popq	%rbp
-	retq
-.LBB303_1:                              # %LockSpinlock.exit.thread
-	movq	%rsi, 144(%rdi)
-	popq	%rbp
-	retq
-.Lfunc_end303:
-	.size	set_thread_clear_child_tid, .Lfunc_end303-set_thread_clear_child_tid
+	.size	set_thread_arch_specific_data, .Lfunc_end299-set_thread_arch_specific_data
 	.cfi_endproc
 
 	.globl	GetCurrentThreadUID
@@ -29551,18 +27426,18 @@ GetCurrentThreadUID:                    # @GetCurrentThreadUID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1946:
+.Ltmp1755:
 	.cfi_def_cfa_offset 16
-.Ltmp1947:
+.Ltmp1756:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1948:
+.Ltmp1757:
 	.cfi_def_cfa_register %rbp
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB304_1
+	je	.LBB300_1
 # BB#2:                                 # %LockSpinlock.exit
 	xorl	%edx, %edx
 	#APP
@@ -29575,47 +27450,47 @@ GetCurrentThreadUID:                    # @GetCurrentThreadUID
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1949
-.Ltmp1950:
+	je	.Ltmp1758
+.Ltmp1759:
 	btq	$25, %rdx
-	jae	.Ltmp1951
-.Ltmp1951:
+	jae	.Ltmp1760
+.Ltmp1760:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1950
-.Ltmp1949:
+	jne	.Ltmp1759
+.Ltmp1758:
 	btq	$25, %rdx
-	jae	.Ltmp1952
+	jae	.Ltmp1761
 	orw	$1, 4(%rax)
-.Ltmp1952:
+.Ltmp1761:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB304_4
+	je	.LBB300_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1953
+	jae	.Ltmp1762
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1953:
+.Ltmp1762:
 
 	#NO_APP
-.LBB304_4:                              # %UnlockSpinlock.exit
+.LBB300_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
-.LBB304_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+.LBB300_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
 	popq	%rbp
 	retq
-.Lfunc_end304:
-	.size	GetCurrentThreadUID, .Lfunc_end304-GetCurrentThreadUID
+.Lfunc_end300:
+	.size	GetCurrentThreadUID, .Lfunc_end300-GetCurrentThreadUID
 	.cfi_endproc
 
 	.globl	GetCurrentProcessUID
@@ -29625,18 +27500,18 @@ GetCurrentProcessUID:                   # @GetCurrentProcessUID
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp1954:
+.Ltmp1763:
 	.cfi_def_cfa_offset 16
-.Ltmp1955:
+.Ltmp1764:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1956:
+.Ltmp1765:
 	.cfi_def_cfa_register %rbp
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB305_1
+	je	.LBB301_1
 # BB#2:                                 # %LockSpinlock.exit
 	xorl	%edx, %edx
 	#APP
@@ -29649,47 +27524,47 @@ GetCurrentProcessUID:                   # @GetCurrentProcessUID
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp1957
-.Ltmp1958:
+	je	.Ltmp1766
+.Ltmp1767:
 	btq	$25, %rdx
-	jae	.Ltmp1959
-.Ltmp1959:
+	jae	.Ltmp1768
+.Ltmp1768:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp1958
-.Ltmp1957:
+	jne	.Ltmp1767
+.Ltmp1766:
 	btq	$25, %rdx
-	jae	.Ltmp1960
+	jae	.Ltmp1769
 	orw	$1, 4(%rax)
-.Ltmp1960:
+.Ltmp1769:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB305_4
+	je	.LBB301_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp1961
+	jae	.Ltmp1770
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp1961:
+.Ltmp1770:
 
 	#NO_APP
-	jmp	.LBB305_4
-.LBB305_1:                              # %LockSpinlock.exit.thread
-	movq	16(%rcx), %rax
-.LBB305_4:                              # %UnlockSpinlock.exit
+	jmp	.LBB301_4
+.LBB301_1:                              # %LockSpinlock.exit.thread
+	movq	8(%rcx), %rax
+.LBB301_4:                              # %UnlockSpinlock.exit
 	movq	(%rax), %rax
 	popq	%rbp
 	retq
-.Lfunc_end305:
-	.size	GetCurrentProcessUID, .Lfunc_end305-GetCurrentProcessUID
+.Lfunc_end301:
+	.size	GetCurrentProcessUID, .Lfunc_end301-GetCurrentProcessUID
 	.cfi_endproc
 
 	.globl	Thread_Initialize
@@ -29699,18 +27574,18 @@ Thread_Initialize:                      # @Thread_Initialize
 	.cfi_startproc
 # BB#0:                                 # %CreateSpinlock.exit
 	pushq	%rbp
-.Ltmp1962:
+.Ltmp1771:
 	.cfi_def_cfa_offset 16
-.Ltmp1963:
+.Ltmp1772:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp1964:
+.Ltmp1773:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp1965:
+.Ltmp1774:
 	.cfi_offset %rbx, -32
-.Ltmp1966:
+.Ltmp1775:
 	.cfi_offset %r14, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -29742,7 +27617,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_1
+	je	.LBB302_1
 # BB#2:
 	xorl	%ecx, %ecx
 	#APP
@@ -29755,19 +27630,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1967
-.Ltmp1968:
+	je	.Ltmp1776
+.Ltmp1777:
 	btq	$25, %rcx
-	jae	.Ltmp1969
-.Ltmp1969:
+	jae	.Ltmp1778
+.Ltmp1778:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1968
-.Ltmp1967:
+	jne	.Ltmp1777
+.Ltmp1776:
 	btq	$25, %rcx
-	jae	.Ltmp1970
+	jae	.Ltmp1779
 	orw	$1, 4(%r14)
-.Ltmp1970:
+.Ltmp1779:
 	cli
 
 	#NO_APP
@@ -29782,21 +27657,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1971
+	jae	.Ltmp1780
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1971:
+.Ltmp1780:
 
 	#NO_APP
-	jmp	.LBB306_3
-.LBB306_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB302_3
+.LBB302_1:                              # %LockSpinlock.exit.i.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_3:                              # %List_Create.exit
+.LBB302_3:                              # %List_Create.exit
 	movq	%rax, vLow
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -29828,7 +27703,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_4
+	je	.LBB302_4
 # BB#5:
 	xorl	%ecx, %ecx
 	#APP
@@ -29841,19 +27716,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1972
-.Ltmp1973:
+	je	.Ltmp1781
+.Ltmp1782:
 	btq	$25, %rcx
-	jae	.Ltmp1974
-.Ltmp1974:
+	jae	.Ltmp1783
+.Ltmp1783:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1973
-.Ltmp1972:
+	jne	.Ltmp1782
+.Ltmp1781:
 	btq	$25, %rcx
-	jae	.Ltmp1975
+	jae	.Ltmp1784
 	orw	$1, 4(%r14)
-.Ltmp1975:
+.Ltmp1784:
 	cli
 
 	#NO_APP
@@ -29868,21 +27743,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1976
+	jae	.Ltmp1785
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1976:
+.Ltmp1785:
 
 	#NO_APP
-	jmp	.LBB306_6
-.LBB306_4:                              # %LockSpinlock.exit.i.7.thread
+	jmp	.LBB302_6
+.LBB302_4:                              # %LockSpinlock.exit.i.7.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_6:                              # %List_Create.exit9
+.LBB302_6:                              # %List_Create.exit9
 	movq	%rax, low
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -29914,7 +27789,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_7
+	je	.LBB302_7
 # BB#8:
 	xorl	%ecx, %ecx
 	#APP
@@ -29927,19 +27802,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1977
-.Ltmp1978:
+	je	.Ltmp1786
+.Ltmp1787:
 	btq	$25, %rcx
-	jae	.Ltmp1979
-.Ltmp1979:
+	jae	.Ltmp1788
+.Ltmp1788:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1978
-.Ltmp1977:
+	jne	.Ltmp1787
+.Ltmp1786:
 	btq	$25, %rcx
-	jae	.Ltmp1980
+	jae	.Ltmp1789
 	orw	$1, 4(%r14)
-.Ltmp1980:
+.Ltmp1789:
 	cli
 
 	#NO_APP
@@ -29954,21 +27829,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1981
+	jae	.Ltmp1790
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1981:
+.Ltmp1790:
 
 	#NO_APP
-	jmp	.LBB306_9
-.LBB306_7:                              # %LockSpinlock.exit.i.16.thread
+	jmp	.LBB302_9
+.LBB302_7:                              # %LockSpinlock.exit.i.16.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_9:                              # %List_Create.exit18
+.LBB302_9:                              # %List_Create.exit18
 	movq	%rax, medium
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30000,7 +27875,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_10
+	je	.LBB302_10
 # BB#11:
 	xorl	%ecx, %ecx
 	#APP
@@ -30013,19 +27888,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1982
-.Ltmp1983:
+	je	.Ltmp1791
+.Ltmp1792:
 	btq	$25, %rcx
-	jae	.Ltmp1984
-.Ltmp1984:
+	jae	.Ltmp1793
+.Ltmp1793:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1983
-.Ltmp1982:
+	jne	.Ltmp1792
+.Ltmp1791:
 	btq	$25, %rcx
-	jae	.Ltmp1985
+	jae	.Ltmp1794
 	orw	$1, 4(%r14)
-.Ltmp1985:
+.Ltmp1794:
 	cli
 
 	#NO_APP
@@ -30040,21 +27915,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1986
+	jae	.Ltmp1795
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1986:
+.Ltmp1795:
 
 	#NO_APP
-	jmp	.LBB306_12
-.LBB306_10:                             # %LockSpinlock.exit.i.25.thread
+	jmp	.LBB302_12
+.LBB302_10:                             # %LockSpinlock.exit.i.25.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_12:                             # %List_Create.exit27
+.LBB302_12:                             # %List_Create.exit27
 	movq	%rax, neutral
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30086,7 +27961,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_13
+	je	.LBB302_13
 # BB#14:
 	xorl	%ecx, %ecx
 	#APP
@@ -30099,19 +27974,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1987
-.Ltmp1988:
+	je	.Ltmp1796
+.Ltmp1797:
 	btq	$25, %rcx
-	jae	.Ltmp1989
-.Ltmp1989:
+	jae	.Ltmp1798
+.Ltmp1798:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1988
-.Ltmp1987:
+	jne	.Ltmp1797
+.Ltmp1796:
 	btq	$25, %rcx
-	jae	.Ltmp1990
+	jae	.Ltmp1799
 	orw	$1, 4(%r14)
-.Ltmp1990:
+.Ltmp1799:
 	cli
 
 	#NO_APP
@@ -30126,21 +28001,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1991
+	jae	.Ltmp1800
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1991:
+.Ltmp1800:
 
 	#NO_APP
-	jmp	.LBB306_15
-.LBB306_13:                             # %LockSpinlock.exit.i.34.thread
+	jmp	.LBB302_15
+.LBB302_13:                             # %LockSpinlock.exit.i.34.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_15:                             # %List_Create.exit36
+.LBB302_15:                             # %List_Create.exit36
 	movq	%rax, high
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30172,7 +28047,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_16
+	je	.LBB302_16
 # BB#17:
 	xorl	%ecx, %ecx
 	#APP
@@ -30185,19 +28060,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1992
-.Ltmp1993:
+	je	.Ltmp1801
+.Ltmp1802:
 	btq	$25, %rcx
-	jae	.Ltmp1994
-.Ltmp1994:
+	jae	.Ltmp1803
+.Ltmp1803:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1993
-.Ltmp1992:
+	jne	.Ltmp1802
+.Ltmp1801:
 	btq	$25, %rcx
-	jae	.Ltmp1995
+	jae	.Ltmp1804
 	orw	$1, 4(%r14)
-.Ltmp1995:
+.Ltmp1804:
 	cli
 
 	#NO_APP
@@ -30212,21 +28087,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp1996
+	jae	.Ltmp1805
 	sti
 	movw	$0, 4(%r14)
-.Ltmp1996:
+.Ltmp1805:
 
 	#NO_APP
-	jmp	.LBB306_18
-.LBB306_16:                             # %LockSpinlock.exit.i.43.thread
+	jmp	.LBB302_18
+.LBB302_16:                             # %LockSpinlock.exit.i.43.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_18:                             # %List_Create.exit45
+.LBB302_18:                             # %List_Create.exit45
 	movq	%rax, vHigh
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30258,7 +28133,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_19
+	je	.LBB302_19
 # BB#20:
 	xorl	%ecx, %ecx
 	#APP
@@ -30271,19 +28146,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp1997
-.Ltmp1998:
+	je	.Ltmp1806
+.Ltmp1807:
 	btq	$25, %rcx
-	jae	.Ltmp1999
-.Ltmp1999:
+	jae	.Ltmp1808
+.Ltmp1808:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp1998
-.Ltmp1997:
+	jne	.Ltmp1807
+.Ltmp1806:
 	btq	$25, %rcx
-	jae	.Ltmp2000
+	jae	.Ltmp1809
 	orw	$1, 4(%r14)
-.Ltmp2000:
+.Ltmp1809:
 	cli
 
 	#NO_APP
@@ -30298,21 +28173,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp2001
+	jae	.Ltmp1810
 	sti
 	movw	$0, 4(%r14)
-.Ltmp2001:
+.Ltmp1810:
 
 	#NO_APP
-	jmp	.LBB306_21
-.LBB306_19:                             # %LockSpinlock.exit.i.52.thread
+	jmp	.LBB302_21
+.LBB302_19:                             # %LockSpinlock.exit.i.52.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_21:                             # %List_Create.exit54
+.LBB302_21:                             # %List_Create.exit54
 	movq	%rax, max
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30344,7 +28219,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_22
+	je	.LBB302_22
 # BB#23:
 	xorl	%ecx, %ecx
 	#APP
@@ -30357,19 +28232,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp2002
-.Ltmp2003:
+	je	.Ltmp1811
+.Ltmp1812:
 	btq	$25, %rcx
-	jae	.Ltmp2004
-.Ltmp2004:
+	jae	.Ltmp1813
+.Ltmp1813:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp2003
-.Ltmp2002:
+	jne	.Ltmp1812
+.Ltmp1811:
 	btq	$25, %rcx
-	jae	.Ltmp2005
+	jae	.Ltmp1814
 	orw	$1, 4(%r14)
-.Ltmp2005:
+.Ltmp1814:
 	cli
 
 	#NO_APP
@@ -30384,21 +28259,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp2006
+	jae	.Ltmp1815
 	sti
 	movw	$0, 4(%r14)
-.Ltmp2006:
+.Ltmp1815:
 
 	#NO_APP
-	jmp	.LBB306_24
-.LBB306_22:                             # %LockSpinlock.exit.i.61.thread
+	jmp	.LBB302_24
+.LBB302_22:                             # %LockSpinlock.exit.i.61.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_24:                             # %List_Create.exit63
+.LBB302_24:                             # %List_Create.exit63
 	movq	%rax, thds
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30430,7 +28305,7 @@ Thread_Initialize:                      # @Thread_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB306_25
+	je	.LBB302_25
 # BB#26:
 	xorl	%ecx, %ecx
 	#APP
@@ -30443,19 +28318,19 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp2007
-.Ltmp2008:
+	je	.Ltmp1816
+.Ltmp1817:
 	btq	$25, %rcx
-	jae	.Ltmp2009
-.Ltmp2009:
+	jae	.Ltmp1818
+.Ltmp1818:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp2008
-.Ltmp2007:
+	jne	.Ltmp1817
+.Ltmp1816:
 	btq	$25, %rcx
-	jae	.Ltmp2010
+	jae	.Ltmp1819
 	orw	$1, 4(%r14)
-.Ltmp2010:
+.Ltmp1819:
 	cli
 
 	#NO_APP
@@ -30470,21 +28345,21 @@ Thread_Initialize:                      # @Thread_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp2011
+	jae	.Ltmp1820
 	sti
 	movw	$0, 4(%r14)
-.Ltmp2011:
+.Ltmp1820:
 
 	#NO_APP
-	jmp	.LBB306_27
-.LBB306_25:                             # %LockSpinlock.exit.i.70.thread
+	jmp	.LBB302_27
+.LBB302_25:                             # %LockSpinlock.exit.i.70.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB306_27:                             # %List_Create.exit72
+.LBB302_27:                             # %List_Create.exit72
 	movq	%rax, cores
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -30518,8 +28393,8 @@ Thread_Initialize:                      # @Thread_Initialize
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end306:
-	.size	Thread_Initialize, .Lfunc_end306-Thread_Initialize
+.Lfunc_end302:
+	.size	Thread_Initialize, .Lfunc_end302-Thread_Initialize
 	.cfi_endproc
 
 	.globl	CreateThread
@@ -30529,32 +28404,32 @@ CreateThread:                           # @CreateThread
 	.cfi_startproc
 # BB#0:                                 # %CreateSpinlock.exit
 	pushq	%rbp
-.Ltmp2012:
+.Ltmp1821:
 	.cfi_def_cfa_offset 16
-.Ltmp2013:
+.Ltmp1822:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2014:
+.Ltmp1823:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r13
 	pushq	%r12
 	pushq	%rbx
-	subq	$56, %rsp
-.Ltmp2015:
+	subq	$40, %rsp
+.Ltmp1824:
 	.cfi_offset %rbx, -56
-.Ltmp2016:
+.Ltmp1825:
 	.cfi_offset %r12, -48
-.Ltmp2017:
+.Ltmp1826:
 	.cfi_offset %r13, -40
-.Ltmp2018:
+.Ltmp1827:
 	.cfi_offset %r14, -32
-.Ltmp2019:
+.Ltmp1828:
 	.cfi_offset %r15, -24
 	movq	%rsi, %r13
-	movq	%rdi, %r12
-	movl	$176, %edi
+	movq	%rdi, -64(%rbp)         # 8-byte Spill
+	movl	$160, %edi
 	callq	kmalloc
 	movq	%rax, %r15
 	movq	%r15, %r14
@@ -30585,9 +28460,9 @@ CreateThread:                           # @CreateThread
 	movq	$0, 16(%rsi)
 	movq	$0, 8(%rsi)
 	movq	$0, (%rsi)
-	movq	%rsi, 168(%r15)
+	movq	%rsi, 152(%r15)
 	testq	%rsi, %rsi
-	je	.LBB307_2
+	je	.LBB303_2
 # BB#1:
 	xorl	%eax, %eax
 	#APP
@@ -30600,43 +28475,43 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%ax, 2(%rsi)
 	cmpw	%ax, (%rsi)
-	je	.Ltmp2020
-.Ltmp2021:
+	je	.Ltmp1829
+.Ltmp1830:
 	btq	$25, %rax
-	jae	.Ltmp2022
-.Ltmp2022:
+	jae	.Ltmp1831
+.Ltmp1831:
 	pause
 	cmpw	%ax, (%rsi)
-	jne	.Ltmp2021
-.Ltmp2020:
+	jne	.Ltmp1830
+.Ltmp1829:
 	btq	$25, %rax
-	jae	.Ltmp2023
+	jae	.Ltmp1832
 	orw	$1, 4(%rsi)
-.Ltmp2023:
+.Ltmp1832:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rsi
-.LBB307_2:                              # %LockSpinlock.exit
-	movq	%r13, 24(%r14)
+	movq	152(%r14), %rsi
+.LBB303_2:                              # %LockSpinlock.exit
+	movq	%r13, 16(%r14)
 	testq	%rsi, %rsi
-	je	.LBB307_3
-# BB#6:                                 # %UnlockSpinlock.exit
+	je	.LBB303_3
+# BB#5:                                 # %UnlockSpinlock.exit
 	#APP
 	mfence
 	lock
 	incw	(%rsi)
 	btw	$0, 4(%rsi)
-	jae	.Ltmp2024
+	jae	.Ltmp1833
 	sti
 	movw	$0, 4(%rsi)
-.Ltmp2024:
+.Ltmp1833:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	movq	152(%r14), %rax
 	testq	%rax, %rax
-	je	.LBB307_7
-# BB#8:                                 # %LockSpinlock.exit3
+	je	.LBB303_6
+# BB#7:                                 # %LockSpinlock.exit3
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -30648,42 +28523,42 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp2025
-.Ltmp2026:
+	je	.Ltmp1834
+.Ltmp1835:
 	btq	$25, %rcx
-	jae	.Ltmp2027
-.Ltmp2027:
+	jae	.Ltmp1836
+.Ltmp1836:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp2026
-.Ltmp2025:
+	jne	.Ltmp1835
+.Ltmp1834:
 	btq	$25, %rcx
-	jae	.Ltmp2028
+	jae	.Ltmp1837
 	orw	$1, 4(%rax)
-.Ltmp2028:
+.Ltmp1837:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rax
-	movl	$0, 32(%r14)
+	movq	152(%r14), %rax
+	movl	$0, 24(%r14)
 	testq	%rax, %rax
-	je	.LBB307_4
-# BB#9:                                 # %UnlockSpinlock.exit5
+	je	.LBB303_4
+# BB#8:                                 # %UnlockSpinlock.exit5
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2029
+	jae	.Ltmp1838
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2029:
+.Ltmp1838:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	movq	152(%r14), %rax
 	testq	%rax, %rax
-	je	.LBB307_10
-# BB#11:                                # %LockSpinlock.exit7
+	je	.LBB303_9
+# BB#10:                                # %LockSpinlock.exit7
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -30695,42 +28570,42 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp2030
-.Ltmp2031:
+	je	.Ltmp1839
+.Ltmp1840:
 	btq	$25, %rcx
-	jae	.Ltmp2032
-.Ltmp2032:
+	jae	.Ltmp1841
+.Ltmp1841:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp2031
-.Ltmp2030:
+	jne	.Ltmp1840
+.Ltmp1839:
 	btq	$25, %rcx
-	jae	.Ltmp2033
+	jae	.Ltmp1842
 	orw	$1, 4(%rax)
-.Ltmp2033:
+.Ltmp1842:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rax
-	movl	$3, 40(%r14)
+	movq	152(%r14), %rax
+	movl	$3, 32(%r14)
 	testq	%rax, %rax
-	je	.LBB307_5
-# BB#12:                                # %UnlockSpinlock.exit9
+	je	.LBB303_12
+# BB#11:                                # %UnlockSpinlock.exit9
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2034
+	jae	.Ltmp1843
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2034:
+.Ltmp1843:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	movq	152(%r14), %rax
 	testq	%rax, %rax
-	je	.LBB307_13
-# BB#14:                                # %LockSpinlock.exit11
+	je	.LBB303_12
+# BB#13:                                # %LockSpinlock.exit11
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -30742,121 +28617,124 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp2035
-.Ltmp2036:
+	je	.Ltmp1844
+.Ltmp1845:
 	btq	$25, %rcx
-	jae	.Ltmp2037
-.Ltmp2037:
+	jae	.Ltmp1846
+.Ltmp1846:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp2036
-.Ltmp2035:
+	jne	.Ltmp1845
+.Ltmp1844:
 	btq	$25, %rcx
-	jae	.Ltmp2038
+	jae	.Ltmp1847
 	orw	$1, 4(%rax)
-.Ltmp2038:
+.Ltmp1847:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rax
-	movq	%r12, (%r14)
+	movq	152(%r14), %rax
+	movq	$0, 88(%r14)
 	testq	%rax, %rax
-	je	.LBB307_16
-# BB#15:                                # %UnlockSpinlock.exit13
+	je	.LBB303_15
+# BB#14:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2039
+	jae	.Ltmp1848
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2039:
+.Ltmp1848:
 
 	#NO_APP
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_16
-# BB#17:                                # %LockSpinlock.exit15
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2040
-.Ltmp2041:
-	btq	$25, %rcx
-	jae	.Ltmp2042
-.Ltmp2042:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2041
-.Ltmp2040:
-	btq	$25, %rcx
-	jae	.Ltmp2043
-	orw	$1, 4(%rax)
-.Ltmp2043:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rax
-	movq	$0, 120(%r14)
-	testq	%rax, %rax
-	je	.LBB307_19
-# BB#18:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2044
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2044:
-
-	#NO_APP
-	jmp	.LBB307_19
-.LBB307_3:                              # %LockSpinlock.exit3.thread212
-	movl	$0, 32(%r14)
-.LBB307_4:                              # %LockSpinlock.exit7.thread214
-	movl	$3, 40(%r14)
-.LBB307_5:                              # %LockSpinlock.exit11.thread216
-	movq	%r12, (%r14)
-	movq	$0, 120(%r14)
-	jmp	.LBB307_19
-.LBB307_7:                              # %LockSpinlock.exit3.thread
-	movl	$0, 32(%r14)
-	movl	$3, 40(%r14)
-	movq	%r12, (%r14)
-	movq	$0, 120(%r14)
-	jmp	.LBB307_19
-.LBB307_10:                             # %LockSpinlock.exit7.thread
-	movl	$3, 40(%r14)
-	movq	%r12, (%r14)
-	movq	$0, 120(%r14)
-	jmp	.LBB307_19
-.LBB307_16:                             # %LockSpinlock.exit15.thread218
-	movq	$0, 120(%r14)
-	jmp	.LBB307_19
-.LBB307_13:                             # %LockSpinlock.exit11.thread
-	movq	%r12, (%r14)
-	movq	$0, 120(%r14)
-.LBB307_19:                             # %UnlockSpinlock.exit17
+	jmp	.LBB303_15
+.LBB303_3:                              # %LockSpinlock.exit3.thread168
+	movl	$0, 24(%r14)
+.LBB303_4:                              # %LockSpinlock.exit7.thread170
+	movl	$3, 32(%r14)
+	movq	$0, 88(%r14)
+	jmp	.LBB303_15
+.LBB303_6:                              # %LockSpinlock.exit3.thread
+	movl	$0, 24(%r14)
+	movl	$3, 32(%r14)
+	movq	$0, 88(%r14)
+	jmp	.LBB303_15
+.LBB303_12:                             # %LockSpinlock.exit11.thread172
+	movq	$0, 88(%r14)
+	jmp	.LBB303_15
+.LBB303_9:                              # %LockSpinlock.exit7.thread
+	movl	$3, 32(%r14)
+	movq	$0, 88(%r14)
+.LBB303_15:                             # %UnlockSpinlock.exit13
 	movb	state_area_size, %al
 	andb	$1, %al
 	movl	$1040, %eax             # imm = 0x410
 	movl	$16, %edi
 	cmovneq	%rax, %rdi
 	callq	kmalloc
-	movq	168(%r14), %rcx
+	movq	152(%r14), %rcx
 	testq	%rcx, %rcx
-	je	.LBB307_20
+	je	.LBB303_16
+# BB#17:                                # %LockSpinlock.exit15
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1849
+.Ltmp1850:
+	btq	$25, %rdx
+	jae	.Ltmp1851
+.Ltmp1851:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1850
+.Ltmp1849:
+	btq	$25, %rdx
+	jae	.Ltmp1852
+	orw	$1, 4(%rcx)
+.Ltmp1852:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	%r15, %r13
+	subq	$-128, %r13
+	movq	%rax, 128(%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_19
+# BB#18:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1853
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1853:
+
+	#NO_APP
+	jmp	.LBB303_19
+.LBB303_16:                             # %LockSpinlock.exit15.thread
+	movq	%r15, %r13
+	subq	$-128, %r13
+	movq	%rax, 128(%r14)
+.LBB303_19:                             # %UnlockSpinlock.exit17
+	movl	$16384, %edi            # imm = 0x4000
+	callq	kmalloc
+	addq	$16384, %rax            # imm = 0x4000
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_20
 # BB#21:                                # %LockSpinlock.exit19
 	xorl	%edx, %edx
 	#APP
@@ -30869,50 +28747,50 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2045
-.Ltmp2046:
+	je	.Ltmp1854
+.Ltmp1855:
 	btq	$25, %rdx
-	jae	.Ltmp2047
-.Ltmp2047:
+	jae	.Ltmp1856
+.Ltmp1856:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2046
-.Ltmp2045:
+	jne	.Ltmp1855
+.Ltmp1854:
 	btq	$25, %rdx
-	jae	.Ltmp2048
+	jae	.Ltmp1857
 	orw	$1, 4(%rcx)
-.Ltmp2048:
+.Ltmp1857:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	leaq	152(%r15), %rbx
-	movq	%rax, 152(%r14)
+	movq	152(%r14), %rcx
+	leaq	40(%r15), %rbx
+	movq	%rax, 40(%r14)
 	testq	%rcx, %rcx
-	je	.LBB307_23
+	je	.LBB303_23
 # BB#22:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2049
+	jae	.Ltmp1858
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2049:
+.Ltmp1858:
 
 	#NO_APP
-	jmp	.LBB307_23
-.LBB307_20:                             # %LockSpinlock.exit19.thread
-	leaq	152(%r15), %rbx
-	movq	%rax, 152(%r14)
-.LBB307_23:                             # %UnlockSpinlock.exit21
+	jmp	.LBB303_23
+.LBB303_20:                             # %LockSpinlock.exit19.thread
+	leaq	40(%r15), %rbx
+	movq	%rax, 40(%r14)
+.LBB303_23:                             # %UnlockSpinlock.exit21
 	movl	$16384, %edi            # imm = 0x4000
 	callq	kmalloc
 	addq	$16384, %rax            # imm = 0x4000
-	movq	168(%r14), %rcx
+	movq	152(%r14), %rcx
 	testq	%rcx, %rcx
-	je	.LBB307_24
+	je	.LBB303_24
 # BB#25:                                # %LockSpinlock.exit23
 	xorl	%edx, %edx
 	#APP
@@ -30925,112 +28803,50 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2050
-.Ltmp2051:
+	je	.Ltmp1859
+.Ltmp1860:
 	btq	$25, %rdx
-	jae	.Ltmp2052
-.Ltmp2052:
+	jae	.Ltmp1861
+.Ltmp1861:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2051
-.Ltmp2050:
+	jne	.Ltmp1860
+.Ltmp1859:
 	btq	$25, %rdx
-	jae	.Ltmp2053
+	jae	.Ltmp1862
 	orw	$1, 4(%rcx)
-.Ltmp2053:
+.Ltmp1862:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	leaq	64(%r15), %rdx
-	movq	%rax, 64(%r14)
+	movq	152(%r14), %rcx
+	leaq	56(%r15), %r12
+	movq	%rax, 56(%r14)
 	testq	%rcx, %rcx
-	je	.LBB307_26
-# BB#27:
-	movq	%rdx, -64(%rbp)         # 8-byte Spill
+	je	.LBB303_27
+# BB#26:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2054
+	jae	.Ltmp1863
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2054:
+.Ltmp1863:
 
 	#NO_APP
-	jmp	.LBB307_28
-.LBB307_24:                             # %LockSpinlock.exit23.thread
-	leaq	64(%r15), %rcx
-	movq	%rcx, -64(%rbp)         # 8-byte Spill
-	movq	%rax, 64(%r14)
-	jmp	.LBB307_28
-.LBB307_26:
-	movq	%rdx, -64(%rbp)         # 8-byte Spill
-.LBB307_28:                             # %UnlockSpinlock.exit25
-	movq	%r12, %r13
-	movl	$16384, %edi            # imm = 0x4000
-	callq	kmalloc
-	addq	$16384, %rax            # imm = 0x4000
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_29
-# BB#30:                                # %LockSpinlock.exit27
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2055
-.Ltmp2056:
-	btq	$25, %rdx
-	jae	.Ltmp2057
-.Ltmp2057:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2056
-.Ltmp2055:
-	btq	$25, %rdx
-	jae	.Ltmp2058
-	orw	$1, 4(%rcx)
-.Ltmp2058:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rcx
-	leaq	72(%r15), %r12
-	movq	%rax, 72(%r14)
-	testq	%rcx, %rcx
-	je	.LBB307_32
-# BB#31:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2059
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2059:
-
-	#NO_APP
-	jmp	.LBB307_32
-.LBB307_29:                             # %LockSpinlock.exit27.thread
-	leaq	72(%r15), %r12
-	movq	%rax, 72(%r14)
-.LBB307_32:                             # %UnlockSpinlock.exit29
+	jmp	.LBB303_27
+.LBB303_24:                             # %LockSpinlock.exit23.thread
+	leaq	56(%r15), %r12
+	movq	%rax, 56(%r14)
+.LBB303_27:                             # %UnlockSpinlock.exit25
 	movl	$16, %edi
 	callq	kmalloc
-	movq	168(%r14), %rcx
+	movq	152(%r14), %rcx
 	testq	%rcx, %rcx
-	je	.LBB307_33
-# BB#34:                                # %LockSpinlock.exit31
+	je	.LBB303_28
+# BB#29:                                # %LockSpinlock.exit27
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -31042,42 +28858,42 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2060
-.Ltmp2061:
+	je	.Ltmp1864
+.Ltmp1865:
 	btq	$25, %rdx
-	jae	.Ltmp2062
-.Ltmp2062:
+	jae	.Ltmp1866
+.Ltmp1866:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2061
-.Ltmp2060:
+	jne	.Ltmp1865
+.Ltmp1864:
 	btq	$25, %rdx
-	jae	.Ltmp2063
+	jae	.Ltmp1867
 	orw	$1, 4(%rcx)
-.Ltmp2063:
+.Ltmp1867:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	movq	%rax, 160(%r14)
+	movq	152(%r14), %rcx
+	movq	%rax, 136(%r14)
 	testq	%rcx, %rcx
-	je	.LBB307_36
-# BB#35:                                # %UnlockSpinlock.exit33
+	je	.LBB303_31
+# BB#30:                                # %UnlockSpinlock.exit29
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2064
+	jae	.Ltmp1868
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2064:
+.Ltmp1868:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	movq	152(%r14), %rax
 	testq	%rax, %rax
-	je	.LBB307_36
-# BB#37:                                # %LockSpinlock.exit35
+	je	.LBB303_31
+# BB#32:                                # %LockSpinlock.exit31
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -31089,122 +28905,2319 @@ CreateThread:                           # @CreateThread
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
+	je	.Ltmp1869
+.Ltmp1870:
+	btq	$25, %rcx
+	jae	.Ltmp1871
+.Ltmp1871:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1870
+.Ltmp1869:
+	btq	$25, %rcx
+	jae	.Ltmp1872
+	orw	$1, 4(%rax)
+.Ltmp1872:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rax
+	movq	$0, 120(%r14)
+	testq	%rax, %rax
+	je	.LBB303_34
+# BB#33:                                # %UnlockSpinlock.exit33
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1873
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1873:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_34
+# BB#35:                                # %LockSpinlock.exit35
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1874
+.Ltmp1875:
+	btq	$25, %rcx
+	jae	.Ltmp1876
+.Ltmp1876:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1875
+.Ltmp1874:
+	btq	$25, %rcx
+	jae	.Ltmp1877
+	orw	$1, 4(%rax)
+.Ltmp1877:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rax
+	movq	$0, 112(%r14)
+	testq	%rax, %rax
+	je	.LBB303_36
+# BB#37:                                # %UnlockSpinlock.exit37
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1878
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1878:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_38
+# BB#39:                                # %LockSpinlock.exit39
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1879
+.Ltmp1880:
+	btq	$25, %rcx
+	jae	.Ltmp1881
+.Ltmp1881:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1880
+.Ltmp1879:
+	btq	$25, %rcx
+	jae	.Ltmp1882
+	orw	$1, 4(%rax)
+.Ltmp1882:
+	cli
+
+	#NO_APP
+	movq	56(%r14), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_40
+# BB#41:                                # %UnlockSpinlock.exit41
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1883
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1883:
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	andq	$-16, %rax
+	testq	%rcx, %rcx
+	je	.LBB303_42
+# BB#43:                                # %LockSpinlock.exit43
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1884
+.Ltmp1885:
+	btq	$25, %rdx
+	jae	.Ltmp1886
+.Ltmp1886:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1885
+.Ltmp1884:
+	btq	$25, %rdx
+	jae	.Ltmp1887
+	orw	$1, 4(%rcx)
+.Ltmp1887:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	%rax, 64(%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_44
+# BB#45:                                # %UnlockSpinlock.exit45
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1888
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1888:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_46
+# BB#47:                                # %LockSpinlock.exit47
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1889
+.Ltmp1890:
+	btq	$25, %rcx
+	jae	.Ltmp1891
+.Ltmp1891:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1890
+.Ltmp1889:
+	btq	$25, %rcx
+	jae	.Ltmp1892
+	orw	$1, 4(%rax)
+.Ltmp1892:
+	cli
+
+	#NO_APP
+	movq	40(%r14), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	movq	-64(%rbp), %rdi         # 8-byte Reload
+	je	.LBB303_48
+# BB#49:                                # %UnlockSpinlock.exit49
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1893
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1893:
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	andq	$-16, %rax
+	testq	%rcx, %rcx
+	je	.LBB303_50
+# BB#51:                                # %LockSpinlock.exit51
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1894
+.Ltmp1895:
+	btq	$25, %rdx
+	jae	.Ltmp1896
+.Ltmp1896:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1895
+.Ltmp1894:
+	btq	$25, %rdx
+	jae	.Ltmp1897
+	orw	$1, 4(%rcx)
+.Ltmp1897:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	%rax, 48(%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_52
+# BB#53:                                # %UnlockSpinlock.exit53
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1898
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1898:
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_52
+# BB#54:                                # %LockSpinlock.exit55
+	xorl	%eax, %eax
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rax
+	shlq	$16, %rax
+	movw	$1, %ax
+	lock
+	xaddw	%ax, 2(%rcx)
+	cmpw	%ax, (%rcx)
+	je	.Ltmp1899
+.Ltmp1900:
+	btq	$25, %rax
+	jae	.Ltmp1901
+.Ltmp1901:
+	pause
+	cmpw	%ax, (%rcx)
+	jne	.Ltmp1900
+.Ltmp1899:
+	btq	$25, %rax
+	jae	.Ltmp1902
+	orw	$1, 4(%rcx)
+.Ltmp1902:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	(%r13), %rbx
+	testq	%rcx, %rcx
+	je	.LBB303_56
+# BB#55:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1903
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1903:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	jmp	.LBB303_56
+.LBB303_31:                             # %LockSpinlock.exit31.thread
+	movq	$0, 120(%r14)
+	movq	$0, 112(%r14)
+	movq	(%r12), %rax
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_28:                             # %LockSpinlock.exit27.thread
+	movq	%rax, 136(%r14)
+	movq	$0, 120(%r14)
+	movq	$0, 112(%r14)
+	movq	(%r12), %rax
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_34:                             # %LockSpinlock.exit35.thread
+	movq	$0, 112(%r14)
+	movq	(%r12), %rax
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_36:                             # %LockSpinlock.exit39.thread138
+	movq	(%r12), %rax
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_38:                             # %UnlockSpinlock.exit41.thread164
+	movq	(%r12), %rax
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_40:                             # %UnlockSpinlock.exit41.thread
+	andq	$-16, %rax
+	movq	%rax, 64(%r14)
+	jmp	.LBB303_44
+.LBB303_42:                             # %LockSpinlock.exit43.thread
+	movq	%rax, 64(%r14)
+.LBB303_44:                             # %LockSpinlock.exit47.thread139
+	movq	(%rbx), %rax
+	movq	-64(%rbp), %rdi         # 8-byte Reload
+	andq	$-16, %rax
+	movq	%rax, 48(%r14)
+.LBB303_52:                             # %LockSpinlock.exit55.thread140
+	movq	(%r13), %rbx
+	xorl	%eax, %eax
+.LBB303_56:                             # %UnlockSpinlock.exit57
+	movq	%rbx, %rcx
+	andq	$15, %rcx
+	movl	$16, %esi
+	subq	%rcx, %rsi
+	xorl	%ecx, %ecx
+	movq	%rbx, %rdx
+	andq	$15, %rdx
+	cmovneq	%rsi, %rcx
+	addq	%rbx, %rcx
+	testq	%rax, %rax
+	je	.LBB303_57
+# BB#58:                                # %LockSpinlock.exit59
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp1904
+.Ltmp1905:
+	btq	$25, %rdx
+	jae	.Ltmp1906
+.Ltmp1906:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp1905
+.Ltmp1904:
+	btq	$25, %rdx
+	jae	.Ltmp1907
+	orw	$1, 4(%rax)
+.Ltmp1907:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rax
+	movq	%rcx, 128(%r14)
+	testq	%rax, %rax
+	je	.LBB303_63
+# BB#59:                                # %UnlockSpinlock.exit61
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1908
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1908:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_60
+# BB#61:                                # %LockSpinlock.exit63
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1909
+.Ltmp1910:
+	btq	$25, %rcx
+	jae	.Ltmp1911
+.Ltmp1911:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1910
+.Ltmp1909:
+	btq	$25, %rcx
+	jae	.Ltmp1912
+	orw	$1, 4(%rax)
+.Ltmp1912:
+	cli
+
+	#NO_APP
+	movq	128(%r14), %rcx
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_63
+# BB#62:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1913
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1913:
+
+	#NO_APP
+	jmp	.LBB303_63
+.LBB303_57:                             # %LockSpinlock.exit59.thread
+	movq	%rcx, (%r13)
+	jmp	.LBB303_63
+.LBB303_60:                             # %LockSpinlock.exit63.thread
+	movq	(%r13), %rcx
+.LBB303_63:                             # %SaveFPUState.exit
+	#APP
+	fxsave64	(%rcx)
+	#NO_APP
+	movq	$0, -48(%rbp)
+	leaq	-48(%rbp), %rsi
+	callq	GetProcessReference
+	cmpl	$2, %eax
+	jne	.LBB303_64
+# BB#130:
+	movabsq	$-2401053089206453570, %rcx # imm = 0xDEADBEEFCAFEBABE
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_142
+# BB#131:
+	movq	alloc_sync, %rdx
+	testq	%rdx, %rdx
+	je	.LBB303_133
+# BB#132:
+	xorl	%esi, %esi
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rsi
+	shlq	$16, %rsi
+	movw	$1, %si
+	lock
+	xaddw	%si, 2(%rdx)
+	cmpw	%si, (%rdx)
+	je	.Ltmp1914
+.Ltmp1915:
+	btq	$25, %rsi
+	jae	.Ltmp1916
+.Ltmp1916:
+	pause
+	cmpw	%si, (%rdx)
+	jne	.Ltmp1915
+.Ltmp1914:
+	btq	$25, %rsi
+	jae	.Ltmp1917
+	orw	$1, 4(%rdx)
+.Ltmp1917:
+	cli
+
+	#NO_APP
+.LBB303_133:                            # %LockSpinlock.exit.i.i
+	cmpq	%rcx, -24(%rax)
+	je	.LBB303_135
+# BB#134:
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB303_135:                            # %.preheader.i.i
+	movq	allocation_info, %rdi
+	.align	16, 0x90
+.LBB303_136:                            # =>This Inner Loop Header: Depth=1
+	movq	%rdi, %rdx
+	movq	(%rdx), %rsi
+	movq	16(%rdx), %rdi
+	testq	%rdi, %rdi
+	je	.LBB303_140
+# BB#137:                               #   in Loop: Header=BB303_136 Depth=1
+	movl	%esi, %ebx
+	andl	$1, %ebx
+	cmpq	%rax, %rsi
+	jne	.LBB303_136
+# BB#138:                               #   in Loop: Header=BB303_136 Depth=1
+	testq	%rbx, %rbx
+	je	.LBB303_136
+# BB#139:
+	movq	%rax, %rsi
+.LBB303_140:                            # %.loopexit.i.i
+	andq	$-2, %rsi
+	movq	%rsi, (%rdx)
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB303_144
+# BB#141:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1918
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1918:
+
+	#NO_APP
+.LBB303_142:                            # %FreeSpinlock.exit
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB303_144
+# BB#143:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp1919
+.Ltmp1920:
+	btq	$25, %rdx
+	jae	.Ltmp1921
+.Ltmp1921:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp1920
+.Ltmp1919:
+	btq	$25, %rdx
+	jae	.Ltmp1922
+	orw	$1, 4(%rax)
+.Ltmp1922:
+	cli
+
+	#NO_APP
+.LBB303_144:                            # %LockSpinlock.exit.i.113
+	cmpq	%rcx, -24(%r14)
+	je	.LBB303_146
+# BB#145:
+	movq	%r14, %rax
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB303_146:                            # %.preheader.i
+	movq	allocation_info, %rdx
+	.align	16, 0x90
+.LBB303_147:                            # =>This Inner Loop Header: Depth=1
+	movq	%rdx, %rax
+	movq	(%rax), %rcx
+	movq	16(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB303_151
+# BB#148:                               #   in Loop: Header=BB303_147 Depth=1
+	movl	%ecx, %esi
+	andl	$1, %esi
+	cmpq	%r15, %rcx
+	jne	.LBB303_147
+# BB#149:                               #   in Loop: Header=BB303_147 Depth=1
+	testq	%rsi, %rsi
+	je	.LBB303_147
+# BB#150:
+	movq	%r14, %rcx
+.LBB303_151:                            # %.loopexit.i
+	andq	$-2, %rcx
+	movq	%rcx, (%rax)
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB303_153
+# BB#152:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1923
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1923:
+
+	#NO_APP
+.LBB303_153:                            # %kfree.exit
+	movq	$-1, %rax
+	jmp	.LBB303_154
+.LBB303_64:
+	movq	-48(%rbp), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_65
+# BB#66:                                # %LockSpinlock.exit67
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1924
+.Ltmp1925:
+	btq	$25, %rdx
+	jae	.Ltmp1926
+.Ltmp1926:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1925
+.Ltmp1924:
+	btq	$25, %rdx
+	jae	.Ltmp1927
+	orw	$1, 4(%rcx)
+.Ltmp1927:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	addq	$8, %r15
+	movq	%rax, 8(%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_67
+# BB#68:                                # %UnlockSpinlock.exit69
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1928
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1928:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	movq	$0, -56(%rbp)
+	testq	%rax, %rax
+	je	.LBB303_69
+# BB#70:                                # %LockSpinlock.exit71
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1929
+.Ltmp1930:
+	btq	$25, %rcx
+	jae	.Ltmp1931
+.Ltmp1931:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1930
+.Ltmp1929:
+	btq	$25, %rcx
+	jae	.Ltmp1932
+	orw	$1, 4(%rax)
+.Ltmp1932:
+	cli
+
+	#NO_APP
+	movq	8(%r14), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_72
+# BB#71:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1933
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1933:
+
+	#NO_APP
+	jmp	.LBB303_72
+.LBB303_65:                             # %LockSpinlock.exit67.thread
+	addq	$8, %r15
+	movq	%rax, 8(%r14)
+	movq	$0, -56(%rbp)
+	jmp	.LBB303_72
+.LBB303_67:                             # %UnlockSpinlock.exit69.thread
+	movq	$0, -56(%rbp)
+	jmp	.LBB303_72
+.LBB303_69:                             # %UnlockSpinlock.exit69.LockSpinlock.exit71.thread_crit_edge
+	movq	(%r15), %rax
+.LBB303_72:                             # %UnlockSpinlock.exit73
+	movq	288(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_73
+# BB#74:                                # %LockSpinlock.exit75
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1934
+.Ltmp1935:
+	btq	$25, %rdx
+	jae	.Ltmp1936
+.Ltmp1936:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1935
+.Ltmp1934:
+	btq	$25, %rdx
+	jae	.Ltmp1937
+	orw	$1, 4(%rcx)
+.Ltmp1937:
+	cli
+
+	#NO_APP
+	movq	272(%rax), %rcx
+	movq	288(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB303_76
+# BB#75:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1938
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1938:
+
+	#NO_APP
+	jmp	.LBB303_76
+.LBB303_73:                             # %LockSpinlock.exit75.thread
+	movq	272(%rax), %rcx
+.LBB303_76:                             # %UnlockSpinlock.exit77
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB303_78
+# BB#77:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp1939
+.Ltmp1940:
+	btq	$25, %rdx
+	jae	.Ltmp1941
+.Ltmp1941:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp1940
+.Ltmp1939:
+	btq	$25, %rdx
+	jae	.Ltmp1942
+	orw	$1, 4(%rax)
+.Ltmp1942:
+	cli
+
+	#NO_APP
+.LBB303_78:                             # %LockSpinlock.exit.i
+	movq	(%rcx), %rdi
+	movl	$16384, %esi            # imm = 0x4000
+	movl	$1, %edx
+	movl	$1, %ecx
+	callq	VirtMemMan_FindFreeAddress
+	xorl	%r12d, %r12d
+	testq	%rax, %rax
+	je	.LBB303_80
+# BB#79:
+	movq	%rax, -56(%rbp)
+	movq	%rax, %r12
+.LBB303_80:
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB303_82
+# BB#81:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1943
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1943:
+
+	#NO_APP
+.LBB303_82:                             # %FindFreeVirtualAddress.exit
+	testq	%r12, %r12
+	je	.LBB303_83
+# BB#84:
+	leaq	16256(%r12), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_85
+# BB#86:                                # %LockSpinlock.exit80
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1944
+.Ltmp1945:
+	btq	$25, %rdx
+	jae	.Ltmp1946
+.Ltmp1946:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1945
+.Ltmp1944:
+	btq	$25, %rdx
+	jae	.Ltmp1947
+	orw	$1, 4(%rcx)
+.Ltmp1947:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	%rax, 72(%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_87
+# BB#88:                                # %UnlockSpinlock.exit82
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1948
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1948:
+
+	#NO_APP
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_89
+# BB#90:                                # %LockSpinlock.exit84
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1949
+.Ltmp1950:
+	btq	$25, %rcx
+	jae	.Ltmp1951
+.Ltmp1951:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1950
+.Ltmp1949:
+	btq	$25, %rcx
+	jae	.Ltmp1952
+	orw	$1, 4(%rax)
+.Ltmp1952:
+	cli
+
+	#NO_APP
+	movq	8(%r14), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_92
+# BB#91:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1953
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1953:
+
+	#NO_APP
+	jmp	.LBB303_92
+	.align	16, 0x90
+.LBB303_83:                             # %.preheader
+                                        # =>This Inner Loop Header: Depth=1
+	jmp	.LBB303_83
+.LBB303_85:                             # %LockSpinlock.exit80.thread
+	movq	%rax, 72(%r14)
+	movq	(%r15), %rax
+	jmp	.LBB303_92
+.LBB303_87:                             # %LockSpinlock.exit84.thread142
+	movq	(%r15), %rax
+	jmp	.LBB303_92
+.LBB303_89:                             # %LockSpinlock.exit84.thread
+	movq	(%r15), %rax
+.LBB303_92:                             # %UnlockSpinlock.exit86
+	movq	288(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_93
+# BB#94:                                # %LockSpinlock.exit88
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1954
+.Ltmp1955:
+	btq	$25, %rdx
+	jae	.Ltmp1956
+.Ltmp1956:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1955
+.Ltmp1954:
+	btq	$25, %rdx
+	jae	.Ltmp1957
+	orw	$1, 4(%rcx)
+.Ltmp1957:
+	cli
+
+	#NO_APP
+	movq	272(%rax), %r15
+	movq	288(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB303_96
+# BB#95:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1958
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1958:
+
+	#NO_APP
+	jmp	.LBB303_96
+.LBB303_93:                             # %LockSpinlock.exit88.thread
+	movq	272(%rax), %r15
+.LBB303_96:                             # %UnlockSpinlock.exit90
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB303_97
+# BB#98:                                # %LockSpinlock.exit.i.92
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1959
+.Ltmp1960:
+	btq	$25, %rcx
+	jae	.Ltmp1961
+.Ltmp1961:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1960
+.Ltmp1959:
+	btq	$25, %rcx
+	jae	.Ltmp1962
+	orw	$1, 4(%rax)
+.Ltmp1962:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rbx
+	movl	$4, %edi
+	callq	MemMan_Alloc4KiBPageCont
+	movq	%rax, %rsi
+	testq	%rbx, %rbx
+	je	.LBB303_100
+# BB#99:
+	#APP
+	mfence
+	lock
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp1963
+	sti
+	movw	$0, 4(%rbx)
+.Ltmp1963:
+
+	#NO_APP
+	jmp	.LBB303_100
+.LBB303_97:                             # %LockSpinlock.exit.i.92.thread
+	movl	$4, %edi
+	callq	MemMan_Alloc4KiBPageCont
+	movq	%rax, %rsi
+.LBB303_100:                            # %AllocatePhysicalPageCont.exit
+	movl	$12, (%rsp)
+	movl	$16384, %ecx            # imm = 0x4000
+	xorl	%r8d, %r8d
+	movl	$1, %r9d
+	movq	%r15, %rdi
+	movq	%r12, %rdx
+	callq	MapPage
+	movq	neutral, %rbx
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB303_111
+# BB#101:
+	movq	40(%rbx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_103
+# BB#102:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1964
+.Ltmp1965:
+	btq	$25, %rdx
+	jae	.Ltmp1966
+.Ltmp1966:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1965
+.Ltmp1964:
+	btq	$25, %rdx
+	jae	.Ltmp1967
+	orw	$1, 4(%rcx)
+.Ltmp1967:
+	cli
+
+	#NO_APP
+.LBB303_103:                            # %LockSpinlock.exit.i.95
+	movq	8(%rbx), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%r14, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB303_105
+# BB#104:
+	movq	%rax, 8(%rcx)
+.LBB303_105:
+	movq	%rax, 8(%rbx)
+	movq	(%rbx), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB303_107
+# BB#106:
+	movq	%rax, (%rbx)
+	movq	%rax, %rcx
+.LBB303_107:
+	cmpq	$0, 16(%rbx)
+	jne	.LBB303_109
+# BB#108:
+	movq	%rcx, 16(%rbx)
+	movq	$0, 24(%rbx)
+.LBB303_109:
+	incq	32(%rbx)
+	movq	40(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB303_111
+# BB#110:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1968
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1968:
+
+	#NO_APP
+.LBB303_111:                            # %List_AddEntry.exit
+	movq	uids_base, %rax
+	incq	%rax
+	movq	%rax, uids_base
+	movl	%eax, %eax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_112
+# BB#113:                               # %LockSpinlock.exit99
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1969
+.Ltmp1970:
+	btq	$25, %rdx
+	jae	.Ltmp1971
+.Ltmp1971:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1970
+.Ltmp1969:
+	btq	$25, %rdx
+	jae	.Ltmp1972
+	orw	$1, 4(%rcx)
+.Ltmp1972:
+	cli
+
+	#NO_APP
+	movq	152(%r14), %rcx
+	movq	%rax, (%r14)
+	testq	%rcx, %rcx
+	je	.LBB303_115
+# BB#114:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1973
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1973:
+
+	#NO_APP
+	jmp	.LBB303_115
+.LBB303_112:                            # %LockSpinlock.exit99.thread
+	movq	%rax, (%r14)
+.LBB303_115:                            # %UnlockSpinlock.exit101
+	movq	thds, %rbx
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB303_126
+# BB#116:
+	movq	40(%rbx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_118
+# BB#117:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1974
+.Ltmp1975:
+	btq	$25, %rdx
+	jae	.Ltmp1976
+.Ltmp1976:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1975
+.Ltmp1974:
+	btq	$25, %rdx
+	jae	.Ltmp1977
+	orw	$1, 4(%rcx)
+.Ltmp1977:
+	cli
+
+	#NO_APP
+.LBB303_118:                            # %LockSpinlock.exit.i.103
+	movq	8(%rbx), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%r14, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB303_120
+# BB#119:
+	movq	%rax, 8(%rcx)
+.LBB303_120:
+	movq	%rax, 8(%rbx)
+	movq	(%rbx), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB303_122
+# BB#121:
+	movq	%rax, (%rbx)
+	movq	%rax, %rcx
+.LBB303_122:
+	cmpq	$0, 16(%rbx)
+	jne	.LBB303_124
+# BB#123:
+	movq	%rcx, 16(%rbx)
+	movq	$0, 24(%rbx)
+.LBB303_124:
+	incq	32(%rbx)
+	movq	40(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB303_126
+# BB#125:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp1978
+	sti
+	movw	$0, 4(%rax)
+.Ltmp1978:
+
+	#NO_APP
+.LBB303_126:                            # %List_AddEntry.exit107
+	movq	152(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB303_127
+# BB#128:                               # %LockSpinlock.exit109
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp1979
+.Ltmp1980:
+	btq	$25, %rcx
+	jae	.Ltmp1981
+.Ltmp1981:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp1980
+.Ltmp1979:
+	btq	$25, %rcx
+	jae	.Ltmp1982
+	orw	$1, 4(%rax)
+.Ltmp1982:
+	cli
+
+	#NO_APP
+	movq	(%r14), %rax
+	movq	152(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB303_154
+# BB#129:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1983
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1983:
+
+	#NO_APP
+	jmp	.LBB303_154
+.LBB303_127:                            # %LockSpinlock.exit109.thread
+	movq	(%r14), %rax
+.LBB303_154:                            # %UnlockSpinlock.exit111
+	addq	$40, %rsp
+	popq	%rbx
+	popq	%r12
+	popq	%r13
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.LBB303_46:                             # %UnlockSpinlock.exit49.thread165
+	movq	(%rbx), %rax
+	andq	$-16, %rax
+	movq	-64(%rbp), %rdi         # 8-byte Reload
+	movq	%rax, 48(%r14)
+	jmp	.LBB303_52
+.LBB303_48:                             # %UnlockSpinlock.exit49.thread
+	andq	$-16, %rax
+	movq	%rax, 48(%r14)
+	jmp	.LBB303_52
+.LBB303_50:                             # %LockSpinlock.exit51.thread
+	movq	%rax, 48(%r14)
+	jmp	.LBB303_52
+.Lfunc_end303:
+	.size	CreateThread, .Lfunc_end303-CreateThread
+	.cfi_endproc
+
+	.globl	Thread_SetChildTIDAddress
+	.align	16, 0x90
+	.type	Thread_SetChildTIDAddress,@function
+Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp1984:
+	.cfi_def_cfa_offset 16
+.Ltmp1985:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp1986:
+	.cfi_def_cfa_register %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%r12
+	pushq	%rbx
+.Ltmp1987:
+	.cfi_offset %rbx, -48
+.Ltmp1988:
+	.cfi_offset %r12, -40
+.Ltmp1989:
+	.cfi_offset %r14, -32
+.Ltmp1990:
+	.cfi_offset %r15, -24
+	movq	%rsi, %r14
+	movq	%rdi, %r15
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB304_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp1991
+.Ltmp1992:
+	btq	$25, %rdx
+	jae	.Ltmp1993
+.Ltmp1993:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp1992
+.Ltmp1991:
+	btq	$25, %rdx
+	jae	.Ltmp1994
+	orw	$1, 4(%rax)
+.Ltmp1994:
+	cli
+
+	#NO_APP
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp1995
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp1995:
+
+	#NO_APP
+	jmp	.LBB304_4
+.LBB304_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
+.LBB304_4:                              # %UnlockSpinlock.exit
+	cmpq	%r15, %rax
+	jne	.LBB304_5
+# BB#11:
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_12
+# BB#13:                                # %LockSpinlock.exit3
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp1996
+.Ltmp1997:
+	btq	$25, %rdx
+	jae	.Ltmp1998
+.Ltmp1998:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp1997
+.Ltmp1996:
+	btq	$25, %rdx
+	jae	.Ltmp1999
+	orw	$1, 4(%rcx)
+.Ltmp1999:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 112(%rax)
+	testq	%rcx, %rcx
+	je	.LBB304_29
+# BB#14:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2000
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2000:
+
+	#NO_APP
+	jmp	.LBB304_29
+.LBB304_5:                              # %.preheader
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB304_6
+# BB#7:                                 # %LockSpinlock.exit.i
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp2001
+.Ltmp2002:
+	btq	$25, %rdx
+	jae	.Ltmp2003
+.Ltmp2003:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp2002
+.Ltmp2001:
+	btq	$25, %rdx
+	jae	.Ltmp2004
+	orw	$1, 4(%rax)
+.Ltmp2004:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_9
+# BB#8:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2005
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2005:
+
+	#NO_APP
+	jmp	.LBB304_9
+.LBB304_12:                             # %LockSpinlock.exit3.thread
+	movq	%r14, 112(%rax)
+	jmp	.LBB304_29
+.LBB304_6:                              # %LockSpinlock.exit.i.thread
+	movq	32(%rcx), %rax
+.LBB304_9:                              # %List_Length.exit
+	xorl	%ebx, %ebx
+	testq	%rax, %rax
+	je	.LBB304_29
+# BB#10:
+	xorl	%r12d, %r12d
+	.align	16, 0x90
+.LBB304_20:                             # %.lr.ph
+                                        # =>This Inner Loop Header: Depth=1
+	movq	thds, %rdi
+	movq	%rbx, %rsi
+	callq	List_EntryAt
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_21
+# BB#22:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB304_20 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2006
+.Ltmp2007:
+	btq	$25, %r12
+	jae	.Ltmp2008
+.Ltmp2008:
+	pause
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2007
+.Ltmp2006:
+	btq	$25, %r12
+	jae	.Ltmp2009
+	orw	$1, 4(%rcx)
+.Ltmp2009:
+	cli
+
+	#NO_APP
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB304_24
+# BB#23:                                #   in Loop: Header=BB304_20 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
+	jae	.Ltmp2010
+	sti
+	movw	$0, 4(%rdx)
+.Ltmp2010:
+
+	#NO_APP
+	jmp	.LBB304_24
+	.align	16, 0x90
+.LBB304_21:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB304_20 Depth=1
+	movq	(%rax), %rcx
+.LBB304_24:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB304_20 Depth=1
+	cmpq	%r15, %rcx
+	je	.LBB304_25
+# BB#15:                                #   in Loop: Header=BB304_20 Depth=1
+	incq	%rbx
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB304_16
+# BB#17:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB304_20 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2011
+.Ltmp2012:
+	btq	$25, %r12
+	jae	.Ltmp2013
+.Ltmp2013:
+	pause
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2012
+.Ltmp2011:
+	btq	$25, %r12
+	jae	.Ltmp2014
+	orw	$1, 4(%rax)
+.Ltmp2014:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_19
+# BB#18:                                #   in Loop: Header=BB304_20 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2015
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2015:
+
+	#NO_APP
+	jmp	.LBB304_19
+	.align	16, 0x90
+.LBB304_16:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB304_20 Depth=1
+	movq	32(%rcx), %rax
+.LBB304_19:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB304_20 Depth=1
+	cmpq	%rax, %rbx
+	jb	.LBB304_20
+	jmp	.LBB304_29
+.LBB304_25:                             # %.critedge
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB304_26
+# BB#27:                                # %LockSpinlock.exit15
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2016
+.Ltmp2017:
+	btq	$25, %rdx
+	jae	.Ltmp2018
+.Ltmp2018:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2017
+.Ltmp2016:
+	btq	$25, %rdx
+	jae	.Ltmp2019
+	orw	$1, 4(%rcx)
+.Ltmp2019:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 112(%rax)
+	testq	%rcx, %rcx
+	je	.LBB304_29
+# BB#28:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2020
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2020:
+
+	#NO_APP
+	jmp	.LBB304_29
+.LBB304_26:                             # %LockSpinlock.exit15.thread
+	movq	%r14, 112(%rax)
+.LBB304_29:                             # %.loopexit
+	popq	%rbx
+	popq	%r12
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.Lfunc_end304:
+	.size	Thread_SetChildTIDAddress, .Lfunc_end304-Thread_SetChildTIDAddress
+	.cfi_endproc
+
+	.globl	Thread_SetClearChildTIDAddress
+	.align	16, 0x90
+	.type	Thread_SetClearChildTIDAddress,@function
+Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2021:
+	.cfi_def_cfa_offset 16
+.Ltmp2022:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2023:
+	.cfi_def_cfa_register %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%r12
+	pushq	%rbx
+.Ltmp2024:
+	.cfi_offset %rbx, -48
+.Ltmp2025:
+	.cfi_offset %r12, -40
+.Ltmp2026:
+	.cfi_offset %r14, -32
+.Ltmp2027:
+	.cfi_offset %r15, -24
+	movq	%rsi, %r14
+	movq	%rdi, %r15
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB305_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp2028
+.Ltmp2029:
+	btq	$25, %rdx
+	jae	.Ltmp2030
+.Ltmp2030:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp2029
+.Ltmp2028:
+	btq	$25, %rdx
+	jae	.Ltmp2031
+	orw	$1, 4(%rax)
+.Ltmp2031:
+	cli
+
+	#NO_APP
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2032
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2032:
+
+	#NO_APP
+	jmp	.LBB305_4
+.LBB305_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
+.LBB305_4:                              # %UnlockSpinlock.exit
+	cmpq	%r15, %rax
+	jne	.LBB305_5
+# BB#11:
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_12
+# BB#13:                                # %LockSpinlock.exit3
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2033
+.Ltmp2034:
+	btq	$25, %rdx
+	jae	.Ltmp2035
+.Ltmp2035:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2034
+.Ltmp2033:
+	btq	$25, %rdx
+	jae	.Ltmp2036
+	orw	$1, 4(%rcx)
+.Ltmp2036:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 120(%rax)
+	testq	%rcx, %rcx
+	je	.LBB305_29
+# BB#14:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2037
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2037:
+
+	#NO_APP
+	jmp	.LBB305_29
+.LBB305_5:                              # %.preheader
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB305_6
+# BB#7:                                 # %LockSpinlock.exit.i
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp2038
+.Ltmp2039:
+	btq	$25, %rdx
+	jae	.Ltmp2040
+.Ltmp2040:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp2039
+.Ltmp2038:
+	btq	$25, %rdx
+	jae	.Ltmp2041
+	orw	$1, 4(%rax)
+.Ltmp2041:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_9
+# BB#8:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2042
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2042:
+
+	#NO_APP
+	jmp	.LBB305_9
+.LBB305_12:                             # %LockSpinlock.exit3.thread
+	movq	%r14, 120(%rax)
+	jmp	.LBB305_29
+.LBB305_6:                              # %LockSpinlock.exit.i.thread
+	movq	32(%rcx), %rax
+.LBB305_9:                              # %List_Length.exit
+	xorl	%ebx, %ebx
+	testq	%rax, %rax
+	je	.LBB305_29
+# BB#10:
+	xorl	%r12d, %r12d
+	.align	16, 0x90
+.LBB305_20:                             # %.lr.ph
+                                        # =>This Inner Loop Header: Depth=1
+	movq	thds, %rdi
+	movq	%rbx, %rsi
+	callq	List_EntryAt
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_21
+# BB#22:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB305_20 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2043
+.Ltmp2044:
+	btq	$25, %r12
+	jae	.Ltmp2045
+.Ltmp2045:
+	pause
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2044
+.Ltmp2043:
+	btq	$25, %r12
+	jae	.Ltmp2046
+	orw	$1, 4(%rcx)
+.Ltmp2046:
+	cli
+
+	#NO_APP
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB305_24
+# BB#23:                                #   in Loop: Header=BB305_20 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
+	jae	.Ltmp2047
+	sti
+	movw	$0, 4(%rdx)
+.Ltmp2047:
+
+	#NO_APP
+	jmp	.LBB305_24
+	.align	16, 0x90
+.LBB305_21:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB305_20 Depth=1
+	movq	(%rax), %rcx
+.LBB305_24:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB305_20 Depth=1
+	cmpq	%r15, %rcx
+	je	.LBB305_25
+# BB#15:                                #   in Loop: Header=BB305_20 Depth=1
+	incq	%rbx
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB305_16
+# BB#17:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB305_20 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2048
+.Ltmp2049:
+	btq	$25, %r12
+	jae	.Ltmp2050
+.Ltmp2050:
+	pause
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2049
+.Ltmp2048:
+	btq	$25, %r12
+	jae	.Ltmp2051
+	orw	$1, 4(%rax)
+.Ltmp2051:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_19
+# BB#18:                                #   in Loop: Header=BB305_20 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2052
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2052:
+
+	#NO_APP
+	jmp	.LBB305_19
+	.align	16, 0x90
+.LBB305_16:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB305_20 Depth=1
+	movq	32(%rcx), %rax
+.LBB305_19:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB305_20 Depth=1
+	cmpq	%rax, %rbx
+	jb	.LBB305_20
+	jmp	.LBB305_29
+.LBB305_25:                             # %.critedge
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB305_26
+# BB#27:                                # %LockSpinlock.exit15
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2053
+.Ltmp2054:
+	btq	$25, %rdx
+	jae	.Ltmp2055
+.Ltmp2055:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2054
+.Ltmp2053:
+	btq	$25, %rdx
+	jae	.Ltmp2056
+	orw	$1, 4(%rcx)
+.Ltmp2056:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 120(%rax)
+	testq	%rcx, %rcx
+	je	.LBB305_29
+# BB#28:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2057
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2057:
+
+	#NO_APP
+	jmp	.LBB305_29
+.LBB305_26:                             # %LockSpinlock.exit15.thread
+	movq	%r14, 120(%rax)
+.LBB305_29:                             # %.loopexit
+	popq	%rbx
+	popq	%r12
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.Lfunc_end305:
+	.size	Thread_SetClearChildTIDAddress, .Lfunc_end305-Thread_SetClearChildTIDAddress
+	.cfi_endproc
+
+	.globl	SetThreadState
+	.align	16, 0x90
+	.type	SetThreadState,@function
+SetThreadState:                         # @SetThreadState
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2058:
+	.cfi_def_cfa_offset 16
+.Ltmp2059:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2060:
+	.cfi_def_cfa_register %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%r12
+	pushq	%rbx
+.Ltmp2061:
+	.cfi_offset %rbx, -48
+.Ltmp2062:
+	.cfi_offset %r12, -40
+.Ltmp2063:
+	.cfi_offset %r14, -32
+.Ltmp2064:
+	.cfi_offset %r15, -24
+	movl	%esi, %r14d
+	movq	%rdi, %r15
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB306_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
 	je	.Ltmp2065
 .Ltmp2066:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2067
 .Ltmp2067:
 	pause
-	cmpw	%cx, (%rax)
+	cmpw	%dx, (%rax)
 	jne	.Ltmp2066
 .Ltmp2065:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2068
 	orw	$1, 4(%rax)
 .Ltmp2068:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rax
-	movq	$0, 144(%r14)
-	testq	%rax, %rax
-	je	.LBB307_39
-# BB#38:                                # %UnlockSpinlock.exit37
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB306_4
+# BB#3:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
 	jae	.Ltmp2069
 	sti
-	movw	$0, 4(%rax)
+	movw	$0, 4(%rcx)
 .Ltmp2069:
 
 	#NO_APP
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_39
-# BB#40:                                # %LockSpinlock.exit39
-	xorl	%ecx, %ecx
+	jmp	.LBB306_4
+.LBB306_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
+.LBB306_4:                              # %UnlockSpinlock.exit
+	cmpq	%r15, %rax
+	jne	.LBB306_5
+# BB#11:
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB306_12
+# BB#13:                                # %LockSpinlock.exit3
+	xorl	%edx, %edx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
 	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
 	je	.Ltmp2070
 .Ltmp2071:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2072
 .Ltmp2072:
 	pause
-	cmpw	%cx, (%rax)
+	cmpw	%dx, (%rcx)
 	jne	.Ltmp2071
 .Ltmp2070:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2073
-	orw	$1, 4(%rax)
+	orw	$1, 4(%rcx)
 .Ltmp2073:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rax
-	movq	$0, 136(%r14)
-	testq	%rax, %rax
-	je	.LBB307_41
-# BB#42:                                # %UnlockSpinlock.exit41
+	movq	152(%rax), %rcx
+	movl	%r14d, 24(%rax)
+	testq	%rcx, %rcx
+	je	.LBB306_29
+# BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
 	jae	.Ltmp2074
 	sti
-	movw	$0, 4(%rax)
+	movw	$0, 4(%rcx)
 .Ltmp2074:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	jmp	.LBB306_29
+.LBB306_5:                              # %.preheader
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB307_43
-# BB#44:                                # %LockSpinlock.exit43
-	xorl	%ecx, %ecx
+	je	.LBB306_6
+# BB#7:                                 # %LockSpinlock.exit.i
+	xorl	%edx, %edx
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
 	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
 	je	.Ltmp2075
 .Ltmp2076:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2077
 .Ltmp2077:
 	pause
-	cmpw	%cx, (%rax)
+	cmpw	%dx, (%rax)
 	jne	.Ltmp2076
 .Ltmp2075:
-	btq	$25, %rcx
+	btq	$25, %rdx
 	jae	.Ltmp2078
 	orw	$1, 4(%rax)
 .Ltmp2078:
 	cli
 
 	#NO_APP
-	movq	72(%r14), %rax
-	movq	168(%r14), %rcx
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	movq	%r13, %rdi
-	je	.LBB307_45
-# BB#46:                                # %UnlockSpinlock.exit45
+	je	.LBB306_9
+# BB#8:
 	#APP
 	mfence
 	lock
@@ -31216,91 +31229,119 @@ CreateThread:                           # @CreateThread
 .Ltmp2079:
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	andq	$-16, %rax
+	jmp	.LBB306_9
+.LBB306_12:                             # %LockSpinlock.exit3.thread
+	movl	%r14d, 24(%rax)
+	jmp	.LBB306_29
+.LBB306_6:                              # %LockSpinlock.exit.i.thread
+	movq	32(%rcx), %rax
+.LBB306_9:                              # %List_Length.exit
+	xorl	%ebx, %ebx
+	testq	%rax, %rax
+	je	.LBB306_29
+# BB#10:
+	xorl	%r12d, %r12d
+	.align	16, 0x90
+.LBB306_20:                             # %.lr.ph
+                                        # =>This Inner Loop Header: Depth=1
+	movq	thds, %rdi
+	movq	%rbx, %rsi
+	callq	List_EntryAt
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	movq	%rbx, %r8
-	je	.LBB307_47
-# BB#48:                                # %LockSpinlock.exit47
-	xorl	%edx, %edx
+	je	.LBB306_21
+# BB#22:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB306_20 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
 	je	.Ltmp2080
 .Ltmp2081:
-	btq	$25, %rdx
+	btq	$25, %r12
 	jae	.Ltmp2082
 .Ltmp2082:
 	pause
-	cmpw	%dx, (%rcx)
+	cmpw	%r12w, (%rcx)
 	jne	.Ltmp2081
 .Ltmp2080:
-	btq	$25, %rdx
+	btq	$25, %r12
 	jae	.Ltmp2083
 	orw	$1, 4(%rcx)
 .Ltmp2083:
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	movq	%rax, 96(%r14)
-	testq	%rcx, %rcx
-	je	.LBB307_49
-# BB#50:                                # %UnlockSpinlock.exit49
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB306_24
+# BB#23:                                #   in Loop: Header=BB306_20 Depth=1
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
 	jae	.Ltmp2084
 	sti
-	movw	$0, 4(%rcx)
+	movw	$0, 4(%rdx)
 .Ltmp2084:
 
 	#NO_APP
-	movq	168(%r14), %rax
+	jmp	.LBB306_24
+	.align	16, 0x90
+.LBB306_21:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB306_20 Depth=1
+	movq	(%rax), %rcx
+.LBB306_24:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB306_20 Depth=1
+	cmpq	%r15, %rcx
+	je	.LBB306_25
+# BB#15:                                #   in Loop: Header=BB306_20 Depth=1
+	incq	%rbx
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB307_51
-# BB#52:                                # %LockSpinlock.exit51
-	xorl	%ecx, %ecx
+	je	.LBB306_16
+# BB#17:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB306_20 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
 	je	.Ltmp2085
 .Ltmp2086:
-	btq	$25, %rcx
+	btq	$25, %r12
 	jae	.Ltmp2087
 .Ltmp2087:
 	pause
-	cmpw	%cx, (%rax)
+	cmpw	%r12w, (%rax)
 	jne	.Ltmp2086
 .Ltmp2085:
-	btq	$25, %rcx
+	btq	$25, %r12
 	jae	.Ltmp2088
 	orw	$1, 4(%rax)
 .Ltmp2088:
 	cli
 
 	#NO_APP
-	movq	64(%r14), %rax
-	movq	168(%r14), %rcx
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB307_53
-# BB#54:                                # %UnlockSpinlock.exit53
+	je	.LBB306_19
+# BB#18:                                #   in Loop: Header=BB306_20 Depth=1
 	#APP
 	mfence
 	lock
@@ -31312,11 +31353,21 @@ CreateThread:                           # @CreateThread
 .Ltmp2089:
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	andq	$-16, %rax
+	jmp	.LBB306_19
+	.align	16, 0x90
+.LBB306_16:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB306_20 Depth=1
+	movq	32(%rcx), %rax
+.LBB306_19:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB306_20 Depth=1
+	cmpq	%rax, %rbx
+	jb	.LBB306_20
+	jmp	.LBB306_29
+.LBB306_25:                             # %.critedge
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB307_55
-# BB#56:                                # %LockSpinlock.exit55
+	je	.LBB306_26
+# BB#27:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -31344,11 +31395,11 @@ CreateThread:                           # @CreateThread
 	cli
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	movq	%rax, 104(%r14)
+	movq	152(%rax), %rcx
+	movl	%r14d, 24(%rax)
 	testq	%rcx, %rcx
-	je	.LBB307_57
-# BB#58:                                # %UnlockSpinlock.exit57
+	je	.LBB306_29
+# BB#28:
 	#APP
 	mfence
 	lock
@@ -31360,1550 +31411,53 @@ CreateThread:                           # @CreateThread
 .Ltmp2094:
 
 	#NO_APP
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_57
-# BB#59:                                # %LockSpinlock.exit59
-	xorl	%eax, %eax
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rax
-	shlq	$16, %rax
-	movw	$1, %ax
-	lock
-	xaddw	%ax, 2(%rcx)
-	cmpw	%ax, (%rcx)
-	je	.Ltmp2095
-.Ltmp2096:
-	btq	$25, %rax
-	jae	.Ltmp2097
-.Ltmp2097:
-	pause
-	cmpw	%ax, (%rcx)
-	jne	.Ltmp2096
-.Ltmp2095:
-	btq	$25, %rax
-	jae	.Ltmp2098
-	orw	$1, 4(%rcx)
-.Ltmp2098:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rcx
-	movq	(%r8), %rbx
-	testq	%rcx, %rcx
-	je	.LBB307_61
-# BB#60:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2099
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2099:
-
-	#NO_APP
-	movq	168(%r14), %rax
-	jmp	.LBB307_61
-.LBB307_36:                             # %LockSpinlock.exit35.thread
-	movq	$0, 144(%r14)
-	movq	$0, 136(%r14)
-	jmp	.LBB307_41
-.LBB307_33:                             # %LockSpinlock.exit31.thread
-	movq	%rax, 160(%r14)
-	movq	$0, 144(%r14)
-	movq	$0, 136(%r14)
-	jmp	.LBB307_41
-.LBB307_39:                             # %LockSpinlock.exit39.thread
-	movq	$0, 136(%r14)
-.LBB307_41:                             # %LockSpinlock.exit43.thread179
-	movq	(%r12), %rax
-	movq	%r13, %rdi
-.LBB307_45:
-	movq	%rbx, %r8
-	andq	$-16, %rax
-	movq	%rax, 96(%r14)
-.LBB307_49:                             # %LockSpinlock.exit51.thread180
-	movq	-64(%rbp), %rax         # 8-byte Reload
-	movq	(%rax), %rax
-	andq	$-16, %rax
-	movq	%rax, 104(%r14)
-.LBB307_57:                             # %LockSpinlock.exit59.thread181
-	movq	(%r8), %rbx
-	xorl	%eax, %eax
-.LBB307_61:                             # %UnlockSpinlock.exit61
-	movq	%rbx, %rcx
-	andq	$15, %rcx
-	movl	$16, %esi
-	subq	%rcx, %rsi
-	xorl	%ecx, %ecx
-	movq	%rbx, %rdx
-	andq	$15, %rdx
-	cmovneq	%rsi, %rcx
-	addq	%rbx, %rcx
-	testq	%rax, %rax
-	je	.LBB307_62
-# BB#63:                                # %LockSpinlock.exit63
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2100
-.Ltmp2101:
-	btq	$25, %rdx
-	jae	.Ltmp2102
-.Ltmp2102:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2101
-.Ltmp2100:
-	btq	$25, %rdx
-	jae	.Ltmp2103
-	orw	$1, 4(%rax)
-.Ltmp2103:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rax
-	movq	%rcx, 152(%r14)
-	testq	%rax, %rax
-	je	.LBB307_68
-# BB#64:                                # %UnlockSpinlock.exit65
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2104
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2104:
-
-	#NO_APP
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_65
-# BB#66:                                # %LockSpinlock.exit67
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2105
-.Ltmp2106:
-	btq	$25, %rcx
-	jae	.Ltmp2107
-.Ltmp2107:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2106
-.Ltmp2105:
-	btq	$25, %rcx
-	jae	.Ltmp2108
-	orw	$1, 4(%rax)
-.Ltmp2108:
-	cli
-
-	#NO_APP
-	movq	152(%r14), %rcx
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_68
-# BB#67:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2109
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2109:
-
-	#NO_APP
-	jmp	.LBB307_68
-.LBB307_62:                             # %LockSpinlock.exit63.thread
-	movq	%rcx, (%r8)
-	jmp	.LBB307_68
-.LBB307_65:                             # %LockSpinlock.exit67.thread
-	movq	(%r8), %rcx
-.LBB307_68:                             # %SaveFPUState.exit
-	#APP
-	fxsave64	(%rcx)
-	#NO_APP
-	movq	$0, -48(%rbp)
-	leaq	-48(%rbp), %rsi
-	callq	GetProcessReference
-	cmpl	$2, %eax
-	jne	.LBB307_69
-# BB#173:
-	movabsq	$-2401053089206453570, %rcx # imm = 0xDEADBEEFCAFEBABE
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_185
-# BB#174:
-	movq	alloc_sync, %rdx
-	testq	%rdx, %rdx
-	je	.LBB307_176
-# BB#175:
-	xorl	%esi, %esi
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
-	lock
-	xaddw	%si, 2(%rdx)
-	cmpw	%si, (%rdx)
-	je	.Ltmp2110
-.Ltmp2111:
-	btq	$25, %rsi
-	jae	.Ltmp2112
-.Ltmp2112:
-	pause
-	cmpw	%si, (%rdx)
-	jne	.Ltmp2111
-.Ltmp2110:
-	btq	$25, %rsi
-	jae	.Ltmp2113
-	orw	$1, 4(%rdx)
-.Ltmp2113:
-	cli
-
-	#NO_APP
-.LBB307_176:                            # %LockSpinlock.exit.i.i
-	cmpq	%rcx, -24(%rax)
-	je	.LBB307_178
-# BB#177:
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB307_178:                            # %.preheader.i.i
-	movq	allocation_info, %rdi
-	.align	16, 0x90
-.LBB307_179:                            # =>This Inner Loop Header: Depth=1
-	movq	%rdi, %rdx
-	movq	(%rdx), %rsi
-	movq	16(%rdx), %rdi
-	testq	%rdi, %rdi
-	je	.LBB307_183
-# BB#180:                               #   in Loop: Header=BB307_179 Depth=1
-	movl	%esi, %ebx
-	andl	$1, %ebx
-	cmpq	%rax, %rsi
-	jne	.LBB307_179
-# BB#181:                               #   in Loop: Header=BB307_179 Depth=1
-	testq	%rbx, %rbx
-	je	.LBB307_179
-# BB#182:
-	movq	%rax, %rsi
-.LBB307_183:                            # %.loopexit.i.i
-	andq	$-2, %rsi
-	movq	%rsi, (%rdx)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB307_187
-# BB#184:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2114
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2114:
-
-	#NO_APP
-.LBB307_185:                            # %FreeSpinlock.exit
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB307_187
-# BB#186:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2115
-.Ltmp2116:
-	btq	$25, %rdx
-	jae	.Ltmp2117
-.Ltmp2117:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2116
-.Ltmp2115:
-	btq	$25, %rdx
-	jae	.Ltmp2118
-	orw	$1, 4(%rax)
-.Ltmp2118:
-	cli
-
-	#NO_APP
-.LBB307_187:                            # %LockSpinlock.exit.i.147
-	cmpq	%rcx, -24(%r14)
-	je	.LBB307_189
-# BB#188:
-	movq	%r14, %rax
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB307_189:                            # %.preheader.i
-	movq	allocation_info, %rdx
-	.align	16, 0x90
-.LBB307_190:                            # =>This Inner Loop Header: Depth=1
-	movq	%rdx, %rax
-	movq	(%rax), %rcx
-	movq	16(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB307_194
-# BB#191:                               #   in Loop: Header=BB307_190 Depth=1
-	movl	%ecx, %esi
-	andl	$1, %esi
-	cmpq	%r15, %rcx
-	jne	.LBB307_190
-# BB#192:                               #   in Loop: Header=BB307_190 Depth=1
-	testq	%rsi, %rsi
-	je	.LBB307_190
-# BB#193:
-	movq	%r14, %rcx
-.LBB307_194:                            # %.loopexit.i
-	andq	$-2, %rcx
-	movq	%rcx, (%rax)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB307_196
-# BB#195:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2119
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2119:
-
-	#NO_APP
-.LBB307_196:                            # %kfree.exit
-	movq	$-1, %rax
-.LBB307_197:                            # %UnlockSpinlock.exit145
-	addq	$56, %rsp
+	jmp	.LBB306_29
+.LBB306_26:                             # %LockSpinlock.exit15.thread
+	movl	%r14d, 24(%rax)
+.LBB306_29:                             # %.loopexit
 	popq	%rbx
 	popq	%r12
-	popq	%r13
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
-.LBB307_69:
-	movq	-48(%rbp), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_70
-# BB#71:                                # %LockSpinlock.exit71
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2120
-.Ltmp2121:
-	btq	$25, %rdx
-	jae	.Ltmp2122
-.Ltmp2122:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2121
-.Ltmp2120:
-	btq	$25, %rdx
-	jae	.Ltmp2123
-	orw	$1, 4(%rcx)
-.Ltmp2123:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rcx
-	leaq	16(%r15), %r13
-	movq	%rax, 16(%r14)
-	testq	%rcx, %rcx
-	je	.LBB307_72
-# BB#73:                                # %UnlockSpinlock.exit73
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2124
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2124:
-
-	#NO_APP
-	movq	168(%r14), %rax
-	movq	$0, -56(%rbp)
-	testq	%rax, %rax
-	je	.LBB307_74
-# BB#75:                                # %LockSpinlock.exit75
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2125
-.Ltmp2126:
-	btq	$25, %rcx
-	jae	.Ltmp2127
-.Ltmp2127:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2126
-.Ltmp2125:
-	btq	$25, %rcx
-	jae	.Ltmp2128
-	orw	$1, 4(%rax)
-.Ltmp2128:
-	cli
-
-	#NO_APP
-	movq	16(%r14), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_77
-# BB#76:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2129
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2129:
-
-	#NO_APP
-	jmp	.LBB307_77
-.LBB307_70:                             # %LockSpinlock.exit71.thread
-	leaq	16(%r15), %r13
-	movq	%rax, 16(%r14)
-	movq	$0, -56(%rbp)
-	jmp	.LBB307_77
-.LBB307_72:                             # %UnlockSpinlock.exit73.thread
-	movq	$0, -56(%rbp)
-	jmp	.LBB307_77
-.LBB307_74:                             # %UnlockSpinlock.exit73.LockSpinlock.exit75.thread_crit_edge
-	movq	(%r13), %rax
-.LBB307_77:                             # %UnlockSpinlock.exit77
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_78
-# BB#79:                                # %LockSpinlock.exit79
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2130
-.Ltmp2131:
-	btq	$25, %rdx
-	jae	.Ltmp2132
-.Ltmp2132:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2131
-.Ltmp2130:
-	btq	$25, %rdx
-	jae	.Ltmp2133
-	orw	$1, 4(%rcx)
-.Ltmp2133:
-	cli
-
-	#NO_APP
-	movq	456(%rax), %rdi
-	movq	488(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB307_81
-# BB#80:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2134
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2134:
-
-	#NO_APP
-	jmp	.LBB307_81
-.LBB307_78:                             # %LockSpinlock.exit79.thread
-	movq	456(%rax), %rdi
-.LBB307_81:                             # %UnlockSpinlock.exit81
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB307_83
-# BB#82:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2135
-.Ltmp2136:
-	btq	$25, %rcx
-	jae	.Ltmp2137
-.Ltmp2137:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2136
-.Ltmp2135:
-	btq	$25, %rcx
-	jae	.Ltmp2138
-	orw	$1, 4(%rax)
-.Ltmp2138:
-	cli
-
-	#NO_APP
-.LBB307_83:                             # %LockSpinlock.exit.i
-	movl	$16384, %esi            # imm = 0x4000
-	movl	$1, %edx
-	movl	$1, %ecx
-	callq	VirtMemMan_FindFreeAddress
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB307_85
-# BB#84:
-	movq	%rax, -56(%rbp)
-	movq	%rax, %rbx
-.LBB307_85:
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB307_87
-# BB#86:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2139
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2139:
-
-	#NO_APP
-.LBB307_87:                             # %FindFreeVirtualAddress.exit
-	testq	%rbx, %rbx
-	je	.LBB307_88
-# BB#89:
-	leaq	16256(%rbx), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_90
-# BB#91:                                # %LockSpinlock.exit84
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2140
-.Ltmp2141:
-	btq	$25, %rdx
-	jae	.Ltmp2142
-.Ltmp2142:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2141
-.Ltmp2140:
-	btq	$25, %rdx
-	jae	.Ltmp2143
-	orw	$1, 4(%rcx)
-.Ltmp2143:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rcx
-	movq	%rax, 80(%r14)
-	testq	%rcx, %rcx
-	je	.LBB307_93
-# BB#92:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2144
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2144:
-
-	#NO_APP
-	jmp	.LBB307_93
-	.align	16, 0x90
-.LBB307_88:                             # %.preheader
-                                        # =>This Inner Loop Header: Depth=1
-	jmp	.LBB307_88
-.LBB307_90:                             # %LockSpinlock.exit84.thread
-	movq	%rax, 80(%r14)
-.LBB307_93:                             # %UnlockSpinlock.exit86
-	movl	$64, %edi
-	callq	kmalloc
-	movq	%rax, %r12
-	testq	%r12, %r12
-	je	.LBB307_94
-# BB#95:
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_96
-# BB#97:                                # %LockSpinlock.exit88
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2145
-.Ltmp2146:
-	btq	$25, %rcx
-	jae	.Ltmp2147
-.Ltmp2147:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2146
-.Ltmp2145:
-	btq	$25, %rcx
-	jae	.Ltmp2148
-	orw	$1, 4(%rax)
-.Ltmp2148:
-	cli
-
-	#NO_APP
-	movq	16(%r14), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_99
-# BB#98:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2149
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2149:
-
-	#NO_APP
-	jmp	.LBB307_99
-	.align	16, 0x90
-.LBB307_94:                             # %.preheader1
-                                        # =>This Inner Loop Header: Depth=1
-	jmp	.LBB307_94
-.LBB307_96:                             # %LockSpinlock.exit88.thread
-	movq	(%r13), %rax
-.LBB307_99:                             # %UnlockSpinlock.exit90
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_100
-# BB#101:                               # %LockSpinlock.exit92
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2150
-.Ltmp2151:
-	btq	$25, %rdx
-	jae	.Ltmp2152
-.Ltmp2152:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2151
-.Ltmp2150:
-	btq	$25, %rdx
-	jae	.Ltmp2153
-	orw	$1, 4(%rcx)
-.Ltmp2153:
-	cli
-
-	#NO_APP
-	movq	456(%rax), %rcx
-	movq	488(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB307_103
-# BB#102:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2154
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2154:
-
-	#NO_APP
-	jmp	.LBB307_103
-.LBB307_100:                            # %LockSpinlock.exit92.thread
-	movq	456(%rax), %rcx
-.LBB307_103:                            # %UnlockSpinlock.exit94
-	movq	%rcx, -64(%rbp)         # 8-byte Spill
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB307_104
-# BB#105:                               # %LockSpinlock.exit.i.96
-	movq	%r13, -72(%rbp)         # 8-byte Spill
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2155
-.Ltmp2156:
-	btq	$25, %rcx
-	jae	.Ltmp2157
-.Ltmp2157:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2156
-.Ltmp2155:
-	btq	$25, %rcx
-	jae	.Ltmp2158
-	orw	$1, 4(%rax)
-.Ltmp2158:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r13
-	movl	$4, %edi
-	callq	MemMan_Alloc4KiBPageCont
-	testq	%r13, %r13
-	je	.LBB307_107
-# BB#106:
-	#APP
-	mfence
-	lock
-	incw	(%r13)
-	btw	$0, 4(%r13)
-	jae	.Ltmp2159
-	sti
-	movw	$0, 4(%r13)
-.Ltmp2159:
-
-	#NO_APP
-.LBB307_107:                            # %AllocatePhysicalPageCont.exit
-	movq	-72(%rbp), %r13         # 8-byte Reload
-	jmp	.LBB307_108
-.LBB307_104:                            # %LockSpinlock.exit.i.96.thread
-	movl	$4, %edi
-	callq	MemMan_Alloc4KiBPageCont
-.LBB307_108:                            # %AllocatePhysicalPageCont.exit
-	movq	-64(%rbp), %rdi         # 8-byte Reload
-	movq	vmem_lock, %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_110
-# BB#109:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2160
-.Ltmp2161:
-	btq	$25, %rdx
-	jae	.Ltmp2162
-.Ltmp2162:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2161
-.Ltmp2160:
-	btq	$25, %rdx
-	jae	.Ltmp2163
-	orw	$1, 4(%rcx)
-.Ltmp2163:
-	cli
-
-	#NO_APP
-.LBB307_110:
-	movl	$0, (%r12)
-	movq	%rbx, 8(%r12)
-	movq	%rax, 16(%r12)
-	movq	$16384, 24(%r12)        # imm = 0x4000
-	movabsq	$4294967308, %rcx       # imm = 0x10000000C
-	movq	%rcx, 32(%r12)
-	movq	$0, 48(%r12)
-	movq	$0, 40(%r12)
-	movl	$1, 8(%rsp)
-	movl	$2, (%rsp)
-	movl	$16384, %ecx            # imm = 0x4000
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
-	movq	%rbx, %rsi
-	movq	%rax, %rdx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB307_112
-# BB#111:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2164
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2164:
-
-	#NO_APP
-.LBB307_112:                            # %MapPage.exit
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_113
-# BB#114:                               # %LockSpinlock.exit102
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2165
-.Ltmp2166:
-	btq	$25, %rcx
-	jae	.Ltmp2167
-.Ltmp2167:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2166
-.Ltmp2165:
-	btq	$25, %rcx
-	jae	.Ltmp2168
-	orw	$1, 4(%rax)
-.Ltmp2168:
-	cli
-
-	#NO_APP
-	movq	16(%r14), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_116
-# BB#115:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2169
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2169:
-
-	#NO_APP
-	jmp	.LBB307_116
-.LBB307_113:                            # %LockSpinlock.exit102.thread
-	movq	(%r13), %rax
-.LBB307_116:                            # %UnlockSpinlock.exit104
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_117
-# BB#118:                               # %LockSpinlock.exit106
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2170
-.Ltmp2171:
-	btq	$25, %rdx
-	jae	.Ltmp2172
-.Ltmp2172:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2171
-.Ltmp2170:
-	btq	$25, %rdx
-	jae	.Ltmp2173
-	orw	$1, 4(%rcx)
-.Ltmp2173:
-	cli
-
-	#NO_APP
-	movq	464(%rax), %rcx
-	movq	488(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB307_120
-# BB#119:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2174
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2174:
-
-	#NO_APP
-	jmp	.LBB307_120
-.LBB307_117:                            # %LockSpinlock.exit106.thread
-	movq	464(%rax), %rcx
-.LBB307_120:                            # %UnlockSpinlock.exit108
-	movq	56(%rcx), %rax
-	movq	%rax, 56(%r12)
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_121
-# BB#122:                               # %LockSpinlock.exit110
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2175
-.Ltmp2176:
-	btq	$25, %rcx
-	jae	.Ltmp2177
-.Ltmp2177:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2176
-.Ltmp2175:
-	btq	$25, %rcx
-	jae	.Ltmp2178
-	orw	$1, 4(%rax)
-.Ltmp2178:
-	cli
-
-	#NO_APP
-	movq	16(%r14), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_124
-# BB#123:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2179
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2179:
-
-	#NO_APP
-	jmp	.LBB307_124
-.LBB307_121:                            # %LockSpinlock.exit110.thread
-	movq	(%r13), %rax
-.LBB307_124:                            # %UnlockSpinlock.exit112
-	movq	488(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_125
-# BB#126:                               # %LockSpinlock.exit114
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2180
-.Ltmp2181:
-	btq	$25, %rdx
-	jae	.Ltmp2182
-.Ltmp2182:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2181
-.Ltmp2180:
-	btq	$25, %rdx
-	jae	.Ltmp2183
-	orw	$1, 4(%rcx)
-.Ltmp2183:
-	cli
-
-	#NO_APP
-	movq	464(%rax), %rcx
-	movq	488(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB307_128
-# BB#127:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2184
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2184:
-
-	#NO_APP
-	jmp	.LBB307_128
-.LBB307_125:                            # %LockSpinlock.exit114.thread
-	movq	464(%rax), %rcx
-.LBB307_128:                            # %UnlockSpinlock.exit116
-	movq	%r12, 56(%rcx)
-	movq	neutral, %rbx
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB307_139
-# BB#129:
-	movq	40(%rbx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_131
-# BB#130:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2185
-.Ltmp2186:
-	btq	$25, %rdx
-	jae	.Ltmp2187
-.Ltmp2187:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2186
-.Ltmp2185:
-	btq	$25, %rdx
-	jae	.Ltmp2188
-	orw	$1, 4(%rcx)
-.Ltmp2188:
-	cli
-
-	#NO_APP
-.LBB307_131:                            # %LockSpinlock.exit.i.118
-	movq	8(%rbx), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r14, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB307_133
-# BB#132:
-	movq	%rax, 8(%rcx)
-.LBB307_133:
-	movq	%rax, 8(%rbx)
-	movq	(%rbx), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB307_135
-# BB#134:
-	movq	%rax, (%rbx)
-	movq	%rax, %rcx
-.LBB307_135:
-	cmpq	$0, 16(%rbx)
-	jne	.LBB307_137
-# BB#136:
-	movq	%rcx, 16(%rbx)
-	movq	$0, 24(%rbx)
-.LBB307_137:
-	incq	32(%rbx)
-	movq	40(%rbx), %rax
-	testq	%rax, %rax
-	je	.LBB307_139
-# BB#138:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2189
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2189:
-
-	#NO_APP
-.LBB307_139:                            # %List_AddEntry.exit
-	movq	uids_base, %rax
-	incq	%rax
-	movq	%rax, uids_base
-	movl	%eax, %r12d
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_140
-# BB#141:                               # %LockSpinlock.exit123
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2190
-.Ltmp2191:
-	btq	$25, %rcx
-	jae	.Ltmp2192
-.Ltmp2192:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2191
-.Ltmp2190:
-	btq	$25, %rcx
-	jae	.Ltmp2193
-	orw	$1, 4(%rax)
-.Ltmp2193:
-	cli
-
-	#NO_APP
-	movq	168(%r14), %rax
-	addq	$8, %r15
-	movq	%r12, 8(%r14)
-	testq	%rax, %rax
-	je	.LBB307_142
-# BB#143:                               # %UnlockSpinlock.exit125
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2194
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2194:
-
-	#NO_APP
-	movq	168(%r14), %rax
-	movq	-48(%rbp), %rcx
-	movq	472(%rcx), %rbx
-	testq	%rax, %rax
-	je	.LBB307_144
-# BB#145:                               # %LockSpinlock.exit127
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2195
-.Ltmp2196:
-	btq	$25, %rcx
-	jae	.Ltmp2197
-.Ltmp2197:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2196
-.Ltmp2195:
-	btq	$25, %rcx
-	jae	.Ltmp2198
-	orw	$1, 4(%rax)
-.Ltmp2198:
-	cli
-
-	#NO_APP
-	movq	8(%r14), %r12
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_147
-# BB#146:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2199
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2199:
-
-	#NO_APP
-	jmp	.LBB307_147
-.LBB307_140:                            # %LockSpinlock.exit123.thread
-	addq	$8, %r15
-	movq	%r12, 8(%r14)
-.LBB307_142:                            # %LockSpinlock.exit127.thread211
-	movq	-48(%rbp), %rax
-	movq	472(%rax), %rbx
-	jmp	.LBB307_147
-.LBB307_144:                            # %LockSpinlock.exit127.thread
-	movq	(%r15), %r12
-.LBB307_147:                            # %UnlockSpinlock.exit129
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB307_158
-# BB#148:
-	movq	40(%rbx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_150
-# BB#149:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2200
-.Ltmp2201:
-	btq	$25, %rdx
-	jae	.Ltmp2202
-.Ltmp2202:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2201
-.Ltmp2200:
-	btq	$25, %rdx
-	jae	.Ltmp2203
-	orw	$1, 4(%rcx)
-.Ltmp2203:
-	cli
-
-	#NO_APP
-.LBB307_150:                            # %LockSpinlock.exit.i.131
-	movq	8(%rbx), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r12, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB307_152
-# BB#151:
-	movq	%rax, 8(%rcx)
-.LBB307_152:
-	movq	%rax, 8(%rbx)
-	movq	(%rbx), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB307_154
-# BB#153:
-	movq	%rax, (%rbx)
-	movq	%rax, %rcx
-.LBB307_154:
-	cmpq	$0, 16(%rbx)
-	jne	.LBB307_156
-# BB#155:
-	movq	%rcx, 16(%rbx)
-	movq	$0, 24(%rbx)
-.LBB307_156:
-	incq	32(%rbx)
-	movq	40(%rbx), %rax
-	testq	%rax, %rax
-	je	.LBB307_158
-# BB#157:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2204
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2204:
-
-	#NO_APP
-.LBB307_158:                            # %List_AddEntry.exit135
-	movq	thds, %rbx
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB307_169
-# BB#159:
-	movq	40(%rbx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_161
-# BB#160:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2205
-.Ltmp2206:
-	btq	$25, %rdx
-	jae	.Ltmp2207
-.Ltmp2207:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2206
-.Ltmp2205:
-	btq	$25, %rdx
-	jae	.Ltmp2208
-	orw	$1, 4(%rcx)
-.Ltmp2208:
-	cli
-
-	#NO_APP
-.LBB307_161:                            # %LockSpinlock.exit.i.137
-	movq	8(%rbx), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r14, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB307_163
-# BB#162:
-	movq	%rax, 8(%rcx)
-.LBB307_163:
-	movq	%rax, 8(%rbx)
-	movq	(%rbx), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB307_165
-# BB#164:
-	movq	%rax, (%rbx)
-	movq	%rax, %rcx
-.LBB307_165:
-	cmpq	$0, 16(%rbx)
-	jne	.LBB307_167
-# BB#166:
-	movq	%rcx, 16(%rbx)
-	movq	$0, 24(%rbx)
-.LBB307_167:
-	incq	32(%rbx)
-	movq	40(%rbx), %rax
-	testq	%rax, %rax
-	je	.LBB307_169
-# BB#168:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2209
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2209:
-
-	#NO_APP
-.LBB307_169:                            # %List_AddEntry.exit141
-	movq	168(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB307_170
-# BB#171:                               # %LockSpinlock.exit143
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2210
-.Ltmp2211:
-	btq	$25, %rcx
-	jae	.Ltmp2212
-.Ltmp2212:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2211
-.Ltmp2210:
-	btq	$25, %rcx
-	jae	.Ltmp2213
-	orw	$1, 4(%rax)
-.Ltmp2213:
-	cli
-
-	#NO_APP
-	movq	8(%r14), %rax
-	movq	168(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB307_197
-# BB#172:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2214
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2214:
-
-	#NO_APP
-	jmp	.LBB307_197
-.LBB307_170:                            # %LockSpinlock.exit143.thread
-	movq	(%r15), %rax
-	jmp	.LBB307_197
-.LBB307_43:                             # %UnlockSpinlock.exit45.thread207
-	movq	(%r12), %rax
-	andq	$-16, %rax
-	movq	%r13, %rdi
-	movq	%rbx, %r8
-	movq	%rax, 96(%r14)
-	jmp	.LBB307_49
-.LBB307_47:                             # %LockSpinlock.exit47.thread
-	movq	%rax, 96(%r14)
-	jmp	.LBB307_49
-.LBB307_51:                             # %UnlockSpinlock.exit53.thread208
-	movq	-64(%rbp), %rax         # 8-byte Reload
-	movq	(%rax), %rax
-	andq	$-16, %rax
-	movq	%rax, 104(%r14)
-	jmp	.LBB307_57
-.LBB307_53:                             # %UnlockSpinlock.exit53.thread
-	andq	$-16, %rax
-	movq	%rax, 104(%r14)
-	jmp	.LBB307_57
-.LBB307_55:                             # %LockSpinlock.exit55.thread
-	movq	%rax, 104(%r14)
-	jmp	.LBB307_57
-.Lfunc_end307:
-	.size	CreateThread, .Lfunc_end307-CreateThread
+.Lfunc_end306:
+	.size	SetThreadState, .Lfunc_end306-SetThreadState
 	.cfi_endproc
 
-	.globl	Thread_SetChildTIDAddress
+	.globl	SleepThread
 	.align	16, 0x90
-	.type	Thread_SetChildTIDAddress,@function
-Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
+	.type	SleepThread,@function
+SleepThread:                            # @SleepThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2215:
+.Ltmp2095:
 	.cfi_def_cfa_offset 16
-.Ltmp2216:
+.Ltmp2096:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2217:
+.Ltmp2097:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp2218:
+.Ltmp2098:
 	.cfi_offset %rbx, -48
-.Ltmp2219:
+.Ltmp2099:
 	.cfi_offset %r12, -40
-.Ltmp2220:
+.Ltmp2100:
 	.cfi_offset %r14, -32
-.Ltmp2221:
+.Ltmp2101:
 	.cfi_offset %r15, -24
 	movq	%rsi, %r14
 	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB308_1
+	je	.LBB307_1
 # BB#2:                                 # %LockSpinlock.exit
 	xorl	%edx, %edx
 	#APP
@@ -32916,50 +31470,50 @@ Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2222
-.Ltmp2223:
+	je	.Ltmp2102
+.Ltmp2103:
 	btq	$25, %rdx
-	jae	.Ltmp2224
-.Ltmp2224:
+	jae	.Ltmp2104
+.Ltmp2104:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2223
-.Ltmp2222:
+	jne	.Ltmp2103
+.Ltmp2102:
 	btq	$25, %rdx
-	jae	.Ltmp2225
+	jae	.Ltmp2105
 	orw	$1, 4(%rax)
-.Ltmp2225:
+.Ltmp2105:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB308_4
+	je	.LBB307_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2226
+	jae	.Ltmp2106
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2226:
+.Ltmp2106:
 
 	#NO_APP
-	jmp	.LBB308_4
-.LBB308_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
-.LBB308_4:                              # %UnlockSpinlock.exit
+	jmp	.LBB307_4
+.LBB307_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
+.LBB307_4:                              # %UnlockSpinlock.exit
 	cmpq	%r15, %rax
-	jne	.LBB308_5
+	jne	.LBB307_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB308_12
+	je	.LBB307_12
 # BB#13:                                # %LockSpinlock.exit3
 	xorl	%edx, %edx
 	#APP
@@ -32972,44 +31526,44 @@ Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2227
-.Ltmp2228:
+	je	.Ltmp2107
+.Ltmp2108:
 	btq	$25, %rdx
-	jae	.Ltmp2229
-.Ltmp2229:
+	jae	.Ltmp2109
+.Ltmp2109:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2228
-.Ltmp2227:
+	jne	.Ltmp2108
+.Ltmp2107:
 	btq	$25, %rdx
-	jae	.Ltmp2230
+	jae	.Ltmp2110
 	orw	$1, 4(%rcx)
-.Ltmp2230:
+.Ltmp2110:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 136(%rax)
+	movq	152(%rax), %rcx
+	movl	$3, 24(%rax)
 	testq	%rcx, %rcx
-	je	.LBB308_29
+	je	.LBB307_15
 # BB#14:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2231
+	jae	.Ltmp2111
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2231:
+.Ltmp2111:
 
 	#NO_APP
-	jmp	.LBB308_29
-.LBB308_5:                              # %.preheader
+	jmp	.LBB307_15
+.LBB307_5:                              # %.preheader
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB308_6
+	je	.LBB307_6
 # BB#7:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
@@ -33022,177 +31576,48 @@ Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2232
-.Ltmp2233:
+	je	.Ltmp2112
+.Ltmp2113:
 	btq	$25, %rdx
-	jae	.Ltmp2234
-.Ltmp2234:
+	jae	.Ltmp2114
+.Ltmp2114:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2233
-.Ltmp2232:
+	jne	.Ltmp2113
+.Ltmp2112:
 	btq	$25, %rdx
-	jae	.Ltmp2235
+	jae	.Ltmp2115
 	orw	$1, 4(%rax)
-.Ltmp2235:
+.Ltmp2115:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB308_9
+	je	.LBB307_9
 # BB#8:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2236
+	jae	.Ltmp2116
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2236:
+.Ltmp2116:
 
 	#NO_APP
-	jmp	.LBB308_9
-.LBB308_12:                             # %LockSpinlock.exit3.thread
-	movq	%r14, 136(%rax)
-	jmp	.LBB308_29
-.LBB308_6:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB308_9:                              # %List_Length.exit
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB308_29
-# BB#10:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB308_20:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	thds, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	jmp	.LBB307_9
+.LBB307_12:                             # %LockSpinlock.exit3.thread
+	movl	$3, 24(%rax)
+.LBB307_15:                             # %UnlockSpinlock.exit5
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB308_21
-# BB#22:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB308_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2237
-.Ltmp2238:
-	btq	$25, %r12
-	jae	.Ltmp2239
-.Ltmp2239:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2238
-.Ltmp2237:
-	btq	$25, %r12
-	jae	.Ltmp2240
-	orw	$1, 4(%rcx)
-.Ltmp2240:
-	cli
-
-	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB308_24
-# BB#23:                                #   in Loop: Header=BB308_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2241
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2241:
-
-	#NO_APP
-	jmp	.LBB308_24
-	.align	16, 0x90
-.LBB308_21:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB308_20 Depth=1
-	movq	8(%rax), %rcx
-.LBB308_24:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB308_20 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB308_25
-# BB#15:                                #   in Loop: Header=BB308_20 Depth=1
-	incq	%rbx
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB308_16
-# BB#17:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB308_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2242
-.Ltmp2243:
-	btq	$25, %r12
-	jae	.Ltmp2244
-.Ltmp2244:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2243
-.Ltmp2242:
-	btq	$25, %r12
-	jae	.Ltmp2245
-	orw	$1, 4(%rax)
-.Ltmp2245:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB308_19
-# BB#18:                                #   in Loop: Header=BB308_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2246
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2246:
-
-	#NO_APP
-	jmp	.LBB308_19
-	.align	16, 0x90
-.LBB308_16:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB308_20 Depth=1
-	movq	32(%rcx), %rax
-.LBB308_19:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB308_20 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB308_20
-	jmp	.LBB308_29
-.LBB308_25:                             # %.critedge
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB308_26
-# BB#27:                                # %LockSpinlock.exit15
+	je	.LBB307_16
+# BB#17:                                # %LockSpinlock.exit7
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -33204,83 +31629,574 @@ Thread_SetChildTIDAddress:              # @Thread_SetChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2247
-.Ltmp2248:
+	je	.Ltmp2117
+.Ltmp2118:
 	btq	$25, %rdx
-	jae	.Ltmp2249
-.Ltmp2249:
+	jae	.Ltmp2119
+.Ltmp2119:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2248
-.Ltmp2247:
+	jne	.Ltmp2118
+.Ltmp2117:
 	btq	$25, %rdx
-	jae	.Ltmp2250
+	jae	.Ltmp2120
 	orw	$1, 4(%rcx)
-.Ltmp2250:
+.Ltmp2120:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 136(%rax)
+	movq	152(%rax), %rcx
+	movl	$1, 28(%rax)
 	testq	%rcx, %rcx
-	je	.LBB308_29
-# BB#28:
+	je	.LBB307_19
+# BB#18:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2251
+	jae	.Ltmp2121
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2251:
+.Ltmp2121:
 
 	#NO_APP
-	jmp	.LBB308_29
-.LBB308_26:                             # %LockSpinlock.exit15.thread
-	movq	%r14, 136(%rax)
-.LBB308_29:                             # %.loopexit
+	jmp	.LBB307_19
+.LBB307_6:                              # %LockSpinlock.exit.i.thread
+	movq	32(%rcx), %rax
+.LBB307_9:                              # %List_Length.exit
+	xorl	%ebx, %ebx
+	testq	%rax, %rax
+	je	.LBB307_53
+# BB#10:
+	xorl	%r12d, %r12d
+	.align	16, 0x90
+.LBB307_34:                             # %.lr.ph
+                                        # =>This Inner Loop Header: Depth=1
+	movq	thds, %rdi
+	movq	%rbx, %rsi
+	callq	List_EntryAt
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_35
+# BB#36:                                # %LockSpinlock.exit23
+                                        #   in Loop: Header=BB307_34 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2122
+.Ltmp2123:
+	btq	$25, %r12
+	jae	.Ltmp2124
+.Ltmp2124:
+	pause
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2123
+.Ltmp2122:
+	btq	$25, %r12
+	jae	.Ltmp2125
+	orw	$1, 4(%rcx)
+.Ltmp2125:
+	cli
+
+	#NO_APP
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB307_38
+# BB#37:                                #   in Loop: Header=BB307_34 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
+	jae	.Ltmp2126
+	sti
+	movw	$0, 4(%rdx)
+.Ltmp2126:
+
+	#NO_APP
+	jmp	.LBB307_38
+	.align	16, 0x90
+.LBB307_35:                             # %LockSpinlock.exit23.thread
+                                        #   in Loop: Header=BB307_34 Depth=1
+	movq	(%rax), %rcx
+.LBB307_38:                             # %UnlockSpinlock.exit25
+                                        #   in Loop: Header=BB307_34 Depth=1
+	cmpq	%r15, %rcx
+	je	.LBB307_39
+# BB#29:                                #   in Loop: Header=BB307_34 Depth=1
+	incq	%rbx
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB307_30
+# BB#31:                                # %LockSpinlock.exit.i.19
+                                        #   in Loop: Header=BB307_34 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
+	lock
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2127
+.Ltmp2128:
+	btq	$25, %r12
+	jae	.Ltmp2129
+.Ltmp2129:
+	pause
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2128
+.Ltmp2127:
+	btq	$25, %r12
+	jae	.Ltmp2130
+	orw	$1, 4(%rax)
+.Ltmp2130:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_33
+# BB#32:                                #   in Loop: Header=BB307_34 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2131
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2131:
+
+	#NO_APP
+	jmp	.LBB307_33
+	.align	16, 0x90
+.LBB307_30:                             # %LockSpinlock.exit.i.19.thread
+                                        #   in Loop: Header=BB307_34 Depth=1
+	movq	32(%rcx), %rax
+.LBB307_33:                             # %List_Length.exit21
+                                        #   in Loop: Header=BB307_34 Depth=1
+	cmpq	%rax, %rbx
+	jb	.LBB307_34
+	jmp	.LBB307_53
+.LBB307_16:                             # %LockSpinlock.exit7.thread
+	movl	$1, 28(%rax)
+.LBB307_19:                             # %UnlockSpinlock.exit9
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	hpet_regs, %rcx
+	movq	48(%rcx), %rcx
+	movq	152(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB307_20
+# BB#21:                                # %LockSpinlock.exit11
+	xorl	%esi, %esi
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rsi
+	shlq	$16, %rsi
+	movw	$1, %si
+	lock
+	xaddw	%si, 2(%rdx)
+	cmpw	%si, (%rdx)
+	je	.Ltmp2132
+.Ltmp2133:
+	btq	$25, %rsi
+	jae	.Ltmp2134
+.Ltmp2134:
+	pause
+	cmpw	%si, (%rdx)
+	jne	.Ltmp2133
+.Ltmp2132:
+	btq	$25, %rsi
+	jae	.Ltmp2135
+	orw	$1, 4(%rdx)
+.Ltmp2135:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rdx
+	movq	%rcx, 96(%rax)
+	testq	%rdx, %rdx
+	je	.LBB307_23
+# BB#22:
+	#APP
+	mfence
+	lock
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
+	jae	.Ltmp2136
+	sti
+	movw	$0, 4(%rdx)
+.Ltmp2136:
+
+	#NO_APP
+	jmp	.LBB307_23
+.LBB307_20:                             # %LockSpinlock.exit11.thread
+	movq	%rcx, 96(%rax)
+.LBB307_23:                             # %UnlockSpinlock.exit13
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_24
+# BB#25:                                # %LockSpinlock.exit15
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2137
+.Ltmp2138:
+	btq	$25, %rdx
+	jae	.Ltmp2139
+.Ltmp2139:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2138
+.Ltmp2137:
+	btq	$25, %rdx
+	jae	.Ltmp2140
+	orw	$1, 4(%rcx)
+.Ltmp2140:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 88(%rax)
+	testq	%rcx, %rcx
+	je	.LBB307_27
+# BB#26:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2141
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2141:
+
+	#NO_APP
+	jmp	.LBB307_27
+.LBB307_24:                             # %LockSpinlock.exit15.thread
+	movq	%r14, 88(%rax)
+.LBB307_27:                             # %UnlockSpinlock.exit17
+	movl	preempt_vector, %eax
+	cmpl	$255, %eax
+	ja	.LBB307_53
+# BB#28:
+	movb	$-51, int_insts
+	movb	%al, int_insts+1
+	movb	$-61, int_insts+2
+	popq	%rbx
+	popq	%r12
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	jmp	int_insts               # TAILCALL
+.LBB307_39:                             # %.critedge
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_40
+# BB#41:                                # %LockSpinlock.exit27
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2142
+.Ltmp2143:
+	btq	$25, %rdx
+	jae	.Ltmp2144
+.Ltmp2144:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2143
+.Ltmp2142:
+	btq	$25, %rdx
+	jae	.Ltmp2145
+	orw	$1, 4(%rcx)
+.Ltmp2145:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movl	$3, 24(%rax)
+	testq	%rcx, %rcx
+	je	.LBB307_43
+# BB#42:                                # %UnlockSpinlock.exit29
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2146
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2146:
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_43
+# BB#44:                                # %LockSpinlock.exit31
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2147
+.Ltmp2148:
+	btq	$25, %rdx
+	jae	.Ltmp2149
+.Ltmp2149:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2148
+.Ltmp2147:
+	btq	$25, %rdx
+	jae	.Ltmp2150
+	orw	$1, 4(%rcx)
+.Ltmp2150:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movl	$1, 28(%rax)
+	testq	%rcx, %rcx
+	je	.LBB307_45
+# BB#46:                                # %UnlockSpinlock.exit33
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2151
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2151:
+
+	#NO_APP
+	movq	152(%rax), %rdx
+	movq	hpet_regs, %rcx
+	movq	48(%rcx), %rcx
+	testq	%rdx, %rdx
+	je	.LBB307_47
+# BB#48:                                # %LockSpinlock.exit35
+	xorl	%esi, %esi
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rsi
+	shlq	$16, %rsi
+	movw	$1, %si
+	lock
+	xaddw	%si, 2(%rdx)
+	cmpw	%si, (%rdx)
+	je	.Ltmp2152
+.Ltmp2153:
+	btq	$25, %rsi
+	jae	.Ltmp2154
+.Ltmp2154:
+	pause
+	cmpw	%si, (%rdx)
+	jne	.Ltmp2153
+.Ltmp2152:
+	btq	$25, %rsi
+	jae	.Ltmp2155
+	orw	$1, 4(%rdx)
+.Ltmp2155:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rdx
+	movq	%rcx, 96(%rax)
+	testq	%rdx, %rdx
+	je	.LBB307_50
+# BB#49:                                # %UnlockSpinlock.exit37
+	#APP
+	mfence
+	lock
+	incw	(%rdx)
+	btw	$0, 4(%rdx)
+	jae	.Ltmp2156
+	sti
+	movw	$0, 4(%rdx)
+.Ltmp2156:
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB307_50
+# BB#51:                                # %LockSpinlock.exit39
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2157
+.Ltmp2158:
+	btq	$25, %rdx
+	jae	.Ltmp2159
+.Ltmp2159:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2158
+.Ltmp2157:
+	btq	$25, %rdx
+	jae	.Ltmp2160
+	orw	$1, 4(%rcx)
+.Ltmp2160:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movq	%r14, 88(%rax)
+	testq	%rcx, %rcx
+	je	.LBB307_53
+# BB#52:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2161
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2161:
+
+	#NO_APP
+	jmp	.LBB307_53
+.LBB307_43:                             # %LockSpinlock.exit31.thread
+	movl	$1, 28(%rax)
+	jmp	.LBB307_45
+.LBB307_40:                             # %LockSpinlock.exit27.thread
+	movl	$3, 24(%rax)
+	movl	$1, 28(%rax)
+.LBB307_45:                             # %UnlockSpinlock.exit33.thread
+	movq	hpet_regs, %rcx
+	movq	48(%rcx), %rcx
+	movq	%rcx, 96(%rax)
+	movq	%r14, 88(%rax)
+.LBB307_53:                             # %.loopexit
 	popq	%rbx
 	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end308:
-	.size	Thread_SetChildTIDAddress, .Lfunc_end308-Thread_SetChildTIDAddress
+.LBB307_47:                             # %LockSpinlock.exit35.thread
+	movq	%rcx, 96(%rax)
+	movq	%r14, 88(%rax)
+	jmp	.LBB307_53
+.LBB307_50:                             # %LockSpinlock.exit39.thread
+	movq	%r14, 88(%rax)
+	jmp	.LBB307_53
+.Lfunc_end307:
+	.size	SleepThread, .Lfunc_end307-SleepThread
 	.cfi_endproc
 
-	.globl	Thread_SetClearChildTIDAddress
+	.globl	YieldThread
 	.align	16, 0x90
-	.type	Thread_SetClearChildTIDAddress,@function
-Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
+	.type	YieldThread,@function
+YieldThread:                            # @YieldThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2252:
+.Ltmp2162:
 	.cfi_def_cfa_offset 16
-.Ltmp2253:
+.Ltmp2163:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2254:
+.Ltmp2164:
+	.cfi_def_cfa_register %rbp
+	movl	preempt_vector, %eax
+	cmpl	$255, %eax
+	jbe	.LBB308_2
+# BB#1:                                 # %RaiseInterrupt.exit
+	popq	%rbp
+	retq
+.LBB308_2:
+	movb	$-51, int_insts
+	movb	%al, int_insts+1
+	movb	$-61, int_insts+2
+	popq	%rbp
+	jmp	int_insts               # TAILCALL
+.Lfunc_end308:
+	.size	YieldThread, .Lfunc_end308-YieldThread
+	.cfi_endproc
+
+	.globl	GetThreadState
+	.align	16, 0x90
+	.type	GetThreadState,@function
+GetThreadState:                         # @GetThreadState
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2165:
+	.cfi_def_cfa_offset 16
+.Ltmp2166:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2167:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp2255:
+.Ltmp2168:
 	.cfi_offset %rbx, -48
-.Ltmp2256:
+.Ltmp2169:
 	.cfi_offset %r12, -40
-.Ltmp2257:
+.Ltmp2170:
 	.cfi_offset %r14, -32
-.Ltmp2258:
+.Ltmp2171:
 	.cfi_offset %r15, -24
-	movq	%rsi, %r14
 	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB309_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -33295,24 +32211,24 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2259
-.Ltmp2260:
+	je	.Ltmp2172
+.Ltmp2173:
 	btq	$25, %rdx
-	jae	.Ltmp2261
-.Ltmp2261:
+	jae	.Ltmp2174
+.Ltmp2174:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2260
-.Ltmp2259:
+	jne	.Ltmp2173
+.Ltmp2172:
 	btq	$25, %rdx
-	jae	.Ltmp2262
+	jae	.Ltmp2175
 	orw	$1, 4(%rax)
-.Ltmp2262:
+.Ltmp2175:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB309_4
 # BB#3:
@@ -33321,22 +32237,22 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2263
+	jae	.Ltmp2176
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2263:
+.Ltmp2176:
 
 	#NO_APP
 	jmp	.LBB309_4
 .LBB309_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB309_4:                              # %UnlockSpinlock.exit
 	cmpq	%r15, %rax
 	jne	.LBB309_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB309_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -33351,39 +32267,39 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2264
-.Ltmp2265:
+	je	.Ltmp2177
+.Ltmp2178:
 	btq	$25, %rdx
-	jae	.Ltmp2266
-.Ltmp2266:
+	jae	.Ltmp2179
+.Ltmp2179:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2265
-.Ltmp2264:
+	jne	.Ltmp2178
+.Ltmp2177:
 	btq	$25, %rdx
-	jae	.Ltmp2267
+	jae	.Ltmp2180
 	orw	$1, 4(%rcx)
-.Ltmp2267:
+.Ltmp2180:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 144(%rax)
+	movq	152(%rax), %rcx
+	movl	24(%rax), %r14d
 	testq	%rcx, %rcx
-	je	.LBB309_29
+	je	.LBB309_15
 # BB#14:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2268
+	jae	.Ltmp2181
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2268:
+.Ltmp2181:
 
 	#NO_APP
-	jmp	.LBB309_29
+	jmp	.LBB309_15
 .LBB309_5:                              # %.preheader
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
@@ -33401,19 +32317,19 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2269
-.Ltmp2270:
+	je	.Ltmp2182
+.Ltmp2183:
 	btq	$25, %rdx
-	jae	.Ltmp2271
-.Ltmp2271:
+	jae	.Ltmp2184
+.Ltmp2184:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2270
-.Ltmp2269:
+	jne	.Ltmp2183
+.Ltmp2182:
 	btq	$25, %rdx
-	jae	.Ltmp2272
+	jae	.Ltmp2185
 	orw	$1, 4(%rax)
-.Ltmp2272:
+.Ltmp2185:
 	cli
 
 	#NO_APP
@@ -33427,35 +32343,36 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2273
+	jae	.Ltmp2186
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2273:
+.Ltmp2186:
 
 	#NO_APP
 	jmp	.LBB309_9
 .LBB309_12:                             # %LockSpinlock.exit3.thread
-	movq	%r14, 144(%rax)
-	jmp	.LBB309_29
+	movl	24(%rax), %r14d
+	jmp	.LBB309_15
 .LBB309_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB309_9:                              # %List_Length.exit
+	movl	$-1, %r14d
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	je	.LBB309_29
+	je	.LBB309_15
 # BB#10:
 	xorl	%r12d, %r12d
 	.align	16, 0x90
-.LBB309_20:                             # %.lr.ph
+.LBB309_21:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB309_21
-# BB#22:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB309_20 Depth=1
+	je	.LBB309_22
+# BB#23:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB309_21 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -33466,55 +32383,55 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%r12w, 2(%rcx)
 	cmpw	%r12w, (%rcx)
-	je	.Ltmp2274
-.Ltmp2275:
+	je	.Ltmp2187
+.Ltmp2188:
 	btq	$25, %r12
-	jae	.Ltmp2276
-.Ltmp2276:
+	jae	.Ltmp2189
+.Ltmp2189:
 	pause
 	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2275
-.Ltmp2274:
+	jne	.Ltmp2188
+.Ltmp2187:
 	btq	$25, %r12
-	jae	.Ltmp2277
+	jae	.Ltmp2190
 	orw	$1, 4(%rcx)
-.Ltmp2277:
+.Ltmp2190:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB309_24
-# BB#23:                                #   in Loop: Header=BB309_20 Depth=1
+	je	.LBB309_25
+# BB#24:                                #   in Loop: Header=BB309_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2278
+	jae	.Ltmp2191
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2278:
+.Ltmp2191:
 
 	#NO_APP
-	jmp	.LBB309_24
+	jmp	.LBB309_25
 	.align	16, 0x90
-.LBB309_21:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB309_20 Depth=1
-	movq	8(%rax), %rcx
-.LBB309_24:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB309_20 Depth=1
+.LBB309_22:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB309_21 Depth=1
+	movq	(%rax), %rcx
+.LBB309_25:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB309_21 Depth=1
 	cmpq	%r15, %rcx
-	je	.LBB309_25
-# BB#15:                                #   in Loop: Header=BB309_20 Depth=1
+	je	.LBB309_26
+# BB#16:                                #   in Loop: Header=BB309_21 Depth=1
 	incq	%rbx
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB309_16
-# BB#17:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB309_20 Depth=1
+	je	.LBB309_17
+# BB#18:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB309_21 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -33525,53 +32442,53 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%r12w, 2(%rax)
 	cmpw	%r12w, (%rax)
-	je	.Ltmp2279
-.Ltmp2280:
+	je	.Ltmp2192
+.Ltmp2193:
 	btq	$25, %r12
-	jae	.Ltmp2281
-.Ltmp2281:
+	jae	.Ltmp2194
+.Ltmp2194:
 	pause
 	cmpw	%r12w, (%rax)
-	jne	.Ltmp2280
-.Ltmp2279:
+	jne	.Ltmp2193
+.Ltmp2192:
 	btq	$25, %r12
-	jae	.Ltmp2282
+	jae	.Ltmp2195
 	orw	$1, 4(%rax)
-.Ltmp2282:
+.Ltmp2195:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB309_19
-# BB#18:                                #   in Loop: Header=BB309_20 Depth=1
+	je	.LBB309_20
+# BB#19:                                #   in Loop: Header=BB309_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2283
+	jae	.Ltmp2196
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2283:
+.Ltmp2196:
 
 	#NO_APP
-	jmp	.LBB309_19
+	jmp	.LBB309_20
 	.align	16, 0x90
-.LBB309_16:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB309_20 Depth=1
+.LBB309_17:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB309_21 Depth=1
 	movq	32(%rcx), %rax
-.LBB309_19:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB309_20 Depth=1
+.LBB309_20:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB309_21 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB309_20
-	jmp	.LBB309_29
-.LBB309_25:                             # %.critedge
-	movq	168(%rax), %rcx
+	jb	.LBB309_21
+	jmp	.LBB309_15
+.LBB309_26:
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB309_26
-# BB#27:                                # %LockSpinlock.exit15
+	je	.LBB309_27
+# BB#28:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -33583,42 +32500,43 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2284
-.Ltmp2285:
+	je	.Ltmp2197
+.Ltmp2198:
 	btq	$25, %rdx
-	jae	.Ltmp2286
-.Ltmp2286:
+	jae	.Ltmp2199
+.Ltmp2199:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2285
-.Ltmp2284:
+	jne	.Ltmp2198
+.Ltmp2197:
 	btq	$25, %rdx
-	jae	.Ltmp2287
+	jae	.Ltmp2200
 	orw	$1, 4(%rcx)
-.Ltmp2287:
+.Ltmp2200:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 144(%rax)
+	movq	152(%rax), %rcx
+	movl	24(%rax), %r14d
 	testq	%rcx, %rcx
-	je	.LBB309_29
-# BB#28:
+	je	.LBB309_15
+# BB#29:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2288
+	jae	.Ltmp2201
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2288:
+.Ltmp2201:
 
 	#NO_APP
-	jmp	.LBB309_29
-.LBB309_26:                             # %LockSpinlock.exit15.thread
-	movq	%r14, 144(%rax)
-.LBB309_29:                             # %.loopexit
+	jmp	.LBB309_15
+.LBB309_27:                             # %LockSpinlock.exit15.thread
+	movl	24(%rax), %r14d
+.LBB309_15:                             # %UnlockSpinlock.exit5
+	movl	%r14d, %eax
 	popq	%rbx
 	popq	%r12
 	popq	%r14
@@ -33626,40 +32544,37 @@ Thread_SetClearChildTIDAddress:         # @Thread_SetClearChildTIDAddress
 	popq	%rbp
 	retq
 .Lfunc_end309:
-	.size	Thread_SetClearChildTIDAddress, .Lfunc_end309-Thread_SetClearChildTIDAddress
+	.size	GetThreadState, .Lfunc_end309-GetThreadState
 	.cfi_endproc
 
-	.globl	SetThreadState
+	.globl	GetThreadUserStack
 	.align	16, 0x90
-	.type	SetThreadState,@function
-SetThreadState:                         # @SetThreadState
+	.type	GetThreadUserStack,@function
+GetThreadUserStack:                     # @GetThreadUserStack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2289:
+.Ltmp2202:
 	.cfi_def_cfa_offset 16
-.Ltmp2290:
+.Ltmp2203:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2291:
+.Ltmp2204:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
-	pushq	%r12
 	pushq	%rbx
-.Ltmp2292:
-	.cfi_offset %rbx, -48
-.Ltmp2293:
-	.cfi_offset %r12, -40
-.Ltmp2294:
+	pushq	%rax
+.Ltmp2205:
+	.cfi_offset %rbx, -40
+.Ltmp2206:
 	.cfi_offset %r14, -32
-.Ltmp2295:
+.Ltmp2207:
 	.cfi_offset %r15, -24
-	movl	%esi, %r14d
-	movq	%rdi, %r15
+	movq	%rdi, %r14
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB310_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -33674,24 +32589,24 @@ SetThreadState:                         # @SetThreadState
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2296
-.Ltmp2297:
+	je	.Ltmp2208
+.Ltmp2209:
 	btq	$25, %rdx
-	jae	.Ltmp2298
-.Ltmp2298:
+	jae	.Ltmp2210
+.Ltmp2210:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2297
-.Ltmp2296:
+	jne	.Ltmp2209
+.Ltmp2208:
 	btq	$25, %rdx
-	jae	.Ltmp2299
+	jae	.Ltmp2211
 	orw	$1, 4(%rax)
-.Ltmp2299:
+.Ltmp2211:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB310_4
 # BB#3:
@@ -33700,22 +32615,22 @@ SetThreadState:                         # @SetThreadState
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2300
+	jae	.Ltmp2212
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2300:
+.Ltmp2212:
 
 	#NO_APP
 	jmp	.LBB310_4
 .LBB310_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB310_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
+	cmpq	%r14, %rax
 	jne	.LBB310_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB310_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -33730,39 +32645,39 @@ SetThreadState:                         # @SetThreadState
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2301
-.Ltmp2302:
+	je	.Ltmp2213
+.Ltmp2214:
 	btq	$25, %rdx
-	jae	.Ltmp2303
-.Ltmp2303:
+	jae	.Ltmp2215
+.Ltmp2215:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2302
-.Ltmp2301:
+	jne	.Ltmp2214
+.Ltmp2213:
 	btq	$25, %rdx
-	jae	.Ltmp2304
+	jae	.Ltmp2216
 	orw	$1, 4(%rcx)
-.Ltmp2304:
+.Ltmp2216:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 32(%rax)
-	testq	%rcx, %rcx
-	je	.LBB310_29
+	movq	72(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB310_15
 # BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2305
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2217
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2305:
+	movw	$0, 4(%rax)
+.Ltmp2217:
 
 	#NO_APP
-	jmp	.LBB310_29
+	jmp	.LBB310_15
 .LBB310_5:                              # %.preheader
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
@@ -33780,19 +32695,19 @@ SetThreadState:                         # @SetThreadState
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2306
-.Ltmp2307:
+	je	.Ltmp2218
+.Ltmp2219:
 	btq	$25, %rdx
-	jae	.Ltmp2308
-.Ltmp2308:
+	jae	.Ltmp2220
+.Ltmp2220:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2307
-.Ltmp2306:
+	jne	.Ltmp2219
+.Ltmp2218:
 	btq	$25, %rdx
-	jae	.Ltmp2309
+	jae	.Ltmp2221
 	orw	$1, 4(%rax)
-.Ltmp2309:
+.Ltmp2221:
 	cli
 
 	#NO_APP
@@ -33806,151 +32721,152 @@ SetThreadState:                         # @SetThreadState
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2310
+	jae	.Ltmp2222
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2310:
+.Ltmp2222:
 
 	#NO_APP
 	jmp	.LBB310_9
 .LBB310_12:                             # %LockSpinlock.exit3.thread
-	movl	%r14d, 32(%rax)
-	jmp	.LBB310_29
+	movq	72(%rax), %r15
+	jmp	.LBB310_15
 .LBB310_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB310_9:                              # %List_Length.exit
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	je	.LBB310_29
+	movl	$0, %r15d
+	je	.LBB310_15
 # BB#10:
-	xorl	%r12d, %r12d
+	xorl	%r15d, %r15d
 	.align	16, 0x90
-.LBB310_20:                             # %.lr.ph
+.LBB310_21:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB310_21
-# BB#22:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB310_20 Depth=1
+	je	.LBB310_22
+# BB#23:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB310_21 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
 	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2311
-.Ltmp2312:
-	btq	$25, %r12
-	jae	.Ltmp2313
-.Ltmp2313:
+	xaddw	%r15w, 2(%rcx)
+	cmpw	%r15w, (%rcx)
+	je	.Ltmp2223
+.Ltmp2224:
+	btq	$25, %r15
+	jae	.Ltmp2225
+.Ltmp2225:
 	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2312
-.Ltmp2311:
-	btq	$25, %r12
-	jae	.Ltmp2314
+	cmpw	%r15w, (%rcx)
+	jne	.Ltmp2224
+.Ltmp2223:
+	btq	$25, %r15
+	jae	.Ltmp2226
 	orw	$1, 4(%rcx)
-.Ltmp2314:
+.Ltmp2226:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB310_24
-# BB#23:                                #   in Loop: Header=BB310_20 Depth=1
+	je	.LBB310_25
+# BB#24:                                #   in Loop: Header=BB310_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2315
+	jae	.Ltmp2227
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2315:
+.Ltmp2227:
 
 	#NO_APP
-	jmp	.LBB310_24
+	jmp	.LBB310_25
 	.align	16, 0x90
-.LBB310_21:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB310_20 Depth=1
-	movq	8(%rax), %rcx
-.LBB310_24:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB310_20 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB310_25
-# BB#15:                                #   in Loop: Header=BB310_20 Depth=1
+.LBB310_22:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB310_21 Depth=1
+	movq	(%rax), %rcx
+.LBB310_25:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB310_21 Depth=1
+	cmpq	%r14, %rcx
+	je	.LBB310_26
+# BB#16:                                #   in Loop: Header=BB310_21 Depth=1
 	incq	%rbx
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB310_16
-# BB#17:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB310_20 Depth=1
+	je	.LBB310_17
+# BB#18:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB310_21 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
 	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2316
-.Ltmp2317:
-	btq	$25, %r12
-	jae	.Ltmp2318
-.Ltmp2318:
+	xaddw	%r15w, 2(%rax)
+	cmpw	%r15w, (%rax)
+	je	.Ltmp2228
+.Ltmp2229:
+	btq	$25, %r15
+	jae	.Ltmp2230
+.Ltmp2230:
 	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2317
-.Ltmp2316:
-	btq	$25, %r12
-	jae	.Ltmp2319
+	cmpw	%r15w, (%rax)
+	jne	.Ltmp2229
+.Ltmp2228:
+	btq	$25, %r15
+	jae	.Ltmp2231
 	orw	$1, 4(%rax)
-.Ltmp2319:
+.Ltmp2231:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB310_19
-# BB#18:                                #   in Loop: Header=BB310_20 Depth=1
+	je	.LBB310_20
+# BB#19:                                #   in Loop: Header=BB310_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2320
+	jae	.Ltmp2232
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2320:
+.Ltmp2232:
 
 	#NO_APP
-	jmp	.LBB310_19
+	jmp	.LBB310_20
 	.align	16, 0x90
-.LBB310_16:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB310_20 Depth=1
+.LBB310_17:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB310_21 Depth=1
 	movq	32(%rcx), %rax
-.LBB310_19:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB310_20 Depth=1
+.LBB310_20:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB310_21 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB310_20
-	jmp	.LBB310_29
-.LBB310_25:                             # %.critedge
-	movq	168(%rax), %rcx
+	jb	.LBB310_21
+	jmp	.LBB310_15
+.LBB310_26:
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB310_26
-# BB#27:                                # %LockSpinlock.exit15
+	je	.LBB310_27
+# BB#28:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -33962,83 +32878,81 @@ SetThreadState:                         # @SetThreadState
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2321
-.Ltmp2322:
+	je	.Ltmp2233
+.Ltmp2234:
 	btq	$25, %rdx
-	jae	.Ltmp2323
-.Ltmp2323:
+	jae	.Ltmp2235
+.Ltmp2235:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2322
-.Ltmp2321:
+	jne	.Ltmp2234
+.Ltmp2233:
 	btq	$25, %rdx
-	jae	.Ltmp2324
+	jae	.Ltmp2236
 	orw	$1, 4(%rcx)
-.Ltmp2324:
+.Ltmp2236:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 32(%rax)
-	testq	%rcx, %rcx
-	je	.LBB310_29
-# BB#28:
+	movq	72(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB310_15
+# BB#29:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2325
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2237
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2325:
+	movw	$0, 4(%rax)
+.Ltmp2237:
 
 	#NO_APP
-	jmp	.LBB310_29
-.LBB310_26:                             # %LockSpinlock.exit15.thread
-	movl	%r14d, 32(%rax)
-.LBB310_29:                             # %.loopexit
+	jmp	.LBB310_15
+.LBB310_27:                             # %LockSpinlock.exit15.thread
+	movq	72(%rax), %r15
+.LBB310_15:                             # %UnlockSpinlock.exit5
+	movq	%r15, %rax
+	addq	$8, %rsp
 	popq	%rbx
-	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
 .Lfunc_end310:
-	.size	SetThreadState, .Lfunc_end310-SetThreadState
+	.size	GetThreadUserStack, .Lfunc_end310-GetThreadUserStack
 	.cfi_endproc
 
-	.globl	SleepThread
+	.globl	GetThreadKernelStack
 	.align	16, 0x90
-	.type	SleepThread,@function
-SleepThread:                            # @SleepThread
+	.type	GetThreadKernelStack,@function
+GetThreadKernelStack:                   # @GetThreadKernelStack
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2326:
+.Ltmp2238:
 	.cfi_def_cfa_offset 16
-.Ltmp2327:
+.Ltmp2239:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2328:
+.Ltmp2240:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
-	pushq	%r12
 	pushq	%rbx
-.Ltmp2329:
-	.cfi_offset %rbx, -48
-.Ltmp2330:
-	.cfi_offset %r12, -40
-.Ltmp2331:
+	pushq	%rax
+.Ltmp2241:
+	.cfi_offset %rbx, -40
+.Ltmp2242:
 	.cfi_offset %r14, -32
-.Ltmp2332:
+.Ltmp2243:
 	.cfi_offset %r15, -24
-	movq	%rsi, %r14
-	movq	%rdi, %r15
+	movq	%rdi, %r14
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB311_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -34053,24 +32967,24 @@ SleepThread:                            # @SleepThread
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2333
-.Ltmp2334:
+	je	.Ltmp2244
+.Ltmp2245:
 	btq	$25, %rdx
-	jae	.Ltmp2335
-.Ltmp2335:
+	jae	.Ltmp2246
+.Ltmp2246:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2334
-.Ltmp2333:
+	jne	.Ltmp2245
+.Ltmp2244:
 	btq	$25, %rdx
-	jae	.Ltmp2336
+	jae	.Ltmp2247
 	orw	$1, 4(%rax)
-.Ltmp2336:
+.Ltmp2247:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB311_4
 # BB#3:
@@ -34079,22 +32993,22 @@ SleepThread:                            # @SleepThread
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2337
+	jae	.Ltmp2248
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2337:
+.Ltmp2248:
 
 	#NO_APP
 	jmp	.LBB311_4
 .LBB311_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB311_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
+	cmpq	%r14, %rax
 	jne	.LBB311_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB311_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -34109,36 +33023,36 @@ SleepThread:                            # @SleepThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2338
-.Ltmp2339:
+	je	.Ltmp2249
+.Ltmp2250:
 	btq	$25, %rdx
-	jae	.Ltmp2340
-.Ltmp2340:
+	jae	.Ltmp2251
+.Ltmp2251:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2339
-.Ltmp2338:
+	jne	.Ltmp2250
+.Ltmp2249:
 	btq	$25, %rdx
-	jae	.Ltmp2341
+	jae	.Ltmp2252
 	orw	$1, 4(%rcx)
-.Ltmp2341:
+.Ltmp2252:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	$3, 32(%rax)
-	testq	%rcx, %rcx
+	movq	64(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
 	je	.LBB311_15
 # BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2342
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2253
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2342:
+	movw	$0, 4(%rax)
+.Ltmp2253:
 
 	#NO_APP
 	jmp	.LBB311_15
@@ -34159,19 +33073,19 @@ SleepThread:                            # @SleepThread
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2343
-.Ltmp2344:
+	je	.Ltmp2254
+.Ltmp2255:
 	btq	$25, %rdx
-	jae	.Ltmp2345
-.Ltmp2345:
+	jae	.Ltmp2256
+.Ltmp2256:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2344
-.Ltmp2343:
+	jne	.Ltmp2255
+.Ltmp2254:
 	btq	$25, %rdx
-	jae	.Ltmp2346
+	jae	.Ltmp2257
 	orw	$1, 4(%rax)
-.Ltmp2346:
+.Ltmp2257:
 	cli
 
 	#NO_APP
@@ -34185,325 +33099,297 @@ SleepThread:                            # @SleepThread
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2347
+	jae	.Ltmp2258
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2347:
+.Ltmp2258:
 
 	#NO_APP
 	jmp	.LBB311_9
 .LBB311_12:                             # %LockSpinlock.exit3.thread
-	movl	$3, 32(%rax)
-.LBB311_15:                             # %UnlockSpinlock.exit5
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB311_16
-# BB#17:                                # %LockSpinlock.exit7
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2348
-.Ltmp2349:
-	btq	$25, %rdx
-	jae	.Ltmp2350
-.Ltmp2350:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2349
-.Ltmp2348:
-	btq	$25, %rdx
-	jae	.Ltmp2351
-	orw	$1, 4(%rcx)
-.Ltmp2351:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	$1, 36(%rax)
-	testq	%rcx, %rcx
-	je	.LBB311_19
-# BB#18:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2352
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2352:
-
-	#NO_APP
-	jmp	.LBB311_19
+	movq	64(%rax), %r15
+	jmp	.LBB311_15
 .LBB311_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB311_9:                              # %List_Length.exit
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	je	.LBB311_53
+	movl	$0, %r15d
+	je	.LBB311_15
 # BB#10:
-	xorl	%r12d, %r12d
+	xorl	%r15d, %r15d
 	.align	16, 0x90
-.LBB311_34:                             # %.lr.ph
+.LBB311_21:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB311_35
-# BB#36:                                # %LockSpinlock.exit23
-                                        #   in Loop: Header=BB311_34 Depth=1
+	je	.LBB311_22
+# BB#23:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB311_21 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
 	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2353
-.Ltmp2354:
-	btq	$25, %r12
-	jae	.Ltmp2355
-.Ltmp2355:
+	xaddw	%r15w, 2(%rcx)
+	cmpw	%r15w, (%rcx)
+	je	.Ltmp2259
+.Ltmp2260:
+	btq	$25, %r15
+	jae	.Ltmp2261
+.Ltmp2261:
 	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2354
-.Ltmp2353:
-	btq	$25, %r12
-	jae	.Ltmp2356
+	cmpw	%r15w, (%rcx)
+	jne	.Ltmp2260
+.Ltmp2259:
+	btq	$25, %r15
+	jae	.Ltmp2262
 	orw	$1, 4(%rcx)
-.Ltmp2356:
+.Ltmp2262:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB311_38
-# BB#37:                                #   in Loop: Header=BB311_34 Depth=1
+	je	.LBB311_25
+# BB#24:                                #   in Loop: Header=BB311_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2357
+	jae	.Ltmp2263
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2357:
+.Ltmp2263:
 
 	#NO_APP
-	jmp	.LBB311_38
+	jmp	.LBB311_25
 	.align	16, 0x90
-.LBB311_35:                             # %LockSpinlock.exit23.thread
-                                        #   in Loop: Header=BB311_34 Depth=1
-	movq	8(%rax), %rcx
-.LBB311_38:                             # %UnlockSpinlock.exit25
-                                        #   in Loop: Header=BB311_34 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB311_39
-# BB#29:                                #   in Loop: Header=BB311_34 Depth=1
+.LBB311_22:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB311_21 Depth=1
+	movq	(%rax), %rcx
+.LBB311_25:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB311_21 Depth=1
+	cmpq	%r14, %rcx
+	je	.LBB311_26
+# BB#16:                                #   in Loop: Header=BB311_21 Depth=1
 	incq	%rbx
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB311_30
-# BB#31:                                # %LockSpinlock.exit.i.19
-                                        #   in Loop: Header=BB311_34 Depth=1
+	je	.LBB311_17
+# BB#18:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB311_21 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
 	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2358
-.Ltmp2359:
-	btq	$25, %r12
-	jae	.Ltmp2360
-.Ltmp2360:
+	xaddw	%r15w, 2(%rax)
+	cmpw	%r15w, (%rax)
+	je	.Ltmp2264
+.Ltmp2265:
+	btq	$25, %r15
+	jae	.Ltmp2266
+.Ltmp2266:
 	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2359
-.Ltmp2358:
-	btq	$25, %r12
-	jae	.Ltmp2361
+	cmpw	%r15w, (%rax)
+	jne	.Ltmp2265
+.Ltmp2264:
+	btq	$25, %r15
+	jae	.Ltmp2267
 	orw	$1, 4(%rax)
-.Ltmp2361:
+.Ltmp2267:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB311_33
-# BB#32:                                #   in Loop: Header=BB311_34 Depth=1
+	je	.LBB311_20
+# BB#19:                                #   in Loop: Header=BB311_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2362
+	jae	.Ltmp2268
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2362:
+.Ltmp2268:
 
 	#NO_APP
-	jmp	.LBB311_33
+	jmp	.LBB311_20
 	.align	16, 0x90
-.LBB311_30:                             # %LockSpinlock.exit.i.19.thread
-                                        #   in Loop: Header=BB311_34 Depth=1
+.LBB311_17:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB311_21 Depth=1
 	movq	32(%rcx), %rax
-.LBB311_33:                             # %List_Length.exit21
-                                        #   in Loop: Header=BB311_34 Depth=1
+.LBB311_20:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB311_21 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB311_34
-	jmp	.LBB311_53
-.LBB311_16:                             # %LockSpinlock.exit7.thread
-	movl	$1, 36(%rax)
-.LBB311_19:                             # %UnlockSpinlock.exit9
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	hpet_regs, %rcx
-	movq	48(%rcx), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB311_20
-# BB#21:                                # %LockSpinlock.exit11
-	xorl	%esi, %esi
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
-	lock
-	xaddw	%si, 2(%rdx)
-	cmpw	%si, (%rdx)
-	je	.Ltmp2363
-.Ltmp2364:
-	btq	$25, %rsi
-	jae	.Ltmp2365
-.Ltmp2365:
-	pause
-	cmpw	%si, (%rdx)
-	jne	.Ltmp2364
-.Ltmp2363:
-	btq	$25, %rsi
-	jae	.Ltmp2366
-	orw	$1, 4(%rdx)
-.Ltmp2366:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rdx
-	movq	%rcx, 128(%rax)
-	testq	%rdx, %rdx
-	je	.LBB311_23
-# BB#22:
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2367
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2367:
-
-	#NO_APP
-	jmp	.LBB311_23
-.LBB311_20:                             # %LockSpinlock.exit11.thread
-	movq	%rcx, 128(%rax)
-.LBB311_23:                             # %UnlockSpinlock.exit13
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB311_24
-# BB#25:                                # %LockSpinlock.exit15
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2368
-.Ltmp2369:
-	btq	$25, %rdx
-	jae	.Ltmp2370
-.Ltmp2370:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2369
-.Ltmp2368:
-	btq	$25, %rdx
-	jae	.Ltmp2371
-	orw	$1, 4(%rcx)
-.Ltmp2371:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 120(%rax)
+	jb	.LBB311_21
+	jmp	.LBB311_15
+.LBB311_26:
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB311_27
-# BB#26:
+# BB#28:                                # %LockSpinlock.exit15
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2269
+.Ltmp2270:
+	btq	$25, %rdx
+	jae	.Ltmp2271
+.Ltmp2271:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2270
+.Ltmp2269:
+	btq	$25, %rdx
+	jae	.Ltmp2272
+	orw	$1, 4(%rcx)
+.Ltmp2272:
+	cli
+
+	#NO_APP
+	movq	64(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB311_15
+# BB#29:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2372
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2273
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2372:
+	movw	$0, 4(%rax)
+.Ltmp2273:
 
 	#NO_APP
-	jmp	.LBB311_27
-.LBB311_24:                             # %LockSpinlock.exit15.thread
-	movq	%r14, 120(%rax)
-.LBB311_27:                             # %UnlockSpinlock.exit17
-	movl	preempt_vector, %eax
-	cmpl	$255, %eax
-	ja	.LBB311_53
-# BB#28:
-	movb	$-51, int_insts
-	movb	%al, int_insts+1
-	movb	$-61, int_insts+2
+	jmp	.LBB311_15
+.LBB311_27:                             # %LockSpinlock.exit15.thread
+	movq	64(%rax), %r15
+.LBB311_15:                             # %UnlockSpinlock.exit5
+	movq	%r15, %rax
+	addq	$8, %rsp
 	popq	%rbx
-	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
-	jmp	int_insts               # TAILCALL
-.LBB311_39:                             # %.critedge
-	movq	168(%rax), %rcx
+	retq
+.Lfunc_end311:
+	.size	GetThreadKernelStack, .Lfunc_end311-GetThreadKernelStack
+	.cfi_endproc
+
+	.globl	GetThreadCurrentStack
+	.align	16, 0x90
+	.type	GetThreadCurrentStack,@function
+GetThreadCurrentStack:                  # @GetThreadCurrentStack
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2274:
+	.cfi_def_cfa_offset 16
+.Ltmp2275:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2276:
+	.cfi_def_cfa_register %rbp
+	pushq	%r15
+	pushq	%r14
+	pushq	%rbx
+	pushq	%rax
+.Ltmp2277:
+	.cfi_offset %rbx, -40
+.Ltmp2278:
+	.cfi_offset %r14, -32
+.Ltmp2279:
+	.cfi_offset %r15, -24
+	movq	%rdi, %r14
+	movq	coreState, %rax
+	movq	(%rax), %rcx
+	movq	152(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB312_1
+# BB#2:                                 # %LockSpinlock.exit
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp2280
+.Ltmp2281:
+	btq	$25, %rdx
+	jae	.Ltmp2282
+.Ltmp2282:
+	pause
+	cmpw	%dx, (%rax)
+	jne	.Ltmp2281
+.Ltmp2280:
+	btq	$25, %rdx
+	jae	.Ltmp2283
+	orw	$1, 4(%rax)
+.Ltmp2283:
+	cli
+
+	#NO_APP
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB311_40
-# BB#41:                                # %LockSpinlock.exit27
+	je	.LBB312_4
+# BB#3:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2284
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2284:
+
+	#NO_APP
+	jmp	.LBB312_4
+.LBB312_1:                              # %LockSpinlock.exit.thread
+	movq	(%rcx), %rax
+.LBB312_4:                              # %UnlockSpinlock.exit
+	cmpq	%r14, %rax
+	jne	.LBB312_5
+# BB#11:
+	movq	coreState, %rax
+	movq	(%rax), %rax
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB312_12
+# BB#13:                                # %LockSpinlock.exit3
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -34515,42 +33401,45 @@ SleepThread:                            # @SleepThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2373
-.Ltmp2374:
+	je	.Ltmp2285
+.Ltmp2286:
 	btq	$25, %rdx
-	jae	.Ltmp2375
-.Ltmp2375:
+	jae	.Ltmp2287
+.Ltmp2287:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2374
-.Ltmp2373:
+	jne	.Ltmp2286
+.Ltmp2285:
 	btq	$25, %rdx
-	jae	.Ltmp2376
+	jae	.Ltmp2288
 	orw	$1, 4(%rcx)
-.Ltmp2376:
+.Ltmp2288:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	$3, 32(%rax)
-	testq	%rcx, %rcx
-	je	.LBB311_43
-# BB#42:                                # %UnlockSpinlock.exit29
+	movq	80(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB312_15
+# BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2377
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2289
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2377:
+	movw	$0, 4(%rax)
+.Ltmp2289:
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB311_43
-# BB#44:                                # %LockSpinlock.exit31
+	jmp	.LBB312_15
+.LBB312_5:                              # %.preheader
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB312_6
+# BB#7:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -34560,93 +33449,180 @@ SleepThread:                            # @SleepThread
 	shlq	$16, %rdx
 	movw	$1, %dx
 	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2378
-.Ltmp2379:
+	xaddw	%dx, 2(%rax)
+	cmpw	%dx, (%rax)
+	je	.Ltmp2290
+.Ltmp2291:
 	btq	$25, %rdx
-	jae	.Ltmp2380
-.Ltmp2380:
+	jae	.Ltmp2292
+.Ltmp2292:
 	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2379
-.Ltmp2378:
+	cmpw	%dx, (%rax)
+	jne	.Ltmp2291
+.Ltmp2290:
 	btq	$25, %rdx
-	jae	.Ltmp2381
-	orw	$1, 4(%rcx)
-.Ltmp2381:
+	jae	.Ltmp2293
+	orw	$1, 4(%rax)
+.Ltmp2293:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	$1, 36(%rax)
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB311_45
-# BB#46:                                # %UnlockSpinlock.exit33
+	je	.LBB312_9
+# BB#8:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2382
+	jae	.Ltmp2294
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2382:
+.Ltmp2294:
 
 	#NO_APP
-	movq	168(%rax), %rdx
-	movq	hpet_regs, %rcx
-	movq	48(%rcx), %rcx
-	testq	%rdx, %rdx
-	je	.LBB311_47
-# BB#48:                                # %LockSpinlock.exit35
-	xorl	%esi, %esi
+	jmp	.LBB312_9
+.LBB312_12:                             # %LockSpinlock.exit3.thread
+	movq	80(%rax), %r15
+	jmp	.LBB312_15
+.LBB312_6:                              # %LockSpinlock.exit.i.thread
+	movq	32(%rcx), %rax
+.LBB312_9:                              # %List_Length.exit
+	xorl	%ebx, %ebx
+	testq	%rax, %rax
+	movl	$0, %r15d
+	je	.LBB312_15
+# BB#10:
+	xorl	%r15d, %r15d
+	.align	16, 0x90
+.LBB312_21:                             # %.lr.ph
+                                        # =>This Inner Loop Header: Depth=1
+	movq	thds, %rdi
+	movq	%rbx, %rsi
+	callq	List_EntryAt
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB312_22
+# BB#23:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB312_21 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
 	lock
-	xaddw	%si, 2(%rdx)
-	cmpw	%si, (%rdx)
-	je	.Ltmp2383
-.Ltmp2384:
-	btq	$25, %rsi
-	jae	.Ltmp2385
-.Ltmp2385:
+	xaddw	%r15w, 2(%rcx)
+	cmpw	%r15w, (%rcx)
+	je	.Ltmp2295
+.Ltmp2296:
+	btq	$25, %r15
+	jae	.Ltmp2297
+.Ltmp2297:
 	pause
-	cmpw	%si, (%rdx)
-	jne	.Ltmp2384
-.Ltmp2383:
-	btq	$25, %rsi
-	jae	.Ltmp2386
-	orw	$1, 4(%rdx)
-.Ltmp2386:
+	cmpw	%r15w, (%rcx)
+	jne	.Ltmp2296
+.Ltmp2295:
+	btq	$25, %r15
+	jae	.Ltmp2298
+	orw	$1, 4(%rcx)
+.Ltmp2298:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rdx
-	movq	%rcx, 128(%rax)
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB311_50
-# BB#49:                                # %UnlockSpinlock.exit37
+	je	.LBB312_25
+# BB#24:                                #   in Loop: Header=BB312_21 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2387
+	jae	.Ltmp2299
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2387:
+.Ltmp2299:
 
 	#NO_APP
-	movq	168(%rax), %rcx
+	jmp	.LBB312_25
+	.align	16, 0x90
+.LBB312_22:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB312_21 Depth=1
+	movq	(%rax), %rcx
+.LBB312_25:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB312_21 Depth=1
+	cmpq	%r14, %rcx
+	je	.LBB312_26
+# BB#16:                                #   in Loop: Header=BB312_21 Depth=1
+	incq	%rbx
+	movq	thds, %rcx
+	movq	40(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB312_17
+# BB#18:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB312_21 Depth=1
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r15
+	shlq	$16, %r15
+	movw	$1, %r15w
+	lock
+	xaddw	%r15w, 2(%rax)
+	cmpw	%r15w, (%rax)
+	je	.Ltmp2300
+.Ltmp2301:
+	btq	$25, %r15
+	jae	.Ltmp2302
+.Ltmp2302:
+	pause
+	cmpw	%r15w, (%rax)
+	jne	.Ltmp2301
+.Ltmp2300:
+	btq	$25, %r15
+	jae	.Ltmp2303
+	orw	$1, 4(%rax)
+.Ltmp2303:
+	cli
+
+	#NO_APP
+	movq	32(%rcx), %rax
+	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB311_50
-# BB#51:                                # %LockSpinlock.exit39
+	je	.LBB312_20
+# BB#19:                                #   in Loop: Header=BB312_21 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2304
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2304:
+
+	#NO_APP
+	jmp	.LBB312_20
+	.align	16, 0x90
+.LBB312_17:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB312_21 Depth=1
+	movq	32(%rcx), %rax
+.LBB312_20:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB312_21 Depth=1
+	cmpq	%rax, %rbx
+	jb	.LBB312_21
+	jmp	.LBB312_15
+.LBB312_26:
+	movq	152(%rax), %rcx
+	testq	%rcx, %rcx
+	je	.LBB312_27
+# BB#28:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -34658,128 +33634,84 @@ SleepThread:                            # @SleepThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2388
-.Ltmp2389:
+	je	.Ltmp2305
+.Ltmp2306:
 	btq	$25, %rdx
-	jae	.Ltmp2390
-.Ltmp2390:
+	jae	.Ltmp2307
+.Ltmp2307:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2389
-.Ltmp2388:
+	jne	.Ltmp2306
+.Ltmp2305:
 	btq	$25, %rdx
-	jae	.Ltmp2391
+	jae	.Ltmp2308
 	orw	$1, 4(%rcx)
-.Ltmp2391:
+.Ltmp2308:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movq	%r14, 120(%rax)
-	testq	%rcx, %rcx
-	je	.LBB311_53
-# BB#52:
+	movq	80(%rax), %r15
+	movq	152(%rax), %rax
+	testq	%rax, %rax
+	je	.LBB312_15
+# BB#29:
 	#APP
 	mfence
 	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2392
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2309
 	sti
-	movw	$0, 4(%rcx)
-.Ltmp2392:
+	movw	$0, 4(%rax)
+.Ltmp2309:
 
 	#NO_APP
-	jmp	.LBB311_53
-.LBB311_43:                             # %LockSpinlock.exit31.thread
-	movl	$1, 36(%rax)
-	jmp	.LBB311_45
-.LBB311_40:                             # %LockSpinlock.exit27.thread
-	movl	$3, 32(%rax)
-	movl	$1, 36(%rax)
-.LBB311_45:                             # %UnlockSpinlock.exit33.thread
-	movq	hpet_regs, %rcx
-	movq	48(%rcx), %rcx
-	movq	%rcx, 128(%rax)
-	movq	%r14, 120(%rax)
-.LBB311_53:                             # %.loopexit
+	jmp	.LBB312_15
+.LBB312_27:                             # %LockSpinlock.exit15.thread
+	movq	80(%rax), %r15
+.LBB312_15:                             # %UnlockSpinlock.exit5
+	movq	%r15, %rax
+	addq	$8, %rsp
 	popq	%rbx
-	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
-.LBB311_47:                             # %LockSpinlock.exit35.thread
-	movq	%rcx, 128(%rax)
-	movq	%r14, 120(%rax)
-	jmp	.LBB311_53
-.LBB311_50:                             # %LockSpinlock.exit39.thread
-	movq	%r14, 120(%rax)
-	jmp	.LBB311_53
-.Lfunc_end311:
-	.size	SleepThread, .Lfunc_end311-SleepThread
-	.cfi_endproc
-
-	.globl	YieldThread
-	.align	16, 0x90
-	.type	YieldThread,@function
-YieldThread:                            # @YieldThread
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2393:
-	.cfi_def_cfa_offset 16
-.Ltmp2394:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2395:
-	.cfi_def_cfa_register %rbp
-	movl	preempt_vector, %eax
-	cmpl	$255, %eax
-	jbe	.LBB312_2
-# BB#1:                                 # %RaiseInterrupt.exit
-	popq	%rbp
-	retq
-.LBB312_2:
-	movb	$-51, int_insts
-	movb	%al, int_insts+1
-	movb	$-61, int_insts+2
-	popq	%rbp
-	jmp	int_insts               # TAILCALL
 .Lfunc_end312:
-	.size	YieldThread, .Lfunc_end312-YieldThread
+	.size	GetThreadCurrentStack, .Lfunc_end312-GetThreadCurrentStack
 	.cfi_endproc
 
-	.globl	GetThreadState
+	.globl	SetThreadBasePriority
 	.align	16, 0x90
-	.type	GetThreadState,@function
-GetThreadState:                         # @GetThreadState
+	.type	SetThreadBasePriority,@function
+SetThreadBasePriority:                  # @SetThreadBasePriority
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2396:
+.Ltmp2310:
 	.cfi_def_cfa_offset 16
-.Ltmp2397:
+.Ltmp2311:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2398:
+.Ltmp2312:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp2399:
+.Ltmp2313:
 	.cfi_offset %rbx, -48
-.Ltmp2400:
+.Ltmp2314:
 	.cfi_offset %r12, -40
-.Ltmp2401:
+.Ltmp2315:
 	.cfi_offset %r14, -32
-.Ltmp2402:
+.Ltmp2316:
 	.cfi_offset %r15, -24
+	movl	%esi, %r14d
 	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB313_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -34794,24 +33726,24 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2403
-.Ltmp2404:
+	je	.Ltmp2317
+.Ltmp2318:
 	btq	$25, %rdx
-	jae	.Ltmp2405
-.Ltmp2405:
+	jae	.Ltmp2319
+.Ltmp2319:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2404
-.Ltmp2403:
+	jne	.Ltmp2318
+.Ltmp2317:
 	btq	$25, %rdx
-	jae	.Ltmp2406
+	jae	.Ltmp2320
 	orw	$1, 4(%rax)
-.Ltmp2406:
+.Ltmp2320:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB313_4
 # BB#3:
@@ -34820,22 +33752,22 @@ GetThreadState:                         # @GetThreadState
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2407
+	jae	.Ltmp2321
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2407:
+.Ltmp2321:
 
 	#NO_APP
 	jmp	.LBB313_4
 .LBB313_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB313_4:                              # %UnlockSpinlock.exit
 	cmpq	%r15, %rax
 	jne	.LBB313_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB313_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -34850,39 +33782,39 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2408
-.Ltmp2409:
+	je	.Ltmp2322
+.Ltmp2323:
 	btq	$25, %rdx
-	jae	.Ltmp2410
-.Ltmp2410:
+	jae	.Ltmp2324
+.Ltmp2324:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2409
-.Ltmp2408:
+	jne	.Ltmp2323
+.Ltmp2322:
 	btq	$25, %rdx
-	jae	.Ltmp2411
+	jae	.Ltmp2325
 	orw	$1, 4(%rcx)
-.Ltmp2411:
+.Ltmp2325:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	32(%rax), %r14d
+	movq	152(%rax), %rcx
+	movl	%r14d, 32(%rax)
 	testq	%rcx, %rcx
-	je	.LBB313_15
+	je	.LBB313_29
 # BB#14:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2412
+	jae	.Ltmp2326
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2412:
+.Ltmp2326:
 
 	#NO_APP
-	jmp	.LBB313_15
+	jmp	.LBB313_29
 .LBB313_5:                              # %.preheader
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
@@ -34900,19 +33832,19 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2413
-.Ltmp2414:
+	je	.Ltmp2327
+.Ltmp2328:
 	btq	$25, %rdx
-	jae	.Ltmp2415
-.Ltmp2415:
+	jae	.Ltmp2329
+.Ltmp2329:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2414
-.Ltmp2413:
+	jne	.Ltmp2328
+.Ltmp2327:
 	btq	$25, %rdx
-	jae	.Ltmp2416
+	jae	.Ltmp2330
 	orw	$1, 4(%rax)
-.Ltmp2416:
+.Ltmp2330:
 	cli
 
 	#NO_APP
@@ -34926,36 +33858,35 @@ GetThreadState:                         # @GetThreadState
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2417
+	jae	.Ltmp2331
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2417:
+.Ltmp2331:
 
 	#NO_APP
 	jmp	.LBB313_9
 .LBB313_12:                             # %LockSpinlock.exit3.thread
-	movl	32(%rax), %r14d
-	jmp	.LBB313_15
+	movl	%r14d, 32(%rax)
+	jmp	.LBB313_29
 .LBB313_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB313_9:                              # %List_Length.exit
-	movl	$-1, %r14d
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	je	.LBB313_15
+	je	.LBB313_29
 # BB#10:
 	xorl	%r12d, %r12d
 	.align	16, 0x90
-.LBB313_21:                             # %.lr.ph
+.LBB313_20:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB313_22
-# BB#23:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB313_21 Depth=1
+	je	.LBB313_21
+# BB#22:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB313_20 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -34966,55 +33897,55 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%r12w, 2(%rcx)
 	cmpw	%r12w, (%rcx)
-	je	.Ltmp2418
-.Ltmp2419:
+	je	.Ltmp2332
+.Ltmp2333:
 	btq	$25, %r12
-	jae	.Ltmp2420
-.Ltmp2420:
+	jae	.Ltmp2334
+.Ltmp2334:
 	pause
 	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2419
-.Ltmp2418:
+	jne	.Ltmp2333
+.Ltmp2332:
 	btq	$25, %r12
-	jae	.Ltmp2421
+	jae	.Ltmp2335
 	orw	$1, 4(%rcx)
-.Ltmp2421:
+.Ltmp2335:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB313_25
-# BB#24:                                #   in Loop: Header=BB313_21 Depth=1
+	je	.LBB313_24
+# BB#23:                                #   in Loop: Header=BB313_20 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2422
+	jae	.Ltmp2336
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2422:
+.Ltmp2336:
 
 	#NO_APP
-	jmp	.LBB313_25
+	jmp	.LBB313_24
 	.align	16, 0x90
-.LBB313_22:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB313_21 Depth=1
-	movq	8(%rax), %rcx
-.LBB313_25:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB313_21 Depth=1
+.LBB313_21:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB313_20 Depth=1
+	movq	(%rax), %rcx
+.LBB313_24:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB313_20 Depth=1
 	cmpq	%r15, %rcx
-	je	.LBB313_26
-# BB#16:                                #   in Loop: Header=BB313_21 Depth=1
+	je	.LBB313_25
+# BB#15:                                #   in Loop: Header=BB313_20 Depth=1
 	incq	%rbx
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB313_17
-# BB#18:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB313_21 Depth=1
+	je	.LBB313_16
+# BB#17:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB313_20 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -35025,53 +33956,53 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%r12w, 2(%rax)
 	cmpw	%r12w, (%rax)
-	je	.Ltmp2423
-.Ltmp2424:
+	je	.Ltmp2337
+.Ltmp2338:
 	btq	$25, %r12
-	jae	.Ltmp2425
-.Ltmp2425:
+	jae	.Ltmp2339
+.Ltmp2339:
 	pause
 	cmpw	%r12w, (%rax)
-	jne	.Ltmp2424
-.Ltmp2423:
+	jne	.Ltmp2338
+.Ltmp2337:
 	btq	$25, %r12
-	jae	.Ltmp2426
+	jae	.Ltmp2340
 	orw	$1, 4(%rax)
-.Ltmp2426:
+.Ltmp2340:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB313_20
-# BB#19:                                #   in Loop: Header=BB313_21 Depth=1
+	je	.LBB313_19
+# BB#18:                                #   in Loop: Header=BB313_20 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2427
+	jae	.Ltmp2341
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2427:
+.Ltmp2341:
 
 	#NO_APP
-	jmp	.LBB313_20
+	jmp	.LBB313_19
 	.align	16, 0x90
-.LBB313_17:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB313_21 Depth=1
+.LBB313_16:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB313_20 Depth=1
 	movq	32(%rcx), %rax
-.LBB313_20:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB313_21 Depth=1
+.LBB313_19:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB313_20 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB313_21
-	jmp	.LBB313_15
-.LBB313_26:
-	movq	168(%rax), %rcx
+	jb	.LBB313_20
+	jmp	.LBB313_29
+.LBB313_25:                             # %.critedge
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB313_27
-# BB#28:                                # %LockSpinlock.exit15
+	je	.LBB313_26
+# BB#27:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -35083,43 +34014,42 @@ GetThreadState:                         # @GetThreadState
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2428
-.Ltmp2429:
+	je	.Ltmp2342
+.Ltmp2343:
 	btq	$25, %rdx
-	jae	.Ltmp2430
-.Ltmp2430:
+	jae	.Ltmp2344
+.Ltmp2344:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2429
-.Ltmp2428:
+	jne	.Ltmp2343
+.Ltmp2342:
 	btq	$25, %rdx
-	jae	.Ltmp2431
+	jae	.Ltmp2345
 	orw	$1, 4(%rcx)
-.Ltmp2431:
+.Ltmp2345:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	32(%rax), %r14d
+	movq	152(%rax), %rcx
+	movl	%r14d, 32(%rax)
 	testq	%rcx, %rcx
-	je	.LBB313_15
-# BB#29:
+	je	.LBB313_29
+# BB#28:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2432
+	jae	.Ltmp2346
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2432:
+.Ltmp2346:
 
 	#NO_APP
-	jmp	.LBB313_15
-.LBB313_27:                             # %LockSpinlock.exit15.thread
-	movl	32(%rax), %r14d
-.LBB313_15:                             # %UnlockSpinlock.exit5
-	movl	%r14d, %eax
+	jmp	.LBB313_29
+.LBB313_26:                             # %LockSpinlock.exit15.thread
+	movl	%r14d, 32(%rax)
+.LBB313_29:                             # %.loopexit
 	popq	%rbx
 	popq	%r12
 	popq	%r14
@@ -35127,37 +34057,39 @@ GetThreadState:                         # @GetThreadState
 	popq	%rbp
 	retq
 .Lfunc_end313:
-	.size	GetThreadState, .Lfunc_end313-GetThreadState
+	.size	SetThreadBasePriority, .Lfunc_end313-SetThreadBasePriority
 	.cfi_endproc
 
-	.globl	GetThreadUserStack
+	.globl	GetThreadPriority
 	.align	16, 0x90
-	.type	GetThreadUserStack,@function
-GetThreadUserStack:                     # @GetThreadUserStack
+	.type	GetThreadPriority,@function
+GetThreadPriority:                      # @GetThreadPriority
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2433:
+.Ltmp2347:
 	.cfi_def_cfa_offset 16
-.Ltmp2434:
+.Ltmp2348:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2435:
+.Ltmp2349:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
+	pushq	%r12
 	pushq	%rbx
-	pushq	%rax
-.Ltmp2436:
-	.cfi_offset %rbx, -40
-.Ltmp2437:
+.Ltmp2350:
+	.cfi_offset %rbx, -48
+.Ltmp2351:
+	.cfi_offset %r12, -40
+.Ltmp2352:
 	.cfi_offset %r14, -32
-.Ltmp2438:
+.Ltmp2353:
 	.cfi_offset %r15, -24
-	movq	%rdi, %r14
+	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB314_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -35172,24 +34104,24 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2439
-.Ltmp2440:
+	je	.Ltmp2354
+.Ltmp2355:
 	btq	$25, %rdx
-	jae	.Ltmp2441
-.Ltmp2441:
+	jae	.Ltmp2356
+.Ltmp2356:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2440
-.Ltmp2439:
+	jne	.Ltmp2355
+.Ltmp2354:
 	btq	$25, %rdx
-	jae	.Ltmp2442
+	jae	.Ltmp2357
 	orw	$1, 4(%rax)
-.Ltmp2442:
+.Ltmp2357:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB314_4
 # BB#3:
@@ -35198,22 +34130,22 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2443
+	jae	.Ltmp2358
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2443:
+.Ltmp2358:
 
 	#NO_APP
 	jmp	.LBB314_4
 .LBB314_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB314_4:                              # %UnlockSpinlock.exit
-	cmpq	%r14, %rax
+	cmpq	%r15, %rax
 	jne	.LBB314_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB314_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -35228,36 +34160,36 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2444
-.Ltmp2445:
+	je	.Ltmp2359
+.Ltmp2360:
 	btq	$25, %rdx
-	jae	.Ltmp2446
-.Ltmp2446:
+	jae	.Ltmp2361
+.Ltmp2361:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2445
-.Ltmp2444:
+	jne	.Ltmp2360
+.Ltmp2359:
 	btq	$25, %rdx
-	jae	.Ltmp2447
+	jae	.Ltmp2362
 	orw	$1, 4(%rcx)
-.Ltmp2447:
+.Ltmp2362:
 	cli
 
 	#NO_APP
-	movq	80(%rax), %r15
-	movq	168(%rax), %rax
-	testq	%rax, %rax
+	movq	152(%rax), %rcx
+	movl	32(%rax), %r14d
+	testq	%rcx, %rcx
 	je	.LBB314_15
 # BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2448
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2363
 	sti
-	movw	$0, 4(%rax)
-.Ltmp2448:
+	movw	$0, 4(%rcx)
+.Ltmp2363:
 
 	#NO_APP
 	jmp	.LBB314_15
@@ -35278,19 +34210,19 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2449
-.Ltmp2450:
+	je	.Ltmp2364
+.Ltmp2365:
 	btq	$25, %rdx
-	jae	.Ltmp2451
-.Ltmp2451:
+	jae	.Ltmp2366
+.Ltmp2366:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2450
-.Ltmp2449:
+	jne	.Ltmp2365
+.Ltmp2364:
 	btq	$25, %rdx
-	jae	.Ltmp2452
+	jae	.Ltmp2367
 	orw	$1, 4(%rax)
-.Ltmp2452:
+.Ltmp2367:
 	cli
 
 	#NO_APP
@@ -35304,32 +34236,32 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2453
+	jae	.Ltmp2368
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2453:
+.Ltmp2368:
 
 	#NO_APP
 	jmp	.LBB314_9
 .LBB314_12:                             # %LockSpinlock.exit3.thread
-	movq	80(%rax), %r15
+	movl	32(%rax), %r14d
 	jmp	.LBB314_15
 .LBB314_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB314_9:                              # %List_Length.exit
+	movl	$-1, %r14d
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	movl	$0, %r15d
 	je	.LBB314_15
 # BB#10:
-	xorl	%r15d, %r15d
+	xorl	%r12d, %r12d
 	.align	16, 0x90
 .LBB314_21:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB314_22
 # BB#23:                                # %LockSpinlock.exit11
@@ -35338,30 +34270,30 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rcx)
-	cmpw	%r15w, (%rcx)
-	je	.Ltmp2454
-.Ltmp2455:
-	btq	$25, %r15
-	jae	.Ltmp2456
-.Ltmp2456:
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2369
+.Ltmp2370:
+	btq	$25, %r12
+	jae	.Ltmp2371
+.Ltmp2371:
 	pause
-	cmpw	%r15w, (%rcx)
-	jne	.Ltmp2455
-.Ltmp2454:
-	btq	$25, %r15
-	jae	.Ltmp2457
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2370
+.Ltmp2369:
+	btq	$25, %r12
+	jae	.Ltmp2372
 	orw	$1, 4(%rcx)
-.Ltmp2457:
+.Ltmp2372:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB314_25
 # BB#24:                                #   in Loop: Header=BB314_21 Depth=1
@@ -35370,20 +34302,20 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2458
+	jae	.Ltmp2373
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2458:
+.Ltmp2373:
 
 	#NO_APP
 	jmp	.LBB314_25
 	.align	16, 0x90
 .LBB314_22:                             # %LockSpinlock.exit11.thread
                                         #   in Loop: Header=BB314_21 Depth=1
-	movq	8(%rax), %rcx
+	movq	(%rax), %rcx
 .LBB314_25:                             # %UnlockSpinlock.exit13
                                         #   in Loop: Header=BB314_21 Depth=1
-	cmpq	%r14, %rcx
+	cmpq	%r15, %rcx
 	je	.LBB314_26
 # BB#16:                                #   in Loop: Header=BB314_21 Depth=1
 	incq	%rbx
@@ -35397,25 +34329,25 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rax)
-	cmpw	%r15w, (%rax)
-	je	.Ltmp2459
-.Ltmp2460:
-	btq	$25, %r15
-	jae	.Ltmp2461
-.Ltmp2461:
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2374
+.Ltmp2375:
+	btq	$25, %r12
+	jae	.Ltmp2376
+.Ltmp2376:
 	pause
-	cmpw	%r15w, (%rax)
-	jne	.Ltmp2460
-.Ltmp2459:
-	btq	$25, %r15
-	jae	.Ltmp2462
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2375
+.Ltmp2374:
+	btq	$25, %r12
+	jae	.Ltmp2377
 	orw	$1, 4(%rax)
-.Ltmp2462:
+.Ltmp2377:
 	cli
 
 	#NO_APP
@@ -35429,10 +34361,10 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2463
+	jae	.Ltmp2378
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2463:
+.Ltmp2378:
 
 	#NO_APP
 	jmp	.LBB314_20
@@ -35446,7 +34378,7 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	jb	.LBB314_21
 	jmp	.LBB314_15
 .LBB314_26:
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB314_27
 # BB#28:                                # %LockSpinlock.exit15
@@ -35461,81 +34393,84 @@ GetThreadUserStack:                     # @GetThreadUserStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2464
-.Ltmp2465:
+	je	.Ltmp2379
+.Ltmp2380:
 	btq	$25, %rdx
-	jae	.Ltmp2466
-.Ltmp2466:
+	jae	.Ltmp2381
+.Ltmp2381:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2465
-.Ltmp2464:
+	jne	.Ltmp2380
+.Ltmp2379:
 	btq	$25, %rdx
-	jae	.Ltmp2467
+	jae	.Ltmp2382
 	orw	$1, 4(%rcx)
-.Ltmp2467:
+.Ltmp2382:
 	cli
 
 	#NO_APP
-	movq	80(%rax), %r15
-	movq	168(%rax), %rax
-	testq	%rax, %rax
+	movq	152(%rax), %rcx
+	movl	32(%rax), %r14d
+	testq	%rcx, %rcx
 	je	.LBB314_15
 # BB#29:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2468
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2383
 	sti
-	movw	$0, 4(%rax)
-.Ltmp2468:
+	movw	$0, 4(%rcx)
+.Ltmp2383:
 
 	#NO_APP
 	jmp	.LBB314_15
 .LBB314_27:                             # %LockSpinlock.exit15.thread
-	movq	80(%rax), %r15
+	movl	32(%rax), %r14d
 .LBB314_15:                             # %UnlockSpinlock.exit5
-	movq	%r15, %rax
-	addq	$8, %rsp
+	movl	%r14d, %eax
 	popq	%rbx
+	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
 .Lfunc_end314:
-	.size	GetThreadUserStack, .Lfunc_end314-GetThreadUserStack
+	.size	GetThreadPriority, .Lfunc_end314-GetThreadPriority
 	.cfi_endproc
 
-	.globl	GetThreadKernelStack
+	.globl	SetThreadCoreAffinity
 	.align	16, 0x90
-	.type	GetThreadKernelStack,@function
-GetThreadKernelStack:                   # @GetThreadKernelStack
+	.type	SetThreadCoreAffinity,@function
+SetThreadCoreAffinity:                  # @SetThreadCoreAffinity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2469:
+.Ltmp2384:
 	.cfi_def_cfa_offset 16
-.Ltmp2470:
+.Ltmp2385:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2471:
+.Ltmp2386:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
+	pushq	%r12
 	pushq	%rbx
-	pushq	%rax
-.Ltmp2472:
-	.cfi_offset %rbx, -40
-.Ltmp2473:
+.Ltmp2387:
+	.cfi_offset %rbx, -48
+.Ltmp2388:
+	.cfi_offset %r12, -40
+.Ltmp2389:
 	.cfi_offset %r14, -32
-.Ltmp2474:
+.Ltmp2390:
 	.cfi_offset %r15, -24
-	movq	%rdi, %r14
+	movl	%esi, %r14d
+	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB315_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -35550,24 +34485,24 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2475
-.Ltmp2476:
+	je	.Ltmp2391
+.Ltmp2392:
 	btq	$25, %rdx
-	jae	.Ltmp2477
-.Ltmp2477:
+	jae	.Ltmp2393
+.Ltmp2393:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2476
-.Ltmp2475:
+	jne	.Ltmp2392
+.Ltmp2391:
 	btq	$25, %rdx
-	jae	.Ltmp2478
+	jae	.Ltmp2394
 	orw	$1, 4(%rax)
-.Ltmp2478:
+.Ltmp2394:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB315_4
 # BB#3:
@@ -35576,22 +34511,22 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2479
+	jae	.Ltmp2395
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2479:
+.Ltmp2395:
 
 	#NO_APP
 	jmp	.LBB315_4
 .LBB315_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB315_4:                              # %UnlockSpinlock.exit
-	cmpq	%r14, %rax
+	cmpq	%r15, %rax
 	jne	.LBB315_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB315_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -35606,39 +34541,39 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2480
-.Ltmp2481:
+	je	.Ltmp2396
+.Ltmp2397:
 	btq	$25, %rdx
-	jae	.Ltmp2482
-.Ltmp2482:
+	jae	.Ltmp2398
+.Ltmp2398:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2481
-.Ltmp2480:
+	jne	.Ltmp2397
+.Ltmp2396:
 	btq	$25, %rdx
-	jae	.Ltmp2483
+	jae	.Ltmp2399
 	orw	$1, 4(%rcx)
-.Ltmp2483:
+.Ltmp2399:
 	cli
 
 	#NO_APP
-	movq	96(%rax), %r15
-	movq	168(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB315_15
+	movq	152(%rax), %rcx
+	movl	%r14d, 104(%rax)
+	testq	%rcx, %rcx
+	je	.LBB315_29
 # BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2484
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2400
 	sti
-	movw	$0, 4(%rax)
-.Ltmp2484:
+	movw	$0, 4(%rcx)
+.Ltmp2400:
 
 	#NO_APP
-	jmp	.LBB315_15
+	jmp	.LBB315_29
 .LBB315_5:                              # %.preheader
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
@@ -35656,19 +34591,19 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2485
-.Ltmp2486:
+	je	.Ltmp2401
+.Ltmp2402:
 	btq	$25, %rdx
-	jae	.Ltmp2487
-.Ltmp2487:
+	jae	.Ltmp2403
+.Ltmp2403:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2486
-.Ltmp2485:
+	jne	.Ltmp2402
+.Ltmp2401:
 	btq	$25, %rdx
-	jae	.Ltmp2488
+	jae	.Ltmp2404
 	orw	$1, 4(%rax)
-.Ltmp2488:
+.Ltmp2404:
 	cli
 
 	#NO_APP
@@ -35682,152 +34617,151 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2489
+	jae	.Ltmp2405
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2489:
+.Ltmp2405:
 
 	#NO_APP
 	jmp	.LBB315_9
 .LBB315_12:                             # %LockSpinlock.exit3.thread
-	movq	96(%rax), %r15
-	jmp	.LBB315_15
+	movl	%r14d, 104(%rax)
+	jmp	.LBB315_29
 .LBB315_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB315_9:                              # %List_Length.exit
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	movl	$0, %r15d
-	je	.LBB315_15
+	je	.LBB315_29
 # BB#10:
-	xorl	%r15d, %r15d
+	xorl	%r12d, %r12d
 	.align	16, 0x90
-.LBB315_21:                             # %.lr.ph
+.LBB315_20:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB315_22
-# BB#23:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB315_21 Depth=1
+	je	.LBB315_21
+# BB#22:                                # %LockSpinlock.exit11
+                                        #   in Loop: Header=BB315_20 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rcx)
-	cmpw	%r15w, (%rcx)
-	je	.Ltmp2490
-.Ltmp2491:
-	btq	$25, %r15
-	jae	.Ltmp2492
-.Ltmp2492:
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2406
+.Ltmp2407:
+	btq	$25, %r12
+	jae	.Ltmp2408
+.Ltmp2408:
 	pause
-	cmpw	%r15w, (%rcx)
-	jne	.Ltmp2491
-.Ltmp2490:
-	btq	$25, %r15
-	jae	.Ltmp2493
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2407
+.Ltmp2406:
+	btq	$25, %r12
+	jae	.Ltmp2409
 	orw	$1, 4(%rcx)
-.Ltmp2493:
+.Ltmp2409:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB315_25
-# BB#24:                                #   in Loop: Header=BB315_21 Depth=1
+	je	.LBB315_24
+# BB#23:                                #   in Loop: Header=BB315_20 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2494
+	jae	.Ltmp2410
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2494:
+.Ltmp2410:
 
 	#NO_APP
-	jmp	.LBB315_25
+	jmp	.LBB315_24
 	.align	16, 0x90
-.LBB315_22:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB315_21 Depth=1
-	movq	8(%rax), %rcx
-.LBB315_25:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB315_21 Depth=1
-	cmpq	%r14, %rcx
-	je	.LBB315_26
-# BB#16:                                #   in Loop: Header=BB315_21 Depth=1
+.LBB315_21:                             # %LockSpinlock.exit11.thread
+                                        #   in Loop: Header=BB315_20 Depth=1
+	movq	(%rax), %rcx
+.LBB315_24:                             # %UnlockSpinlock.exit13
+                                        #   in Loop: Header=BB315_20 Depth=1
+	cmpq	%r15, %rcx
+	je	.LBB315_25
+# BB#15:                                #   in Loop: Header=BB315_20 Depth=1
 	incq	%rbx
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB315_17
-# BB#18:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB315_21 Depth=1
+	je	.LBB315_16
+# BB#17:                                # %LockSpinlock.exit.i.7
+                                        #   in Loop: Header=BB315_20 Depth=1
 	#APP
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rax)
-	cmpw	%r15w, (%rax)
-	je	.Ltmp2495
-.Ltmp2496:
-	btq	$25, %r15
-	jae	.Ltmp2497
-.Ltmp2497:
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2411
+.Ltmp2412:
+	btq	$25, %r12
+	jae	.Ltmp2413
+.Ltmp2413:
 	pause
-	cmpw	%r15w, (%rax)
-	jne	.Ltmp2496
-.Ltmp2495:
-	btq	$25, %r15
-	jae	.Ltmp2498
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2412
+.Ltmp2411:
+	btq	$25, %r12
+	jae	.Ltmp2414
 	orw	$1, 4(%rax)
-.Ltmp2498:
+.Ltmp2414:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB315_20
-# BB#19:                                #   in Loop: Header=BB315_21 Depth=1
+	je	.LBB315_19
+# BB#18:                                #   in Loop: Header=BB315_20 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2499
+	jae	.Ltmp2415
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2499:
+.Ltmp2415:
 
 	#NO_APP
-	jmp	.LBB315_20
+	jmp	.LBB315_19
 	.align	16, 0x90
-.LBB315_17:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB315_21 Depth=1
+.LBB315_16:                             # %LockSpinlock.exit.i.7.thread
+                                        #   in Loop: Header=BB315_20 Depth=1
 	movq	32(%rcx), %rax
-.LBB315_20:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB315_21 Depth=1
+.LBB315_19:                             # %List_Length.exit9
+                                        #   in Loop: Header=BB315_20 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB315_21
-	jmp	.LBB315_15
-.LBB315_26:
-	movq	168(%rax), %rcx
+	jb	.LBB315_20
+	jmp	.LBB315_29
+.LBB315_25:                             # %.critedge
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB315_27
-# BB#28:                                # %LockSpinlock.exit15
+	je	.LBB315_26
+# BB#27:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -35839,81 +34773,82 @@ GetThreadKernelStack:                   # @GetThreadKernelStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2500
-.Ltmp2501:
+	je	.Ltmp2416
+.Ltmp2417:
 	btq	$25, %rdx
-	jae	.Ltmp2502
-.Ltmp2502:
+	jae	.Ltmp2418
+.Ltmp2418:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2501
-.Ltmp2500:
+	jne	.Ltmp2417
+.Ltmp2416:
 	btq	$25, %rdx
-	jae	.Ltmp2503
+	jae	.Ltmp2419
 	orw	$1, 4(%rcx)
-.Ltmp2503:
+.Ltmp2419:
 	cli
 
 	#NO_APP
-	movq	96(%rax), %r15
-	movq	168(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB315_15
-# BB#29:
+	movq	152(%rax), %rcx
+	movl	%r14d, 104(%rax)
+	testq	%rcx, %rcx
+	je	.LBB315_29
+# BB#28:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2504
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2420
 	sti
-	movw	$0, 4(%rax)
-.Ltmp2504:
+	movw	$0, 4(%rcx)
+.Ltmp2420:
 
 	#NO_APP
-	jmp	.LBB315_15
-.LBB315_27:                             # %LockSpinlock.exit15.thread
-	movq	96(%rax), %r15
-.LBB315_15:                             # %UnlockSpinlock.exit5
-	movq	%r15, %rax
-	addq	$8, %rsp
+	jmp	.LBB315_29
+.LBB315_26:                             # %LockSpinlock.exit15.thread
+	movl	%r14d, 104(%rax)
+.LBB315_29:                             # %.loopexit
 	popq	%rbx
+	popq	%r12
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
 .Lfunc_end315:
-	.size	GetThreadKernelStack, .Lfunc_end315-GetThreadKernelStack
+	.size	SetThreadCoreAffinity, .Lfunc_end315-SetThreadCoreAffinity
 	.cfi_endproc
 
-	.globl	GetThreadCurrentStack
+	.globl	GetThreadCoreAffinity
 	.align	16, 0x90
-	.type	GetThreadCurrentStack,@function
-GetThreadCurrentStack:                  # @GetThreadCurrentStack
+	.type	GetThreadCoreAffinity,@function
+GetThreadCoreAffinity:                  # @GetThreadCoreAffinity
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2505:
+.Ltmp2421:
 	.cfi_def_cfa_offset 16
-.Ltmp2506:
+.Ltmp2422:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2507:
+.Ltmp2423:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
+	pushq	%r12
 	pushq	%rbx
-	pushq	%rax
-.Ltmp2508:
-	.cfi_offset %rbx, -40
-.Ltmp2509:
+.Ltmp2424:
+	.cfi_offset %rbx, -48
+.Ltmp2425:
+	.cfi_offset %r12, -40
+.Ltmp2426:
 	.cfi_offset %r14, -32
-.Ltmp2510:
+.Ltmp2427:
 	.cfi_offset %r15, -24
-	movq	%rdi, %r14
+	movq	%rdi, %r15
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB316_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -35928,24 +34863,24 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2511
-.Ltmp2512:
+	je	.Ltmp2428
+.Ltmp2429:
 	btq	$25, %rdx
-	jae	.Ltmp2513
-.Ltmp2513:
+	jae	.Ltmp2430
+.Ltmp2430:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2512
-.Ltmp2511:
+	jne	.Ltmp2429
+.Ltmp2428:
 	btq	$25, %rdx
-	jae	.Ltmp2514
+	jae	.Ltmp2431
 	orw	$1, 4(%rax)
-.Ltmp2514:
+.Ltmp2431:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB316_4
 # BB#3:
@@ -35954,22 +34889,22 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2515
+	jae	.Ltmp2432
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2515:
+.Ltmp2432:
 
 	#NO_APP
 	jmp	.LBB316_4
 .LBB316_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
+	movq	(%rcx), %rax
 .LBB316_4:                              # %UnlockSpinlock.exit
-	cmpq	%r14, %rax
+	cmpq	%r15, %rax
 	jne	.LBB316_5
 # BB#11:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB316_12
 # BB#13:                                # %LockSpinlock.exit3
@@ -35984,36 +34919,36 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2516
-.Ltmp2517:
+	je	.Ltmp2433
+.Ltmp2434:
 	btq	$25, %rdx
-	jae	.Ltmp2518
-.Ltmp2518:
+	jae	.Ltmp2435
+.Ltmp2435:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2517
-.Ltmp2516:
+	jne	.Ltmp2434
+.Ltmp2433:
 	btq	$25, %rdx
-	jae	.Ltmp2519
+	jae	.Ltmp2436
 	orw	$1, 4(%rcx)
-.Ltmp2519:
+.Ltmp2436:
 	cli
 
 	#NO_APP
-	movq	88(%rax), %r15
-	movq	168(%rax), %rax
-	testq	%rax, %rax
+	movq	152(%rax), %rcx
+	movl	104(%rax), %r14d
+	testq	%rcx, %rcx
 	je	.LBB316_15
 # BB#14:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2520
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2437
 	sti
-	movw	$0, 4(%rax)
-.Ltmp2520:
+	movw	$0, 4(%rcx)
+.Ltmp2437:
 
 	#NO_APP
 	jmp	.LBB316_15
@@ -36034,19 +34969,19 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2521
-.Ltmp2522:
+	je	.Ltmp2438
+.Ltmp2439:
 	btq	$25, %rdx
-	jae	.Ltmp2523
-.Ltmp2523:
+	jae	.Ltmp2440
+.Ltmp2440:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2522
-.Ltmp2521:
+	jne	.Ltmp2439
+.Ltmp2438:
 	btq	$25, %rdx
-	jae	.Ltmp2524
+	jae	.Ltmp2441
 	orw	$1, 4(%rax)
-.Ltmp2524:
+.Ltmp2441:
 	cli
 
 	#NO_APP
@@ -36060,32 +34995,32 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2525
+	jae	.Ltmp2442
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2525:
+.Ltmp2442:
 
 	#NO_APP
 	jmp	.LBB316_9
 .LBB316_12:                             # %LockSpinlock.exit3.thread
-	movq	88(%rax), %r15
+	movl	104(%rax), %r14d
 	jmp	.LBB316_15
 .LBB316_6:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
 .LBB316_9:                              # %List_Length.exit
+	movl	$-1, %r14d
 	xorl	%ebx, %ebx
 	testq	%rax, %rax
-	movl	$0, %r15d
 	je	.LBB316_15
 # BB#10:
-	xorl	%r15d, %r15d
+	xorl	%r12d, %r12d
 	.align	16, 0x90
 .LBB316_21:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	thds, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB316_22
 # BB#23:                                # %LockSpinlock.exit11
@@ -36094,30 +35029,30 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rcx)
-	cmpw	%r15w, (%rcx)
-	je	.Ltmp2526
-.Ltmp2527:
-	btq	$25, %r15
-	jae	.Ltmp2528
-.Ltmp2528:
+	xaddw	%r12w, 2(%rcx)
+	cmpw	%r12w, (%rcx)
+	je	.Ltmp2443
+.Ltmp2444:
+	btq	$25, %r12
+	jae	.Ltmp2445
+.Ltmp2445:
 	pause
-	cmpw	%r15w, (%rcx)
-	jne	.Ltmp2527
-.Ltmp2526:
-	btq	$25, %r15
-	jae	.Ltmp2529
+	cmpw	%r12w, (%rcx)
+	jne	.Ltmp2444
+.Ltmp2443:
+	btq	$25, %r12
+	jae	.Ltmp2446
 	orw	$1, 4(%rcx)
-.Ltmp2529:
+.Ltmp2446:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
+	movq	(%rax), %rcx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
 	je	.LBB316_25
 # BB#24:                                #   in Loop: Header=BB316_21 Depth=1
@@ -36126,20 +35061,20 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2530
+	jae	.Ltmp2447
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2530:
+.Ltmp2447:
 
 	#NO_APP
 	jmp	.LBB316_25
 	.align	16, 0x90
 .LBB316_22:                             # %LockSpinlock.exit11.thread
                                         #   in Loop: Header=BB316_21 Depth=1
-	movq	8(%rax), %rcx
+	movq	(%rax), %rcx
 .LBB316_25:                             # %UnlockSpinlock.exit13
                                         #   in Loop: Header=BB316_21 Depth=1
-	cmpq	%r14, %rcx
+	cmpq	%r15, %rcx
 	je	.LBB316_26
 # BB#16:                                #   in Loop: Header=BB316_21 Depth=1
 	incq	%rbx
@@ -36153,25 +35088,25 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	mfence
 	pushfq
 	cli
-	popq	%r15
-	shlq	$16, %r15
-	movw	$1, %r15w
+	popq	%r12
+	shlq	$16, %r12
+	movw	$1, %r12w
 	lock
-	xaddw	%r15w, 2(%rax)
-	cmpw	%r15w, (%rax)
-	je	.Ltmp2531
-.Ltmp2532:
-	btq	$25, %r15
-	jae	.Ltmp2533
-.Ltmp2533:
+	xaddw	%r12w, 2(%rax)
+	cmpw	%r12w, (%rax)
+	je	.Ltmp2448
+.Ltmp2449:
+	btq	$25, %r12
+	jae	.Ltmp2450
+.Ltmp2450:
 	pause
-	cmpw	%r15w, (%rax)
-	jne	.Ltmp2532
-.Ltmp2531:
-	btq	$25, %r15
-	jae	.Ltmp2534
+	cmpw	%r12w, (%rax)
+	jne	.Ltmp2449
+.Ltmp2448:
+	btq	$25, %r12
+	jae	.Ltmp2451
 	orw	$1, 4(%rax)
-.Ltmp2534:
+.Ltmp2451:
 	cli
 
 	#NO_APP
@@ -36185,10 +35120,10 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2535
+	jae	.Ltmp2452
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2535:
+.Ltmp2452:
 
 	#NO_APP
 	jmp	.LBB316_20
@@ -36202,7 +35137,7 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	jb	.LBB316_21
 	jmp	.LBB316_15
 .LBB316_26:
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
 	je	.LBB316_27
 # BB#28:                                # %LockSpinlock.exit15
@@ -36217,27 +35152,1205 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
+	je	.Ltmp2453
+.Ltmp2454:
+	btq	$25, %rdx
+	jae	.Ltmp2455
+.Ltmp2455:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2454
+.Ltmp2453:
+	btq	$25, %rdx
+	jae	.Ltmp2456
+	orw	$1, 4(%rcx)
+.Ltmp2456:
+	cli
+
+	#NO_APP
+	movq	152(%rax), %rcx
+	movl	104(%rax), %r14d
+	testq	%rcx, %rcx
+	je	.LBB316_15
+# BB#29:
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2457
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2457:
+
+	#NO_APP
+	jmp	.LBB316_15
+.LBB316_27:                             # %LockSpinlock.exit15.thread
+	movl	104(%rax), %r14d
+.LBB316_15:                             # %UnlockSpinlock.exit5
+	movl	%r14d, %eax
+	popq	%rbx
+	popq	%r12
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.Lfunc_end316:
+	.size	GetThreadCoreAffinity, .Lfunc_end316-GetThreadCoreAffinity
+	.cfi_endproc
+
+	.globl	FreeThread
+	.align	16, 0x90
+	.type	FreeThread,@function
+FreeThread:                             # @FreeThread
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2458:
+	.cfi_def_cfa_offset 16
+.Ltmp2459:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2460:
+	.cfi_def_cfa_register %rbp
+	movl	$4, %esi
+	popq	%rbp
+	jmp	SetThreadState          # TAILCALL
+.Lfunc_end317:
+	.size	FreeThread, .Lfunc_end317-FreeThread
+	.cfi_endproc
+
+	.globl	GetNextThread
+	.align	16, 0x90
+	.type	GetNextThread,@function
+GetNextThread:                          # @GetNextThread
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2461:
+	.cfi_def_cfa_offset 16
+.Ltmp2462:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2463:
+	.cfi_def_cfa_register %rbp
+	pushq	%r14
+	pushq	%rbx
+.Ltmp2464:
+	.cfi_offset %rbx, -32
+.Ltmp2465:
+	.cfi_offset %r14, -24
+	movq	%rdi, %r14
+	testq	%r14, %r14
+	je	.LBB318_12
+# BB#1:
+	movq	thds, %rbx
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#2:
+	movq	40(%rbx), %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_4
+# BB#3:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2466
+.Ltmp2467:
+	btq	$25, %rdx
+	jae	.Ltmp2468
+.Ltmp2468:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2467
+.Ltmp2466:
+	btq	$25, %rdx
+	jae	.Ltmp2469
+	orw	$1, 4(%rcx)
+.Ltmp2469:
+	cli
+
+	#NO_APP
+.LBB318_4:                              # %LockSpinlock.exit.i
+	movq	8(%rbx), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%r14, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB318_6
+# BB#5:
+	movq	%rax, 8(%rcx)
+.LBB318_6:
+	movq	%rax, 8(%rbx)
+	movq	(%rbx), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB318_8
+# BB#7:
+	movq	%rax, (%rbx)
+	movq	%rax, %rcx
+.LBB318_8:
+	cmpq	$0, 16(%rbx)
+	jne	.LBB318_10
+# BB#9:
+	movq	%rcx, 16(%rbx)
+	movq	$0, 24(%rbx)
+.LBB318_10:
+	incq	32(%rbx)
+	movq	40(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#11:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2470
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2470:
+
+	#NO_APP
+	jmp	.LBB318_12
+	.align	16, 0x90
+.LBB318_17:                             #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2471
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2471:
+
+	#NO_APP
+.LBB318_12:                             # %.preheaderthread-pre-split
+                                        # =>This Loop Header: Depth=1
+                                        #     Child Loop BB318_13 Depth 2
+                                        #     Child Loop BB318_35 Depth 2
+                                        #     Child Loop BB318_46 Depth 2
+                                        #     Child Loop BB318_68 Depth 2
+                                        #     Child Loop BB318_79 Depth 2
+	movq	sync_lock, %rax
+	xorl	%r14d, %r14d
+	.align	16, 0x90
+.LBB318_13:                             # %.preheader
+                                        #   Parent Loop BB318_12 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	testq	%rax, %rax
+	je	.LBB318_15
+# BB#14:                                #   in Loop: Header=BB318_13 Depth=2
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%r14
+	shlq	$16, %r14
+	movw	$1, %r14w
+	lock
+	xaddw	%r14w, 2(%rax)
+	cmpw	%r14w, (%rax)
+	je	.Ltmp2472
+.Ltmp2473:
+	btq	$25, %r14
+	jae	.Ltmp2474
+.Ltmp2474:
+	pause
+	cmpw	%r14w, (%rax)
+	jne	.Ltmp2473
+.Ltmp2472:
+	btq	$25, %r14
+	jae	.Ltmp2475
+	orw	$1, 4(%rax)
+.Ltmp2475:
+	cli
+
+	#NO_APP
+.LBB318_15:                             # %LockSpinlock.exit
+                                        #   in Loop: Header=BB318_13 Depth=2
+	movq	thds, %rdi
+	xorl	%esi, %esi
+	callq	List_EntryAt
+	movq	%rax, %rbx
+	testq	%rbx, %rbx
+	jne	.LBB318_18
+# BB#16:                                # %.thread
+                                        #   in Loop: Header=BB318_13 Depth=2
+	movq	sync_lock, %rcx
+	testq	%rcx, %rcx
+	movl	$0, %eax
+	je	.LBB318_13
+	jmp	.LBB318_17
+	.align	16, 0x90
+.LBB318_18:                             #   in Loop: Header=BB318_12 Depth=1
+	movq	thds, %rdi
+	xorl	%esi, %esi
+	callq	List_Remove
+	movq	sync_lock, %rax
+	testq	%rax, %rax
+	je	.LBB318_20
+# BB#19:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2476
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2476:
+
+	#NO_APP
+.LBB318_20:                             # %UnlockSpinlock.exit4
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_21
+# BB#22:                                # %LockSpinlock.exit6
+                                        #   in Loop: Header=BB318_12 Depth=1
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp2477
+.Ltmp2478:
+	btq	$25, %rcx
+	jae	.Ltmp2479
+.Ltmp2479:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp2478
+.Ltmp2477:
+	btq	$25, %rcx
+	jae	.Ltmp2480
+	orw	$1, 4(%rax)
+.Ltmp2480:
+	cli
+
+	#NO_APP
+	movq	152(%rbx), %rcx
+	movl	24(%rbx), %eax
+	testq	%rcx, %rcx
+	je	.LBB318_24
+# BB#23:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rcx)
+	btw	$0, 4(%rcx)
+	jae	.Ltmp2481
+	sti
+	movw	$0, 4(%rcx)
+.Ltmp2481:
+
+	#NO_APP
+	jmp	.LBB318_24
+.LBB318_21:                             # %LockSpinlock.exit6.thread
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movl	24(%rbx), %eax
+.LBB318_24:                             # %UnlockSpinlock.exit8
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpl	$2, %eax
+	je	.LBB318_12
+# BB#25:                                # %UnlockSpinlock.exit8
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpl	$3, %eax
+	jne	.LBB318_26
+# BB#96:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_98
+# BB#97:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp2482
+.Ltmp2483:
+	btq	$25, %rcx
+	jae	.Ltmp2484
+.Ltmp2484:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp2483
+.Ltmp2482:
+	btq	$25, %rcx
+	jae	.Ltmp2485
+	orw	$1, 4(%rax)
+.Ltmp2485:
+	cli
+
+	#NO_APP
+.LBB318_98:                             # %LockSpinlock.exit56
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpl	$1, 28(%rbx)
+	jne	.LBB318_116
+# BB#99:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	hpet_regs, %rax
+	movq	48(%rax), %rcx
+	subq	96(%rbx), %rcx
+	movl	4(%rax), %eax
+	imulq	%rcx, %rax
+	movabsq	$4835703278458516699, %rcx # imm = 0x431BDE82D7B634DB
+	mulq	%rcx
+	shrq	$18, %rdx
+	cmpq	88(%rbx), %rdx
+	jae	.LBB318_100
+# BB#103:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_105
+# BB#104:                               #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2486
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2486:
+
+	#NO_APP
+.LBB318_105:                            # %UnlockSpinlock.exit60
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	thds, %r14
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#106:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	40(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_108
+# BB#107:                               #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2487
+.Ltmp2488:
+	btq	$25, %rdx
+	jae	.Ltmp2489
+.Ltmp2489:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2488
+.Ltmp2487:
+	btq	$25, %rdx
+	jae	.Ltmp2490
+	orw	$1, 4(%rcx)
+.Ltmp2490:
+	cli
+
+	#NO_APP
+.LBB318_108:                            # %LockSpinlock.exit.i.62
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	8(%r14), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%rbx, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB318_110
+# BB#109:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%rcx)
+.LBB318_110:                            #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%r14)
+	movq	(%r14), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB318_112
+# BB#111:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, (%r14)
+	movq	%rax, %rcx
+.LBB318_112:                            #   in Loop: Header=BB318_12 Depth=1
+	cmpq	$0, 16(%r14)
+	jne	.LBB318_114
+# BB#113:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rcx, 16(%r14)
+	movq	$0, 24(%r14)
+.LBB318_114:                            #   in Loop: Header=BB318_12 Depth=1
+	incq	32(%r14)
+	movq	40(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#115:                               #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2491
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2491:
+
+	#NO_APP
+	jmp	.LBB318_12
+.LBB318_26:                             # %UnlockSpinlock.exit8
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpl	$4, %eax
+	jne	.LBB318_102
+# BB#27:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	#APP
+	movq	(%rax), %rax
+
+	#NO_APP
+	movl	%eax, %ecx
+	shrl	$16, %ecx
+	xorw	%ax, %cx
+	je	.LBB318_28
+# BB#85:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	thds, %r14
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#86:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	40(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_88
+# BB#87:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2492
+.Ltmp2493:
+	btq	$25, %rdx
+	jae	.Ltmp2494
+.Ltmp2494:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2493
+.Ltmp2492:
+	btq	$25, %rdx
+	jae	.Ltmp2495
+	orw	$1, 4(%rcx)
+.Ltmp2495:
+	cli
+
+	#NO_APP
+.LBB318_88:                             # %LockSpinlock.exit.i.50
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	8(%r14), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%rbx, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB318_90
+# BB#89:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%rcx)
+.LBB318_90:                             #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%r14)
+	movq	(%r14), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB318_92
+# BB#91:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, (%r14)
+	movq	%rax, %rcx
+.LBB318_92:                             #   in Loop: Header=BB318_12 Depth=1
+	cmpq	$0, 16(%r14)
+	jne	.LBB318_94
+# BB#93:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rcx, 16(%r14)
+	movq	$0, 24(%r14)
+.LBB318_94:                             #   in Loop: Header=BB318_12 Depth=1
+	incq	32(%r14)
+	movq	40(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#95:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2496
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2496:
+
+	#NO_APP
+	jmp	.LBB318_12
+.LBB318_116:                            #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_118
+# BB#117:                               #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2497
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2497:
+
+	#NO_APP
+.LBB318_118:                            # %UnlockSpinlock.exit68
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	thds, %r14
+	movl	$24, %edi
+	callq	kmalloc
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#119:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	40(%r14), %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_121
+# BB#120:                               #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2498
+.Ltmp2499:
+	btq	$25, %rdx
+	jae	.Ltmp2500
+.Ltmp2500:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2499
+.Ltmp2498:
+	btq	$25, %rdx
+	jae	.Ltmp2501
+	orw	$1, 4(%rcx)
+.Ltmp2501:
+	cli
+
+	#NO_APP
+.LBB318_121:                            # %LockSpinlock.exit.i.70
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	8(%r14), %rcx
+	movq	%rcx, 16(%rax)
+	movq	%rbx, (%rax)
+	movq	$0, 8(%rax)
+	testq	%rcx, %rcx
+	je	.LBB318_123
+# BB#122:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%rcx)
+.LBB318_123:                            #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, 8(%r14)
+	movq	(%r14), %rcx
+	testq	%rcx, %rcx
+	jne	.LBB318_125
+# BB#124:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, (%r14)
+	movq	%rax, %rcx
+.LBB318_125:                            #   in Loop: Header=BB318_12 Depth=1
+	cmpq	$0, 16(%r14)
+	jne	.LBB318_127
+# BB#126:                               #   in Loop: Header=BB318_12 Depth=1
+	movq	%rcx, 16(%r14)
+	movq	$0, 24(%r14)
+.LBB318_127:                            #   in Loop: Header=BB318_12 Depth=1
+	incq	32(%r14)
+	movq	40(%r14), %rax
+	testq	%rax, %rax
+	je	.LBB318_12
+# BB#128:                               #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2502
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2502:
+
+	#NO_APP
+	jmp	.LBB318_12
+.LBB318_28:                             #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_30
+# BB#29:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp2503
+.Ltmp2504:
+	btq	$25, %rcx
+	jae	.Ltmp2505
+.Ltmp2505:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp2504
+.Ltmp2503:
+	btq	$25, %rcx
+	jae	.Ltmp2506
+	orw	$1, 4(%rax)
+.Ltmp2506:
+	cli
+
+	#NO_APP
+.LBB318_30:                             # %LockSpinlock.exit10
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	56(%rbx), %rax
+	movq	alloc_sync, %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_32
+# BB#31:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2507
+.Ltmp2508:
+	btq	$25, %rdx
+	jae	.Ltmp2509
+.Ltmp2509:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2508
+.Ltmp2507:
+	btq	$25, %rdx
+	jae	.Ltmp2510
+	orw	$1, 4(%rcx)
+.Ltmp2510:
+	cli
+
+	#NO_APP
+.LBB318_32:                             # %LockSpinlock.exit.i.12
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movabsq	$-2401053089206453570, %r14 # imm = 0xDEADBEEFCAFEBABE
+	cmpq	%r14, -16408(%rax)
+	leaq	-16384(%rax), %rax
+	je	.LBB318_34
+# BB#33:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB318_34:                             # %.preheader.i
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	allocation_info, %rdx
+	.align	16, 0x90
+.LBB318_35:                             #   Parent Loop BB318_12 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movq	%rdx, %rcx
+	movq	(%rcx), %rsi
+	movq	16(%rcx), %rdx
+	testq	%rdx, %rdx
+	je	.LBB318_39
+# BB#36:                                #   in Loop: Header=BB318_35 Depth=2
+	movl	%esi, %edi
+	andl	$1, %edi
+	cmpq	%rax, %rsi
+	jne	.LBB318_35
+# BB#37:                                #   in Loop: Header=BB318_35 Depth=2
+	testq	%rdi, %rdi
+	je	.LBB318_35
+# BB#38:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, %rsi
+.LBB318_39:                             # %.loopexit.i
+                                        #   in Loop: Header=BB318_12 Depth=1
+	andq	$-2, %rsi
+	movq	%rsi, (%rcx)
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB318_40
+# BB#41:                                # %kfree.exit
+                                        #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2511
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2511:
+
+	#NO_APP
+	movq	alloc_sync, %rdx
+	movq	40(%rbx), %rcx
+	leaq	-16384(%rcx), %rax
+	testq	%rdx, %rdx
+	je	.LBB318_43
+# BB#42:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%esi, %esi
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rsi
+	shlq	$16, %rsi
+	movw	$1, %si
+	lock
+	xaddw	%si, 2(%rdx)
+	cmpw	%si, (%rdx)
+	je	.Ltmp2512
+.Ltmp2513:
+	btq	$25, %rsi
+	jae	.Ltmp2514
+.Ltmp2514:
+	pause
+	cmpw	%si, (%rdx)
+	jne	.Ltmp2513
+.Ltmp2512:
+	btq	$25, %rsi
+	jae	.Ltmp2515
+	orw	$1, 4(%rdx)
+.Ltmp2515:
+	cli
+
+	#NO_APP
+	jmp	.LBB318_43
+.LBB318_40:                             # %kfree.exit.thread
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	40(%rbx), %rcx
+	leaq	-16384(%rcx), %rax
+.LBB318_43:                             # %LockSpinlock.exit.i.16
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpq	%r14, -16408(%rcx)
+	je	.LBB318_45
+# BB#44:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB318_45:                             # %.preheader.i.18
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	allocation_info, %rdx
+	.align	16, 0x90
+.LBB318_46:                             #   Parent Loop BB318_12 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movq	%rdx, %rcx
+	movq	(%rcx), %rsi
+	movq	16(%rcx), %rdx
+	testq	%rdx, %rdx
+	je	.LBB318_50
+# BB#47:                                #   in Loop: Header=BB318_46 Depth=2
+	movl	%esi, %edi
+	andl	$1, %edi
+	cmpq	%rax, %rsi
+	jne	.LBB318_46
+# BB#48:                                #   in Loop: Header=BB318_46 Depth=2
+	testq	%rdi, %rdi
+	je	.LBB318_46
+# BB#49:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, %rsi
+.LBB318_50:                             # %.loopexit.i.23
+                                        #   in Loop: Header=BB318_12 Depth=1
+	andq	$-2, %rsi
+	movq	%rsi, (%rcx)
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB318_52
+# BB#51:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2516
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2516:
+
+	#NO_APP
+.LBB318_52:                             # %kfree.exit26
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	$-16256, %rsi           # imm = 0xFFFFFFFFFFFFC080
+	addq	72(%rbx), %rsi
+	movq	virtMemData, %rax
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
+	movq	(%rax), %rdi
+	callq	VirtMemMan_GetPhysicalAddress
+	movq	vmem_lock, %rcx
+	xorl	%r8d, %r8d
+	testq	%rcx, %rcx
+	je	.LBB318_54
+# BB#53:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2517
+.Ltmp2518:
+	btq	$25, %rdx
+	jae	.Ltmp2519
+.Ltmp2519:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2518
+.Ltmp2517:
+	btq	$25, %rdx
+	jae	.Ltmp2520
+	orw	$1, 4(%rcx)
+.Ltmp2520:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %r8
+.LBB318_54:                             # %LockSpinlock.exit.i.28
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, %rsi
+	andq	$-4096, %rsi            # imm = 0xFFFFFFFFFFFFF000
+	movq	KB4_Blocks_Bitmap, %r9
+	movq	freePageCount, %r10
+	movq	%rsi, %rcx
+	shrq	$12, %rcx
+	movl	$-2, %edi
+	movl	$-2, %edx
+	roll	%cl, %edx
+	shrq	$17, %rax
+	andl	%edx, (%r9,%rax,4)
+	addq	$4096, %rsi             # imm = 0x1000
+	movq	%rsi, %rcx
+	shrq	$12, %rcx
+	roll	%cl, %edi
+	shrq	$15, %rsi
+	movabsq	$562949953421308, %rax  # imm = 0x1FFFFFFFFFFFC
+	andq	%rsi, %rax
+	andl	%edi, (%r9,%rax)
+	addq	$2, %r10
+	movq	%r10, freePageCount
+	testq	%r8, %r8
+	je	.LBB318_56
+# BB#55:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%r8)
+	btw	$0, 4(%r8)
+	jae	.Ltmp2521
+	sti
+	movw	$0, 4(%r8)
+.Ltmp2521:
+
+	#NO_APP
+.LBB318_56:                             # %FreePhysicalPageCont.exit
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	8(%rbx), %rcx
+	movq	288(%rcx), %rax
+	testq	%rax, %rax
+	je	.LBB318_58
+# BB#57:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
+	je	.Ltmp2522
+.Ltmp2523:
+	btq	$25, %rcx
+	jae	.Ltmp2524
+.Ltmp2524:
+	pause
+	cmpw	%cx, (%rax)
+	jne	.Ltmp2523
+.Ltmp2522:
+	btq	$25, %rcx
+	jae	.Ltmp2525
+	orw	$1, 4(%rax)
+.Ltmp2525:
+	cli
+
+	#NO_APP
+	movq	8(%rbx), %rcx
+.LBB318_58:                             # %LockSpinlock.exit32
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	272(%rcx), %rax
+	movq	$-16256, %rsi           # imm = 0xFFFFFFFFFFFFC080
+	addq	72(%rbx), %rsi
+	movq	vmem_lock, %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_60
+# BB#59:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2526
+.Ltmp2527:
+	btq	$25, %rdx
+	jae	.Ltmp2528
+.Ltmp2528:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2527
+.Ltmp2526:
+	btq	$25, %rdx
+	jae	.Ltmp2529
+	orw	$1, 4(%rcx)
+.Ltmp2529:
+	cli
+
+	#NO_APP
+.LBB318_60:                             # %LockSpinlock.exit.i.34
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	(%rax), %rdi
+	movl	$16384, %edx            # imm = 0x4000
+	callq	VirtMemMan_Unmap
+	movq	vmem_lock, %rax
+	testq	%rax, %rax
+	je	.LBB318_62
+# BB#61:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2530
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2530:
+
+	#NO_APP
+.LBB318_62:                             # %UnmapPage.exit
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_74
+# BB#63:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	alloc_sync, %rcx
+	testq	%rcx, %rcx
+	je	.LBB318_65
+# BB#64:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2531
+.Ltmp2532:
+	btq	$25, %rdx
+	jae	.Ltmp2533
+.Ltmp2533:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2532
+.Ltmp2531:
+	btq	$25, %rdx
+	jae	.Ltmp2534
+	orw	$1, 4(%rcx)
+.Ltmp2534:
+	cli
+
+	#NO_APP
+.LBB318_65:                             # %LockSpinlock.exit.i.i
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpq	%r14, -24(%rax)
+	je	.LBB318_67
+# BB#66:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB318_67:                             # %.preheader.i.i
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	allocation_info, %rsi
+	.align	16, 0x90
+.LBB318_68:                             #   Parent Loop BB318_12 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movq	%rsi, %rcx
+	movq	(%rcx), %rdx
+	movq	16(%rcx), %rsi
+	testq	%rsi, %rsi
+	je	.LBB318_72
+# BB#69:                                #   in Loop: Header=BB318_68 Depth=2
+	movl	%edx, %edi
+	andl	$1, %edi
+	cmpq	%rax, %rdx
+	jne	.LBB318_68
+# BB#70:                                #   in Loop: Header=BB318_68 Depth=2
+	testq	%rdi, %rdi
+	je	.LBB318_68
+# BB#71:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rax, %rdx
+.LBB318_72:                             # %.loopexit.i.i
+                                        #   in Loop: Header=BB318_12 Depth=1
+	andq	$-2, %rdx
+	movq	%rdx, (%rcx)
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB318_76
+# BB#73:                                #   in Loop: Header=BB318_12 Depth=1
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2535
+	sti
+	movw	$0, 4(%rax)
+.Ltmp2535:
+
+	#NO_APP
+.LBB318_74:                             # %FreeSpinlock.exit
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	alloc_sync, %rax
+	testq	%rax, %rax
+	je	.LBB318_76
+# BB#75:                                #   in Loop: Header=BB318_12 Depth=1
+	xorl	%ecx, %ecx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rcx
+	shlq	$16, %rcx
+	movw	$1, %cx
+	lock
+	xaddw	%cx, 2(%rax)
+	cmpw	%cx, (%rax)
 	je	.Ltmp2536
 .Ltmp2537:
-	btq	$25, %rdx
+	btq	$25, %rcx
 	jae	.Ltmp2538
 .Ltmp2538:
 	pause
-	cmpw	%dx, (%rcx)
+	cmpw	%cx, (%rax)
 	jne	.Ltmp2537
 .Ltmp2536:
-	btq	$25, %rdx
+	btq	$25, %rcx
 	jae	.Ltmp2539
-	orw	$1, 4(%rcx)
+	orw	$1, 4(%rax)
 .Ltmp2539:
 	cli
 
 	#NO_APP
-	movq	88(%rax), %r15
-	movq	168(%rax), %rax
+.LBB318_76:                             # %LockSpinlock.exit.i.38
+                                        #   in Loop: Header=BB318_12 Depth=1
+	cmpq	%r14, -24(%rbx)
+	je	.LBB318_78
+# BB#77:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rbx, %rax
+	#APP
+	addq	$40, %rsp
+	popq	%rbx
+	cli
+	hlt
+	#NO_APP
+.LBB318_78:                             # %.preheader.i.40
+                                        #   in Loop: Header=BB318_12 Depth=1
+	movq	allocation_info, %rdx
+	.align	16, 0x90
+.LBB318_79:                             #   Parent Loop BB318_12 Depth=1
+                                        # =>  This Inner Loop Header: Depth=2
+	movq	%rdx, %rax
+	movq	(%rax), %rcx
+	movq	16(%rax), %rdx
+	testq	%rdx, %rdx
+	je	.LBB318_83
+# BB#80:                                #   in Loop: Header=BB318_79 Depth=2
+	movl	%ecx, %esi
+	andl	$1, %esi
+	cmpq	%rbx, %rcx
+	jne	.LBB318_79
+# BB#81:                                #   in Loop: Header=BB318_79 Depth=2
+	testq	%rsi, %rsi
+	je	.LBB318_79
+# BB#82:                                #   in Loop: Header=BB318_12 Depth=1
+	movq	%rbx, %rcx
+.LBB318_83:                             # %.loopexit.i.45
+                                        #   in Loop: Header=BB318_12 Depth=1
+	andq	$-2, %rcx
+	movq	%rcx, (%rax)
+	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB316_15
-# BB#29:
+	je	.LBB318_12
+# BB#84:                                #   in Loop: Header=BB318_12 Depth=1
 	#APP
 	mfence
 	lock
@@ -36249,811 +36362,58 @@ GetThreadCurrentStack:                  # @GetThreadCurrentStack
 .Ltmp2540:
 
 	#NO_APP
-	jmp	.LBB316_15
-.LBB316_27:                             # %LockSpinlock.exit15.thread
-	movq	88(%rax), %r15
-.LBB316_15:                             # %UnlockSpinlock.exit5
-	movq	%r15, %rax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end316:
-	.size	GetThreadCurrentStack, .Lfunc_end316-GetThreadCurrentStack
-	.cfi_endproc
-
-	.globl	SetThreadBasePriority
-	.align	16, 0x90
-	.type	SetThreadBasePriority,@function
-SetThreadBasePriority:                  # @SetThreadBasePriority
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
+	jmp	.LBB318_12
+.LBB318_100:
+	movl	$1, 24(%rbx)
+	movq	152(%rbx), %rax
+	testq	%rax, %rax
+	je	.LBB318_102
+# BB#101:
+	#APP
+	mfence
+	lock
+	incw	(%rax)
+	btw	$0, 4(%rax)
+	jae	.Ltmp2541
+	sti
+	movw	$0, 4(%rax)
 .Ltmp2541:
-	.cfi_def_cfa_offset 16
-.Ltmp2542:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2543:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r12
-	pushq	%rbx
-.Ltmp2544:
-	.cfi_offset %rbx, -48
-.Ltmp2545:
-	.cfi_offset %r12, -40
-.Ltmp2546:
-	.cfi_offset %r14, -32
-.Ltmp2547:
-	.cfi_offset %r15, -24
-	movl	%esi, %r14d
-	movq	%rdi, %r15
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB317_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2548
-.Ltmp2549:
-	btq	$25, %rdx
-	jae	.Ltmp2550
-.Ltmp2550:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2549
-.Ltmp2548:
-	btq	$25, %rdx
-	jae	.Ltmp2551
-	orw	$1, 4(%rax)
-.Ltmp2551:
-	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2552
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2552:
-
-	#NO_APP
-	jmp	.LBB317_4
-.LBB317_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
-.LBB317_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
-	jne	.LBB317_5
-# BB#11:
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_12
-# BB#13:                                # %LockSpinlock.exit3
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2553
-.Ltmp2554:
-	btq	$25, %rdx
-	jae	.Ltmp2555
-.Ltmp2555:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2554
-.Ltmp2553:
-	btq	$25, %rdx
-	jae	.Ltmp2556
-	orw	$1, 4(%rcx)
-.Ltmp2556:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 40(%rax)
-	testq	%rcx, %rcx
-	je	.LBB317_29
-# BB#14:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2557
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2557:
-
-	#NO_APP
-	jmp	.LBB317_29
-.LBB317_5:                              # %.preheader
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB317_6
-# BB#7:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2558
-.Ltmp2559:
-	btq	$25, %rdx
-	jae	.Ltmp2560
-.Ltmp2560:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2559
-.Ltmp2558:
-	btq	$25, %rdx
-	jae	.Ltmp2561
-	orw	$1, 4(%rax)
-.Ltmp2561:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_9
-# BB#8:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2562
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2562:
-
-	#NO_APP
-	jmp	.LBB317_9
-.LBB317_12:                             # %LockSpinlock.exit3.thread
-	movl	%r14d, 40(%rax)
-	jmp	.LBB317_29
-.LBB317_6:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB317_9:                              # %List_Length.exit
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB317_29
-# BB#10:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB317_20:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	thds, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_21
-# BB#22:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB317_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2563
-.Ltmp2564:
-	btq	$25, %r12
-	jae	.Ltmp2565
-.Ltmp2565:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2564
-.Ltmp2563:
-	btq	$25, %r12
-	jae	.Ltmp2566
-	orw	$1, 4(%rcx)
-.Ltmp2566:
-	cli
-
-	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB317_24
-# BB#23:                                #   in Loop: Header=BB317_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2567
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2567:
-
-	#NO_APP
-	jmp	.LBB317_24
-	.align	16, 0x90
-.LBB317_21:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB317_20 Depth=1
-	movq	8(%rax), %rcx
-.LBB317_24:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB317_20 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB317_25
-# BB#15:                                #   in Loop: Header=BB317_20 Depth=1
-	incq	%rbx
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB317_16
-# BB#17:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB317_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2568
-.Ltmp2569:
-	btq	$25, %r12
-	jae	.Ltmp2570
-.Ltmp2570:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2569
-.Ltmp2568:
-	btq	$25, %r12
-	jae	.Ltmp2571
-	orw	$1, 4(%rax)
-.Ltmp2571:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_19
-# BB#18:                                #   in Loop: Header=BB317_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2572
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2572:
-
-	#NO_APP
-	jmp	.LBB317_19
-	.align	16, 0x90
-.LBB317_16:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB317_20 Depth=1
-	movq	32(%rcx), %rax
-.LBB317_19:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB317_20 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB317_20
-	jmp	.LBB317_29
-.LBB317_25:                             # %.critedge
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB317_26
-# BB#27:                                # %LockSpinlock.exit15
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2573
-.Ltmp2574:
-	btq	$25, %rdx
-	jae	.Ltmp2575
-.Ltmp2575:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2574
-.Ltmp2573:
-	btq	$25, %rdx
-	jae	.Ltmp2576
-	orw	$1, 4(%rcx)
-.Ltmp2576:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 40(%rax)
-	testq	%rcx, %rcx
-	je	.LBB317_29
-# BB#28:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2577
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2577:
-
-	#NO_APP
-	jmp	.LBB317_29
-.LBB317_26:                             # %LockSpinlock.exit15.thread
-	movl	%r14d, 40(%rax)
-.LBB317_29:                             # %.loopexit
+.LBB318_102:                            # %.loopexit
+	movq	%rbx, %rax
 	popq	%rbx
-	popq	%r12
 	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end317:
-	.size	SetThreadBasePriority, .Lfunc_end317-SetThreadBasePriority
-	.cfi_endproc
-
-	.globl	GetThreadPriority
-	.align	16, 0x90
-	.type	GetThreadPriority,@function
-GetThreadPriority:                      # @GetThreadPriority
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2578:
-	.cfi_def_cfa_offset 16
-.Ltmp2579:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2580:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r12
-	pushq	%rbx
-.Ltmp2581:
-	.cfi_offset %rbx, -48
-.Ltmp2582:
-	.cfi_offset %r12, -40
-.Ltmp2583:
-	.cfi_offset %r14, -32
-.Ltmp2584:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r15
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB318_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2585
-.Ltmp2586:
-	btq	$25, %rdx
-	jae	.Ltmp2587
-.Ltmp2587:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2586
-.Ltmp2585:
-	btq	$25, %rdx
-	jae	.Ltmp2588
-	orw	$1, 4(%rax)
-.Ltmp2588:
-	cli
-
-	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2589
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2589:
-
-	#NO_APP
-	jmp	.LBB318_4
-.LBB318_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
-.LBB318_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
-	jne	.LBB318_5
-# BB#11:
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_12
-# BB#13:                                # %LockSpinlock.exit3
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2590
-.Ltmp2591:
-	btq	$25, %rdx
-	jae	.Ltmp2592
-.Ltmp2592:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2591
-.Ltmp2590:
-	btq	$25, %rdx
-	jae	.Ltmp2593
-	orw	$1, 4(%rcx)
-.Ltmp2593:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	40(%rax), %r14d
-	testq	%rcx, %rcx
-	je	.LBB318_15
-# BB#14:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2594
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2594:
-
-	#NO_APP
-	jmp	.LBB318_15
-.LBB318_5:                              # %.preheader
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB318_6
-# BB#7:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2595
-.Ltmp2596:
-	btq	$25, %rdx
-	jae	.Ltmp2597
-.Ltmp2597:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2596
-.Ltmp2595:
-	btq	$25, %rdx
-	jae	.Ltmp2598
-	orw	$1, 4(%rax)
-.Ltmp2598:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_9
-# BB#8:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2599
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2599:
-
-	#NO_APP
-	jmp	.LBB318_9
-.LBB318_12:                             # %LockSpinlock.exit3.thread
-	movl	40(%rax), %r14d
-	jmp	.LBB318_15
-.LBB318_6:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB318_9:                              # %List_Length.exit
-	movl	$-1, %r14d
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB318_15
-# BB#10:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB318_21:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	thds, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_22
-# BB#23:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB318_21 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2600
-.Ltmp2601:
-	btq	$25, %r12
-	jae	.Ltmp2602
-.Ltmp2602:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2601
-.Ltmp2600:
-	btq	$25, %r12
-	jae	.Ltmp2603
-	orw	$1, 4(%rcx)
-.Ltmp2603:
-	cli
-
-	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB318_25
-# BB#24:                                #   in Loop: Header=BB318_21 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2604
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2604:
-
-	#NO_APP
-	jmp	.LBB318_25
-	.align	16, 0x90
-.LBB318_22:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB318_21 Depth=1
-	movq	8(%rax), %rcx
-.LBB318_25:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB318_21 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB318_26
-# BB#16:                                #   in Loop: Header=BB318_21 Depth=1
-	incq	%rbx
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB318_17
-# BB#18:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB318_21 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2605
-.Ltmp2606:
-	btq	$25, %r12
-	jae	.Ltmp2607
-.Ltmp2607:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2606
-.Ltmp2605:
-	btq	$25, %r12
-	jae	.Ltmp2608
-	orw	$1, 4(%rax)
-.Ltmp2608:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_20
-# BB#19:                                #   in Loop: Header=BB318_21 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2609
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2609:
-
-	#NO_APP
-	jmp	.LBB318_20
-	.align	16, 0x90
-.LBB318_17:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB318_21 Depth=1
-	movq	32(%rcx), %rax
-.LBB318_20:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB318_21 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB318_21
-	jmp	.LBB318_15
-.LBB318_26:
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB318_27
-# BB#28:                                # %LockSpinlock.exit15
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2610
-.Ltmp2611:
-	btq	$25, %rdx
-	jae	.Ltmp2612
-.Ltmp2612:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2611
-.Ltmp2610:
-	btq	$25, %rdx
-	jae	.Ltmp2613
-	orw	$1, 4(%rcx)
-.Ltmp2613:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	40(%rax), %r14d
-	testq	%rcx, %rcx
-	je	.LBB318_15
-# BB#29:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2614
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2614:
-
-	#NO_APP
-	jmp	.LBB318_15
-.LBB318_27:                             # %LockSpinlock.exit15.thread
-	movl	40(%rax), %r14d
-.LBB318_15:                             # %UnlockSpinlock.exit5
-	movl	%r14d, %eax
-	popq	%rbx
-	popq	%r12
-	popq	%r14
-	popq	%r15
 	popq	%rbp
 	retq
 .Lfunc_end318:
-	.size	GetThreadPriority, .Lfunc_end318-GetThreadPriority
+	.size	GetNextThread, .Lfunc_end318-GetNextThread
 	.cfi_endproc
 
-	.globl	SetThreadCoreAffinity
+	.globl	TaskSwitch
 	.align	16, 0x90
-	.type	SetThreadCoreAffinity,@function
-SetThreadCoreAffinity:                  # @SetThreadCoreAffinity
+	.type	TaskSwitch,@function
+TaskSwitch:                             # @TaskSwitch
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2615:
+.Ltmp2542:
 	.cfi_def_cfa_offset 16
-.Ltmp2616:
+.Ltmp2543:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2617:
+.Ltmp2544:
 	.cfi_def_cfa_register %rbp
-	pushq	%r15
 	pushq	%r14
-	pushq	%r12
 	pushq	%rbx
-.Ltmp2618:
-	.cfi_offset %rbx, -48
-.Ltmp2619:
-	.cfi_offset %r12, -40
-.Ltmp2620:
-	.cfi_offset %r14, -32
-.Ltmp2621:
-	.cfi_offset %r15, -24
-	movl	%esi, %r14d
-	movq	%rdi, %r15
+.Ltmp2545:
+	.cfi_offset %rbx, -32
+.Ltmp2546:
+	.cfi_offset %r14, -24
+	movl	%edi, %r14d
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
 	je	.LBB319_1
 # BB#2:                                 # %LockSpinlock.exit
@@ -37068,24 +36428,24 @@ SetThreadCoreAffinity:                  # @SetThreadCoreAffinity
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2622
-.Ltmp2623:
+	je	.Ltmp2547
+.Ltmp2548:
 	btq	$25, %rdx
-	jae	.Ltmp2624
-.Ltmp2624:
+	jae	.Ltmp2549
+.Ltmp2549:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2623
-.Ltmp2622:
+	jne	.Ltmp2548
+.Ltmp2547:
 	btq	$25, %rdx
-	jae	.Ltmp2625
+	jae	.Ltmp2550
 	orw	$1, 4(%rax)
-.Ltmp2625:
+.Ltmp2550:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	128(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
 	je	.LBB319_4
 # BB#3:
@@ -37094,2201 +36454,22 @@ SetThreadCoreAffinity:                  # @SetThreadCoreAffinity
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2626
+	jae	.Ltmp2551
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2626:
+.Ltmp2551:
 
 	#NO_APP
 	jmp	.LBB319_4
 .LBB319_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
-.LBB319_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
-	jne	.LBB319_5
-# BB#11:
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB319_12
-# BB#13:                                # %LockSpinlock.exit3
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2627
-.Ltmp2628:
-	btq	$25, %rdx
-	jae	.Ltmp2629
-.Ltmp2629:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2628
-.Ltmp2627:
-	btq	$25, %rdx
-	jae	.Ltmp2630
-	orw	$1, 4(%rcx)
-.Ltmp2630:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 112(%rax)
-	testq	%rcx, %rcx
-	je	.LBB319_29
-# BB#14:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2631
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2631:
-
-	#NO_APP
-	jmp	.LBB319_29
-.LBB319_5:                              # %.preheader
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB319_6
-# BB#7:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2632
-.Ltmp2633:
-	btq	$25, %rdx
-	jae	.Ltmp2634
-.Ltmp2634:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2633
-.Ltmp2632:
-	btq	$25, %rdx
-	jae	.Ltmp2635
-	orw	$1, 4(%rax)
-.Ltmp2635:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB319_9
-# BB#8:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2636
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2636:
-
-	#NO_APP
-	jmp	.LBB319_9
-.LBB319_12:                             # %LockSpinlock.exit3.thread
-	movl	%r14d, 112(%rax)
-	jmp	.LBB319_29
-.LBB319_6:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB319_9:                              # %List_Length.exit
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB319_29
-# BB#10:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB319_20:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	thds, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB319_21
-# BB#22:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB319_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2637
-.Ltmp2638:
-	btq	$25, %r12
-	jae	.Ltmp2639
-.Ltmp2639:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2638
-.Ltmp2637:
-	btq	$25, %r12
-	jae	.Ltmp2640
-	orw	$1, 4(%rcx)
-.Ltmp2640:
-	cli
-
-	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB319_24
-# BB#23:                                #   in Loop: Header=BB319_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2641
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2641:
-
-	#NO_APP
-	jmp	.LBB319_24
-	.align	16, 0x90
-.LBB319_21:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB319_20 Depth=1
-	movq	8(%rax), %rcx
-.LBB319_24:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB319_20 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB319_25
-# BB#15:                                #   in Loop: Header=BB319_20 Depth=1
-	incq	%rbx
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB319_16
-# BB#17:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB319_20 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2642
-.Ltmp2643:
-	btq	$25, %r12
-	jae	.Ltmp2644
-.Ltmp2644:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2643
-.Ltmp2642:
-	btq	$25, %r12
-	jae	.Ltmp2645
-	orw	$1, 4(%rax)
-.Ltmp2645:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB319_19
-# BB#18:                                #   in Loop: Header=BB319_20 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2646
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2646:
-
-	#NO_APP
-	jmp	.LBB319_19
-	.align	16, 0x90
-.LBB319_16:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB319_20 Depth=1
-	movq	32(%rcx), %rax
-.LBB319_19:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB319_20 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB319_20
-	jmp	.LBB319_29
-.LBB319_25:                             # %.critedge
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB319_26
-# BB#27:                                # %LockSpinlock.exit15
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2647
-.Ltmp2648:
-	btq	$25, %rdx
-	jae	.Ltmp2649
-.Ltmp2649:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2648
-.Ltmp2647:
-	btq	$25, %rdx
-	jae	.Ltmp2650
-	orw	$1, 4(%rcx)
-.Ltmp2650:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	%r14d, 112(%rax)
-	testq	%rcx, %rcx
-	je	.LBB319_29
-# BB#28:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2651
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2651:
-
-	#NO_APP
-	jmp	.LBB319_29
-.LBB319_26:                             # %LockSpinlock.exit15.thread
-	movl	%r14d, 112(%rax)
-.LBB319_29:                             # %.loopexit
-	popq	%rbx
-	popq	%r12
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end319:
-	.size	SetThreadCoreAffinity, .Lfunc_end319-SetThreadCoreAffinity
-	.cfi_endproc
-
-	.globl	GetThreadCoreAffinity
-	.align	16, 0x90
-	.type	GetThreadCoreAffinity,@function
-GetThreadCoreAffinity:                  # @GetThreadCoreAffinity
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2652:
-	.cfi_def_cfa_offset 16
-.Ltmp2653:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2654:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r12
-	pushq	%rbx
-.Ltmp2655:
-	.cfi_offset %rbx, -48
-.Ltmp2656:
-	.cfi_offset %r12, -40
-.Ltmp2657:
-	.cfi_offset %r14, -32
-.Ltmp2658:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r15
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB320_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2659
-.Ltmp2660:
-	btq	$25, %rdx
-	jae	.Ltmp2661
-.Ltmp2661:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2660
-.Ltmp2659:
-	btq	$25, %rdx
-	jae	.Ltmp2662
-	orw	$1, 4(%rax)
-.Ltmp2662:
-	cli
-
-	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2663
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2663:
-
-	#NO_APP
-	jmp	.LBB320_4
-.LBB320_1:                              # %LockSpinlock.exit.thread
-	movq	8(%rcx), %rax
-.LBB320_4:                              # %UnlockSpinlock.exit
-	cmpq	%r15, %rax
-	jne	.LBB320_5
-# BB#11:
-	movq	coreState, %rax
-	movq	(%rax), %rax
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_12
-# BB#13:                                # %LockSpinlock.exit3
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2664
-.Ltmp2665:
-	btq	$25, %rdx
-	jae	.Ltmp2666
-.Ltmp2666:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2665
-.Ltmp2664:
-	btq	$25, %rdx
-	jae	.Ltmp2667
-	orw	$1, 4(%rcx)
-.Ltmp2667:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	112(%rax), %r14d
-	testq	%rcx, %rcx
-	je	.LBB320_15
-# BB#14:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2668
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2668:
-
-	#NO_APP
-	jmp	.LBB320_15
-.LBB320_5:                              # %.preheader
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB320_6
-# BB#7:                                 # %LockSpinlock.exit.i
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2669
-.Ltmp2670:
-	btq	$25, %rdx
-	jae	.Ltmp2671
-.Ltmp2671:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2670
-.Ltmp2669:
-	btq	$25, %rdx
-	jae	.Ltmp2672
-	orw	$1, 4(%rax)
-.Ltmp2672:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_9
-# BB#8:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2673
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2673:
-
-	#NO_APP
-	jmp	.LBB320_9
-.LBB320_12:                             # %LockSpinlock.exit3.thread
-	movl	112(%rax), %r14d
-	jmp	.LBB320_15
-.LBB320_6:                              # %LockSpinlock.exit.i.thread
-	movq	32(%rcx), %rax
-.LBB320_9:                              # %List_Length.exit
-	movl	$-1, %r14d
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB320_15
-# BB#10:
-	xorl	%r12d, %r12d
-	.align	16, 0x90
-.LBB320_21:                             # %.lr.ph
-                                        # =>This Inner Loop Header: Depth=1
-	movq	thds, %rdi
-	movq	%rbx, %rsi
-	callq	List_EntryAt
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_22
-# BB#23:                                # %LockSpinlock.exit11
-                                        #   in Loop: Header=BB320_21 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rcx)
-	cmpw	%r12w, (%rcx)
-	je	.Ltmp2674
-.Ltmp2675:
-	btq	$25, %r12
-	jae	.Ltmp2676
-.Ltmp2676:
-	pause
-	cmpw	%r12w, (%rcx)
-	jne	.Ltmp2675
-.Ltmp2674:
-	btq	$25, %r12
-	jae	.Ltmp2677
-	orw	$1, 4(%rcx)
-.Ltmp2677:
-	cli
-
-	#NO_APP
-	movq	8(%rax), %rcx
-	movq	168(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB320_25
-# BB#24:                                #   in Loop: Header=BB320_21 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2678
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2678:
-
-	#NO_APP
-	jmp	.LBB320_25
-	.align	16, 0x90
-.LBB320_22:                             # %LockSpinlock.exit11.thread
-                                        #   in Loop: Header=BB320_21 Depth=1
-	movq	8(%rax), %rcx
-.LBB320_25:                             # %UnlockSpinlock.exit13
-                                        #   in Loop: Header=BB320_21 Depth=1
-	cmpq	%r15, %rcx
-	je	.LBB320_26
-# BB#16:                                #   in Loop: Header=BB320_21 Depth=1
-	incq	%rbx
-	movq	thds, %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB320_17
-# BB#18:                                # %LockSpinlock.exit.i.7
-                                        #   in Loop: Header=BB320_21 Depth=1
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2679
-.Ltmp2680:
-	btq	$25, %r12
-	jae	.Ltmp2681
-.Ltmp2681:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2680
-.Ltmp2679:
-	btq	$25, %r12
-	jae	.Ltmp2682
-	orw	$1, 4(%rax)
-.Ltmp2682:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_20
-# BB#19:                                #   in Loop: Header=BB320_21 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2683
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2683:
-
-	#NO_APP
-	jmp	.LBB320_20
-	.align	16, 0x90
-.LBB320_17:                             # %LockSpinlock.exit.i.7.thread
-                                        #   in Loop: Header=BB320_21 Depth=1
-	movq	32(%rcx), %rax
-.LBB320_20:                             # %List_Length.exit9
-                                        #   in Loop: Header=BB320_21 Depth=1
-	cmpq	%rax, %rbx
-	jb	.LBB320_21
-	jmp	.LBB320_15
-.LBB320_26:
-	movq	168(%rax), %rcx
-	testq	%rcx, %rcx
-	je	.LBB320_27
-# BB#28:                                # %LockSpinlock.exit15
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2684
-.Ltmp2685:
-	btq	$25, %rdx
-	jae	.Ltmp2686
-.Ltmp2686:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2685
-.Ltmp2684:
-	btq	$25, %rdx
-	jae	.Ltmp2687
-	orw	$1, 4(%rcx)
-.Ltmp2687:
-	cli
-
-	#NO_APP
-	movq	168(%rax), %rcx
-	movl	112(%rax), %r14d
-	testq	%rcx, %rcx
-	je	.LBB320_15
-# BB#29:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2688
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2688:
-
-	#NO_APP
-	jmp	.LBB320_15
-.LBB320_27:                             # %LockSpinlock.exit15.thread
-	movl	112(%rax), %r14d
-.LBB320_15:                             # %UnlockSpinlock.exit5
-	movl	%r14d, %eax
-	popq	%rbx
-	popq	%r12
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end320:
-	.size	GetThreadCoreAffinity, .Lfunc_end320-GetThreadCoreAffinity
-	.cfi_endproc
-
-	.globl	FreeThread
-	.align	16, 0x90
-	.type	FreeThread,@function
-FreeThread:                             # @FreeThread
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2689:
-	.cfi_def_cfa_offset 16
-.Ltmp2690:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2691:
-	.cfi_def_cfa_register %rbp
-	movl	$4, %esi
-	popq	%rbp
-	jmp	SetThreadState          # TAILCALL
-.Lfunc_end321:
-	.size	FreeThread, .Lfunc_end321-FreeThread
-	.cfi_endproc
-
-	.globl	GetNextThread
-	.align	16, 0x90
-	.type	GetNextThread,@function
-GetNextThread:                          # @GetNextThread
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2692:
-	.cfi_def_cfa_offset 16
-.Ltmp2693:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2694:
-	.cfi_def_cfa_register %rbp
-	pushq	%r15
-	pushq	%r14
-	pushq	%r13
-	pushq	%r12
-	pushq	%rbx
-	pushq	%rax
-.Ltmp2695:
-	.cfi_offset %rbx, -56
-.Ltmp2696:
-	.cfi_offset %r12, -48
-.Ltmp2697:
-	.cfi_offset %r13, -40
-.Ltmp2698:
-	.cfi_offset %r14, -32
-.Ltmp2699:
-	.cfi_offset %r15, -24
-	movq	%rdi, %r14
-	testq	%r14, %r14
-	je	.LBB322_12
-# BB#1:
-	movq	thds, %rbx
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#2:
-	movq	40(%rbx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_4
-# BB#3:
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2700
-.Ltmp2701:
-	btq	$25, %rdx
-	jae	.Ltmp2702
-.Ltmp2702:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2701
-.Ltmp2700:
-	btq	$25, %rdx
-	jae	.Ltmp2703
-	orw	$1, 4(%rcx)
-.Ltmp2703:
-	cli
-
-	#NO_APP
-.LBB322_4:                              # %LockSpinlock.exit.i
-	movq	8(%rbx), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r14, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB322_6
-# BB#5:
-	movq	%rax, 8(%rcx)
-.LBB322_6:
-	movq	%rax, 8(%rbx)
-	movq	(%rbx), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB322_8
-# BB#7:
-	movq	%rax, (%rbx)
-	movq	%rax, %rcx
-.LBB322_8:
-	cmpq	$0, 16(%rbx)
-	jne	.LBB322_10
-# BB#9:
-	movq	%rcx, 16(%rbx)
-	movq	$0, 24(%rbx)
-.LBB322_10:
-	incq	32(%rbx)
-	movq	40(%rbx), %rax
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#11:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2704
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2704:
-
-	#NO_APP
-	jmp	.LBB322_12
-	.align	16, 0x90
-.LBB322_17:                             #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2705
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2705:
-
-	#NO_APP
-.LBB322_12:                             # %.lr.ph17thread-pre-split
-                                        # =>This Loop Header: Depth=1
-                                        #     Child Loop BB322_13 Depth 2
-                                        #     Child Loop BB322_35 Depth 2
-                                        #     Child Loop BB322_46 Depth 2
-                                        #     Child Loop BB322_68 Depth 2
-                                        #     Child Loop BB322_86 Depth 2
-                                        #     Child Loop BB322_97 Depth 2
-	movq	sync_lock, %rax
-	xorl	%ebx, %ebx
-	.align	16, 0x90
-.LBB322_13:                             # %.lr.ph17
-                                        #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	testq	%rax, %rax
-	je	.LBB322_15
-# BB#14:                                #   in Loop: Header=BB322_13 Depth=2
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rbx
-	shlq	$16, %rbx
-	movw	$1, %bx
-	lock
-	xaddw	%bx, 2(%rax)
-	cmpw	%bx, (%rax)
-	je	.Ltmp2706
-.Ltmp2707:
-	btq	$25, %rbx
-	jae	.Ltmp2708
-.Ltmp2708:
-	pause
-	cmpw	%bx, (%rax)
-	jne	.Ltmp2707
-.Ltmp2706:
-	btq	$25, %rbx
-	jae	.Ltmp2709
-	orw	$1, 4(%rax)
-.Ltmp2709:
-	cli
-
-	#NO_APP
-.LBB322_15:                             # %LockSpinlock.exit
-                                        #   in Loop: Header=BB322_13 Depth=2
-	movq	thds, %rdi
-	xorl	%esi, %esi
-	callq	List_EntryAt
-	movq	%rax, %r13
-	testq	%r13, %r13
-	jne	.LBB322_18
-# BB#16:                                # %.thread
-                                        #   in Loop: Header=BB322_13 Depth=2
-	movq	sync_lock, %rcx
-	testq	%rcx, %rcx
-	movl	$0, %eax
-	je	.LBB322_13
-	jmp	.LBB322_17
-	.align	16, 0x90
-.LBB322_18:                             #   in Loop: Header=BB322_12 Depth=1
-	movq	thds, %rdi
-	xorl	%esi, %esi
-	callq	List_Remove
-	movq	sync_lock, %rax
-	testq	%rax, %rax
-	je	.LBB322_20
-# BB#19:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2710
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2710:
-
-	#NO_APP
-.LBB322_20:                             # %UnlockSpinlock.exit4
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_21
-# BB#22:                                # %LockSpinlock.exit6
-                                        #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2711
-.Ltmp2712:
-	btq	$25, %rcx
-	jae	.Ltmp2713
-.Ltmp2713:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2712
-.Ltmp2711:
-	btq	$25, %rcx
-	jae	.Ltmp2714
-	orw	$1, 4(%rax)
-.Ltmp2714:
-	cli
-
-	#NO_APP
-	movq	168(%r13), %rcx
-	movl	32(%r13), %eax
-	testq	%rcx, %rcx
-	je	.LBB322_24
-# BB#23:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2715
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2715:
-
-	#NO_APP
-	jmp	.LBB322_24
-.LBB322_21:                             # %LockSpinlock.exit6.thread
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movl	32(%r13), %eax
-.LBB322_24:                             # %UnlockSpinlock.exit8
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpl	$2, %eax
-	je	.LBB322_12
-# BB#25:                                # %UnlockSpinlock.exit8
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpl	$3, %eax
-	jne	.LBB322_26
-# BB#117:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_119
-# BB#118:                               #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2716
-.Ltmp2717:
-	btq	$25, %rcx
-	jae	.Ltmp2718
-.Ltmp2718:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2717
-.Ltmp2716:
-	btq	$25, %rcx
-	jae	.Ltmp2719
-	orw	$1, 4(%rax)
-.Ltmp2719:
-	cli
-
-	#NO_APP
-.LBB322_119:                            # %LockSpinlock.exit72
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpl	$1, 36(%r13)
-	jne	.LBB322_137
-# BB#120:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	hpet_regs, %rax
-	movq	48(%rax), %rcx
-	subq	128(%r13), %rcx
-	movl	4(%rax), %eax
-	imulq	%rcx, %rax
-	movabsq	$4835703278458516699, %rcx # imm = 0x431BDE82D7B634DB
-	mulq	%rcx
-	shrq	$18, %rdx
-	cmpq	120(%r13), %rdx
-	jae	.LBB322_121
-# BB#124:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_126
-# BB#125:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2720
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2720:
-
-	#NO_APP
-.LBB322_126:                            # %UnlockSpinlock.exit76
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	thds, %r14
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#127:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	40(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_129
-# BB#128:                               #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2721
-.Ltmp2722:
-	btq	$25, %rdx
-	jae	.Ltmp2723
-.Ltmp2723:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2722
-.Ltmp2721:
-	btq	$25, %rdx
-	jae	.Ltmp2724
-	orw	$1, 4(%rcx)
-.Ltmp2724:
-	cli
-
-	#NO_APP
-.LBB322_129:                            # %LockSpinlock.exit.i.78
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	8(%r14), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r13, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB322_131
-# BB#130:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%rcx)
-.LBB322_131:                            #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%r14)
-	movq	(%r14), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB322_133
-# BB#132:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, (%r14)
-	movq	%rax, %rcx
-.LBB322_133:                            #   in Loop: Header=BB322_12 Depth=1
-	cmpq	$0, 16(%r14)
-	jne	.LBB322_135
-# BB#134:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rcx, 16(%r14)
-	movq	$0, 24(%r14)
-.LBB322_135:                            #   in Loop: Header=BB322_12 Depth=1
-	incq	32(%r14)
-	movq	40(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#136:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2725
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2725:
-
-	#NO_APP
-	jmp	.LBB322_12
-.LBB322_26:                             # %UnlockSpinlock.exit8
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpl	$4, %eax
-	jne	.LBB322_123
-# BB#27:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	#APP
-	movq	(%rax), %rax
-
-	#NO_APP
-	movl	%eax, %ecx
-	shrl	$16, %ecx
-	xorw	%ax, %cx
-	je	.LBB322_28
-# BB#106:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	thds, %r14
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#107:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	40(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_109
-# BB#108:                               #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2726
-.Ltmp2727:
-	btq	$25, %rdx
-	jae	.Ltmp2728
-.Ltmp2728:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2727
-.Ltmp2726:
-	btq	$25, %rdx
-	jae	.Ltmp2729
-	orw	$1, 4(%rcx)
-.Ltmp2729:
-	cli
-
-	#NO_APP
-.LBB322_109:                            # %LockSpinlock.exit.i.66
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	8(%r14), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r13, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB322_111
-# BB#110:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%rcx)
-.LBB322_111:                            #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%r14)
-	movq	(%r14), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB322_113
-# BB#112:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, (%r14)
-	movq	%rax, %rcx
-.LBB322_113:                            #   in Loop: Header=BB322_12 Depth=1
-	cmpq	$0, 16(%r14)
-	jne	.LBB322_115
-# BB#114:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rcx, 16(%r14)
-	movq	$0, 24(%r14)
-.LBB322_115:                            #   in Loop: Header=BB322_12 Depth=1
-	incq	32(%r14)
-	movq	40(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#116:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2730
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2730:
-
-	#NO_APP
-	jmp	.LBB322_12
-.LBB322_137:                            #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_139
-# BB#138:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2731
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2731:
-
-	#NO_APP
-.LBB322_139:                            # %UnlockSpinlock.exit84
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	thds, %r14
-	movl	$24, %edi
-	callq	kmalloc
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#140:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	40(%r14), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_142
-# BB#141:                               #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2732
-.Ltmp2733:
-	btq	$25, %rdx
-	jae	.Ltmp2734
-.Ltmp2734:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2733
-.Ltmp2732:
-	btq	$25, %rdx
-	jae	.Ltmp2735
-	orw	$1, 4(%rcx)
-.Ltmp2735:
-	cli
-
-	#NO_APP
-.LBB322_142:                            # %LockSpinlock.exit.i.86
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	8(%r14), %rcx
-	movq	%rcx, 16(%rax)
-	movq	%r13, (%rax)
-	movq	$0, 8(%rax)
-	testq	%rcx, %rcx
-	je	.LBB322_144
-# BB#143:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%rcx)
-.LBB322_144:                            #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, 8(%r14)
-	movq	(%r14), %rcx
-	testq	%rcx, %rcx
-	jne	.LBB322_146
-# BB#145:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, (%r14)
-	movq	%rax, %rcx
-.LBB322_146:                            #   in Loop: Header=BB322_12 Depth=1
-	cmpq	$0, 16(%r14)
-	jne	.LBB322_148
-# BB#147:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%rcx, 16(%r14)
-	movq	$0, 24(%r14)
-.LBB322_148:                            #   in Loop: Header=BB322_12 Depth=1
-	incq	32(%r14)
-	movq	40(%r14), %rax
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#149:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2736
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2736:
-
-	#NO_APP
-	jmp	.LBB322_12
-.LBB322_28:                             #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_30
-# BB#29:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2737
-.Ltmp2738:
-	btq	$25, %rcx
-	jae	.Ltmp2739
-.Ltmp2739:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2738
-.Ltmp2737:
-	btq	$25, %rcx
-	jae	.Ltmp2740
-	orw	$1, 4(%rax)
-.Ltmp2740:
-	cli
-
-	#NO_APP
-.LBB322_30:                             # %LockSpinlock.exit10
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	72(%r13), %rax
-	movq	alloc_sync, %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_32
-# BB#31:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2741
-.Ltmp2742:
-	btq	$25, %rdx
-	jae	.Ltmp2743
-.Ltmp2743:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2742
-.Ltmp2741:
-	btq	$25, %rdx
-	jae	.Ltmp2744
-	orw	$1, 4(%rcx)
-.Ltmp2744:
-	cli
-
-	#NO_APP
-.LBB322_32:                             # %LockSpinlock.exit.i.12
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movabsq	$-2401053089206453570, %r15 # imm = 0xDEADBEEFCAFEBABE
-	cmpq	%r15, -16408(%rax)
-	leaq	-16384(%rax), %rax
-	je	.LBB322_34
-# BB#33:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB322_34:                             # %.preheader.i
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	allocation_info, %rdx
-	.align	16, 0x90
-.LBB322_35:                             #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%rdx, %rcx
-	movq	(%rcx), %rsi
-	movq	16(%rcx), %rdx
-	testq	%rdx, %rdx
-	je	.LBB322_39
-# BB#36:                                #   in Loop: Header=BB322_35 Depth=2
-	movl	%esi, %edi
-	andl	$1, %edi
-	cmpq	%rax, %rsi
-	jne	.LBB322_35
-# BB#37:                                #   in Loop: Header=BB322_35 Depth=2
-	testq	%rdi, %rdi
-	je	.LBB322_35
-# BB#38:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, %rsi
-.LBB322_39:                             # %.loopexit.i
-                                        #   in Loop: Header=BB322_12 Depth=1
-	andq	$-2, %rsi
-	movq	%rsi, (%rcx)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB322_40
-# BB#41:                                # %kfree.exit
-                                        #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2745
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2745:
-
-	#NO_APP
-	movq	alloc_sync, %rdx
-	movq	64(%r13), %rcx
-	leaq	-16384(%rcx), %rax
-	testq	%rdx, %rdx
-	je	.LBB322_43
-# BB#42:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%esi, %esi
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rsi
-	shlq	$16, %rsi
-	movw	$1, %si
-	lock
-	xaddw	%si, 2(%rdx)
-	cmpw	%si, (%rdx)
-	je	.Ltmp2746
-.Ltmp2747:
-	btq	$25, %rsi
-	jae	.Ltmp2748
-.Ltmp2748:
-	pause
-	cmpw	%si, (%rdx)
-	jne	.Ltmp2747
-.Ltmp2746:
-	btq	$25, %rsi
-	jae	.Ltmp2749
-	orw	$1, 4(%rdx)
-.Ltmp2749:
-	cli
-
-	#NO_APP
-	jmp	.LBB322_43
-.LBB322_40:                             # %kfree.exit.thread
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	64(%r13), %rcx
-	leaq	-16384(%rcx), %rax
-.LBB322_43:                             # %LockSpinlock.exit.i.16
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpq	%r15, -16408(%rcx)
-	je	.LBB322_45
-# BB#44:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB322_45:                             # %.preheader.i.18
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	allocation_info, %rdx
-	.align	16, 0x90
-.LBB322_46:                             #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%rdx, %rcx
-	movq	(%rcx), %rsi
-	movq	16(%rcx), %rdx
-	testq	%rdx, %rdx
-	je	.LBB322_50
-# BB#47:                                #   in Loop: Header=BB322_46 Depth=2
-	movl	%esi, %edi
-	andl	$1, %edi
-	cmpq	%rax, %rsi
-	jne	.LBB322_46
-# BB#48:                                #   in Loop: Header=BB322_46 Depth=2
-	testq	%rdi, %rdi
-	je	.LBB322_46
-# BB#49:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, %rsi
-.LBB322_50:                             # %.loopexit.i.23
-                                        #   in Loop: Header=BB322_12 Depth=1
-	andq	$-2, %rsi
-	movq	%rsi, (%rcx)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB322_52
-# BB#51:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2750
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2750:
-
-	#NO_APP
-.LBB322_52:                             # %kfree.exit26
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	$-16256, %rsi           # imm = 0xFFFFFFFFFFFFC080
-	addq	80(%r13), %rsi
-	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	callq	VirtMemMan_GetPhysicalAddress
-	movq	vmem_lock, %rcx
-	xorl	%r8d, %r8d
-	testq	%rcx, %rcx
-	je	.LBB322_54
-# BB#53:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2751
-.Ltmp2752:
-	btq	$25, %rdx
-	jae	.Ltmp2753
-.Ltmp2753:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2752
-.Ltmp2751:
-	btq	$25, %rdx
-	jae	.Ltmp2754
-	orw	$1, 4(%rcx)
-.Ltmp2754:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %r8
-.LBB322_54:                             # %LockSpinlock.exit.i.28
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, %rsi
-	andq	$-4096, %rsi            # imm = 0xFFFFFFFFFFFFF000
-	movq	KB4_Blocks_Bitmap, %r9
-	movq	freePageCount, %rbx
-	movq	%rsi, %rcx
-	shrq	$12, %rcx
-	movl	$-2, %edx
-	movl	$-2, %edi
-	roll	%cl, %edi
-	shrq	$17, %rax
-	andl	%edi, (%r9,%rax,4)
-	addq	$4096, %rsi             # imm = 0x1000
-	movq	%rsi, %rcx
-	shrq	$12, %rcx
-	roll	%cl, %edx
-	shrq	$15, %rsi
-	movabsq	$562949953421308, %rax  # imm = 0x1FFFFFFFFFFFC
-	andq	%rsi, %rax
-	andl	%edx, (%r9,%rax)
-	addq	$2, %rbx
-	movq	%rbx, freePageCount
-	testq	%r8, %r8
-	je	.LBB322_56
-# BB#55:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%r8)
-	btw	$0, 4(%r8)
-	jae	.Ltmp2755
-	sti
-	movw	$0, 4(%r8)
-.Ltmp2755:
-
-	#NO_APP
-.LBB322_56:                             # %FreePhysicalPageCont.exit
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	16(%r13), %rcx
-	movq	488(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB322_58
-# BB#57:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2756
-.Ltmp2757:
-	btq	$25, %rcx
-	jae	.Ltmp2758
-.Ltmp2758:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2757
-.Ltmp2756:
-	btq	$25, %rcx
-	jae	.Ltmp2759
-	orw	$1, 4(%rax)
-.Ltmp2759:
-	cli
-
-	#NO_APP
-	movq	16(%r13), %rcx
-.LBB322_58:                             # %LockSpinlock.exit32
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	456(%rcx), %rdi
-	movq	$-16256, %rsi           # imm = 0xFFFFFFFFFFFFC080
-	addq	80(%r13), %rsi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB322_60
-# BB#59:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2760
-.Ltmp2761:
-	btq	$25, %rcx
-	jae	.Ltmp2762
-.Ltmp2762:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2761
-.Ltmp2760:
-	btq	$25, %rcx
-	jae	.Ltmp2763
-	orw	$1, 4(%rax)
-.Ltmp2763:
-	cli
-
-	#NO_APP
-.LBB322_60:                             # %LockSpinlock.exit.i.34
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movl	$16384, %edx            # imm = 0x4000
-	callq	VirtMemMan_Unmap
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB322_62
-# BB#61:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2764
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2764:
-
-	#NO_APP
-.LBB322_62:                             # %UnmapPage.exit
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	16(%r13), %rax
-	movq	472(%rax), %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB322_63
-# BB#64:                                # %LockSpinlock.exit.i.38
-                                        #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2765
-.Ltmp2766:
-	btq	$25, %rdx
-	jae	.Ltmp2767
-.Ltmp2767:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2766
-.Ltmp2765:
-	btq	$25, %rdx
-	jae	.Ltmp2768
-	orw	$1, 4(%rax)
-.Ltmp2768:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_66
-# BB#65:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2769
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2769:
-
-	#NO_APP
-	jmp	.LBB322_66
-.LBB322_63:                             # %LockSpinlock.exit.i.38.thread
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	32(%rcx), %rax
-.LBB322_66:                             # %List_Length.exit
-                                        #   in Loop: Header=BB322_12 Depth=1
-	testq	%rax, %rax
-	movq	16(%r13), %rax
-	movq	472(%rax), %rdi
-	je	.LBB322_72
-# BB#67:                                # %.lr.ph
-                                        #   in Loop: Header=BB322_12 Depth=1
-	xorl	%r12d, %r12d
-	xorl	%r14d, %r14d
-	.align	16, 0x90
-.LBB322_68:                             #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%r14, %rsi
-	callq	List_EntryAt
-	cmpq	8(%r13), %rax
-	jne	.LBB322_70
-# BB#69:                                #   in Loop: Header=BB322_68 Depth=2
-	movq	16(%r13), %rax
-	movq	472(%rax), %rdi
-	movq	%r14, %rsi
-	callq	List_Remove
-.LBB322_70:                             #   in Loop: Header=BB322_68 Depth=2
-	incq	%r14
-	movq	16(%r13), %rax
-	movq	472(%rax), %rcx
-	movq	40(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB322_71
-# BB#103:                               # %LockSpinlock.exit.i.49
-                                        #   in Loop: Header=BB322_68 Depth=2
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%r12
-	shlq	$16, %r12
-	movw	$1, %r12w
-	lock
-	xaddw	%r12w, 2(%rax)
-	cmpw	%r12w, (%rax)
-	je	.Ltmp2770
-.Ltmp2771:
-	btq	$25, %r12
-	jae	.Ltmp2772
-.Ltmp2772:
-	pause
-	cmpw	%r12w, (%rax)
-	jne	.Ltmp2771
-.Ltmp2770:
-	btq	$25, %r12
-	jae	.Ltmp2773
-	orw	$1, 4(%rax)
-.Ltmp2773:
-	cli
-
-	#NO_APP
-	movq	32(%rcx), %rax
-	movq	40(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_105
-# BB#104:                               #   in Loop: Header=BB322_68 Depth=2
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2774
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2774:
-
-	#NO_APP
-	jmp	.LBB322_105
-	.align	16, 0x90
-.LBB322_71:                             # %LockSpinlock.exit.i.49.thread
-                                        #   in Loop: Header=BB322_68 Depth=2
-	movq	32(%rcx), %rax
-.LBB322_105:                            # %List_Length.exit52
-                                        #   in Loop: Header=BB322_68 Depth=2
-	movq	16(%r13), %rcx
-	movq	472(%rcx), %rdi
-	cmpq	%rax, %r14
-	jb	.LBB322_68
-.LBB322_72:                             # %._crit_edge
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	40(%rdi), %rax
-	testq	%rax, %rax
-	je	.LBB322_73
-# BB#74:                                # %LockSpinlock.exit.i.42
-                                        #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2775
-.Ltmp2776:
-	btq	$25, %rcx
-	jae	.Ltmp2777
-.Ltmp2777:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2776
-.Ltmp2775:
-	btq	$25, %rcx
-	jae	.Ltmp2778
-	orw	$1, 4(%rax)
-.Ltmp2778:
-	cli
-
-	#NO_APP
-	movq	32(%rdi), %rax
-	movq	40(%rdi), %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_76
-# BB#75:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2779
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2779:
-
-	#NO_APP
-	jmp	.LBB322_76
-.LBB322_73:                             # %LockSpinlock.exit.i.42.thread
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	32(%rdi), %rax
-.LBB322_76:                             # %List_Length.exit45
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	16(%r13), %rdx
-	movl	264(%rdx), %ecx
-	movq	(%rdx), %rdi
-	movq	488(%rdx), %rdx
-	testq	%rdx, %rdx
-	je	.LBB322_78
-# BB#77:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rdx)
-	btw	$0, 4(%rdx)
-	jae	.Ltmp2780
-	sti
-	movw	$0, 4(%rdx)
-.Ltmp2780:
-
-	#NO_APP
-.LBB322_78:                             # %UnlockSpinlock.exit47
-                                        #   in Loop: Header=BB322_12 Depth=1
-	testq	%rax, %rax
-	sete	%al
-	cmpl	$2, %ecx
-	sete	%cl
-	orb	%al, %cl
-	movzbl	%cl, %eax
-	cmpl	$1, %eax
-	jne	.LBB322_80
-# BB#79:                                #   in Loop: Header=BB322_12 Depth=1
-	callq	KillProcess
-.LBB322_80:                             #   in Loop: Header=BB322_12 Depth=1
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_92
-# BB#81:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	alloc_sync, %rcx
-	testq	%rcx, %rcx
-	je	.LBB322_83
-# BB#82:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rcx)
-	cmpw	%dx, (%rcx)
-	je	.Ltmp2781
-.Ltmp2782:
-	btq	$25, %rdx
-	jae	.Ltmp2783
-.Ltmp2783:
-	pause
-	cmpw	%dx, (%rcx)
-	jne	.Ltmp2782
-.Ltmp2781:
-	btq	$25, %rdx
-	jae	.Ltmp2784
-	orw	$1, 4(%rcx)
-.Ltmp2784:
-	cli
-
-	#NO_APP
-.LBB322_83:                             # %LockSpinlock.exit.i.i
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpq	%r15, -24(%rax)
-	je	.LBB322_85
-# BB#84:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB322_85:                             # %.preheader.i.i
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	allocation_info, %rsi
-	.align	16, 0x90
-.LBB322_86:                             #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%rsi, %rcx
-	movq	(%rcx), %rdx
-	movq	16(%rcx), %rsi
-	testq	%rsi, %rsi
-	je	.LBB322_90
-# BB#87:                                #   in Loop: Header=BB322_86 Depth=2
-	movl	%edx, %edi
-	andl	$1, %edi
-	cmpq	%rax, %rdx
-	jne	.LBB322_86
-# BB#88:                                #   in Loop: Header=BB322_86 Depth=2
-	testq	%rdi, %rdi
-	je	.LBB322_86
-# BB#89:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	%rax, %rdx
-.LBB322_90:                             # %.loopexit.i.i
-                                        #   in Loop: Header=BB322_12 Depth=1
-	andq	$-2, %rdx
-	movq	%rdx, (%rcx)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB322_94
-# BB#91:                                #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2785
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2785:
-
-	#NO_APP
-.LBB322_92:                             # %FreeSpinlock.exit
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB322_94
-# BB#93:                                #   in Loop: Header=BB322_12 Depth=1
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp2786
-.Ltmp2787:
-	btq	$25, %rcx
-	jae	.Ltmp2788
-.Ltmp2788:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp2787
-.Ltmp2786:
-	btq	$25, %rcx
-	jae	.Ltmp2789
-	orw	$1, 4(%rax)
-.Ltmp2789:
-	cli
-
-	#NO_APP
-.LBB322_94:                             # %LockSpinlock.exit.i.54
-                                        #   in Loop: Header=BB322_12 Depth=1
-	cmpq	%r15, -24(%r13)
-	je	.LBB322_96
-# BB#95:                                #   in Loop: Header=BB322_12 Depth=1
-	movq	%r13, %rax
-	#APP
-	addq	$40, %rsp
-	popq	%rbx
-	cli
-	hlt
-	#NO_APP
-.LBB322_96:                             # %.preheader.i.56
-                                        #   in Loop: Header=BB322_12 Depth=1
-	movq	allocation_info, %rdx
-	.align	16, 0x90
-.LBB322_97:                             #   Parent Loop BB322_12 Depth=1
-                                        # =>  This Inner Loop Header: Depth=2
-	movq	%rdx, %rax
-	movq	(%rax), %rcx
-	movq	16(%rax), %rdx
-	testq	%rdx, %rdx
-	je	.LBB322_101
-# BB#98:                                #   in Loop: Header=BB322_97 Depth=2
-	movl	%ecx, %esi
-	andl	$1, %esi
-	cmpq	%r13, %rcx
-	jne	.LBB322_97
-# BB#99:                                #   in Loop: Header=BB322_97 Depth=2
-	testq	%rsi, %rsi
-	je	.LBB322_97
-# BB#100:                               #   in Loop: Header=BB322_12 Depth=1
-	movq	%r13, %rcx
-.LBB322_101:                            # %.loopexit.i.61
-                                        #   in Loop: Header=BB322_12 Depth=1
-	andq	$-2, %rcx
-	movq	%rcx, (%rax)
-	movq	alloc_sync, %rax
-	testq	%rax, %rax
-	je	.LBB322_12
-# BB#102:                               #   in Loop: Header=BB322_12 Depth=1
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2790
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2790:
-
-	#NO_APP
-	jmp	.LBB322_12
-.LBB322_121:
-	movl	$1, 32(%r13)
-	movq	168(%r13), %rax
-	testq	%rax, %rax
-	je	.LBB322_123
-# BB#122:
-	#APP
-	mfence
-	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp2791
-	sti
-	movw	$0, 4(%rax)
-.Ltmp2791:
-
-	#NO_APP
-.LBB322_123:                            # %.outer._crit_edge
-	movq	%r13, %rax
-	addq	$8, %rsp
-	popq	%rbx
-	popq	%r12
-	popq	%r13
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end322:
-	.size	GetNextThread, .Lfunc_end322-GetNextThread
-	.cfi_endproc
-
-	.globl	TaskSwitch
-	.align	16, 0x90
-	.type	TaskSwitch,@function
-TaskSwitch:                             # @TaskSwitch
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp2792:
-	.cfi_def_cfa_offset 16
-.Ltmp2793:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp2794:
-	.cfi_def_cfa_register %rbp
-	pushq	%r14
-	pushq	%rbx
-.Ltmp2795:
-	.cfi_offset %rbx, -32
-.Ltmp2796:
-	.cfi_offset %r14, -24
-	movl	%edi, %r14d
-	movq	coreState, %rax
-	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
-	testq	%rax, %rax
-	je	.LBB323_1
-# BB#2:                                 # %LockSpinlock.exit
-	xorl	%edx, %edx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rdx
-	shlq	$16, %rdx
-	movw	$1, %dx
-	lock
-	xaddw	%dx, 2(%rax)
-	cmpw	%dx, (%rax)
-	je	.Ltmp2797
-.Ltmp2798:
-	btq	$25, %rdx
-	jae	.Ltmp2799
-.Ltmp2799:
-	pause
-	cmpw	%dx, (%rax)
-	jne	.Ltmp2798
-.Ltmp2797:
-	btq	$25, %rdx
-	jae	.Ltmp2800
-	orw	$1, 4(%rax)
-.Ltmp2800:
-	cli
-
-	#NO_APP
-	movq	152(%rcx), %rax
-	movq	168(%rcx), %rcx
-	testq	%rcx, %rcx
-	je	.LBB323_4
-# BB#3:
-	#APP
-	mfence
-	lock
-	incw	(%rcx)
-	btw	$0, 4(%rcx)
-	jae	.Ltmp2801
-	sti
-	movw	$0, 4(%rcx)
-.Ltmp2801:
-
-	#NO_APP
-	jmp	.LBB323_4
-.LBB323_1:                              # %LockSpinlock.exit.thread
-	movq	152(%rcx), %rax
-.LBB323_4:                              # %SaveFPUState.exit
+	movq	128(%rcx), %rax
+.LBB319_4:                              # %SaveFPUState.exit
 	#APP
 	fxsave64	(%rax)
 	#NO_APP
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	160(%rax), %rsi
+	movq	136(%rax), %rsi
 	movl	$-1073741568, %ecx      # imm = 0xFFFFFFFFC0000100
 	#APP
 	rdmsr
@@ -39308,12 +36489,12 @@ TaskSwitch:                             # @TaskSwitch
 	movq	coreState, %rax
 	movq	(%rax), %rax
 	testq	%rax, %rax
-	je	.LBB323_9
+	je	.LBB319_9
 # BB#5:
 	movq	regs_saved, %rcx
-	movq	168(%rax), %rdx
+	movq	152(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB323_6
+	je	.LBB319_6
 # BB#7:                                 # %LockSpinlock.exit.i
 	xorl	%esi, %esi
 	#APP
@@ -39326,48 +36507,48 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%si, 2(%rdx)
 	cmpw	%si, (%rdx)
-	je	.Ltmp2802
-.Ltmp2803:
+	je	.Ltmp2552
+.Ltmp2553:
 	btq	$25, %rsi
-	jae	.Ltmp2804
-.Ltmp2804:
+	jae	.Ltmp2554
+.Ltmp2554:
 	pause
 	cmpw	%si, (%rdx)
-	jne	.Ltmp2803
-.Ltmp2802:
+	jne	.Ltmp2553
+.Ltmp2552:
 	btq	$25, %rsi
-	jae	.Ltmp2805
+	jae	.Ltmp2555
 	orw	$1, 4(%rdx)
-.Ltmp2805:
+.Ltmp2555:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rdx
+	movq	152(%rax), %rdx
 	movq	(%rcx), %rcx
-	movq	%rcx, 88(%rax)
+	movq	%rcx, 80(%rax)
 	testq	%rdx, %rdx
-	je	.LBB323_9
+	je	.LBB319_9
 # BB#8:
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2806
+	jae	.Ltmp2556
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2806:
+.Ltmp2556:
 
 	#NO_APP
-	jmp	.LBB323_9
-.LBB323_6:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB319_9
+.LBB319_6:                              # %LockSpinlock.exit.i.thread
 	movq	(%rcx), %rcx
-	movq	%rcx, 88(%rax)
-.LBB323_9:                              # %SavePreviousThread.exit
+	movq	%rcx, 80(%rax)
+.LBB319_9:                              # %SavePreviousThread.exit
 	movq	thds, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB323_10
+	je	.LBB319_10
 # BB#11:                                # %LockSpinlock.exit.i.3
 	xorl	%edx, %edx
 	#APP
@@ -39380,56 +36561,56 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2807
-.Ltmp2808:
+	je	.Ltmp2557
+.Ltmp2558:
 	btq	$25, %rdx
-	jae	.Ltmp2809
-.Ltmp2809:
+	jae	.Ltmp2559
+.Ltmp2559:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2808
-.Ltmp2807:
+	jne	.Ltmp2558
+.Ltmp2557:
 	btq	$25, %rdx
-	jae	.Ltmp2810
+	jae	.Ltmp2560
 	orw	$1, 4(%rax)
-.Ltmp2810:
+.Ltmp2560:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_13
+	je	.LBB319_13
 # BB#12:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2811
+	jae	.Ltmp2561
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2811:
+.Ltmp2561:
 
 	#NO_APP
-	jmp	.LBB323_13
-.LBB323_10:                             # %LockSpinlock.exit.i.3.thread
+	jmp	.LBB319_13
+.LBB319_10:                             # %LockSpinlock.exit.i.3.thread
 	movq	32(%rcx), %rax
-.LBB323_13:                             # %List_Length.exit
+.LBB319_13:                             # %List_Length.exit
 	testq	%rax, %rax
-	je	.LBB323_15
+	je	.LBB319_15
 # BB#14:
 	movq	coreState, %rax
 	movq	(%rax), %rdi
 	callq	GetNextThread
 	movq	coreState, %rcx
 	movq	%rax, (%rcx)
-.LBB323_15:
+.LBB319_15:
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB323_16
+	je	.LBB319_16
 # BB#17:                                # %LockSpinlock.exit7
 	xorl	%edx, %edx
 	#APP
@@ -39442,60 +36623,60 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2812
-.Ltmp2813:
+	je	.Ltmp2562
+.Ltmp2563:
 	btq	$25, %rdx
-	jae	.Ltmp2814
-.Ltmp2814:
+	jae	.Ltmp2564
+.Ltmp2564:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2813
-.Ltmp2812:
+	jne	.Ltmp2563
+.Ltmp2562:
 	btq	$25, %rdx
-	jae	.Ltmp2815
+	jae	.Ltmp2565
 	orw	$1, 4(%rax)
-.Ltmp2815:
+.Ltmp2565:
 	cli
 
 	#NO_APP
-	movq	152(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	128(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_19
+	je	.LBB319_19
 # BB#18:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2816
+	jae	.Ltmp2566
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2816:
+.Ltmp2566:
 
 	#NO_APP
-	jmp	.LBB323_19
-.LBB323_16:                             # %LockSpinlock.exit7.thread
-	movq	152(%rcx), %rax
-.LBB323_19:                             # %RestoreFPUState.exit
+	jmp	.LBB319_19
+.LBB319_16:                             # %LockSpinlock.exit7.thread
+	movq	128(%rcx), %rax
+.LBB319_19:                             # %RestoreFPUState.exit
 	#APP
 	fxrstor64	(%rax)
 	#NO_APP
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	104(%rax), %rax
+	movq	48(%rax), %rax
 	movq	coreLocalData, %rcx
 	movq	%rax, 78(%rcx)
 	movq	coreState, %rdx
 	movq	(%rdx), %rax
-	movq	96(%rax), %rax
+	movq	64(%rax), %rax
 	movq	k_stack_info, %rcx
 	testq	%rcx, %rcx
-	jne	.LBB323_27
+	jne	.LBB319_27
 # BB#20:
 	movq	vmem_lock, %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_22
+	je	.LBB319_22
 # BB#21:
 	xorl	%edx, %edx
 	#APP
@@ -39508,58 +36689,58 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2817
-.Ltmp2818:
+	je	.Ltmp2567
+.Ltmp2568:
 	btq	$25, %rdx
-	jae	.Ltmp2819
-.Ltmp2819:
+	jae	.Ltmp2569
+.Ltmp2569:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2818
-.Ltmp2817:
+	jne	.Ltmp2568
+.Ltmp2567:
 	btq	$25, %rdx
-	jae	.Ltmp2820
+	jae	.Ltmp2570
 	orw	$1, 4(%rcx)
-.Ltmp2820:
+.Ltmp2570:
 	cli
 
 	#NO_APP
-.LBB323_22:                             # %LockSpinlock.exit.i.i
+.LBB319_22:                             # %LockSpinlock.exit.i.i
 	movq	coreLocalSpace, %rdx
 	xorl	%ecx, %ecx
 	cmpq	$8, %rdx
-	jb	.LBB323_24
+	jb	.LBB319_24
 # BB#23:
 	movl	$8192, %ecx             # imm = 0x2000
 	subq	%rdx, %rcx
 	addq	virtMemData, %rcx
 	addq	$-8, %rdx
 	movq	%rdx, coreLocalSpace
-.LBB323_24:                             # %VirtMemMan_AllocCoreLocalData.exit.i.i
+.LBB319_24:                             # %VirtMemMan_AllocCoreLocalData.exit.i.i
 	movq	vmem_lock, %rdx
 	testq	%rdx, %rdx
-	je	.LBB323_26
+	je	.LBB319_26
 # BB#25:
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2821
+	jae	.Ltmp2571
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2821:
+.Ltmp2571:
 
 	#NO_APP
-.LBB323_26:                             # %AllocateAPLSMemory.exit.i
+.LBB319_26:                             # %AllocateAPLSMemory.exit.i
 	movq	%rcx, k_stack_info
 	movq	coreState, %rdx
-.LBB323_27:                             # %SetKernelStack.exit
+.LBB319_27:                             # %SetKernelStack.exit
 	movq	%rax, (%rcx)
 	movq	(%rdx), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB323_28
+	je	.LBB319_28
 # BB#29:                                # %LockSpinlock.exit11
 	xorl	%edx, %edx
 	#APP
@@ -39572,45 +36753,45 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2822
-.Ltmp2823:
+	je	.Ltmp2572
+.Ltmp2573:
 	btq	$25, %rdx
-	jae	.Ltmp2824
-.Ltmp2824:
+	jae	.Ltmp2574
+.Ltmp2574:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2823
-.Ltmp2822:
+	jne	.Ltmp2573
+.Ltmp2572:
 	btq	$25, %rdx
-	jae	.Ltmp2825
+	jae	.Ltmp2575
 	orw	$1, 4(%rax)
-.Ltmp2825:
+.Ltmp2575:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_31
+	je	.LBB319_31
 # BB#30:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2826
+	jae	.Ltmp2576
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2826:
+.Ltmp2576:
 
 	#NO_APP
-	jmp	.LBB323_31
-.LBB323_28:                             # %LockSpinlock.exit11.thread
-	movq	16(%rcx), %rax
-.LBB323_31:                             # %UnlockSpinlock.exit13
-	movq	488(%rax), %rcx
+	jmp	.LBB319_31
+.LBB319_28:                             # %LockSpinlock.exit11.thread
+	movq	8(%rcx), %rax
+.LBB319_31:                             # %UnlockSpinlock.exit13
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_32
+	je	.LBB319_32
 # BB#33:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
@@ -39623,46 +36804,46 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2827
-.Ltmp2828:
+	je	.Ltmp2577
+.Ltmp2578:
 	btq	$25, %rdx
-	jae	.Ltmp2829
-.Ltmp2829:
+	jae	.Ltmp2579
+.Ltmp2579:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2828
-.Ltmp2827:
+	jne	.Ltmp2578
+.Ltmp2577:
 	btq	$25, %rdx
-	jae	.Ltmp2830
+	jae	.Ltmp2580
 	orw	$1, 4(%rcx)
-.Ltmp2830:
+.Ltmp2580:
 	cli
 
 	#NO_APP
-	movq	456(%rax), %rdi
-	movq	488(%rax), %rax
+	movq	272(%rax), %rdi
+	movq	288(%rax), %rax
 	testq	%rax, %rax
-	je	.LBB323_35
+	je	.LBB319_35
 # BB#34:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2831
+	jae	.Ltmp2581
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2831:
+.Ltmp2581:
 
 	#NO_APP
-	jmp	.LBB323_35
-.LBB323_32:                             # %LockSpinlock.exit15.thread
-	movq	456(%rax), %rdi
-.LBB323_35:                             # %UnlockSpinlock.exit17
+	jmp	.LBB319_35
+.LBB319_32:                             # %LockSpinlock.exit15.thread
+	movq	272(%rax), %rdi
+.LBB319_35:                             # %UnlockSpinlock.exit17
 	callq	SetActiveVirtualMemoryInstance
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	160(%rax), %rsi
+	movq	136(%rax), %rsi
 	movq	(%rsi), %rax
 	movq	%rax, %rdx
 	shrq	$32, %rdx
@@ -39679,15 +36860,15 @@ TaskSwitch:                             # @TaskSwitch
 	#NO_APP
 	movq	coreState, %rbx
 	movq	(%rbx), %rax
-	cmpl	$1, 32(%rax)
-	jne	.LBB323_44
+	cmpl	$1, 24(%rax)
+	jne	.LBB319_44
 # BB#36:                                # %memset.exit.i
 	movq	regs_saved, %rdi
 	xorl	%esi, %esi
 	movl	$184, %edx
 	callq	memset
 	cmpl	$32, %r14d
-	jb	.LBB323_39
+	jb	.LBB319_39
 # BB#37:
 	movl	%r14d, %edx
 	shrl	$3, %edx
@@ -39702,16 +36883,16 @@ TaskSwitch:                             # @TaskSwitch
 	movb	%r14b, %cl
 	shrl	%cl, %edi
 	testl	%edi, %edi
-	je	.LBB323_39
+	je	.LBB319_39
 # BB#38:
 	movq	(%rax), %rax
 	movl	$0, 176(%rax)
 	movq	coreState, %rbx
-.LBB323_39:                             # %HandleInterruptNoReturn.exit
+.LBB319_39:                             # %HandleInterruptNoReturn.exit
 	movq	(%rbx), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB323_40
+	je	.LBB319_40
 # BB#41:                                # %LockSpinlock.exit.i.19
 	xorl	%edx, %edx
 	#APP
@@ -39724,39 +36905,39 @@ TaskSwitch:                             # @TaskSwitch
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2832
-.Ltmp2833:
+	je	.Ltmp2582
+.Ltmp2583:
 	btq	$25, %rdx
-	jae	.Ltmp2834
-.Ltmp2834:
+	jae	.Ltmp2584
+.Ltmp2584:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2833
-.Ltmp2832:
+	jne	.Ltmp2583
+.Ltmp2582:
 	btq	$25, %rdx
-	jae	.Ltmp2835
+	jae	.Ltmp2585
 	orw	$1, 4(%rax)
-.Ltmp2835:
+.Ltmp2585:
 	cli
 
 	#NO_APP
-	movq	88(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	80(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB323_43
+	je	.LBB319_43
 # BB#42:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2836
+	jae	.Ltmp2586
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2836:
+.Ltmp2586:
 
 	#NO_APP
-.LBB323_43:                             # %SwitchToThread.exit
+.LBB319_43:                             # %SwitchToThread.exit
 	#APP
 	movq	%rax, %rsp
 	popq	%r15
@@ -39778,20 +36959,20 @@ TaskSwitch:                             # @TaskSwitch
 	iretq
 
 	#NO_APP
-	jmp	.LBB323_49
-.LBB323_44:
+	jmp	.LBB319_49
+.LBB319_44:
 	movq	(%rbx), %rax
-	cmpl	$0, 32(%rax)
-	jne	.LBB323_49
+	cmpl	$0, 24(%rax)
+	jne	.LBB319_49
 # BB#45:                                # %memset.exit.i.26
 	movq	(%rbx), %rax
-	movl	$1, 32(%rax)
+	movl	$1, 24(%rax)
 	movq	regs_saved, %rdi
 	xorl	%esi, %esi
 	movl	$184, %edx
 	callq	memset
 	cmpl	$32, %r14d
-	jb	.LBB323_48
+	jb	.LBB319_48
 # BB#46:
 	movl	%r14d, %edx
 	shrl	$3, %edx
@@ -39806,15 +36987,15 @@ TaskSwitch:                             # @TaskSwitch
 	movb	%r14b, %cl
 	shrl	%cl, %edi
 	testl	%edi, %edi
-	je	.LBB323_48
+	je	.LBB319_48
 # BB#47:
 	movq	(%rax), %rax
 	movl	$0, 176(%rax)
 	movq	coreState, %rbx
-.LBB323_48:                             # %HandleInterruptNoReturn.exit29
+.LBB319_48:                             # %HandleInterruptNoReturn.exit29
 	movq	(%rbx), %rcx
-	movq	24(%rcx), %rax
-	movq	96(%rcx), %rbx
+	movq	16(%rcx), %rax
+	movq	64(%rcx), %rbx
 	#APP
 	movq	%rbx, %rsp
 	pushq	%rax
@@ -39835,9 +37016,9 @@ TaskSwitch:                             # @TaskSwitch
 	sti
 	retq
 	#NO_APP
-	jmp	.LBB323_49
-.LBB323_40:                             # %LockSpinlock.exit.i.19.thread
-	movq	88(%rcx), %rax
+	jmp	.LBB319_49
+.LBB319_40:                             # %LockSpinlock.exit.i.19.thread
+	movq	80(%rcx), %rax
 	#APP
 	movq	%rax, %rsp
 	popq	%r15
@@ -39859,13 +37040,13 @@ TaskSwitch:                             # @TaskSwitch
 	iretq
 
 	#NO_APP
-.LBB323_49:
+.LBB319_49:
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end323:
-	.size	TaskSwitch, .Lfunc_end323-TaskSwitch
+.Lfunc_end319:
+	.size	TaskSwitch, .Lfunc_end319-TaskSwitch
 	.cfi_endproc
 
 	.globl	SetPeriodicPreemptVector
@@ -39875,26 +37056,26 @@ SetPeriodicPreemptVector:               # @SetPeriodicPreemptVector
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2837:
+.Ltmp2587:
 	.cfi_def_cfa_offset 16
-.Ltmp2838:
+.Ltmp2588:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2839:
+.Ltmp2589:
 	.cfi_def_cfa_register %rbp
 	cmpl	$255, %edi
-	ja	.LBB324_2
+	ja	.LBB320_2
 # BB#1:
 	movl	%edi, %eax
 	movq	$TaskSwitch, intHandlers(,%rax,8)
 	movzbl	%al, %eax
 	movq	$ShadowInterruptHandler, idt_handler_calls(,%rax,8)
-.LBB324_2:                              # %RegisterInterruptHandler.exit
+.LBB320_2:                              # %RegisterInterruptHandler.exit
 	movl	%edi, preempt_vector
 	popq	%rbp
 	retq
-.Lfunc_end324:
-	.size	SetPeriodicPreemptVector, .Lfunc_end324-SetPeriodicPreemptVector
+.Lfunc_end320:
+	.size	SetPeriodicPreemptVector, .Lfunc_end320-SetPeriodicPreemptVector
 	.cfi_endproc
 
 	.globl	SwitchThread
@@ -39904,16 +37085,16 @@ SwitchThread:                           # @SwitchThread
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2840:
+.Ltmp2590:
 	.cfi_def_cfa_offset 16
-.Ltmp2841:
+.Ltmp2591:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2842:
+.Ltmp2592:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp2843:
+.Ltmp2593:
 	.cfi_offset %rbx, -24
 	xorl	%edi, %edi
 	callq	GetNextThread
@@ -39921,9 +37102,9 @@ SwitchThread:                           # @SwitchThread
 	movq	%rax, (%rcx)
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB325_1
+	je	.LBB321_1
 # BB#2:                                 # %LockSpinlock.exit
 	xorl	%edx, %edx
 	#APP
@@ -39936,60 +37117,60 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2844
-.Ltmp2845:
+	je	.Ltmp2594
+.Ltmp2595:
 	btq	$25, %rdx
-	jae	.Ltmp2846
-.Ltmp2846:
+	jae	.Ltmp2596
+.Ltmp2596:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2845
-.Ltmp2844:
+	jne	.Ltmp2595
+.Ltmp2594:
 	btq	$25, %rdx
-	jae	.Ltmp2847
+	jae	.Ltmp2597
 	orw	$1, 4(%rax)
-.Ltmp2847:
+.Ltmp2597:
 	cli
 
 	#NO_APP
-	movq	152(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	128(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_4
+	je	.LBB321_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2848
+	jae	.Ltmp2598
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2848:
+.Ltmp2598:
 
 	#NO_APP
-	jmp	.LBB325_4
-.LBB325_1:                              # %LockSpinlock.exit.thread
-	movq	152(%rcx), %rax
-.LBB325_4:                              # %RestoreFPUState.exit
+	jmp	.LBB321_4
+.LBB321_1:                              # %LockSpinlock.exit.thread
+	movq	128(%rcx), %rax
+.LBB321_4:                              # %RestoreFPUState.exit
 	#APP
 	fxrstor64	(%rax)
 	#NO_APP
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	104(%rax), %rax
+	movq	48(%rax), %rax
 	movq	coreLocalData, %rcx
 	movq	%rax, 78(%rcx)
 	movq	coreState, %rdx
 	movq	(%rdx), %rax
-	movq	96(%rax), %rax
+	movq	64(%rax), %rax
 	movq	k_stack_info, %rcx
 	testq	%rcx, %rcx
-	jne	.LBB325_12
+	jne	.LBB321_12
 # BB#5:
 	movq	vmem_lock, %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_7
+	je	.LBB321_7
 # BB#6:
 	xorl	%edx, %edx
 	#APP
@@ -40002,58 +37183,58 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2849
-.Ltmp2850:
+	je	.Ltmp2599
+.Ltmp2600:
 	btq	$25, %rdx
-	jae	.Ltmp2851
-.Ltmp2851:
+	jae	.Ltmp2601
+.Ltmp2601:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2850
-.Ltmp2849:
+	jne	.Ltmp2600
+.Ltmp2599:
 	btq	$25, %rdx
-	jae	.Ltmp2852
+	jae	.Ltmp2602
 	orw	$1, 4(%rcx)
-.Ltmp2852:
+.Ltmp2602:
 	cli
 
 	#NO_APP
-.LBB325_7:                              # %LockSpinlock.exit.i.i
+.LBB321_7:                              # %LockSpinlock.exit.i.i
 	movq	coreLocalSpace, %rdx
 	xorl	%ecx, %ecx
 	cmpq	$8, %rdx
-	jb	.LBB325_9
+	jb	.LBB321_9
 # BB#8:
 	movl	$8192, %ecx             # imm = 0x2000
 	subq	%rdx, %rcx
 	addq	virtMemData, %rcx
 	addq	$-8, %rdx
 	movq	%rdx, coreLocalSpace
-.LBB325_9:                              # %VirtMemMan_AllocCoreLocalData.exit.i.i
+.LBB321_9:                              # %VirtMemMan_AllocCoreLocalData.exit.i.i
 	movq	vmem_lock, %rdx
 	testq	%rdx, %rdx
-	je	.LBB325_11
+	je	.LBB321_11
 # BB#10:
 	#APP
 	mfence
 	lock
 	incw	(%rdx)
 	btw	$0, 4(%rdx)
-	jae	.Ltmp2853
+	jae	.Ltmp2603
 	sti
 	movw	$0, 4(%rdx)
-.Ltmp2853:
+.Ltmp2603:
 
 	#NO_APP
-.LBB325_11:                             # %AllocateAPLSMemory.exit.i
+.LBB321_11:                             # %AllocateAPLSMemory.exit.i
 	movq	%rcx, k_stack_info
 	movq	coreState, %rdx
-.LBB325_12:                             # %SetKernelStack.exit
+.LBB321_12:                             # %SetKernelStack.exit
 	movq	%rax, (%rcx)
 	movq	(%rdx), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB325_13
+	je	.LBB321_13
 # BB#14:                                # %LockSpinlock.exit3
 	xorl	%edx, %edx
 	#APP
@@ -40066,45 +37247,45 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2854
-.Ltmp2855:
+	je	.Ltmp2604
+.Ltmp2605:
 	btq	$25, %rdx
-	jae	.Ltmp2856
-.Ltmp2856:
+	jae	.Ltmp2606
+.Ltmp2606:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2855
-.Ltmp2854:
+	jne	.Ltmp2605
+.Ltmp2604:
 	btq	$25, %rdx
-	jae	.Ltmp2857
+	jae	.Ltmp2607
 	orw	$1, 4(%rax)
-.Ltmp2857:
+.Ltmp2607:
 	cli
 
 	#NO_APP
-	movq	16(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	8(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_16
+	je	.LBB321_16
 # BB#15:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2858
+	jae	.Ltmp2608
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2858:
+.Ltmp2608:
 
 	#NO_APP
-	jmp	.LBB325_16
-.LBB325_13:                             # %LockSpinlock.exit3.thread
-	movq	16(%rcx), %rax
-.LBB325_16:                             # %UnlockSpinlock.exit5
-	movq	488(%rax), %rcx
+	jmp	.LBB321_16
+.LBB321_13:                             # %LockSpinlock.exit3.thread
+	movq	8(%rcx), %rax
+.LBB321_16:                             # %UnlockSpinlock.exit5
+	movq	288(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_17
+	je	.LBB321_17
 # BB#18:                                # %LockSpinlock.exit7
 	xorl	%edx, %edx
 	#APP
@@ -40117,46 +37298,46 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2859
-.Ltmp2860:
+	je	.Ltmp2609
+.Ltmp2610:
 	btq	$25, %rdx
-	jae	.Ltmp2861
-.Ltmp2861:
+	jae	.Ltmp2611
+.Ltmp2611:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2860
-.Ltmp2859:
+	jne	.Ltmp2610
+.Ltmp2609:
 	btq	$25, %rdx
-	jae	.Ltmp2862
+	jae	.Ltmp2612
 	orw	$1, 4(%rcx)
-.Ltmp2862:
+.Ltmp2612:
 	cli
 
 	#NO_APP
-	movq	456(%rax), %rdi
-	movq	488(%rax), %rax
+	movq	272(%rax), %rdi
+	movq	288(%rax), %rax
 	testq	%rax, %rax
-	je	.LBB325_20
+	je	.LBB321_20
 # BB#19:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2863
+	jae	.Ltmp2613
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2863:
+.Ltmp2613:
 
 	#NO_APP
-	jmp	.LBB325_20
-.LBB325_17:                             # %LockSpinlock.exit7.thread
-	movq	456(%rax), %rdi
-.LBB325_20:                             # %UnlockSpinlock.exit9
+	jmp	.LBB321_20
+.LBB321_17:                             # %LockSpinlock.exit7.thread
+	movq	272(%rax), %rdi
+.LBB321_20:                             # %UnlockSpinlock.exit9
 	callq	SetActiveVirtualMemoryInstance
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	160(%rax), %rsi
+	movq	136(%rax), %rsi
 	movq	(%rsi), %rax
 	movq	%rax, %rdx
 	shrq	$32, %rdx
@@ -40173,9 +37354,9 @@ SwitchThread:                           # @SwitchThread
 	#NO_APP
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_21
+	je	.LBB321_21
 # BB#22:                                # %LockSpinlock.exit11
 	xorl	%edx, %edx
 	#APP
@@ -40188,50 +37369,50 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2864
-.Ltmp2865:
+	je	.Ltmp2614
+.Ltmp2615:
 	btq	$25, %rdx
-	jae	.Ltmp2866
-.Ltmp2866:
+	jae	.Ltmp2616
+.Ltmp2616:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2865
-.Ltmp2864:
+	jne	.Ltmp2615
+.Ltmp2614:
 	btq	$25, %rdx
-	jae	.Ltmp2867
+	jae	.Ltmp2617
 	orw	$1, 4(%rcx)
-.Ltmp2867:
+.Ltmp2617:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	32(%rax), %eax
+	movq	152(%rax), %rcx
+	movl	24(%rax), %eax
 	testq	%rcx, %rcx
-	je	.LBB325_24
+	je	.LBB321_24
 # BB#23:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2868
+	jae	.Ltmp2618
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2868:
+.Ltmp2618:
 
 	#NO_APP
-	jmp	.LBB325_24
-.LBB325_21:                             # %LockSpinlock.exit11.thread
-	movl	32(%rax), %eax
-.LBB325_24:                             # %UnlockSpinlock.exit13
+	jmp	.LBB321_24
+.LBB321_21:                             # %LockSpinlock.exit11.thread
+	movl	24(%rax), %eax
+.LBB321_24:                             # %UnlockSpinlock.exit13
 	testl	%eax, %eax
-	jne	.LBB325_30
+	jne	.LBB321_30
 # BB#25:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB325_26
+	je	.LBB321_26
 # BB#27:                                # %LockSpinlock.exit15
 	xorl	%edx, %edx
 	#APP
@@ -40244,46 +37425,46 @@ SwitchThread:                           # @SwitchThread
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2869
-.Ltmp2870:
+	je	.Ltmp2619
+.Ltmp2620:
 	btq	$25, %rdx
-	jae	.Ltmp2871
-.Ltmp2871:
+	jae	.Ltmp2621
+.Ltmp2621:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2870
-.Ltmp2869:
+	jne	.Ltmp2620
+.Ltmp2619:
 	btq	$25, %rdx
-	jae	.Ltmp2872
+	jae	.Ltmp2622
 	orw	$1, 4(%rcx)
-.Ltmp2872:
+.Ltmp2622:
 	cli
 
 	#NO_APP
-	movq	168(%rax), %rcx
-	movl	$1, 32(%rax)
+	movq	152(%rax), %rcx
+	movl	$1, 24(%rax)
 	testq	%rcx, %rcx
-	je	.LBB325_29
+	je	.LBB321_29
 # BB#28:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2873
+	jae	.Ltmp2623
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2873:
+.Ltmp2623:
 
 	#NO_APP
-	jmp	.LBB325_29
-.LBB325_26:                             # %LockSpinlock.exit15.thread
-	movl	$1, 32(%rax)
-.LBB325_29:                             # %UnlockSpinlock.exit17
+	jmp	.LBB321_29
+.LBB321_26:                             # %LockSpinlock.exit15.thread
+	movl	$1, 24(%rax)
+.LBB321_29:                             # %UnlockSpinlock.exit17
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	24(%rcx), %rax
-	movq	96(%rcx), %rbx
+	movq	16(%rcx), %rax
+	movq	64(%rcx), %rbx
 	#APP
 	movq	%rbx, %rsp
 	pushq	%rax
@@ -40304,7 +37485,7 @@ SwitchThread:                           # @SwitchThread
 	sti
 	retq
 	#NO_APP
-.LBB325_30:
+.LBB321_30:
 	#APP
 	cli
 	hlt
@@ -40313,8 +37494,8 @@ SwitchThread:                           # @SwitchThread
 	popq	%rbx
 	popq	%rbp
 	retq
-.Lfunc_end325:
-	.size	SwitchThread, .Lfunc_end325-SwitchThread
+.Lfunc_end321:
+	.size	SwitchThread, .Lfunc_end321-SwitchThread
 	.cfi_endproc
 
 	.globl	CoreUpdate
@@ -40324,19 +37505,19 @@ CoreUpdate:                             # @CoreUpdate
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2874:
+.Ltmp2624:
 	.cfi_def_cfa_offset 16
-.Ltmp2875:
+.Ltmp2625:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2876:
+.Ltmp2626:
 	.cfi_def_cfa_register %rbp
 	.align	16, 0x90
-.LBB326_1:                              # =>This Inner Loop Header: Depth=1
+.LBB322_1:                              # =>This Inner Loop Header: Depth=1
 	callq	SwitchThread
-	jmp	.LBB326_1
-.Lfunc_end326:
-	.size	CoreUpdate, .Lfunc_end326-CoreUpdate
+	jmp	.LBB322_1
+.Lfunc_end322:
+	.size	CoreUpdate, .Lfunc_end322-CoreUpdate
 	.cfi_endproc
 
 	.globl	RegisterCore
@@ -40346,24 +37527,24 @@ RegisterCore:                           # @RegisterCore
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2877:
+.Ltmp2627:
 	.cfi_def_cfa_offset 16
-.Ltmp2878:
+.Ltmp2628:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2879:
+.Ltmp2629:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp2880:
+.Ltmp2630:
 	.cfi_offset %rbx, -48
-.Ltmp2881:
+.Ltmp2631:
 	.cfi_offset %r12, -40
-.Ltmp2882:
+.Ltmp2632:
 	.cfi_offset %r14, -32
-.Ltmp2883:
+.Ltmp2633:
 	.cfi_offset %r15, -24
 	movq	%rsi, %r15
 	movl	%edi, %r14d
@@ -40377,11 +37558,11 @@ RegisterCore:                           # @RegisterCore
 	movl	$24, %edi
 	callq	kmalloc
 	testq	%rax, %rax
-	je	.LBB327_11
+	je	.LBB323_11
 # BB#1:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB327_3
+	je	.LBB323_3
 # BB#2:
 	xorl	%edx, %edx
 	#APP
@@ -40394,70 +37575,70 @@ RegisterCore:                           # @RegisterCore
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2884
-.Ltmp2885:
+	je	.Ltmp2634
+.Ltmp2635:
 	btq	$25, %rdx
-	jae	.Ltmp2886
-.Ltmp2886:
+	jae	.Ltmp2636
+.Ltmp2636:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2885
-.Ltmp2884:
+	jne	.Ltmp2635
+.Ltmp2634:
 	btq	$25, %rdx
-	jae	.Ltmp2887
+	jae	.Ltmp2637
 	orw	$1, 4(%rcx)
-.Ltmp2887:
+.Ltmp2637:
 	cli
 
 	#NO_APP
-.LBB327_3:                              # %LockSpinlock.exit.i
+.LBB323_3:                              # %LockSpinlock.exit.i
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r12, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB327_5
+	je	.LBB323_5
 # BB#4:
 	movq	%rax, 8(%rcx)
-.LBB327_5:
+.LBB323_5:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB327_7
+	jne	.LBB323_7
 # BB#6:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB327_7:
+.LBB323_7:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB327_9
+	jne	.LBB323_9
 # BB#8:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB327_9:
+.LBB323_9:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	testq	%rax, %rax
-	je	.LBB327_11
+	je	.LBB323_11
 # BB#10:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2888
+	jae	.Ltmp2638
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2888:
+.Ltmp2638:
 
 	#NO_APP
-.LBB327_11:                             # %List_AddEntry.exit
+.LBB323_11:                             # %List_AddEntry.exit
 	movq	coreState, %rax
 	testq	%rax, %rax
-	jne	.LBB327_19
+	jne	.LBB323_19
 # BB#12:
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB327_14
+	je	.LBB323_14
 # BB#13:
 	xorl	%ecx, %ecx
 	#APP
@@ -40470,52 +37651,52 @@ RegisterCore:                           # @RegisterCore
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp2889
-.Ltmp2890:
+	je	.Ltmp2639
+.Ltmp2640:
 	btq	$25, %rcx
-	jae	.Ltmp2891
-.Ltmp2891:
+	jae	.Ltmp2641
+.Ltmp2641:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp2890
-.Ltmp2889:
+	jne	.Ltmp2640
+.Ltmp2639:
 	btq	$25, %rcx
-	jae	.Ltmp2892
+	jae	.Ltmp2642
 	orw	$1, 4(%rax)
-.Ltmp2892:
+.Ltmp2642:
 	cli
 
 	#NO_APP
-.LBB327_14:                             # %LockSpinlock.exit.i.2
+.LBB323_14:                             # %LockSpinlock.exit.i.2
 	movq	coreLocalSpace, %rcx
 	xorl	%eax, %eax
 	cmpq	$16, %rcx
-	jb	.LBB327_16
+	jb	.LBB323_16
 # BB#15:
 	movl	$8192, %eax             # imm = 0x2000
 	subq	%rcx, %rax
 	addq	virtMemData, %rax
 	addq	$-16, %rcx
 	movq	%rcx, coreLocalSpace
-.LBB327_16:                             # %VirtMemMan_AllocCoreLocalData.exit.i
+.LBB323_16:                             # %VirtMemMan_AllocCoreLocalData.exit.i
 	movq	vmem_lock, %rcx
 	testq	%rcx, %rcx
-	je	.LBB327_18
+	je	.LBB323_18
 # BB#17:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2893
+	jae	.Ltmp2643
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2893:
+.Ltmp2643:
 
 	#NO_APP
-.LBB327_18:                             # %AllocateAPLSMemory.exit
+.LBB323_18:                             # %AllocateAPLSMemory.exit
 	movq	%rax, coreState
-.LBB327_19:
+.LBB323_19:
 	movq	$0, (%rax)
 	movq	coreState, %rax
 	movl	%r14d, 8(%rax)
@@ -40525,8 +37706,8 @@ RegisterCore:                           # @RegisterCore
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end327:
-	.size	RegisterCore, .Lfunc_end327-RegisterCore
+.Lfunc_end323:
+	.size	RegisterCore, .Lfunc_end323-RegisterCore
 	.cfi_endproc
 
 	.globl	GetCoreLoad
@@ -40536,17 +37717,17 @@ GetCoreLoad:                            # @GetCoreLoad
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2894:
+.Ltmp2644:
 	.cfi_def_cfa_offset 16
-.Ltmp2895:
+.Ltmp2645:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2896:
+.Ltmp2646:
 	.cfi_def_cfa_register %rbp
 	movq	cores, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB328_1
+	je	.LBB324_1
 # BB#2:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
@@ -40559,57 +37740,57 @@ GetCoreLoad:                            # @GetCoreLoad
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2897
-.Ltmp2898:
+	je	.Ltmp2647
+.Ltmp2648:
 	btq	$25, %rdx
-	jae	.Ltmp2899
-.Ltmp2899:
+	jae	.Ltmp2649
+.Ltmp2649:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2898
-.Ltmp2897:
+	jne	.Ltmp2648
+.Ltmp2647:
 	btq	$25, %rdx
-	jae	.Ltmp2900
+	jae	.Ltmp2650
 	orw	$1, 4(%rax)
-.Ltmp2900:
+.Ltmp2650:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB328_4
+	je	.LBB324_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2901
+	jae	.Ltmp2651
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2901:
+.Ltmp2651:
 
 	#NO_APP
-	jmp	.LBB328_4
-.LBB328_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB324_4
+.LBB324_1:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
-.LBB328_4:                              # %List_Length.exit
+.LBB324_4:                              # %List_Length.exit
 	cmpl	%edi, %eax
-	jge	.LBB328_6
+	jge	.LBB324_6
 # BB#5:
 	movl	$-1, %eax
 	popq	%rbp
 	retq
-.LBB328_6:
+.LBB324_6:
 	movq	cores, %rax
 	movslq	%edi, %rsi
 	movq	%rax, %rdi
 	callq	List_EntryAt
 	popq	%rbp
 	jmpq	*8(%rax)                # TAILCALL
-.Lfunc_end328:
-	.size	GetCoreLoad, .Lfunc_end328-GetCoreLoad
+.Lfunc_end324:
+	.size	GetCoreLoad, .Lfunc_end324-GetCoreLoad
 	.cfi_endproc
 
 	.globl	PWM_Initialize
@@ -40619,18 +37800,18 @@ PWM_Initialize:                         # @PWM_Initialize
 	.cfi_startproc
 # BB#0:                                 # %CreateSpinlock.exit
 	pushq	%rbp
-.Ltmp2902:
+.Ltmp2652:
 	.cfi_def_cfa_offset 16
-.Ltmp2903:
+.Ltmp2653:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2904:
+.Ltmp2654:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp2905:
+.Ltmp2655:
 	.cfi_offset %rbx, -32
-.Ltmp2906:
+.Ltmp2656:
 	.cfi_offset %r14, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -40662,7 +37843,7 @@ PWM_Initialize:                         # @PWM_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB329_1
+	je	.LBB325_1
 # BB#2:
 	xorl	%ecx, %ecx
 	#APP
@@ -40675,19 +37856,19 @@ PWM_Initialize:                         # @PWM_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp2907
-.Ltmp2908:
+	je	.Ltmp2657
+.Ltmp2658:
 	btq	$25, %rcx
-	jae	.Ltmp2909
-.Ltmp2909:
+	jae	.Ltmp2659
+.Ltmp2659:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp2908
-.Ltmp2907:
+	jne	.Ltmp2658
+.Ltmp2657:
 	btq	$25, %rcx
-	jae	.Ltmp2910
+	jae	.Ltmp2660
 	orw	$1, 4(%r14)
-.Ltmp2910:
+.Ltmp2660:
 	cli
 
 	#NO_APP
@@ -40702,28 +37883,28 @@ PWM_Initialize:                         # @PWM_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp2911
+	jae	.Ltmp2661
 	sti
 	movw	$0, 4(%r14)
-.Ltmp2911:
+.Ltmp2661:
 
 	#NO_APP
-	jmp	.LBB329_3
-.LBB329_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB325_3
+.LBB325_1:                              # %LockSpinlock.exit.i.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB329_3:                              # %List_Create.exit
+.LBB325_3:                              # %List_Create.exit
 	movq	%rax, pwm_data
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end329:
-	.size	PWM_Initialize, .Lfunc_end329-PWM_Initialize
+.Lfunc_end325:
+	.size	PWM_Initialize, .Lfunc_end325-PWM_Initialize
 	.cfi_endproc
 
 	.globl	PWM_RegisterStateChangeHandler
@@ -40733,18 +37914,18 @@ PWM_RegisterStateChangeHandler:         # @PWM_RegisterStateChangeHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2912:
+.Ltmp2662:
 	.cfi_def_cfa_offset 16
-.Ltmp2913:
+.Ltmp2663:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2914:
+.Ltmp2664:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp2915:
+.Ltmp2665:
 	.cfi_offset %rbx, -32
-.Ltmp2916:
+.Ltmp2666:
 	.cfi_offset %r14, -24
 	movq	%rdi, %r14
 	movq	pwm_data, %rbx
@@ -40752,11 +37933,11 @@ PWM_RegisterStateChangeHandler:         # @PWM_RegisterStateChangeHandler
 	callq	kmalloc
 	xorl	%ecx, %ecx
 	testq	%rax, %rax
-	je	.LBB330_11
+	je	.LBB326_11
 # BB#1:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB330_3
+	je	.LBB326_3
 # BB#2:
 	xorl	%edx, %edx
 	#APP
@@ -40769,71 +37950,71 @@ PWM_RegisterStateChangeHandler:         # @PWM_RegisterStateChangeHandler
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2917
-.Ltmp2918:
+	je	.Ltmp2667
+.Ltmp2668:
 	btq	$25, %rdx
-	jae	.Ltmp2919
-.Ltmp2919:
+	jae	.Ltmp2669
+.Ltmp2669:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2918
-.Ltmp2917:
+	jne	.Ltmp2668
+.Ltmp2667:
 	btq	$25, %rdx
-	jae	.Ltmp2920
+	jae	.Ltmp2670
 	orw	$1, 4(%rcx)
-.Ltmp2920:
+.Ltmp2670:
 	cli
 
 	#NO_APP
-.LBB330_3:                              # %LockSpinlock.exit.i
+.LBB326_3:                              # %LockSpinlock.exit.i
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r14, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB330_5
+	je	.LBB326_5
 # BB#4:
 	movq	%rax, 8(%rcx)
-.LBB330_5:
+.LBB326_5:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB330_7
+	jne	.LBB326_7
 # BB#6:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB330_7:
+.LBB326_7:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB330_9
+	jne	.LBB326_9
 # BB#8:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB330_9:
+.LBB326_9:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	movl	$1, %ecx
 	testq	%rax, %rax
-	je	.LBB330_11
+	je	.LBB326_11
 # BB#10:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2921
+	jae	.Ltmp2671
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2921:
+.Ltmp2671:
 
 	#NO_APP
-.LBB330_11:                             # %List_AddEntry.exit
+.LBB326_11:                             # %List_AddEntry.exit
 	movl	%ecx, %eax
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end330:
-	.size	PWM_RegisterStateChangeHandler, .Lfunc_end330-PWM_RegisterStateChangeHandler
+.Lfunc_end326:
+	.size	PWM_RegisterStateChangeHandler, .Lfunc_end326-PWM_RegisterStateChangeHandler
 	.cfi_endproc
 
 	.globl	PWM_UnregisterHandler
@@ -40843,28 +38024,28 @@ PWM_UnregisterHandler:                  # @PWM_UnregisterHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2922:
+.Ltmp2672:
 	.cfi_def_cfa_offset 16
-.Ltmp2923:
+.Ltmp2673:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2924:
+.Ltmp2674:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%rbx
 	pushq	%rax
-.Ltmp2925:
+.Ltmp2675:
 	.cfi_offset %rbx, -40
-.Ltmp2926:
+.Ltmp2676:
 	.cfi_offset %r14, -32
-.Ltmp2927:
+.Ltmp2677:
 	.cfi_offset %r15, -24
 	movq	%rdi, %r14
 	movq	pwm_data, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB331_1
+	je	.LBB327_1
 # BB#2:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
@@ -40877,67 +38058,67 @@ PWM_UnregisterHandler:                  # @PWM_UnregisterHandler
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2928
-.Ltmp2929:
+	je	.Ltmp2678
+.Ltmp2679:
 	btq	$25, %rdx
-	jae	.Ltmp2930
-.Ltmp2930:
+	jae	.Ltmp2680
+.Ltmp2680:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2929
-.Ltmp2928:
+	jne	.Ltmp2679
+.Ltmp2678:
 	btq	$25, %rdx
-	jae	.Ltmp2931
+	jae	.Ltmp2681
 	orw	$1, 4(%rax)
-.Ltmp2931:
+.Ltmp2681:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB331_4
+	je	.LBB327_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2932
+	jae	.Ltmp2682
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2932:
+.Ltmp2682:
 
 	#NO_APP
-	jmp	.LBB331_4
-.LBB331_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB327_4
+.LBB327_1:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
-.LBB331_4:                              # %List_Length.exit
+.LBB327_4:                              # %List_Length.exit
 	testq	%rax, %rax
-	je	.LBB331_13
+	je	.LBB327_13
 # BB#5:                                 # %.lr.ph
 	xorl	%r15d, %r15d
 	xorl	%ebx, %ebx
 	.align	16, 0x90
-.LBB331_6:                              # =>This Inner Loop Header: Depth=1
+.LBB327_6:                              # =>This Inner Loop Header: Depth=1
 	movq	pwm_data, %rdi
 	movq	%rbx, %rsi
 	callq	List_EntryAt
 	cmpq	%r14, %rax
-	jne	.LBB331_8
-# BB#7:                                 #   in Loop: Header=BB331_6 Depth=1
+	jne	.LBB327_8
+# BB#7:                                 #   in Loop: Header=BB327_6 Depth=1
 	movq	pwm_data, %rdi
 	movq	%rbx, %rsi
 	callq	List_Remove
 	decq	%rbx
-.LBB331_8:                              #   in Loop: Header=BB331_6 Depth=1
+.LBB327_8:                              #   in Loop: Header=BB327_6 Depth=1
 	incq	%rbx
 	movq	pwm_data, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB331_9
+	je	.LBB327_9
 # BB#10:                                # %LockSpinlock.exit.i.2
-                                        #   in Loop: Header=BB331_6 Depth=1
+                                        #   in Loop: Header=BB327_6 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -40948,56 +38129,56 @@ PWM_UnregisterHandler:                  # @PWM_UnregisterHandler
 	lock
 	xaddw	%r15w, 2(%rax)
 	cmpw	%r15w, (%rax)
-	je	.Ltmp2933
-.Ltmp2934:
+	je	.Ltmp2683
+.Ltmp2684:
 	btq	$25, %r15
-	jae	.Ltmp2935
-.Ltmp2935:
+	jae	.Ltmp2685
+.Ltmp2685:
 	pause
 	cmpw	%r15w, (%rax)
-	jne	.Ltmp2934
-.Ltmp2933:
+	jne	.Ltmp2684
+.Ltmp2683:
 	btq	$25, %r15
-	jae	.Ltmp2936
+	jae	.Ltmp2686
 	orw	$1, 4(%rax)
-.Ltmp2936:
+.Ltmp2686:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB331_12
-# BB#11:                                #   in Loop: Header=BB331_6 Depth=1
+	je	.LBB327_12
+# BB#11:                                #   in Loop: Header=BB327_6 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2937
+	jae	.Ltmp2687
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2937:
+.Ltmp2687:
 
 	#NO_APP
-	jmp	.LBB331_12
+	jmp	.LBB327_12
 	.align	16, 0x90
-.LBB331_9:                              # %LockSpinlock.exit.i.2.thread
-                                        #   in Loop: Header=BB331_6 Depth=1
+.LBB327_9:                              # %LockSpinlock.exit.i.2.thread
+                                        #   in Loop: Header=BB327_6 Depth=1
 	movq	32(%rcx), %rax
-.LBB331_12:                             # %List_Length.exit4
-                                        #   in Loop: Header=BB331_6 Depth=1
+.LBB327_12:                             # %List_Length.exit4
+                                        #   in Loop: Header=BB327_6 Depth=1
 	cmpq	%rax, %rbx
-	jb	.LBB331_6
-.LBB331_13:                             # %._crit_edge
+	jb	.LBB327_6
+.LBB327_13:                             # %._crit_edge
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%r14
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end331:
-	.size	PWM_UnregisterHandler, .Lfunc_end331-PWM_UnregisterHandler
+.Lfunc_end327:
+	.size	PWM_UnregisterHandler, .Lfunc_end327-PWM_UnregisterHandler
 	.cfi_endproc
 
 	.globl	DeviceManager_Initialize
@@ -41007,18 +38188,18 @@ DeviceManager_Initialize:               # @DeviceManager_Initialize
 	.cfi_startproc
 # BB#0:                                 # %CreateSpinlock.exit
 	pushq	%rbp
-.Ltmp2938:
+.Ltmp2688:
 	.cfi_def_cfa_offset 16
-.Ltmp2939:
+.Ltmp2689:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2940:
+.Ltmp2690:
 	.cfi_def_cfa_register %rbp
 	pushq	%r14
 	pushq	%rbx
-.Ltmp2941:
+.Ltmp2691:
 	.cfi_offset %rbx, -32
-.Ltmp2942:
+.Ltmp2692:
 	.cfi_offset %r14, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -41050,7 +38231,7 @@ DeviceManager_Initialize:               # @DeviceManager_Initialize
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r14, %r14
-	je	.LBB332_1
+	je	.LBB328_1
 # BB#2:
 	xorl	%ecx, %ecx
 	#APP
@@ -41063,19 +38244,19 @@ DeviceManager_Initialize:               # @DeviceManager_Initialize
 	lock
 	xaddw	%cx, 2(%r14)
 	cmpw	%cx, (%r14)
-	je	.Ltmp2943
-.Ltmp2944:
+	je	.Ltmp2693
+.Ltmp2694:
 	btq	$25, %rcx
-	jae	.Ltmp2945
-.Ltmp2945:
+	jae	.Ltmp2695
+.Ltmp2695:
 	pause
 	cmpw	%cx, (%r14)
-	jne	.Ltmp2944
-.Ltmp2943:
+	jne	.Ltmp2694
+.Ltmp2693:
 	btq	$25, %rcx
-	jae	.Ltmp2946
+	jae	.Ltmp2696
 	orw	$1, 4(%r14)
-.Ltmp2946:
+.Ltmp2696:
 	cli
 
 	#NO_APP
@@ -41090,28 +38271,28 @@ DeviceManager_Initialize:               # @DeviceManager_Initialize
 	lock
 	incw	(%r14)
 	btw	$0, 4(%r14)
-	jae	.Ltmp2947
+	jae	.Ltmp2697
 	sti
 	movw	$0, 4(%r14)
-.Ltmp2947:
+.Ltmp2697:
 
 	#NO_APP
-	jmp	.LBB332_3
-.LBB332_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB328_3
+.LBB328_1:                              # %LockSpinlock.exit.i.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB332_3:                              # %List_Create.exit
+.LBB328_3:                              # %List_Create.exit
 	movq	%rax, buses
 	popq	%rbx
 	popq	%r14
 	popq	%rbp
 	retq
-.Lfunc_end332:
-	.size	DeviceManager_Initialize, .Lfunc_end332-DeviceManager_Initialize
+.Lfunc_end328:
+	.size	DeviceManager_Initialize, .Lfunc_end328-DeviceManager_Initialize
 	.cfi_endproc
 
 	.globl	RegisterBus
@@ -41121,30 +38302,30 @@ RegisterBus:                            # @RegisterBus
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2948:
+.Ltmp2698:
 	.cfi_def_cfa_offset 16
-.Ltmp2949:
+.Ltmp2699:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2950:
+.Ltmp2700:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-.Ltmp2951:
+.Ltmp2701:
 	.cfi_offset %rbx, -48
-.Ltmp2952:
+.Ltmp2702:
 	.cfi_offset %r12, -40
-.Ltmp2953:
+.Ltmp2703:
 	.cfi_offset %r14, -32
-.Ltmp2954:
+.Ltmp2704:
 	.cfi_offset %r15, -24
 	movq	%rdi, %rbx
 	movq	buses, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB333_1
+	je	.LBB329_1
 # BB#2:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
@@ -41157,86 +38338,86 @@ RegisterBus:                            # @RegisterBus
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2955
-.Ltmp2956:
+	je	.Ltmp2705
+.Ltmp2706:
 	btq	$25, %rdx
-	jae	.Ltmp2957
-.Ltmp2957:
+	jae	.Ltmp2707
+.Ltmp2707:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2956
-.Ltmp2955:
+	jne	.Ltmp2706
+.Ltmp2705:
 	btq	$25, %rdx
-	jae	.Ltmp2958
+	jae	.Ltmp2708
 	orw	$1, 4(%rax)
-.Ltmp2958:
+.Ltmp2708:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB333_4
+	je	.LBB329_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2959
+	jae	.Ltmp2709
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2959:
+.Ltmp2709:
 
 	#NO_APP
-	jmp	.LBB333_4
-.LBB333_1:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB329_4
+.LBB329_1:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
-.LBB333_4:                              # %List_Length.exit
+.LBB329_4:                              # %List_Length.exit
 	xorl	%r15d, %r15d
 	testq	%rax, %rax
-	je	.LBB333_16
+	je	.LBB329_16
 # BB#5:
 	xorl	%r12d, %r12d
 	movl	$5, %r14d
-.LBB333_11:                             # %.lr.ph
+.LBB329_11:                             # %.lr.ph
                                         # =>This Loop Header: Depth=1
-                                        #     Child Loop BB333_12 Depth 2
-                                        #     Child Loop BB333_14 Depth 2
+                                        #     Child Loop BB329_12 Depth 2
+                                        #     Child Loop BB329_14 Depth 2
 	movq	buses, %rdi
 	movq	%r15, %rsi
 	callq	List_EntryAt
 	movq	$-1, %rcx
 	.align	16, 0x90
-.LBB333_12:                             #   Parent Loop BB333_11 Depth=1
+.LBB329_12:                             #   Parent Loop BB329_11 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	cmpb	$0, 1(%rax,%rcx)
 	leaq	1(%rcx), %rcx
-	jne	.LBB333_12
-# BB#13:                                #   in Loop: Header=BB333_11 Depth=1
+	jne	.LBB329_12
+# BB#13:                                #   in Loop: Header=BB329_11 Depth=1
 	movq	%rbx, %rdx
 	.align	16, 0x90
-.LBB333_14:                             # %strlen.exit
-                                        #   Parent Loop BB333_11 Depth=1
+.LBB329_14:                             # %strlen.exit
+                                        #   Parent Loop BB329_11 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	testq	%rcx, %rcx
-	je	.LBB333_47
-# BB#15:                                #   in Loop: Header=BB333_14 Depth=2
+	je	.LBB329_47
+# BB#15:                                #   in Loop: Header=BB329_14 Depth=2
 	decq	%rcx
 	movzbl	(%rdx), %esi
 	incq	%rdx
 	movzbl	(%rax), %edi
 	incq	%rax
 	cmpl	%esi, %edi
-	je	.LBB333_14
-# BB#6:                                 #   in Loop: Header=BB333_11 Depth=1
+	je	.LBB329_14
+# BB#6:                                 #   in Loop: Header=BB329_11 Depth=1
 	incq	%r15
 	movq	buses, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB333_7
+	je	.LBB329_7
 # BB#8:                                 # %LockSpinlock.exit.i.2
-                                        #   in Loop: Header=BB333_11 Depth=1
+                                        #   in Loop: Header=BB329_11 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -41247,67 +38428,67 @@ RegisterBus:                            # @RegisterBus
 	lock
 	xaddw	%r12w, 2(%rax)
 	cmpw	%r12w, (%rax)
-	je	.Ltmp2960
-.Ltmp2961:
+	je	.Ltmp2710
+.Ltmp2711:
 	btq	$25, %r12
-	jae	.Ltmp2962
-.Ltmp2962:
+	jae	.Ltmp2712
+.Ltmp2712:
 	pause
 	cmpw	%r12w, (%rax)
-	jne	.Ltmp2961
-.Ltmp2960:
+	jne	.Ltmp2711
+.Ltmp2710:
 	btq	$25, %r12
-	jae	.Ltmp2963
+	jae	.Ltmp2713
 	orw	$1, 4(%rax)
-.Ltmp2963:
+.Ltmp2713:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB333_10
-# BB#9:                                 #   in Loop: Header=BB333_11 Depth=1
+	je	.LBB329_10
+# BB#9:                                 #   in Loop: Header=BB329_11 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2964
+	jae	.Ltmp2714
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2964:
+.Ltmp2714:
 
 	#NO_APP
-	jmp	.LBB333_10
-.LBB333_7:                              # %LockSpinlock.exit.i.2.thread
-                                        #   in Loop: Header=BB333_11 Depth=1
+	jmp	.LBB329_10
+.LBB329_7:                              # %LockSpinlock.exit.i.2.thread
+                                        #   in Loop: Header=BB329_11 Depth=1
 	movq	32(%rcx), %rax
-.LBB333_10:                             # %List_Length.exit4
-                                        #   in Loop: Header=BB333_11 Depth=1
+.LBB329_10:                             # %List_Length.exit4
+                                        #   in Loop: Header=BB329_11 Depth=1
 	cmpq	%rax, %r15
-	jb	.LBB333_11
-.LBB333_16:                             # %._crit_edge
+	jb	.LBB329_11
+.LBB329_16:                             # %._crit_edge
 	movl	$264, %edi              # imm = 0x108
 	callq	kmalloc
 	movq	%rax, %r15
 	movl	$2, %r14d
 	testq	%r15, %r15
-	je	.LBB333_47
+	je	.LBB329_47
 # BB#17:
 	movq	$-1, %rcx
 	.align	16, 0x90
-.LBB333_18:                             # %.preheader
+.LBB329_18:                             # %.preheader
                                         # =>This Inner Loop Header: Depth=1
 	cmpb	$0, 1(%rbx,%rcx)
 	leaq	1(%rcx), %rcx
-	jne	.LBB333_18
+	jne	.LBB329_18
 # BB#19:                                # %strlen.exit6
 	cmpq	$256, %rcx              # imm = 0x100
 	movl	$256, %eax              # imm = 0x100
 	cmovbeq	%rcx, %rax
 	testq	%rax, %rax
-	je	.LBB333_22
+	je	.LBB329_22
 # BB#20:                                # %.lr.ph.i.i.preheader
 	notq	%rcx
 	cmpq	$-257, %rcx             # imm = 0xFFFFFFFFFFFFFEFF
@@ -41316,15 +38497,15 @@ RegisterBus:                            # @RegisterBus
 	incq	%rax
 	movq	%r15, %rcx
 	.align	16, 0x90
-.LBB333_21:                             # %.lr.ph.i.i
+.LBB329_21:                             # %.lr.ph.i.i
                                         # =>This Inner Loop Header: Depth=1
 	movb	(%rbx), %dl
 	incq	%rbx
 	movb	%dl, (%rcx)
 	incq	%rcx
 	incq	%rax
-	jne	.LBB333_21
-.LBB333_22:                             # %strcpy_s.exit
+	jne	.LBB329_21
+.LBB329_22:                             # %strcpy_s.exit
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
 	#APP
@@ -41355,7 +38536,7 @@ RegisterBus:                            # @RegisterBus
 	movl	$48, %edi
 	callq	kmalloc
 	testq	%r12, %r12
-	je	.LBB333_23
+	je	.LBB329_23
 # BB#24:
 	xorl	%ecx, %ecx
 	#APP
@@ -41368,19 +38549,19 @@ RegisterBus:                            # @RegisterBus
 	lock
 	xaddw	%cx, 2(%r12)
 	cmpw	%cx, (%r12)
-	je	.Ltmp2965
-.Ltmp2966:
+	je	.Ltmp2715
+.Ltmp2716:
 	btq	$25, %rcx
-	jae	.Ltmp2967
-.Ltmp2967:
+	jae	.Ltmp2717
+.Ltmp2717:
 	pause
 	cmpw	%cx, (%r12)
-	jne	.Ltmp2966
-.Ltmp2965:
+	jne	.Ltmp2716
+.Ltmp2715:
 	btq	$25, %rcx
-	jae	.Ltmp2968
+	jae	.Ltmp2718
 	orw	$1, 4(%r12)
-.Ltmp2968:
+.Ltmp2718:
 	cli
 
 	#NO_APP
@@ -41395,31 +38576,31 @@ RegisterBus:                            # @RegisterBus
 	lock
 	incw	(%r12)
 	btw	$0, 4(%r12)
-	jae	.Ltmp2969
+	jae	.Ltmp2719
 	sti
 	movw	$0, 4(%r12)
-.Ltmp2969:
+.Ltmp2719:
 
 	#NO_APP
-	jmp	.LBB333_25
-.LBB333_23:                             # %LockSpinlock.exit.i.12.thread
+	jmp	.LBB329_25
+.LBB329_23:                             # %LockSpinlock.exit.i.12.thread
 	movq	$0, 40(%rax)
 	movq	$0, 32(%rax)
 	movq	$0, 24(%rax)
 	movq	$0, 16(%rax)
 	movq	$0, 8(%rax)
 	movq	$0, (%rax)
-.LBB333_25:
+.LBB329_25:
 	movq	%rax, 256(%r15)
 	movq	buses, %rbx
 	movl	$24, %edi
 	callq	kmalloc
 	testq	%rax, %rax
-	je	.LBB333_36
+	je	.LBB329_36
 # BB#26:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB333_28
+	je	.LBB329_28
 # BB#27:
 	xorl	%edx, %edx
 	#APP
@@ -41432,68 +38613,68 @@ RegisterBus:                            # @RegisterBus
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp2970
-.Ltmp2971:
+	je	.Ltmp2720
+.Ltmp2721:
 	btq	$25, %rdx
-	jae	.Ltmp2972
-.Ltmp2972:
+	jae	.Ltmp2722
+.Ltmp2722:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp2971
-.Ltmp2970:
+	jne	.Ltmp2721
+.Ltmp2720:
 	btq	$25, %rdx
-	jae	.Ltmp2973
+	jae	.Ltmp2723
 	orw	$1, 4(%rcx)
-.Ltmp2973:
+.Ltmp2723:
 	cli
 
 	#NO_APP
-.LBB333_28:                             # %LockSpinlock.exit.i.26
+.LBB329_28:                             # %LockSpinlock.exit.i.26
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r15, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB333_30
+	je	.LBB329_30
 # BB#29:
 	movq	%rax, 8(%rcx)
-.LBB333_30:
+.LBB329_30:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB333_32
+	jne	.LBB329_32
 # BB#31:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB333_32:
+.LBB329_32:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB333_34
+	jne	.LBB329_34
 # BB#33:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB333_34:
+.LBB329_34:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	xorl	%r14d, %r14d
 	testq	%rax, %rax
-	je	.LBB333_47
+	je	.LBB329_47
 # BB#35:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2974
+	jae	.Ltmp2724
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2974:
+.Ltmp2724:
 
 	#NO_APP
-	jmp	.LBB333_47
-.LBB333_36:                             # %List_AddEntry.exit
+	jmp	.LBB329_47
+.LBB329_36:                             # %List_AddEntry.exit
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB333_38
+	je	.LBB329_38
 # BB#37:
 	xorl	%ecx, %ecx
 	#APP
@@ -41506,26 +38687,26 @@ RegisterBus:                            # @RegisterBus
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp2975
-.Ltmp2976:
+	je	.Ltmp2725
+.Ltmp2726:
 	btq	$25, %rcx
-	jae	.Ltmp2977
-.Ltmp2977:
+	jae	.Ltmp2727
+.Ltmp2727:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp2976
-.Ltmp2975:
+	jne	.Ltmp2726
+.Ltmp2725:
 	btq	$25, %rcx
-	jae	.Ltmp2978
+	jae	.Ltmp2728
 	orw	$1, 4(%rax)
-.Ltmp2978:
+.Ltmp2728:
 	cli
 
 	#NO_APP
-.LBB333_38:                             # %LockSpinlock.exit.i.8
+.LBB329_38:                             # %LockSpinlock.exit.i.8
 	movabsq	$-2401053089206453570, %rax # imm = 0xDEADBEEFCAFEBABE
 	cmpq	%rax, -24(%r15)
-	je	.LBB333_40
+	je	.LBB329_40
 # BB#39:
 	movq	%r15, %rax
 	#APP
@@ -41534,44 +38715,44 @@ RegisterBus:                            # @RegisterBus
 	cli
 	hlt
 	#NO_APP
-.LBB333_40:                             # %.preheader.i
+.LBB329_40:                             # %.preheader.i
 	movq	allocation_info, %rdx
 	.align	16, 0x90
-.LBB333_41:                             # =>This Inner Loop Header: Depth=1
+.LBB329_41:                             # =>This Inner Loop Header: Depth=1
 	movq	%rdx, %rax
 	movq	(%rax), %rcx
 	movq	16(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB333_45
-# BB#42:                                #   in Loop: Header=BB333_41 Depth=1
+	je	.LBB329_45
+# BB#42:                                #   in Loop: Header=BB329_41 Depth=1
 	movl	%ecx, %esi
 	andl	$1, %esi
 	cmpq	%r15, %rcx
-	jne	.LBB333_41
-# BB#43:                                #   in Loop: Header=BB333_41 Depth=1
+	jne	.LBB329_41
+# BB#43:                                #   in Loop: Header=BB329_41 Depth=1
 	testq	%rsi, %rsi
-	je	.LBB333_41
+	je	.LBB329_41
 # BB#44:
 	movq	%r15, %rcx
-.LBB333_45:                             # %.loopexit.i
+.LBB329_45:                             # %.loopexit.i
 	andq	$-2, %rcx
 	movq	%rcx, (%rax)
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB333_47
+	je	.LBB329_47
 # BB#46:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp2979
+	jae	.Ltmp2729
 	sti
 	movw	$0, 4(%rax)
-.Ltmp2979:
+.Ltmp2729:
 
 	#NO_APP
-.LBB333_47:                             # %.thread5
+.LBB329_47:                             # %.thread5
 	movl	%r14d, %eax
 	popq	%rbx
 	popq	%r12
@@ -41579,8 +38760,8 @@ RegisterBus:                            # @RegisterBus
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end333:
-	.size	RegisterBus, .Lfunc_end333-RegisterBus
+.Lfunc_end329:
+	.size	RegisterBus, .Lfunc_end329-RegisterBus
 	.cfi_endproc
 
 	.globl	RegisterDevice
@@ -41590,12 +38771,12 @@ RegisterDevice:                         # @RegisterDevice
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp2980:
+.Ltmp2730:
 	.cfi_def_cfa_offset 16
-.Ltmp2981:
+.Ltmp2731:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp2982:
+.Ltmp2732:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -41603,15 +38784,15 @@ RegisterDevice:                         # @RegisterDevice
 	pushq	%r12
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp2983:
+.Ltmp2733:
 	.cfi_offset %rbx, -56
-.Ltmp2984:
+.Ltmp2734:
 	.cfi_offset %r12, -48
-.Ltmp2985:
+.Ltmp2735:
 	.cfi_offset %r13, -40
-.Ltmp2986:
+.Ltmp2736:
 	.cfi_offset %r14, -32
-.Ltmp2987:
+.Ltmp2737:
 	.cfi_offset %r15, -24
 	movq	%rcx, -48(%rbp)         # 8-byte Spill
 	movl	%edx, -52(%rbp)         # 4-byte Spill
@@ -41619,12 +38800,12 @@ RegisterDevice:                         # @RegisterDevice
 	movq	%rdi, %r12
 	movl	$3, %r13d
 	testq	%rcx, %rcx
-	je	.LBB334_60
+	je	.LBB330_60
 # BB#1:                                 # %.preheader18
 	movq	buses, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB334_2
+	je	.LBB330_2
 # BB#3:                                 # %LockSpinlock.exit.i
 	xorl	%edx, %edx
 	#APP
@@ -41637,84 +38818,84 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2988
-.Ltmp2989:
+	je	.Ltmp2738
+.Ltmp2739:
 	btq	$25, %rdx
-	jae	.Ltmp2990
-.Ltmp2990:
+	jae	.Ltmp2740
+.Ltmp2740:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2989
-.Ltmp2988:
+	jne	.Ltmp2739
+.Ltmp2738:
 	btq	$25, %rdx
-	jae	.Ltmp2991
+	jae	.Ltmp2741
 	orw	$1, 4(%rax)
-.Ltmp2991:
+.Ltmp2741:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB334_5
+	je	.LBB330_5
 # BB#4:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2992
+	jae	.Ltmp2742
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2992:
+.Ltmp2742:
 
 	#NO_APP
-	jmp	.LBB334_5
-.LBB334_2:                              # %LockSpinlock.exit.i.thread
+	jmp	.LBB330_5
+.LBB330_2:                              # %LockSpinlock.exit.i.thread
 	movq	32(%rcx), %rax
-.LBB334_5:                              # %List_Length.exit
+.LBB330_5:                              # %List_Length.exit
 	movl	$1, %r13d
 	xorl	%r15d, %r15d
 	testq	%rax, %rax
-	je	.LBB334_60
-.LBB334_11:                             # %.lr.ph25
+	je	.LBB330_60
+.LBB330_11:                             # %.lr.ph25
                                         # =>This Loop Header: Depth=1
-                                        #     Child Loop BB334_12 Depth 2
-                                        #     Child Loop BB334_14 Depth 2
+                                        #     Child Loop BB330_12 Depth 2
+                                        #     Child Loop BB330_14 Depth 2
 	movq	buses, %rdi
 	movq	%r15, %rsi
 	callq	List_EntryAt
 	movq	%rax, %rbx
 	movq	$-1, %rax
 	.align	16, 0x90
-.LBB334_12:                             #   Parent Loop BB334_11 Depth=1
+.LBB330_12:                             #   Parent Loop BB330_11 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	cmpb	$0, 1(%rbx,%rax)
 	leaq	1(%rax), %rax
-	jne	.LBB334_12
+	jne	.LBB330_12
 # BB#13:                                # %strlen.exit.preheader
-                                        #   in Loop: Header=BB334_11 Depth=1
+                                        #   in Loop: Header=BB330_11 Depth=1
 	xorl	%ecx, %ecx
 	.align	16, 0x90
-.LBB334_14:                             # %strlen.exit
-                                        #   Parent Loop BB334_11 Depth=1
+.LBB330_14:                             # %strlen.exit
+                                        #   Parent Loop BB330_11 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	cmpq	%rcx, %rax
-	je	.LBB334_16
-# BB#15:                                #   in Loop: Header=BB334_14 Depth=2
+	je	.LBB330_16
+# BB#15:                                #   in Loop: Header=BB330_14 Depth=2
 	movzbl	(%r14,%rcx), %edx
 	movzbl	(%rbx,%rcx), %esi
 	incq	%rcx
 	cmpl	%edx, %esi
-	je	.LBB334_14
-# BB#6:                                 #   in Loop: Header=BB334_11 Depth=1
+	je	.LBB330_14
+# BB#6:                                 #   in Loop: Header=BB330_11 Depth=1
 	incq	%r15
 	movq	buses, %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB334_7
+	je	.LBB330_7
 # BB#8:                                 # %LockSpinlock.exit.i.2
-                                        #   in Loop: Header=BB334_11 Depth=1
+                                        #   in Loop: Header=BB330_11 Depth=1
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -41726,52 +38907,52 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2993
-.Ltmp2994:
+	je	.Ltmp2743
+.Ltmp2744:
 	btq	$25, %rdx
-	jae	.Ltmp2995
-.Ltmp2995:
+	jae	.Ltmp2745
+.Ltmp2745:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2994
-.Ltmp2993:
+	jne	.Ltmp2744
+.Ltmp2743:
 	btq	$25, %rdx
-	jae	.Ltmp2996
+	jae	.Ltmp2746
 	orw	$1, 4(%rax)
-.Ltmp2996:
+.Ltmp2746:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB334_10
-# BB#9:                                 #   in Loop: Header=BB334_11 Depth=1
+	je	.LBB330_10
+# BB#9:                                 #   in Loop: Header=BB330_11 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp2997
+	jae	.Ltmp2747
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp2997:
+.Ltmp2747:
 
 	#NO_APP
-	jmp	.LBB334_10
-.LBB334_7:                              # %LockSpinlock.exit.i.2.thread
-                                        #   in Loop: Header=BB334_11 Depth=1
+	jmp	.LBB330_10
+.LBB330_7:                              # %LockSpinlock.exit.i.2.thread
+                                        #   in Loop: Header=BB330_11 Depth=1
 	movq	32(%rcx), %rax
-.LBB334_10:                             # %List_Length.exit4
-                                        #   in Loop: Header=BB334_11 Depth=1
+.LBB330_10:                             # %List_Length.exit4
+                                        #   in Loop: Header=BB330_11 Depth=1
 	cmpq	%rax, %r15
-	jb	.LBB334_11
-	jmp	.LBB334_60
-.LBB334_16:                             # %.preheader
+	jb	.LBB330_11
+	jmp	.LBB330_60
+.LBB330_16:                             # %.preheader
 	movq	256(%rbx), %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB334_17
+	je	.LBB330_17
 # BB#18:                                # %LockSpinlock.exit.i.6
 	xorl	%edx, %edx
 	#APP
@@ -41784,86 +38965,86 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp2998
-.Ltmp2999:
+	je	.Ltmp2748
+.Ltmp2749:
 	btq	$25, %rdx
-	jae	.Ltmp3000
-.Ltmp3000:
+	jae	.Ltmp2750
+.Ltmp2750:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp2999
-.Ltmp2998:
+	jne	.Ltmp2749
+.Ltmp2748:
 	btq	$25, %rdx
-	jae	.Ltmp3001
+	jae	.Ltmp2751
 	orw	$1, 4(%rax)
-.Ltmp3001:
+.Ltmp2751:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB334_20
+	je	.LBB330_20
 # BB#19:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp3002
+	jae	.Ltmp2752
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp3002:
+.Ltmp2752:
 
 	#NO_APP
-	jmp	.LBB334_20
-.LBB334_17:                             # %LockSpinlock.exit.i.6.thread
+	jmp	.LBB330_20
+.LBB330_17:                             # %LockSpinlock.exit.i.6.thread
 	movq	32(%rcx), %rax
-.LBB334_20:                             # %List_Length.exit8
+.LBB330_20:                             # %List_Length.exit8
 	xorl	%r14d, %r14d
 	testq	%rax, %rax
-	je	.LBB334_32
+	je	.LBB330_32
 # BB#21:
 	xorl	%r15d, %r15d
 	movl	$4, %r13d
-.LBB334_27:                             # %.lr.ph
+.LBB330_27:                             # %.lr.ph
                                         # =>This Loop Header: Depth=1
-                                        #     Child Loop BB334_28 Depth 2
-                                        #     Child Loop BB334_30 Depth 2
+                                        #     Child Loop BB330_28 Depth 2
+                                        #     Child Loop BB330_30 Depth 2
 	movq	256(%rbx), %rdi
 	movq	%r14, %rsi
 	callq	List_EntryAt
 	movq	$-1, %rcx
 	.align	16, 0x90
-.LBB334_28:                             #   Parent Loop BB334_27 Depth=1
+.LBB330_28:                             #   Parent Loop BB330_27 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	cmpb	$0, 1(%rax,%rcx)
 	leaq	1(%rcx), %rcx
-	jne	.LBB334_28
-# BB#29:                                #   in Loop: Header=BB334_27 Depth=1
+	jne	.LBB330_28
+# BB#29:                                #   in Loop: Header=BB330_27 Depth=1
 	movq	%r12, %rdx
 	.align	16, 0x90
-.LBB334_30:                             # %strlen.exit14
-                                        #   Parent Loop BB334_27 Depth=1
+.LBB330_30:                             # %strlen.exit14
+                                        #   Parent Loop BB330_27 Depth=1
                                         # =>  This Inner Loop Header: Depth=2
 	testq	%rcx, %rcx
-	je	.LBB334_60
-# BB#31:                                #   in Loop: Header=BB334_30 Depth=2
+	je	.LBB330_60
+# BB#31:                                #   in Loop: Header=BB330_30 Depth=2
 	decq	%rcx
 	movzbl	(%rdx), %esi
 	incq	%rdx
 	movzbl	(%rax), %edi
 	incq	%rax
 	cmpl	%esi, %edi
-	je	.LBB334_30
-# BB#22:                                #   in Loop: Header=BB334_27 Depth=1
+	je	.LBB330_30
+# BB#22:                                #   in Loop: Header=BB330_27 Depth=1
 	incq	%r14
 	movq	256(%rbx), %rcx
 	movq	40(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB334_23
+	je	.LBB330_23
 # BB#24:                                # %LockSpinlock.exit.i.10
-                                        #   in Loop: Header=BB334_27 Depth=1
+                                        #   in Loop: Header=BB330_27 Depth=1
 	#APP
 	mfence
 	pushfq
@@ -41874,67 +39055,67 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%r15w, 2(%rax)
 	cmpw	%r15w, (%rax)
-	je	.Ltmp3003
-.Ltmp3004:
+	je	.Ltmp2753
+.Ltmp2754:
 	btq	$25, %r15
-	jae	.Ltmp3005
-.Ltmp3005:
+	jae	.Ltmp2755
+.Ltmp2755:
 	pause
 	cmpw	%r15w, (%rax)
-	jne	.Ltmp3004
-.Ltmp3003:
+	jne	.Ltmp2754
+.Ltmp2753:
 	btq	$25, %r15
-	jae	.Ltmp3006
+	jae	.Ltmp2756
 	orw	$1, 4(%rax)
-.Ltmp3006:
+.Ltmp2756:
 	cli
 
 	#NO_APP
 	movq	32(%rcx), %rax
 	movq	40(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB334_26
-# BB#25:                                #   in Loop: Header=BB334_27 Depth=1
+	je	.LBB330_26
+# BB#25:                                #   in Loop: Header=BB330_27 Depth=1
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp3007
+	jae	.Ltmp2757
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp3007:
+.Ltmp2757:
 
 	#NO_APP
-	jmp	.LBB334_26
-.LBB334_23:                             # %LockSpinlock.exit.i.10.thread
-                                        #   in Loop: Header=BB334_27 Depth=1
+	jmp	.LBB330_26
+.LBB330_23:                             # %LockSpinlock.exit.i.10.thread
+                                        #   in Loop: Header=BB330_27 Depth=1
 	movq	32(%rcx), %rax
-.LBB334_26:                             # %List_Length.exit12
-                                        #   in Loop: Header=BB334_27 Depth=1
+.LBB330_26:                             # %List_Length.exit12
+                                        #   in Loop: Header=BB330_27 Depth=1
 	cmpq	%rax, %r14
-	jb	.LBB334_27
-.LBB334_32:                             # %._crit_edge
+	jb	.LBB330_27
+.LBB330_32:                             # %._crit_edge
 	movl	$272, %edi              # imm = 0x110
 	callq	kmalloc
 	movq	%rax, %r14
 	movl	$2, %r13d
 	testq	%r14, %r14
-	je	.LBB334_60
+	je	.LBB330_60
 # BB#33:
 	movq	$-1, %rcx
 	.align	16, 0x90
-.LBB334_34:                             # %.preheader32
+.LBB330_34:                             # %.preheader32
                                         # =>This Inner Loop Header: Depth=1
 	cmpb	$0, 1(%r12,%rcx)
 	leaq	1(%rcx), %rcx
-	jne	.LBB334_34
+	jne	.LBB330_34
 # BB#35:                                # %strlen.exit21
 	cmpq	$256, %rcx              # imm = 0x100
 	movl	$256, %eax              # imm = 0x100
 	cmovbeq	%rcx, %rax
 	testq	%rax, %rax
-	je	.LBB334_38
+	je	.LBB330_38
 # BB#36:                                # %.lr.ph.i.i.preheader
 	notq	%rcx
 	cmpq	$-257, %rcx             # imm = 0xFFFFFFFFFFFFFEFF
@@ -41943,15 +39124,15 @@ RegisterDevice:                         # @RegisterDevice
 	incq	%rax
 	movq	%r14, %rcx
 	.align	16, 0x90
-.LBB334_37:                             # %.lr.ph.i.i
+.LBB330_37:                             # %.lr.ph.i.i
                                         # =>This Inner Loop Header: Depth=1
 	movb	(%r12), %dl
 	incq	%r12
 	movb	%dl, (%rcx)
 	incq	%rcx
 	incq	%rax
-	jne	.LBB334_37
-.LBB334_38:                             # %strcpy_s.exit
+	jne	.LBB330_37
+.LBB330_38:                             # %strcpy_s.exit
 	movl	-52(%rbp), %eax         # 4-byte Reload
 	movl	%eax, 256(%r14)
 	movq	-48(%rbp), %rax         # 8-byte Reload
@@ -41960,11 +39141,11 @@ RegisterDevice:                         # @RegisterDevice
 	movl	$24, %edi
 	callq	kmalloc
 	testq	%rax, %rax
-	je	.LBB334_49
+	je	.LBB330_49
 # BB#39:
 	movq	40(%rbx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB334_41
+	je	.LBB330_41
 # BB#40:
 	xorl	%edx, %edx
 	#APP
@@ -41977,68 +39158,68 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp3008
-.Ltmp3009:
+	je	.Ltmp2758
+.Ltmp2759:
 	btq	$25, %rdx
-	jae	.Ltmp3010
-.Ltmp3010:
+	jae	.Ltmp2760
+.Ltmp2760:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp3009
-.Ltmp3008:
+	jne	.Ltmp2759
+.Ltmp2758:
 	btq	$25, %rdx
-	jae	.Ltmp3011
+	jae	.Ltmp2761
 	orw	$1, 4(%rcx)
-.Ltmp3011:
+.Ltmp2761:
 	cli
 
 	#NO_APP
-.LBB334_41:                             # %LockSpinlock.exit.i.26
+.LBB330_41:                             # %LockSpinlock.exit.i.26
 	movq	8(%rbx), %rcx
 	movq	%rcx, 16(%rax)
 	movq	%r14, (%rax)
 	movq	$0, 8(%rax)
 	testq	%rcx, %rcx
-	je	.LBB334_43
+	je	.LBB330_43
 # BB#42:
 	movq	%rax, 8(%rcx)
-.LBB334_43:
+.LBB330_43:
 	movq	%rax, 8(%rbx)
 	movq	(%rbx), %rcx
 	testq	%rcx, %rcx
-	jne	.LBB334_45
+	jne	.LBB330_45
 # BB#44:
 	movq	%rax, (%rbx)
 	movq	%rax, %rcx
-.LBB334_45:
+.LBB330_45:
 	cmpq	$0, 16(%rbx)
-	jne	.LBB334_47
+	jne	.LBB330_47
 # BB#46:
 	movq	%rcx, 16(%rbx)
 	movq	$0, 24(%rbx)
-.LBB334_47:
+.LBB330_47:
 	incq	32(%rbx)
 	movq	40(%rbx), %rax
 	xorl	%r13d, %r13d
 	testq	%rax, %rax
-	je	.LBB334_60
+	je	.LBB330_60
 # BB#48:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3012
+	jae	.Ltmp2762
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3012:
+.Ltmp2762:
 
 	#NO_APP
-	jmp	.LBB334_60
-.LBB334_49:                             # %List_AddEntry.exit
+	jmp	.LBB330_60
+.LBB330_49:                             # %List_AddEntry.exit
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB334_51
+	je	.LBB330_51
 # BB#50:
 	xorl	%ecx, %ecx
 	#APP
@@ -42051,26 +39232,26 @@ RegisterDevice:                         # @RegisterDevice
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3013
-.Ltmp3014:
+	je	.Ltmp2763
+.Ltmp2764:
 	btq	$25, %rcx
-	jae	.Ltmp3015
-.Ltmp3015:
+	jae	.Ltmp2765
+.Ltmp2765:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3014
-.Ltmp3013:
+	jne	.Ltmp2764
+.Ltmp2763:
 	btq	$25, %rcx
-	jae	.Ltmp3016
+	jae	.Ltmp2766
 	orw	$1, 4(%rax)
-.Ltmp3016:
+.Ltmp2766:
 	cli
 
 	#NO_APP
-.LBB334_51:                             # %LockSpinlock.exit.i.23
+.LBB330_51:                             # %LockSpinlock.exit.i.23
 	movabsq	$-2401053089206453570, %rax # imm = 0xDEADBEEFCAFEBABE
 	cmpq	%rax, -24(%r14)
-	je	.LBB334_53
+	je	.LBB330_53
 # BB#52:
 	movq	%r14, %rax
 	#APP
@@ -42079,44 +39260,44 @@ RegisterDevice:                         # @RegisterDevice
 	cli
 	hlt
 	#NO_APP
-.LBB334_53:                             # %.preheader.i
+.LBB330_53:                             # %.preheader.i
 	movq	allocation_info, %rdx
 	.align	16, 0x90
-.LBB334_54:                             # =>This Inner Loop Header: Depth=1
+.LBB330_54:                             # =>This Inner Loop Header: Depth=1
 	movq	%rdx, %rax
 	movq	(%rax), %rcx
 	movq	16(%rax), %rdx
 	testq	%rdx, %rdx
-	je	.LBB334_58
-# BB#55:                                #   in Loop: Header=BB334_54 Depth=1
+	je	.LBB330_58
+# BB#55:                                #   in Loop: Header=BB330_54 Depth=1
 	movl	%ecx, %esi
 	andl	$1, %esi
 	cmpq	%r14, %rcx
-	jne	.LBB334_54
-# BB#56:                                #   in Loop: Header=BB334_54 Depth=1
+	jne	.LBB330_54
+# BB#56:                                #   in Loop: Header=BB330_54 Depth=1
 	testq	%rsi, %rsi
-	je	.LBB334_54
+	je	.LBB330_54
 # BB#57:
 	movq	%r14, %rcx
-.LBB334_58:                             # %.loopexit.i
+.LBB330_58:                             # %.loopexit.i
 	andq	$-2, %rcx
 	movq	%rcx, (%rax)
 	movq	alloc_sync, %rax
 	testq	%rax, %rax
-	je	.LBB334_60
+	je	.LBB330_60
 # BB#59:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3017
+	jae	.Ltmp2767
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3017:
+.Ltmp2767:
 
 	#NO_APP
-.LBB334_60:                             # %.thread
+.LBB330_60:                             # %.thread
 	movl	%r13d, %eax
 	addq	$24, %rsp
 	popq	%rbx
@@ -42126,8 +39307,8 @@ RegisterDevice:                         # @RegisterDevice
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end334:
-	.size	RegisterDevice, .Lfunc_end334-RegisterDevice
+.Lfunc_end330:
+	.size	RegisterDevice, .Lfunc_end330-RegisterDevice
 	.cfi_endproc
 
 	.globl	SyscallMan_Initialize
@@ -42137,16 +39318,16 @@ SyscallMan_Initialize:                  # @SyscallMan_Initialize
 	.cfi_startproc
 # BB#0:                                 # %CreateSpinlock.exit
 	pushq	%rbp
-.Ltmp3018:
+.Ltmp2768:
 	.cfi_def_cfa_offset 16
-.Ltmp3019:
+.Ltmp2769:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3020:
+.Ltmp2770:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
-.Ltmp3021:
+.Ltmp2771:
 	.cfi_offset %rbx, -24
 	movl	$-2147483642, %eax      # imm = 0xFFFFFFFF80000006
 	xorl	%ecx, %ecx
@@ -42180,8 +39361,8 @@ SyscallMan_Initialize:                  # @SyscallMan_Initialize
 	popq	%rbx
 	popq	%rbp
 	jmp	RegisterAllSyscalls     # TAILCALL
-.Lfunc_end335:
-	.size	SyscallMan_Initialize, .Lfunc_end335-SyscallMan_Initialize
+.Lfunc_end331:
+	.size	SyscallMan_Initialize, .Lfunc_end331-SyscallMan_Initialize
 	.cfi_endproc
 
 	.globl	SyscallReceived
@@ -42191,12 +39372,12 @@ SyscallReceived:                        # @SyscallReceived
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3022:
+.Ltmp2772:
 	.cfi_def_cfa_offset 16
-.Ltmp3023:
+.Ltmp2773:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3024:
+.Ltmp2774:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -42204,15 +39385,15 @@ SyscallReceived:                        # @SyscallReceived
 	pushq	%r12
 	pushq	%rbx
 	subq	$104, %rsp
-.Ltmp3025:
+.Ltmp2775:
 	.cfi_offset %rbx, -56
-.Ltmp3026:
+.Ltmp2776:
 	.cfi_offset %r12, -48
-.Ltmp3027:
+.Ltmp2777:
 	.cfi_offset %r13, -40
-.Ltmp3028:
+.Ltmp2778:
 	.cfi_offset %r14, -32
-.Ltmp3029:
+.Ltmp2779:
 	.cfi_offset %r15, -24
 	movq	%rcx, %r12
 	movq	%rdx, %rbx
@@ -42220,29 +39401,31 @@ SyscallReceived:                        # @SyscallReceived
 	movq	%rdi, %r14
 	movl	$0, -44(%rbp)
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rdi
 	leaq	-44(%rbp), %rcx
 	xorl	%edx, %edx
 	movq	%rbx, %rsi
 	callq	CheckAddressPermissions
 	movl	$22, %eax
 	cmpl	$13, -44(%rbp)
-	jne	.LBB336_10
+	jne	.LBB332_10
 # BB#1:
 	movq	%rbx, -64(%rbp)
 	movq	%r12, -56(%rbp)
 	movl	$22, %eax
 	cmpq	$6, %r12
-	ja	.LBB336_10
+	ja	.LBB332_10
 # BB#2:
 	testq	%r12, %r12
-	je	.LBB336_6
+	je	.LBB332_6
 # BB#3:                                 # %.lr.ph.preheader
 	leaq	-1(%r12), %rcx
 	xorl	%eax, %eax
 	movq	%r12, %r13
 	andq	$3, %r13
-	je	.LBB336_5
+	je	.LBB332_5
 # BB#4:                                 # %.lr.ph.prol.preheader
 	leaq	(,%r12,8), %rdx
 	andl	$24, %edx
@@ -42252,11 +39435,11 @@ SyscallReceived:                        # @SyscallReceived
 	callq	memcpy
 	movq	-136(%rbp), %rcx        # 8-byte Reload
 	movq	%r13, %rax
-.LBB336_5:                              # %.lr.ph.preheader.split
+.LBB332_5:                              # %.lr.ph.preheader.split
 	cmpq	$3, %rcx
-	jb	.LBB336_6
+	jb	.LBB332_6
 	.align	16, 0x90
-.LBB336_11:                             # %.lr.ph
+.LBB332_11:                             # %.lr.ph
                                         # =>This Inner Loop Header: Depth=1
 	movq	(%rbx,%rax,8), %rcx
 	movq	%rcx, -128(%rbp,%rax,8)
@@ -42268,26 +39451,26 @@ SyscallReceived:                        # @SyscallReceived
 	movq	%rcx, -104(%rbp,%rax,8)
 	addq	$4, %rax
 	cmpq	%r12, %rax
-	jb	.LBB336_11
-.LBB336_6:                              # %._crit_edge
+	jb	.LBB332_11
+.LBB332_6:                              # %._crit_edge
 	leaq	-128(%rbp), %rax
 	movq	%rax, -64(%rbp)
 	leal	-1(%r15), %ecx
 	movl	$38, %eax
 	cmpl	$218, %ecx
-	ja	.LBB336_10
+	ja	.LBB332_10
 # BB#7:
 	movl	%r15d, %eax
 	movq	Syscalls(,%rax,8), %rax
 	testq	%rax, %rax
-	je	.LBB336_9
+	je	.LBB332_9
 # BB#8:
 	leaq	-72(%rbp), %rdx
 	movq	%r14, %rdi
 	movq	%r15, %rsi
 	callq	*%rax
-	jmp	.LBB336_10
-.LBB336_9:
+	jmp	.LBB332_10
+.LBB332_9:
 	movq	%r15, %rax
 	movq	%r14, %rbx
 	#APP
@@ -42295,7 +39478,7 @@ SyscallReceived:                        # @SyscallReceived
 	hlt
 	#NO_APP
 	movl	$38, %eax
-.LBB336_10:
+.LBB332_10:
 	addq	$104, %rsp
 	popq	%rbx
 	popq	%r12
@@ -42304,8 +39487,8 @@ SyscallReceived:                        # @SyscallReceived
 	popq	%r15
 	popq	%rbp
 	retq
-.Lfunc_end336:
-	.size	SyscallReceived, .Lfunc_end336-SyscallReceived
+.Lfunc_end332:
+	.size	SyscallReceived, .Lfunc_end332-SyscallReceived
 	.cfi_endproc
 
 	.globl	AllocateSyscall
@@ -42315,16 +39498,16 @@ AllocateSyscall:                        # @AllocateSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3030:
+.Ltmp2780:
 	.cfi_def_cfa_offset 16
-.Ltmp3031:
+.Ltmp2781:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3032:
+.Ltmp2782:
 	.cfi_def_cfa_register %rbp
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB337_1
+	je	.LBB333_1
 # BB#2:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
@@ -42337,19 +39520,19 @@ AllocateSyscall:                        # @AllocateSyscall
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3033
-.Ltmp3034:
+	je	.Ltmp2783
+.Ltmp2784:
 	btq	$25, %rcx
-	jae	.Ltmp3035
-.Ltmp3035:
+	jae	.Ltmp2785
+.Ltmp2785:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3034
-.Ltmp3033:
+	jne	.Ltmp2784
+.Ltmp2783:
 	btq	$25, %rcx
-	jae	.Ltmp3036
+	jae	.Ltmp2786
 	orw	$1, 4(%rax)
-.Ltmp3036:
+.Ltmp2786:
 	cli
 
 	#NO_APP
@@ -42358,30 +39541,30 @@ AllocateSyscall:                        # @AllocateSyscall
 	leaq	1(%rax), %rdx
 	movq	%rdx, free_syscall_index
 	testq	%rcx, %rcx
-	je	.LBB337_4
+	je	.LBB333_4
 # BB#3:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp3037
+	jae	.Ltmp2787
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp3037:
+.Ltmp2787:
 
 	#NO_APP
-.LBB337_4:                              # %UnlockSpinlock.exit
+.LBB333_4:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
-.LBB337_1:                              # %LockSpinlock.exit.thread
+.LBB333_1:                              # %LockSpinlock.exit.thread
 	movq	free_syscall_index, %rax
 	leaq	1(%rax), %rcx
 	movq	%rcx, free_syscall_index
 	popq	%rbp
 	retq
-.Lfunc_end337:
-	.size	AllocateSyscall, .Lfunc_end337-AllocateSyscall
+.Lfunc_end333:
+	.size	AllocateSyscall, .Lfunc_end333-AllocateSyscall
 	.cfi_endproc
 
 	.globl	RegisterSyscall
@@ -42391,19 +39574,19 @@ RegisterSyscall:                        # @RegisterSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3038:
+.Ltmp2788:
 	.cfi_def_cfa_offset 16
-.Ltmp3039:
+.Ltmp2789:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3040:
+.Ltmp2790:
 	.cfi_def_cfa_register %rbp
 	cmpq	$255, %rdi
-	ja	.LBB338_5
+	ja	.LBB334_5
 # BB#1:
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB338_2
+	je	.LBB334_2
 # BB#3:                                 # %LockSpinlock.exit
 	xorl	%ecx, %ecx
 	#APP
@@ -42416,47 +39599,47 @@ RegisterSyscall:                        # @RegisterSyscall
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3041
-.Ltmp3042:
+	je	.Ltmp2791
+.Ltmp2792:
 	btq	$25, %rcx
-	jae	.Ltmp3043
-.Ltmp3043:
+	jae	.Ltmp2793
+.Ltmp2793:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3042
-.Ltmp3041:
+	jne	.Ltmp2792
+.Ltmp2791:
 	btq	$25, %rcx
-	jae	.Ltmp3044
+	jae	.Ltmp2794
 	orw	$1, 4(%rax)
-.Ltmp3044:
+.Ltmp2794:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	%rsi, Syscalls(,%rdi,8)
 	testq	%rax, %rax
-	je	.LBB338_5
+	je	.LBB334_5
 # BB#4:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3045
+	jae	.Ltmp2795
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3045:
+.Ltmp2795:
 
 	#NO_APP
-.LBB338_5:                              # %UnlockSpinlock.exit
+.LBB334_5:                              # %UnlockSpinlock.exit
 	popq	%rbp
 	retq
-.LBB338_2:                              # %LockSpinlock.exit.thread
+.LBB334_2:                              # %LockSpinlock.exit.thread
 	movq	%rsi, Syscalls(,%rdi,8)
 	popq	%rbp
 	retq
-.Lfunc_end338:
-	.size	RegisterSyscall, .Lfunc_end338-RegisterSyscall
+.Lfunc_end334:
+	.size	RegisterSyscall, .Lfunc_end334-RegisterSyscall
 	.cfi_endproc
 
 	.globl	RegisterAllSyscalls
@@ -42466,16 +39649,16 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3046:
+.Ltmp2796:
 	.cfi_def_cfa_offset 16
-.Ltmp3047:
+.Ltmp2797:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3048:
+.Ltmp2798:
 	.cfi_def_cfa_register %rbp
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB339_1
+	je	.LBB335_1
 # BB#2:                                 # %LockSpinlock.exit.i
 	xorl	%ecx, %ecx
 	#APP
@@ -42488,41 +39671,41 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3049
-.Ltmp3050:
+	je	.Ltmp2799
+.Ltmp2800:
 	btq	$25, %rcx
-	jae	.Ltmp3051
-.Ltmp3051:
+	jae	.Ltmp2801
+.Ltmp2801:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3050
-.Ltmp3049:
+	jne	.Ltmp2800
+.Ltmp2799:
 	btq	$25, %rcx
-	jae	.Ltmp3052
+	jae	.Ltmp2802
 	orw	$1, 4(%rax)
-.Ltmp3052:
+.Ltmp2802:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	$Nanosleep_Syscall, Syscalls+32
 	testq	%rax, %rax
-	je	.LBB339_4
+	je	.LBB335_4
 # BB#3:                                 # %RegisterSyscall.exit
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3053
+	jae	.Ltmp2803
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3053:
+.Ltmp2803:
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB339_4
+	je	.LBB335_4
 # BB#5:                                 # %LockSpinlock.exit.i.2
 	xorl	%ecx, %ecx
 	#APP
@@ -42535,41 +39718,41 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3054
-.Ltmp3055:
+	je	.Ltmp2804
+.Ltmp2805:
 	btq	$25, %rcx
-	jae	.Ltmp3056
-.Ltmp3056:
+	jae	.Ltmp2806
+.Ltmp2806:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3055
-.Ltmp3054:
+	jne	.Ltmp2805
+.Ltmp2804:
 	btq	$25, %rcx
-	jae	.Ltmp3057
+	jae	.Ltmp2807
 	orw	$1, 4(%rax)
-.Ltmp3057:
+.Ltmp2807:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	$ArchPrctl_Syscall, Syscalls+1264
 	testq	%rax, %rax
-	je	.LBB339_7
+	je	.LBB335_7
 # BB#6:                                 # %RegisterSyscall.exit4
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3058
+	jae	.Ltmp2808
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3058:
+.Ltmp2808:
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB339_7
+	je	.LBB335_7
 # BB#8:                                 # %LockSpinlock.exit.i.6
 	xorl	%ecx, %ecx
 	#APP
@@ -42582,41 +39765,41 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3059
-.Ltmp3060:
+	je	.Ltmp2809
+.Ltmp2810:
 	btq	$25, %rcx
-	jae	.Ltmp3061
-.Ltmp3061:
+	jae	.Ltmp2811
+.Ltmp2811:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3060
-.Ltmp3059:
+	jne	.Ltmp2810
+.Ltmp2809:
 	btq	$25, %rcx
-	jae	.Ltmp3062
+	jae	.Ltmp2812
 	orw	$1, 4(%rax)
-.Ltmp3062:
+.Ltmp2812:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	testq	%rax, %rax
-	je	.LBB339_10
+	je	.LBB335_10
 # BB#9:                                 # %RegisterSyscall.exit8
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3063
+	jae	.Ltmp2813
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3063:
+.Ltmp2813:
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB339_10
+	je	.LBB335_10
 # BB#11:                                # %LockSpinlock.exit.i.10
 	xorl	%ecx, %ecx
 	#APP
@@ -42629,41 +39812,41 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3064
-.Ltmp3065:
+	je	.Ltmp2814
+.Ltmp2815:
 	btq	$25, %rcx
-	jae	.Ltmp3066
-.Ltmp3066:
+	jae	.Ltmp2816
+.Ltmp2816:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3065
-.Ltmp3064:
+	jne	.Ltmp2815
+.Ltmp2814:
 	btq	$25, %rcx
-	jae	.Ltmp3067
+	jae	.Ltmp2817
 	orw	$1, 4(%rax)
-.Ltmp3067:
+.Ltmp2817:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	$MMap_Syscall, Syscalls+72
 	testq	%rax, %rax
-	je	.LBB339_13
+	je	.LBB335_13
 # BB#12:                                # %RegisterSyscall.exit12
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3068
+	jae	.Ltmp2818
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3068:
+.Ltmp2818:
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	testq	%rax, %rax
-	je	.LBB339_13
+	je	.LBB335_13
 # BB#14:                                # %LockSpinlock.exit.i.14
 	xorl	%ecx, %ecx
 	#APP
@@ -42676,49 +39859,49 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3069
-.Ltmp3070:
+	je	.Ltmp2819
+.Ltmp2820:
 	btq	$25, %rcx
-	jae	.Ltmp3071
-.Ltmp3071:
+	jae	.Ltmp2821
+.Ltmp2821:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3070
-.Ltmp3069:
+	jne	.Ltmp2820
+.Ltmp2819:
 	btq	$25, %rcx
-	jae	.Ltmp3072
+	jae	.Ltmp2822
 	orw	$1, 4(%rax)
-.Ltmp3072:
+.Ltmp2822:
 	cli
 
 	#NO_APP
 	movq	syscall_lock, %rax
 	movq	$Brk_Syscall, Syscalls+96
 	testq	%rax, %rax
-	je	.LBB339_16
+	je	.LBB335_16
 # BB#15:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3073
+	jae	.Ltmp2823
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3073:
+.Ltmp2823:
 
 	#NO_APP
-.LBB339_16:                             # %RegisterSyscall.exit16
+.LBB335_16:                             # %RegisterSyscall.exit16
 	popq	%rbp
 	retq
-.LBB339_4:                              # %LockSpinlock.exit.i.2.thread
+.LBB335_4:                              # %LockSpinlock.exit.i.2.thread
 	movq	$ArchPrctl_Syscall, Syscalls+1264
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	movq	$MMap_Syscall, Syscalls+72
 	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
-.LBB339_1:                              # %LockSpinlock.exit.i.thread
+.LBB335_1:                              # %LockSpinlock.exit.i.thread
 	movq	$Nanosleep_Syscall, Syscalls+32
 	movq	$ArchPrctl_Syscall, Syscalls+1264
 	movq	$SetTidAddress_Syscall, Syscalls+1744
@@ -42726,23 +39909,23 @@ RegisterAllSyscalls:                    # @RegisterAllSyscalls
 	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
-.LBB339_7:                              # %LockSpinlock.exit.i.6.thread
+.LBB335_7:                              # %LockSpinlock.exit.i.6.thread
 	movq	$SetTidAddress_Syscall, Syscalls+1744
 	movq	$MMap_Syscall, Syscalls+72
 	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
-.LBB339_10:                             # %LockSpinlock.exit.i.10.thread
+.LBB335_10:                             # %LockSpinlock.exit.i.10.thread
 	movq	$MMap_Syscall, Syscalls+72
 	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
-.LBB339_13:                             # %LockSpinlock.exit.i.14.thread
+.LBB335_13:                             # %LockSpinlock.exit.i.14.thread
 	movq	$Brk_Syscall, Syscalls+96
 	popq	%rbp
 	retq
-.Lfunc_end339:
-	.size	RegisterAllSyscalls, .Lfunc_end339-RegisterAllSyscalls
+.Lfunc_end335:
+	.size	RegisterAllSyscalls, .Lfunc_end335-RegisterAllSyscalls
 	.cfi_endproc
 
 	.globl	Nanosleep_Syscall
@@ -42752,27 +39935,27 @@ Nanosleep_Syscall:                      # @Nanosleep_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3074:
+.Ltmp2824:
 	.cfi_def_cfa_offset 16
-.Ltmp3075:
+.Ltmp2825:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3076:
+.Ltmp2826:
 	.cfi_def_cfa_register %rbp
 	movl	$38, %eax
 	cmpq	$4, %rsi
-	jne	.LBB340_3
+	jne	.LBB336_3
 # BB#1:
 	xorl	%eax, %eax
 	cmpq	$2, 16(%rdx)
-	je	.LBB340_3
+	je	.LBB336_3
 # BB#2:                                 # %select.mid
 	movl	$22, %eax
-.LBB340_3:
+.LBB336_3:
 	popq	%rbp
 	retq
-.Lfunc_end340:
-	.size	Nanosleep_Syscall, .Lfunc_end340-Nanosleep_Syscall
+.Lfunc_end336:
+	.size	Nanosleep_Syscall, .Lfunc_end336-Nanosleep_Syscall
 	.cfi_endproc
 
 	.globl	SetTidAddress_Syscall
@@ -42782,26 +39965,26 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3077:
+.Ltmp2827:
 	.cfi_def_cfa_offset 16
-.Ltmp3078:
+.Ltmp2828:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3079:
+.Ltmp2829:
 	.cfi_def_cfa_register %rbp
 	movl	$38, %eax
 	cmpq	$218, %rsi
-	jne	.LBB341_10
+	jne	.LBB337_10
 # BB#1:
 	movl	$22, %eax
 	cmpq	$1, 16(%rdx)
-	jne	.LBB341_10
+	jne	.LBB337_10
 # BB#2:
 	movq	coreState, %rax
 	movq	(%rax), %rax
-	movq	168(%rax), %rcx
+	movq	152(%rax), %rcx
 	testq	%rcx, %rcx
-	je	.LBB341_3
+	je	.LBB337_3
 # BB#4:                                 # %LockSpinlock.exit.i
 	xorl	%esi, %esi
 	#APP
@@ -42814,50 +39997,50 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	xaddw	%si, 2(%rcx)
 	cmpw	%si, (%rcx)
-	je	.Ltmp3080
-.Ltmp3081:
+	je	.Ltmp2830
+.Ltmp2831:
 	btq	$25, %rsi
-	jae	.Ltmp3082
-.Ltmp3082:
+	jae	.Ltmp2832
+.Ltmp2832:
 	pause
 	cmpw	%si, (%rcx)
-	jne	.Ltmp3081
-.Ltmp3080:
+	jne	.Ltmp2831
+.Ltmp2830:
 	btq	$25, %rsi
-	jae	.Ltmp3083
+	jae	.Ltmp2833
 	orw	$1, 4(%rcx)
-.Ltmp3083:
+.Ltmp2833:
 	cli
 
 	#NO_APP
-	movq	8(%rax), %rdi
-	movq	168(%rax), %rax
+	movq	(%rax), %rdi
+	movq	152(%rax), %rax
 	testq	%rax, %rax
-	je	.LBB341_6
+	je	.LBB337_6
 # BB#5:
 	#APP
 	mfence
 	lock
 	incw	(%rax)
 	btw	$0, 4(%rax)
-	jae	.Ltmp3084
+	jae	.Ltmp2834
 	sti
 	movw	$0, 4(%rax)
-.Ltmp3084:
+.Ltmp2834:
 
 	#NO_APP
-	jmp	.LBB341_6
-.LBB341_3:                              # %LockSpinlock.exit.i.thread
-	movq	8(%rax), %rdi
-.LBB341_6:                              # %GetCurrentThreadUID.exit
+	jmp	.LBB337_6
+.LBB337_3:                              # %LockSpinlock.exit.i.thread
+	movq	(%rax), %rdi
+.LBB337_6:                              # %GetCurrentThreadUID.exit
 	movq	8(%rdx), %rax
 	movq	(%rax), %rsi
 	callq	Thread_SetClearChildTIDAddress
 	movq	coreState, %rax
 	movq	(%rax), %rcx
-	movq	168(%rcx), %rax
+	movq	152(%rcx), %rax
 	testq	%rax, %rax
-	je	.LBB341_7
+	je	.LBB337_7
 # BB#8:                                 # %LockSpinlock.exit.i.2
 	xorl	%edx, %edx
 	#APP
@@ -42870,47 +40053,47 @@ SetTidAddress_Syscall:                  # @SetTidAddress_Syscall
 	lock
 	xaddw	%dx, 2(%rax)
 	cmpw	%dx, (%rax)
-	je	.Ltmp3085
-.Ltmp3086:
+	je	.Ltmp2835
+.Ltmp2836:
 	btq	$25, %rdx
-	jae	.Ltmp3087
-.Ltmp3087:
+	jae	.Ltmp2837
+.Ltmp2837:
 	pause
 	cmpw	%dx, (%rax)
-	jne	.Ltmp3086
-.Ltmp3085:
+	jne	.Ltmp2836
+.Ltmp2835:
 	btq	$25, %rdx
-	jae	.Ltmp3088
+	jae	.Ltmp2838
 	orw	$1, 4(%rax)
-.Ltmp3088:
+.Ltmp2838:
 	cli
 
 	#NO_APP
-	movq	8(%rcx), %rax
-	movq	168(%rcx), %rcx
+	movq	(%rcx), %rax
+	movq	152(%rcx), %rcx
 	testq	%rcx, %rcx
-	je	.LBB341_10
+	je	.LBB337_10
 # BB#9:
 	#APP
 	mfence
 	lock
 	incw	(%rcx)
 	btw	$0, 4(%rcx)
-	jae	.Ltmp3089
+	jae	.Ltmp2839
 	sti
 	movw	$0, 4(%rcx)
-.Ltmp3089:
+.Ltmp2839:
 
 	#NO_APP
-.LBB341_10:                             # %GetCurrentThreadUID.exit4
+.LBB337_10:                             # %GetCurrentThreadUID.exit4
 	popq	%rbp
 	retq
-.LBB341_7:                              # %LockSpinlock.exit.i.2.thread
-	movq	8(%rcx), %rax
+.LBB337_7:                              # %LockSpinlock.exit.i.2.thread
+	movq	(%rcx), %rax
 	popq	%rbp
 	retq
-.Lfunc_end341:
-	.size	SetTidAddress_Syscall, .Lfunc_end341-SetTidAddress_Syscall
+.Lfunc_end337:
+	.size	SetTidAddress_Syscall, .Lfunc_end337-SetTidAddress_Syscall
 	.cfi_endproc
 
 	.globl	MMap_Syscall
@@ -42920,12 +40103,12 @@ MMap_Syscall:                           # @MMap_Syscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3090:
+.Ltmp2840:
 	.cfi_def_cfa_offset 16
-.Ltmp3091:
+.Ltmp2841:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3092:
+.Ltmp2842:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -42933,199 +40116,60 @@ MMap_Syscall:                           # @MMap_Syscall
 	pushq	%r12
 	pushq	%rbx
 	subq	$24, %rsp
-.Ltmp3093:
+.Ltmp2843:
 	.cfi_offset %rbx, -56
-.Ltmp3094:
+.Ltmp2844:
 	.cfi_offset %r12, -48
-.Ltmp3095:
+.Ltmp2845:
 	.cfi_offset %r13, -40
-.Ltmp3096:
+.Ltmp2846:
 	.cfi_offset %r14, -32
-.Ltmp3097:
+.Ltmp2847:
 	.cfi_offset %r15, -24
 	movl	$38, %ecx
 	cmpq	$9, %rsi
-	jne	.LBB342_24
+	jne	.LBB338_17
 # BB#1:
 	movl	$38, %ecx
 	cmpq	$6, 16(%rdx)
-	jne	.LBB342_24
+	jne	.LBB338_17
 # BB#2:
 	movq	8(%rdx), %rax
-	movq	(%rax), %r14
-	movq	8(%rax), %r12
+	movq	(%rax), %r13
+	movq	8(%rax), %r14
 	movq	16(%rax), %rcx
+	movq	%rcx, -48(%rbp)         # 8-byte Spill
 	movq	24(%rax), %rax
-	movq	%rax, %r13
-	andq	$32, %r13
-	jne	.LBB342_4
+	movq	%rax, %r12
+	andq	$32, %r12
+	jne	.LBB338_4
 # BB#3:
 	#APP
 	cli
 	hlt
 	#NO_APP
-.LBB342_4:
+.LBB338_4:
 	testb	$16, %al
-	je	.LBB342_6
+	je	.LBB338_6
 # BB#5:
 	#APP
 	cli
 	hlt
 	#NO_APP
-.LBB342_6:
-	movq	%rcx, -48(%rbp)         # 8-byte Spill
+.LBB338_6:
 	testb	$64, %al
 	movl	$256, %eax              # imm = 0x100
 	movl	$2, %r15d
 	cmovnel	%eax, %r15d
 	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
-	movq	vmem_lock, %rax
-	xorl	%ebx, %ebx
-	testq	%rax, %rax
-	je	.LBB342_8
-# BB#7:
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp3098
-.Ltmp3099:
-	btq	$25, %rcx
-	jae	.Ltmp3100
-.Ltmp3100:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp3099
-.Ltmp3098:
-	btq	$25, %rcx
-	jae	.Ltmp3101
-	orw	$1, 4(%rax)
-.Ltmp3101:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-.LBB342_8:                              # %LockSpinlock.exit.i.3
-	movl	$1, %ecx
-	movq	%r12, %rsi
-	movl	%r15d, %edx
-	callq	VirtMemMan_FindFreeAddress
-	testq	%rax, %rax
-	cmovneq	%rax, %r14
-	testq	%rbx, %rbx
-	je	.LBB342_10
-# BB#9:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp3102
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp3102:
-
-	#NO_APP
-.LBB342_10:                             # %FindFreeVirtualAddress.exit
-	movl	$22, %ecx
-	testq	%r13, %r13
-	je	.LBB342_24
-# BB#11:
-	movq	%r12, %rax
-	andq	$4095, %rax             # imm = 0xFFF
-	movl	$4096, %ecx             # imm = 0x1000
-	subq	%rax, %rcx
-	xorl	%r13d, %r13d
-	movq	%r12, %rax
-	andq	$4095, %rax             # imm = 0xFFF
-	cmovneq	%rcx, %r13
-	addq	%r12, %r13
-	movq	%r13, %rdi
-	shrq	$12, %rdi
-	movq	vmem_lock, %rax
-	testq	%rax, %rax
-	je	.LBB342_12
-# BB#13:                                # %LockSpinlock.exit.i.7
-	xorl	%ecx, %ecx
-	#APP
-	mfence
-	pushfq
-	cli
-	popq	%rcx
-	shlq	$16, %rcx
-	movw	$1, %cx
-	lock
-	xaddw	%cx, 2(%rax)
-	cmpw	%cx, (%rax)
-	je	.Ltmp3103
-.Ltmp3104:
-	btq	$25, %rcx
-	jae	.Ltmp3105
-.Ltmp3105:
-	pause
-	cmpw	%cx, (%rax)
-	jne	.Ltmp3104
-.Ltmp3103:
-	btq	$25, %rcx
-	jae	.Ltmp3106
-	orw	$1, 4(%rax)
-.Ltmp3106:
-	cli
-
-	#NO_APP
-	movq	vmem_lock, %rbx
-	callq	MemMan_Alloc4KiBPageCont
-	movq	%rax, %r12
-	testq	%rbx, %rbx
-	je	.LBB342_15
-# BB#14:
-	#APP
-	mfence
-	lock
-	incw	(%rbx)
-	btw	$0, 4(%rbx)
-	jae	.Ltmp3107
-	sti
-	movw	$0, 4(%rbx)
-.Ltmp3107:
-
-	#NO_APP
-	jmp	.LBB342_15
-.LBB342_12:                             # %LockSpinlock.exit.i.7.thread
-	callq	MemMan_Alloc4KiBPageCont
-	movq	%rax, %r12
-.LBB342_15:                             # %AllocatePhysicalPageCont.exit
-	movl	$12, %ecx
-	testq	%r12, %r12
-	je	.LBB342_24
-# BB#16:
-	movl	$64, %edi
-	callq	kmalloc
-	movq	virtMemData, %rcx
-	movq	8(%rcx), %rdi
-	xorl	%ecx, %ecx
-	testq	%r14, %r14
-	je	.LBB342_24
-# BB#17:
-	movq	-48(%rbp), %rsi         # 8-byte Reload
-	movl	%esi, %ecx
-	shrl	%ecx
-	addl	%esi, %esi
-	andl	$2, %ecx
-	andl	$4, %esi
-	orl	%ecx, %esi
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
 	movq	vmem_lock, %rcx
+	xorl	%ebx, %ebx
 	testq	%rcx, %rcx
-	je	.LBB342_19
-# BB#18:
+	je	.LBB338_8
+# BB#7:
 	xorl	%edx, %edx
 	#APP
 	mfence
@@ -43137,121 +40181,65 @@ MMap_Syscall:                           # @MMap_Syscall
 	lock
 	xaddw	%dx, 2(%rcx)
 	cmpw	%dx, (%rcx)
-	je	.Ltmp3108
-.Ltmp3109:
+	je	.Ltmp2848
+.Ltmp2849:
 	btq	$25, %rdx
-	jae	.Ltmp3110
-.Ltmp3110:
+	jae	.Ltmp2850
+.Ltmp2850:
 	pause
 	cmpw	%dx, (%rcx)
-	jne	.Ltmp3109
-.Ltmp3108:
+	jne	.Ltmp2849
+.Ltmp2848:
 	btq	$25, %rdx
-	jae	.Ltmp3111
+	jae	.Ltmp2851
 	orw	$1, 4(%rcx)
-.Ltmp3111:
+.Ltmp2851:
 	cli
 
 	#NO_APP
-.LBB342_19:                             # %LockSpinlock.exit.i
-	movl	%esi, %ecx
-	shrl	%ecx
-	testq	%rax, %rax
-	je	.LBB342_21
-# BB#20:
-	orl	$8, %esi
-	movl	$0, (%rax)
-	movq	%r14, 8(%rax)
-	movq	%r12, 16(%rax)
-	movq	%r13, 24(%rax)
-	movl	%esi, 32(%rax)
-	movl	%r15d, 36(%rax)
-	movq	$0, 48(%rax)
-	movq	$0, 40(%rax)
-.LBB342_21:
-	movl	%ecx, (%rsp)
-	movl	$1, 8(%rsp)
-	movl	$1, %r8d
-	xorl	%r9d, %r9d
+	movq	vmem_lock, %rbx
+.LBB338_8:                              # %LockSpinlock.exit.i
+	movq	(%rax), %rdi
+	movl	$1, %ecx
 	movq	%r14, %rsi
-	movq	%r12, %rdx
-	movq	%r13, %rcx
-	callq	VirtMemMan_Map
-	movq	vmem_lock, %rax
+	movl	%r15d, %edx
+	callq	VirtMemMan_FindFreeAddress
 	testq	%rax, %rax
-	je	.LBB342_23
-# BB#22:
+	cmovneq	%rax, %r13
+	testq	%rbx, %rbx
+	je	.LBB338_10
+# BB#9:
 	#APP
 	mfence
 	lock
-	incw	(%rax)
-	btw	$0, 4(%rax)
-	jae	.Ltmp3112
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp2852
 	sti
-	movw	$0, 4(%rax)
-.Ltmp3112:
+	movw	$0, 4(%rbx)
+.Ltmp2852:
 
 	#NO_APP
-.LBB342_23:                             # %MapPage.exit
-	movq	%r14, %rcx
-.LBB342_24:                             # %MapPage.exit
-	movq	%rcx, %rax
-	addq	$24, %rsp
-	popq	%rbx
-	popq	%r12
-	popq	%r13
-	popq	%r14
-	popq	%r15
-	popq	%rbp
-	retq
-.Lfunc_end342:
-	.size	MMap_Syscall, .Lfunc_end342-MMap_Syscall
-	.cfi_endproc
-
-	.globl	Brk_Syscall
-	.align	16, 0x90
-	.type	Brk_Syscall,@function
-Brk_Syscall:                            # @Brk_Syscall
-	.cfi_startproc
-# BB#0:
-	pushq	%rbp
-.Ltmp3113:
-	.cfi_def_cfa_offset 16
-.Ltmp3114:
-	.cfi_offset %rbp, -16
-	movq	%rsp, %rbp
-.Ltmp3115:
-	.cfi_def_cfa_register %rbp
-	pushq	%rbx
-	pushq	%rax
-.Ltmp3116:
-	.cfi_offset %rbx, -24
-	movl	$38, %eax
-	cmpq	$12, %rsi
-	jne	.LBB343_8
-# BB#1:
-	movl	$38, %eax
-	cmpq	$1, 16(%rdx)
-	jne	.LBB343_8
-# BB#2:
-	movq	8(%rdx), %rax
-	movq	(%rax), %rax
-	testq	%rax, %rax
-	je	.LBB343_3
-# BB#7:
-	#APP
-	cli
-	hlt
-	#NO_APP
-	xorl	%eax, %eax
-	jmp	.LBB343_8
-.LBB343_3:
-	movq	virtMemData, %rax
-	movq	8(%rax), %rdi
+.LBB338_10:                             # %FindFreeVirtualAddress.exit
+	movl	$22, %ecx
+	testq	%r12, %r12
+	je	.LBB338_17
+# BB#11:
+	movq	%r14, %rax
+	andq	$4095, %rax             # imm = 0xFFF
+	movl	$4096, %ecx             # imm = 0x1000
+	subq	%rax, %rcx
+	xorl	%r12d, %r12d
+	movq	%r14, %rax
+	andq	$4095, %rax             # imm = 0xFFF
+	cmovneq	%rcx, %r12
+	addq	%r14, %r12
+	movq	%r12, %rdi
+	shrq	$12, %rdi
 	movq	vmem_lock, %rax
 	testq	%rax, %rax
-	je	.LBB343_4
-# BB#5:                                 # %LockSpinlock.exit.i
+	je	.LBB338_12
+# BB#13:                                # %LockSpinlock.exit.i.2
 	xorl	%ecx, %ecx
 	#APP
 	mfence
@@ -43263,54 +40251,175 @@ Brk_Syscall:                            # @Brk_Syscall
 	lock
 	xaddw	%cx, 2(%rax)
 	cmpw	%cx, (%rax)
-	je	.Ltmp3117
-.Ltmp3118:
+	je	.Ltmp2853
+.Ltmp2854:
 	btq	$25, %rcx
-	jae	.Ltmp3119
-.Ltmp3119:
+	jae	.Ltmp2855
+.Ltmp2855:
 	pause
 	cmpw	%cx, (%rax)
-	jne	.Ltmp3118
-.Ltmp3117:
+	jne	.Ltmp2854
+.Ltmp2853:
 	btq	$25, %rcx
-	jae	.Ltmp3120
+	jae	.Ltmp2856
 	orw	$1, 4(%rax)
-.Ltmp3120:
+.Ltmp2856:
 	cli
 
 	#NO_APP
 	movq	vmem_lock, %rbx
+	callq	MemMan_Alloc4KiBPageCont
+	testq	%rbx, %rbx
+	je	.LBB338_15
+# BB#14:
+	#APP
+	mfence
+	lock
+	incw	(%rbx)
+	btw	$0, 4(%rbx)
+	jae	.Ltmp2857
+	sti
+	movw	$0, 4(%rbx)
+.Ltmp2857:
+
+	#NO_APP
+	jmp	.LBB338_15
+.LBB338_12:                             # %LockSpinlock.exit.i.2.thread
+	callq	MemMan_Alloc4KiBPageCont
+.LBB338_15:                             # %AllocatePhysicalPageCont.exit
+	movl	$12, %ecx
+	testq	%rax, %rax
+	je	.LBB338_17
+# BB#16:
+	movq	-48(%rbp), %rdx         # 8-byte Reload
+	movl	%edx, %ecx
+	shrl	%ecx
+	addl	%edx, %edx
+	andl	$2, %ecx
+	andl	$4, %edx
+	orl	%ecx, %edx
+	orl	$8, %edx
+	movq	virtMemData, %rcx
+	movq	8(%rcx), %rcx
+	movq	curPageTable, %rcx
+	movq	(%rcx), %rdi
+	movl	%edx, (%rsp)
+	xorl	%r8d, %r8d
+	movq	%rax, %rsi
+	movq	%r13, %rdx
+	movq	%r12, %rcx
+	movl	%r15d, %r9d
+	callq	MapPage
+	movq	%r13, %rcx
+.LBB338_17:
+	movq	%rcx, %rax
+	addq	$24, %rsp
+	popq	%rbx
+	popq	%r12
+	popq	%r13
+	popq	%r14
+	popq	%r15
+	popq	%rbp
+	retq
+.Lfunc_end338:
+	.size	MMap_Syscall, .Lfunc_end338-MMap_Syscall
+	.cfi_endproc
+
+	.globl	Brk_Syscall
+	.align	16, 0x90
+	.type	Brk_Syscall,@function
+Brk_Syscall:                            # @Brk_Syscall
+	.cfi_startproc
+# BB#0:
+	pushq	%rbp
+.Ltmp2858:
+	.cfi_def_cfa_offset 16
+.Ltmp2859:
+	.cfi_offset %rbp, -16
+	movq	%rsp, %rbp
+.Ltmp2860:
+	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+	pushq	%rax
+.Ltmp2861:
+	.cfi_offset %rbx, -24
+	movl	$38, %eax
+	cmpq	$12, %rsi
+	jne	.LBB339_7
+# BB#1:
+	movl	$38, %eax
+	cmpq	$1, 16(%rdx)
+	jne	.LBB339_7
+# BB#2:
+	movq	8(%rdx), %rcx
+	movl	$12, %eax
+	cmpq	$0, (%rcx)
+	jne	.LBB339_7
+# BB#3:
+	movq	virtMemData, %rax
+	movq	8(%rax), %rax
+	movq	curPageTable, %rax
+	movq	(%rax), %rax
+	movq	vmem_lock, %rcx
+	xorl	%ebx, %ebx
+	testq	%rcx, %rcx
+	je	.LBB339_5
+# BB#4:
+	xorl	%edx, %edx
+	#APP
+	mfence
+	pushfq
+	cli
+	popq	%rdx
+	shlq	$16, %rdx
+	movw	$1, %dx
+	lock
+	xaddw	%dx, 2(%rcx)
+	cmpw	%dx, (%rcx)
+	je	.Ltmp2862
+.Ltmp2863:
+	btq	$25, %rdx
+	jae	.Ltmp2864
+.Ltmp2864:
+	pause
+	cmpw	%dx, (%rcx)
+	jne	.Ltmp2863
+.Ltmp2862:
+	btq	$25, %rdx
+	jae	.Ltmp2865
+	orw	$1, 4(%rcx)
+.Ltmp2865:
+	cli
+
+	#NO_APP
+	movq	vmem_lock, %rbx
+.LBB339_5:                              # %LockSpinlock.exit.i
+	movq	(%rax), %rdi
 	movl	$4096, %esi             # imm = 0x1000
 	xorl	%edx, %edx
 	movl	$1, %ecx
 	callq	VirtMemMan_FindFreeAddress
 	testq	%rbx, %rbx
-	je	.LBB343_8
+	je	.LBB339_7
 # BB#6:
 	#APP
 	mfence
 	lock
 	incw	(%rbx)
 	btw	$0, 4(%rbx)
-	jae	.Ltmp3121
+	jae	.Ltmp2866
 	sti
 	movw	$0, 4(%rbx)
-.Ltmp3121:
+.Ltmp2866:
 
 	#NO_APP
-	jmp	.LBB343_8
-.LBB343_4:                              # %LockSpinlock.exit.i.thread
-	movl	$4096, %esi             # imm = 0x1000
-	xorl	%edx, %edx
-	movl	$1, %ecx
-	callq	VirtMemMan_FindFreeAddress
-.LBB343_8:                              # %FindFreeVirtualAddress.exit
+.LBB339_7:                              # %FindFreeVirtualAddress.exit
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq
-.Lfunc_end343:
-	.size	Brk_Syscall, .Lfunc_end343-Brk_Syscall
+.Lfunc_end339:
+	.size	Brk_Syscall, .Lfunc_end339-Brk_Syscall
 	.cfi_endproc
 
 	.globl	USB_AddController
@@ -43320,17 +40429,17 @@ USB_AddController:                      # @USB_AddController
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3122:
+.Ltmp2867:
 	.cfi_def_cfa_offset 16
-.Ltmp3123:
+.Ltmp2868:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3124:
+.Ltmp2869:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end344:
-	.size	USB_AddController, .Lfunc_end344-USB_AddController
+.Lfunc_end340:
+	.size	USB_AddController, .Lfunc_end340-USB_AddController
 	.cfi_endproc
 
 	.globl	UHCI_ControllerAdded
@@ -43340,17 +40449,17 @@ UHCI_ControllerAdded:                   # @UHCI_ControllerAdded
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3125:
+.Ltmp2870:
 	.cfi_def_cfa_offset 16
-.Ltmp3126:
+.Ltmp2871:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3127:
+.Ltmp2872:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end345:
-	.size	UHCI_ControllerAdded, .Lfunc_end345-UHCI_ControllerAdded
+.Lfunc_end341:
+	.size	UHCI_ControllerAdded, .Lfunc_end341-UHCI_ControllerAdded
 	.cfi_endproc
 
 	.globl	SecMon_Initialize
@@ -43360,16 +40469,16 @@ SecMon_Initialize:                      # @SecMon_Initialize
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3128:
+.Ltmp2873:
 	.cfi_def_cfa_offset 16
-.Ltmp3129:
+.Ltmp2874:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3130:
+.Ltmp2875:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	.align	16, 0x90
-.LBB346_1:                              # =>This Inner Loop Header: Depth=1
+.LBB342_1:                              # =>This Inner Loop Header: Depth=1
 	movq	$0, filtered_syscalls(,%rax,8)
 	movq	$0, filtered_syscalls+8(,%rax,8)
 	movq	$0, filtered_syscalls+16(,%rax,8)
@@ -43380,12 +40489,12 @@ SecMon_Initialize:                      # @SecMon_Initialize
 	movq	$0, filtered_syscalls+56(,%rax,8)
 	addq	$8, %rax
 	cmpq	$256, %rax              # imm = 0x100
-	jne	.LBB346_1
+	jne	.LBB342_1
 # BB#2:
 	popq	%rbp
 	retq
-.Lfunc_end346:
-	.size	SecMon_Initialize, .Lfunc_end346-SecMon_Initialize
+.Lfunc_end342:
+	.size	SecMon_Initialize, .Lfunc_end342-SecMon_Initialize
 	.cfi_endproc
 
 	.globl	SecMon_RegisterSyscall
@@ -43395,17 +40504,17 @@ SecMon_RegisterSyscall:                 # @SecMon_RegisterSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3131:
+.Ltmp2876:
 	.cfi_def_cfa_offset 16
-.Ltmp3132:
+.Ltmp2877:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3133:
+.Ltmp2878:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end347:
-	.size	SecMon_RegisterSyscall, .Lfunc_end347-SecMon_RegisterSyscall
+.Lfunc_end343:
+	.size	SecMon_RegisterSyscall, .Lfunc_end343-SecMon_RegisterSyscall
 	.cfi_endproc
 
 	.globl	SecMon_FilterUpdateSyscall
@@ -43415,18 +40524,18 @@ SecMon_FilterUpdateSyscall:             # @SecMon_FilterUpdateSyscall
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3134:
+.Ltmp2879:
 	.cfi_def_cfa_offset 16
-.Ltmp3135:
+.Ltmp2880:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3136:
+.Ltmp2881:
 	.cfi_def_cfa_register %rbp
 	xorl	%eax, %eax
 	popq	%rbp
 	retq
-.Lfunc_end348:
-	.size	SecMon_FilterUpdateSyscall, .Lfunc_end348-SecMon_FilterUpdateSyscall
+.Lfunc_end344:
+	.size	SecMon_FilterUpdateSyscall, .Lfunc_end344-SecMon_FilterUpdateSyscall
 	.cfi_endproc
 
 	.globl	SecMon_ControlFlowVerificationHandler
@@ -43436,17 +40545,17 @@ SecMon_ControlFlowVerificationHandler:  # @SecMon_ControlFlowVerificationHandler
 	.cfi_startproc
 # BB#0:
 	pushq	%rbp
-.Ltmp3137:
+.Ltmp2882:
 	.cfi_def_cfa_offset 16
-.Ltmp3138:
+.Ltmp2883:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-.Ltmp3139:
+.Ltmp2884:
 	.cfi_def_cfa_register %rbp
 	popq	%rbp
 	retq
-.Lfunc_end349:
-	.size	SecMon_ControlFlowVerificationHandler, .Lfunc_end349-SecMon_ControlFlowVerificationHandler
+.Lfunc_end345:
+	.size	SecMon_ControlFlowVerificationHandler, .Lfunc_end345-SecMon_ControlFlowVerificationHandler
 	.cfi_endproc
 
 	.type	smp_sync_base,@object   # @smp_sync_base
@@ -43604,6 +40713,9 @@ letters:
 	.type	vmem_lock,@object       # @vmem_lock
 	.local	vmem_lock
 	.comm	vmem_lock,8,8
+	.type	curPageTable,@object    # @curPageTable
+	.local	curPageTable
+	.comm	curPageTable,8,8
 	.type	.Lswitch.table.1,@object # @switch.table.1
 	.section	.rodata,"a",@progbits
 	.align	4

@@ -133,17 +133,9 @@ FindFreeVirtualAddress(ManagedPageTable* 			pageTable,
                        MemoryAllocationType 	allocType,
                        MemoryAllocationFlags 	flags);
 
-//Lock the physical page to prevent modification
-uint64_t
-LockPageToUser(uint64_t virtualAddress);
-
-//Unlock the physical page to allow modification, if this was allowed
-void
-UnlockPageToUser(uint64_t virtualAddress,
-                 uint64_t lockKey);
-
 void
 HandlePageFault(uint64_t virtualAddress,
+                uint64_t instruction_pointer,
                 MemoryAllocationFlags error);
 
 void

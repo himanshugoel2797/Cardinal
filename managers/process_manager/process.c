@@ -35,6 +35,7 @@ ForkProcess(ProcessInformation *src,
     dst->ID = new_uid();
     dst->Status = src->Status;
     dst->Permissions = src->Permissions;
+    dst->PageTable = kmalloc(sizeof(ManagedPageTable));
 
     ForkTable(src->PageTable, dst->PageTable);
 

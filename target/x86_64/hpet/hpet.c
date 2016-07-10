@@ -2,7 +2,7 @@
 #include "acpi/hpet.h"
 #include "priv_hpet.h"
 #include "hpet.h"
-#include "memory.h"
+#include "virt_mem_manager/virt_mem_manager.h"
 
 static
 HPET_Main* hpet_regs = NULL;
@@ -12,7 +12,7 @@ HPET_Initialize(void) {
     HPET *hpet = (HPET*)ACPITables_FindTable(HPET_SIG, 0);
     if(hpet == NULL)return HPETError_NotPresent;
 
-    hpet_regs = (HPET_Main*)GetVirtualAddress(CachingModeUncachable, (void*)hpet->Address.address);
+    hpet_regs = (HPET_Main*)VirtMemMan_GetVirtualAddress(CachingModeUncachable, (void*)hpet->Address.address);
 
     HPET_SetCounterEnableStatus(DISABLE);
     HPET_SetCounterValue(0);
