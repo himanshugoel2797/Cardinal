@@ -14,6 +14,7 @@ SyscallHandler Syscalls[MAX_SYSCALL_COUNT];
 void
 SyscallMan_Initialize(void) {
     syscall_lock = CreateSpinlock();
+    for(int i = 0; i < MAX_SYSCALL_COUNT; i++)Syscalls[i] = NULL;
     RegisterAllSyscalls();
 }
 
@@ -30,6 +31,7 @@ SyscallReceived(uint64_t instruction_pointer,
     MemoryAllocationFlags flags = 0;
     CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags);
 
+    if(instruction_pointer == 0x4006a7) __asm__("cli\n\thlt" :: "a"(syscall_params));
     if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
         return EINVAL;
 

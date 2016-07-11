@@ -450,6 +450,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
                 //TODO Free process if reference count is zero
 
+                UnlockSpinlock(next_thread->ParentProcess->lock);
                 FreeSpinlock(next_thread->lock);
                 kfree(next_thread);
                 next_thread = NULL;

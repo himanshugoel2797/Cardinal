@@ -16,7 +16,8 @@ void
 MemoryHAL_Initialize(void) {
     vmem_lock = CreateBootstrapSpinlock();
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
-    curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
+    if(curPageTable == NULL)
+        curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
 }
 
 void*
@@ -56,7 +57,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL){
         if(inst->reference_count != 0)
             HaltProcessor();
-    LockSpinlock(inst->lock);
+    LockSpinlock(vmem_lock);
     if(inst->PageTable != 0 && inst->PageTable % PAGE_SIZE == 0) {
 
         //First free all memory we can free
@@ -85,7 +86,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
 
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
     }
-        UnlockSpinlock(inst->lock);
+        UnlockSpinlock(vmem_lock);
 }
 }
 
@@ -99,7 +100,6 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     inst->reference_count++;
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     UnlockSpinlock(inst->lock);
-    UnlockSpinlock(vmem_lock);
 
     if(tmp != NULL){
     LockSpinlock(tmp->lock);
@@ -107,6 +107,7 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     UnlockSpinlock(tmp->lock);
     }
 
+    UnlockSpinlock(vmem_lock);
     return (ManagedPageTable*)tmp;
 }
 
@@ -199,7 +200,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 top->AdditionalData = map->AdditionalData;
 
                 top->VirtualAddress = virtualAddress + size;
-                top->PhysicalAddress = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(virtualAddress + size));
+                top->PhysicalAddress = (uint64_t)VirtMemMan_GetPhysicalAddress((PML_Instance)pageTable->PageTable, (void*)(virtualAddress + size));
                 top->Length = (map->VirtualAddress + map->Length) - (virtualAddress + size);
 
                 map->Length = virtualAddress - map->VirtualAddress;

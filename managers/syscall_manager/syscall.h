@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define MAX_SYSCALL_COUNT 256
+#define MAX_SYSCALL_COUNT 512
 
 typedef struct {
     uint64_t size;

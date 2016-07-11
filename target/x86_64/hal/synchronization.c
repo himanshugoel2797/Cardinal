@@ -39,8 +39,6 @@ LockSpinlock(Spinlock primitive) {
         "je 3f\n\t"
         "1:\n\t"
         "btq $25, %[rcx]\n\t"
-        "jnc 2f\n\t"
-        "2:"
         "pause\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "jne 1b\n\t"
@@ -77,10 +75,10 @@ UnlockSpinlock(Spinlock primitive) {
         "mfence\n\t"
         "lock incw (%0)\n\t"
         "btw $0, +4(%0)\n\t"
-        "jnc 1f\n\t"
+        "jnc 10f\n\t"
         "sti\n\t"
         "movw $0, +4(%0)\n\t"
-        "1:\n\t"
+        "10:\n\t"
         :: "r"(primitive) : "memory"
     );
     return TRUE;

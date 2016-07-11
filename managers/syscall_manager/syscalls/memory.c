@@ -90,6 +90,9 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 
     SyscallData *data = (SyscallData*)syscall_params;
 
+    ProcessInformation *p_info;
+    GetProcessReference(GetCurrentProcessUID(), &p_info);
+
     if(data->param_num != 1)
         return ENOSYS;
 
@@ -101,6 +104,9 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
                                MemoryAllocationType_Heap,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
+        LockSpinlock(p_info->lock);
+        if(p_info->HeapBreak == 0)p_info->HeapBreak = addr;
+        UnlockSpinlock(p_info->lock);
         return addr;
     }
 
@@ -110,6 +116,23 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     if(area_base <= data->params[0] && area_top > data->params[0]) {
         //TODO expand the heap by a few pages and return the new heap break
 
+        LockSpinlock(p_info->lock);
+        uint64_t size = data->params[0] - p_info->HeapBreak;
+        uint64_t prev_heap_break = p_info->HeapBreak;
+        p_info->HeapBreak += size;
+        UnlockSpinlock(p_info->lock);
+
+        if(size % PAGE_SIZE != 0)size += PAGE_SIZE - (size % PAGE_SIZE);
+
+        MapPage(GetActiveVirtualMemoryInstance(),
+                prev_heap_break,
+                AllocatePhysicalPageCont(size/PAGE_SIZE),
+                size,
+                CachingModeWriteBack,
+                MemoryAllocationType_Heap,
+                MemoryAllocationFlags_Write | MemoryAllocationFlags_User); 
+
+        return prev_heap_break + size;
     }
 
     return ENOMEM;

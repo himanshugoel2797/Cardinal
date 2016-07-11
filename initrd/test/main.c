@@ -1,10 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <signal.h>
+
+void sigHandle(int sig)
+{
+	while(1);
+}
 
 int main() {
-    char *mem = malloc(13);
-    strcpy(mem, "Hello World!");
-    printf(mem);
+	signal(SIGINT, sigHandle);
     return 0;
 }

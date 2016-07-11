@@ -45,6 +45,7 @@ typedef struct ProcessInformation {
     ProcessPermissions          Permissions;
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
+    uint64_t                    HeapBreak;
 
     uint32_t                    reference_count;
     Spinlock                    lock;

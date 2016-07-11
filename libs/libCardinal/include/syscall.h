@@ -160,7 +160,7 @@ typedef enum {
 static __inline uint64_t
 Syscall0(uint32_t syscall_num) {
 
-    uint64_t parameters[0];
+    uint64_t volatile parameters[0];
     uint64_t ret_error = ENOSYS;
 
 #if defined(x86_64)
@@ -180,7 +180,7 @@ static __inline uint64_t
 Syscall1(uint32_t syscall_num,
          uint64_t p0) {
 
-    uint64_t parameters[1];
+    uint64_t volatile parameters[1];
     parameters[0] = p0;
 
     uint64_t ret_error = ENOSYS;
@@ -203,7 +203,7 @@ Syscall2(uint32_t syscall_num,
          uint64_t p0,
          uint64_t p1) {
 
-    uint64_t parameters[2];
+    uint64_t volatile parameters[2];
     parameters[0] = p0;
     parameters[1] = p1;
 
@@ -228,7 +228,7 @@ Syscall3(uint32_t syscall_num,
          uint64_t p1,
          uint64_t p2) {
 
-    uint64_t parameters[3];
+    uint64_t volatile parameters[3];
     parameters[0] = p0;
     parameters[1] = p1;
     parameters[2] = p2;
@@ -255,7 +255,7 @@ Syscall4(uint32_t syscall_num,
          uint64_t p2,
          uint64_t p3) {
 
-    uint64_t parameters[4];
+    uint64_t volatile parameters[4];
     parameters[0] = p0;
     parameters[1] = p1;
     parameters[2] = p2;
@@ -284,7 +284,7 @@ Syscall5(uint32_t syscall_num,
          uint64_t p3,
          uint64_t p4) {
 
-    uint64_t parameters[5];
+    uint64_t volatile parameters[5];
     parameters[0] = p0;
     parameters[1] = p1;
     parameters[2] = p2;
@@ -315,7 +315,7 @@ Syscall6(uint32_t syscall_num,
          uint64_t p4,
          uint64_t p5) {
 
-    uint64_t parameters[6];
+    uint64_t volatile parameters[6];
     parameters[0] = p0;
     parameters[1] = p1;
     parameters[2] = p2;

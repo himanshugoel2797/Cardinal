@@ -47,9 +47,11 @@ SwitchToUserMode(uint64_t pc, uint64_t sp) {
         "cli\n\t"
         "pushfq\n\t"
         "popq %%r11\n\t"
+        "andq $0xFFFFFFFFFFFF0000, %%r11\n\t"
         "orq $512, %%r11\n\t"
         "mov %[sp], %%rsp\n\t"
         "mov %%rsp, %%rbp\n\t"
+        "mov $0, %%rdx\n\t"
         "sysretq\n\t" :: [sp]"r"(sp), "c"(pc)
     );
 }
