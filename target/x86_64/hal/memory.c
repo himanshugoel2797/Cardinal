@@ -10,13 +10,13 @@
 #include "managers.h"
 
 static Spinlock vmem_lock = NULL;
-static volatile ManagedPageTable **curPageTable = NULL;
+static ManagedPageTable volatile **curPageTable = NULL;
 
 void
 MemoryHAL_Initialize(void) {
     vmem_lock = CreateBootstrapSpinlock();
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
-    curPageTable = (volatile ManagedPageTable**)AllocateAPLSMemory(sizeof(ManagedPageTable**));
+    curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
 }
 
 void*
@@ -101,9 +101,11 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     UnlockSpinlock(inst->lock);
     UnlockSpinlock(vmem_lock);
 
+    if(tmp != NULL){
     LockSpinlock(tmp->lock);
     tmp->reference_count--;
     UnlockSpinlock(tmp->lock);
+    }
 
     return (ManagedPageTable*)tmp;
 }
@@ -286,6 +288,9 @@ ForkTable(ManagedPageTable *src,
           ManagedPageTable *dst) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
+    dst->reference_count = 0;
+    dst->lock = CreateSpinlock();
+    dst->AllocationMap = NULL;
     CreateVirtualMemoryInstance(dst);
 
     if(src == NULL)return MemoryAllocationErrors_Unknown;
