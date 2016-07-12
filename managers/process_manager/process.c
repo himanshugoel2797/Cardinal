@@ -128,3 +128,42 @@ SetProcessSyscallStatus(UID pid,
     }
     return ProcessErrors_UIDNotFound;
 }
+
+ProcessErrors
+SetProcessSigmask(UID pid,
+                  const sigset_t *flags) {
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            LockSpinlock(pInf->lock);
+            memcpy(&pInf->SignalMask, flags, sizeof(sigset_t));
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}
+
+ProcessErrors
+GetProcessSigmask(UID           pid,
+                  sigset_t    *procInfo) {
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            if(procInfo != NULL)
+                memcpy(procInfo, &pInf->SignalMask, sizeof(sigset_t));
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}

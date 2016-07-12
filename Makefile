@@ -2,11 +2,9 @@ include Archs.inc
 
 TARGET_ARCH=$(ARCH_x86_64)
 
-LIBC_DIR=$(HOME)/Documents/musl-1.1.14
-
 BUILD_DIR=$(HOME)/Documents/Cardinal
 
-INCLUDES=. common managers drivers kmalloc target/hal
+INCLUDES= . common managers drivers kmalloc target/hal 
 
 DEFINES=MULTIBOOT2 $(TARGET_ARCH)
 export DEFINES

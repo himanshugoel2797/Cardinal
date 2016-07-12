@@ -6,6 +6,8 @@
 #include "memory.h"
 #include "synchronization.h"
 
+#include "libs/libc/include/signal.h"
+
 #define MAX_PROCESS_NAME_LEN (256)
 
 
@@ -46,6 +48,7 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
+    sigset_t                    SignalMask;
 
     uint32_t                    reference_count;
     Spinlock                    lock;

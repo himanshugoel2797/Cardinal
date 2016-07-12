@@ -17,7 +17,7 @@
 
 void*
 memcpy(void *dest,
-       void *src,
+       const void *src,
        size_t size);
 
 void*

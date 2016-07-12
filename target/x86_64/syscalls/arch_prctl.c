@@ -3,7 +3,7 @@
 #include "thread.h"
 #include "memory.h"
 
-#include <asm/prctl.h>
+#include "libs/libc/include/asm/prctl.h"
 
 uint64_t
 ArchPrctl_Syscall(uint64_t UNUSED(instruction_pointer),
