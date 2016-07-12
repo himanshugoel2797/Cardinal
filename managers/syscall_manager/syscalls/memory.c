@@ -130,7 +130,7 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
                 size,
                 CachingModeWriteBack,
                 MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Write | MemoryAllocationFlags_User); 
+                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
         return prev_heap_break + size;
     }

@@ -1,11 +1,10 @@
 #include <signal.h>
 
-void sigHandle(int sig)
-{
-	while(1);
+void sigHandle(int sig) {
+    while(1);
 }
 
 int main() {
-	signal(SIGINT, sigHandle);
+    signal(SIGINT, sigHandle);
     return 0;
 }

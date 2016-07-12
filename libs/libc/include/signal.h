@@ -6,7 +6,7 @@
 #define SUPPORTED_SIGNAL_COUNT 1024
 
 typedef struct {
-	uint64_t val[SUPPORTED_SIGNAL_COUNT/(8 * sizeof(uint64_t))];
+    uint64_t val[SUPPORTED_SIGNAL_COUNT/(8 * sizeof(uint64_t))];
 } sigset_t;
 
 #define SIG_BLOCK 0

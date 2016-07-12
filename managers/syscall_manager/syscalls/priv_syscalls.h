@@ -30,7 +30,7 @@ Brk_Syscall(uint64_t instruction_pointer,
 
 uint64_t
 RTSigProcMask_Syscall(uint64_t instruction_pointer,
-            uint64_t syscall_num,
-            uint64_t *syscall_params);
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params);
 
 #endif

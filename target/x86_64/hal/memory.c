@@ -54,40 +54,40 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 
 void
 FreeVirtualMemoryInstance(ManagedPageTable *inst) {
-    if(inst != NULL){
+    if(inst != NULL) {
         if(inst->reference_count != 0)
             HaltProcessor();
-    LockSpinlock(vmem_lock);
-    if(inst->PageTable != 0 && inst->PageTable % PAGE_SIZE == 0) {
+        LockSpinlock(vmem_lock);
+        if(inst->PageTable != 0 && inst->PageTable % PAGE_SIZE == 0) {
 
-        //First free all memory we can free
+            //First free all memory we can free
 
-        MemoryAllocationsMap* m = inst->AllocationMap;
-        while(m != NULL) {
-            MemoryAllocationsMap* n = m->next;
+            MemoryAllocationsMap* m = inst->AllocationMap;
+            while(m != NULL) {
+                MemoryAllocationsMap* n = m->next;
 
-            uint64_t phys_addr = m->PhysicalAddress;
-            uint64_t len = m->Length;
-            MemoryAllocationType allocType = m->AllocationType;
+                uint64_t phys_addr = m->PhysicalAddress;
+                uint64_t len = m->Length;
+                MemoryAllocationType allocType = m->AllocationType;
 
-            UnmapPage(inst,
-                      m->VirtualAddress,
-                      m->Length);
-            if(!(allocType & MemoryAllocationType_Global)) {
+                UnmapPage(inst,
+                          m->VirtualAddress,
+                          m->Length);
+                if(!(allocType & MemoryAllocationType_Global)) {
 
-                //TODO make this function check shared memory status first before releasing its memory
-                FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);
+                    //TODO make this function check shared memory status first before releasing its memory
+                    FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);
+                }
+                m = n;
             }
-            m = n;
+
+            if(inst->AllocationMap != NULL)
+                HaltProcessor();
+
+            VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         }
-
-        if(inst->AllocationMap != NULL)
-            HaltProcessor();
-
-        VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
-    }
         UnlockSpinlock(vmem_lock);
-}
+    }
 }
 
 ManagedPageTable*
@@ -101,10 +101,10 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     UnlockSpinlock(inst->lock);
 
-    if(tmp != NULL){
-    LockSpinlock(tmp->lock);
-    tmp->reference_count--;
-    UnlockSpinlock(tmp->lock);
+    if(tmp != NULL) {
+        LockSpinlock(tmp->lock);
+        tmp->reference_count--;
+        UnlockSpinlock(tmp->lock);
     }
 
     UnlockSpinlock(vmem_lock);
