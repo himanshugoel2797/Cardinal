@@ -27,10 +27,23 @@ RTSigProcMask_Syscall(uint64_t UNUSED(instruction_pointer),
 
     GetProcessSigmask(GetCurrentProcessUID(), &tmp_copy);
 
-    if(oldset != NULL)
+    if(oldset != NULL) {
+        MemoryAllocationFlags flags = 0;
+        CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)oldset, NULL, &flags);
+
+        if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
+            return EINVAL;
+
         GetProcessSigmask(GetCurrentProcessUID(), oldset);
+    }
 
     if(set != NULL) {
+
+        MemoryAllocationFlags flags = 0;
+        CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)set, NULL, &flags);
+
+        if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
+            return EINVAL;
 
         uint8_t *dst = (uint8_t*)&tmp_copy;
         uint8_t *src = (uint8_t*)set;
@@ -47,7 +60,7 @@ RTSigProcMask_Syscall(uint64_t UNUSED(instruction_pointer),
                 dst[i] = src[i];
                 break;
             default:
-                return ENOSYS;
+                return EINVAL;
             }
         }
 
@@ -55,4 +68,11 @@ RTSigProcMask_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     return 0;
+}
+
+uint64_t
+RTSigAction_Syscall(uint64_t UNUSED(instruction_pointer),
+                    uint64_t syscall_num,
+                    uint64_t *syscall_params) {
+
 }

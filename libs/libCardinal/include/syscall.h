@@ -149,6 +149,7 @@ typedef enum {
     Syscall_Nanosleep,
     Syscall_MMap = 9,
     Syscall_Brk = 12,
+    Syscall_RTSigAction = 13,
     Syscall_RTSigProcMask = 14,
     Syscall_ArchPrctl = 158,
     Syscall_SetTidAddress = 218,

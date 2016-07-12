@@ -10,4 +10,5 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_MMap, MMap_Syscall);
     RegisterSyscall(Syscall_Brk, Brk_Syscall);
     RegisterSyscall(Syscall_RTSigProcMask, RTSigProcMask_Syscall);
+    RegisterSyscall(Syscall_RTSigAction, RTSigAction_Syscall);
 }
