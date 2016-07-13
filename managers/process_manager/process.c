@@ -167,3 +167,46 @@ GetProcessSigmask(UID           pid,
     }
     return ProcessErrors_UIDNotFound;
 }
+
+ProcessErrors
+SetProcessSigaction(UID pid, 
+                    int sig_no, 
+                    const sigaction *sig)
+{
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            LockSpinlock(pInf->lock);
+            memcpy(&pInf->SignalHandlers[sig_no], sig, sizeof(sigaction));
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}
+
+ProcessErrors
+GetProcessSigaction(UID pid, 
+                    int sig_no, 
+                    sigaction *sig)
+{
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+            if(sig != NULL)
+                memcpy(sig, &pInf->SignalHandlers[sig_no], sizeof(sigaction));
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+}

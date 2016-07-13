@@ -12,6 +12,7 @@ typedef void (*Callback)(void*);
 typedef uint32_t (*Initializer)();
 typedef int(*ProcessEntryPoint)(int, char**);
 typedef uint8_t bool;
+typedef uint64_t off_t;
 
 #define TRUE 1
 #define FALSE 0

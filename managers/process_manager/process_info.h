@@ -49,6 +49,7 @@ typedef struct ProcessInformation {
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
     sigset_t                    SignalMask;
+    sigaction                   SignalHandlers[SUPPORTED_SIGNAL_COUNT];
 
     uint32_t                    reference_count;
     Spinlock                    lock;

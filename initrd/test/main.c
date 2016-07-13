@@ -6,5 +6,6 @@ void sigHandle(int sig) {
 
 int main() {
     signal(SIGINT, sigHandle);
+    while(1);
     return 0;
 }

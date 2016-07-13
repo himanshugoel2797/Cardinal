@@ -37,6 +37,16 @@ ProcessErrors
 GetProcessSigmask(UID           pid,
                   sigset_t    *procInfo);
 
+ProcessErrors
+SetProcessSigaction(UID pid, 
+                    int sig_no, 
+                    const sigaction *sig);
+
+ProcessErrors
+GetProcessSigaction(UID pid, 
+                    int sig_no, 
+                    sigaction *sig);
+
 void
 ProcessSys_Initialize(void);
 

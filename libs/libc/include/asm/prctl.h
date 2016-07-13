@@ -6,4 +6,8 @@
 #define ARCH_GET_FS 0x1003
 #define ARCH_GET_GS 0x1004
 
+uint64_t
+set_tid_address(void* address);
+
+
 #endif

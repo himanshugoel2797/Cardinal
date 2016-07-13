@@ -4,6 +4,15 @@
 #include "managers.h"
 
 uint64_t
+set_tid_address(void* address)
+{
+  Thread_SetClearChildTIDAddress(GetCurrentThreadUID(),
+                                 address);
+
+  return GetCurrentThreadUID();
+}
+
+uint64_t
 SetTidAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                       uint64_t syscall_num,
                       uint64_t *syscall_params) {
@@ -15,9 +24,5 @@ SetTidAddress_Syscall(uint64_t UNUSED(instruction_pointer),
     if(data->param_num != 1)
         return EINVAL;
 
-
-    Thread_SetClearChildTIDAddress(GetCurrentThreadUID(),
-                                   (void*)data->params[0]);
-
-    return GetCurrentThreadUID();
+    return set_tid_address((void*)data->params[0]);
 }

@@ -2,6 +2,7 @@
 #define _CARDINAL_SIGNAL_H_
 
 #include "types.h"
+#include "time.h"
 
 #define SUPPORTED_SIGNAL_COUNT 1024
 
@@ -56,11 +57,19 @@ typedef struct {
 #define SA_RESTORER   0x04000000
 
 typedef struct {
+	union{
 	void (*sa_handler)(int);
 	void (*sa_sigaction)(int, siginfo_t *, void *);
+	};
 	sigset_t sa_mask;
 	int sa_flags;
 	void (*sa_restorer)(void);
 } sigaction;
+
+uint64_t
+rt_sigprocmask(int how, 
+			   const sigset_t* set, 
+			   sigset_t* oldset, 
+			   size_t len);
 
 #endif

@@ -48,6 +48,7 @@ load_elf(void) {
     Initrd_GetFile("test.elf", &elf_loc, &elf_size);
     const char *argv[] = {"test.elf"};
 
+    __asm__("cli\n\thlt");
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
 }
