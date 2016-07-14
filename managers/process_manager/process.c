@@ -169,10 +169,9 @@ GetProcessSigmask(UID           pid,
 }
 
 ProcessErrors
-SetProcessSigaction(UID pid, 
-                    int sig_no, 
-                    const sigaction *sig)
-{
+SetProcessSigaction(UID pid,
+                    int sig_no,
+                    const sigaction *sig) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
@@ -191,10 +190,9 @@ SetProcessSigaction(UID pid,
 }
 
 ProcessErrors
-GetProcessSigaction(UID pid, 
-                    int sig_no, 
-                    sigaction *sig)
-{
+GetProcessSigaction(UID pid,
+                    int sig_no,
+                    sigaction *sig) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 

@@ -4,12 +4,11 @@
 #include "managers.h"
 
 uint64_t
-set_tid_address(void* address)
-{
-  Thread_SetClearChildTIDAddress(GetCurrentThreadUID(),
-                                 address);
+set_tid_address(void* address) {
+    Thread_SetClearChildTIDAddress(GetCurrentThreadUID(),
+                                   address);
 
-  return GetCurrentThreadUID();
+    return GetCurrentThreadUID();
 }
 
 uint64_t

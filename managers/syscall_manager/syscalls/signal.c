@@ -5,9 +5,8 @@
 #include "common.h"
 
 uint64_t
-rt_sigprocmask(int how, const sigset_t* set, sigset_t* oldset, size_t len)
-{
-	    sigset_t tmp_copy;
+rt_sigprocmask(int how, const sigset_t* set, sigset_t* oldset, size_t len) {
+    sigset_t tmp_copy;
 
     if(len != sizeof(sigset_t))
         return EINVAL;
@@ -78,13 +77,12 @@ RTSigProcMask_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-rt_sigaction(int signum, 
+rt_sigaction(int signum,
              const sigaction *act,
              sigaction *oldact,
-             size_t len)
-{
+             size_t len) {
     //TODO finish implementing sigaction
-            sigaction tmp_copy;
+    sigaction tmp_copy;
 
     if(signum >= SUPPORTED_SIGNAL_COUNT)
         return EINVAL;
@@ -122,12 +120,12 @@ RTSigAction_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
     if(syscall_num != Syscall_RTSigAction)
-		return ENOSYS;
+        return ENOSYS;
 
-	SyscallData *data = (SyscallData*)syscall_params;
+    SyscallData *data = (SyscallData*)syscall_params;
 
-	if(data->param_num != 4)
-		return ENOSYS;
+    if(data->param_num != 4)
+        return ENOSYS;
 
     int signum = data->params[0];
     const sigaction *act = (const sigaction*)data->params[1];

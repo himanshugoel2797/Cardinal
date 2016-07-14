@@ -5,14 +5,13 @@
 
 #include "libs/libc/include/sys/mman.h"
 
-uint64_t 
-mmap(void* addr, 
-    size_t target_len, 
-    int prot, 
-    int flags, 
-    int UNUSED(fd), 
-    off_t UNUSED(offset))
-{
+uint64_t
+mmap(void* addr,
+     size_t target_len,
+     int prot,
+     int flags,
+     int UNUSED(fd),
+     off_t UNUSED(offset)) {
     if((flags & MAP_ANONYMOUS) == 0)
         __asm__ volatile("cli\n\thlt");
 
@@ -93,8 +92,7 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-brk(void* targ_brk_address)
-{
+brk(void* targ_brk_address) {
     ProcessInformation *p_info;
     GetProcessReference(GetCurrentProcessUID(), &p_info);
 

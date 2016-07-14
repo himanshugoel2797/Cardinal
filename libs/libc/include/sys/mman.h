@@ -30,13 +30,13 @@
 #define MAP_HUGETLB    0x40000
 
 
-uint64_t 
-mmap(void* addr, 
-    size_t target_len, 
-    int prot, 
-    int flags, 
-    int fd, 
-    off_t offset);
+uint64_t
+mmap(void* addr,
+     size_t target_len,
+     int prot,
+     int flags,
+     int fd,
+     off_t offset);
 
 uint64_t
 brk(void* addr);

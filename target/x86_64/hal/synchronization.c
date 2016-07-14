@@ -26,7 +26,7 @@ LockSpinlock(Spinlock primitive) {
     uint64_t dummy1 = 0;
     uint64_t dummy2 = 0;
 
-      __asm__ volatile
+    __asm__ volatile
     (
         "mfence\n\t"
         "pushfq\n\t"
@@ -50,9 +50,9 @@ LockSpinlock(Spinlock primitive) {
         "orw $1, +4(%[prim])\n\t"
         "4:\n\t"
         "cli\n\t"
-        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2) 
+        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory"
-);
+    );
     return TRUE;
 }
 
@@ -73,7 +73,7 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
     __asm__ volatile
-    (   
+    (
         "mfence\n\t"
         "lock incw (%0)\n\t"
         "btw $0, +4(%0)\n\t"
