@@ -102,7 +102,7 @@ GetCurrentThreadUID(void) {
 
 UID
 GetCurrentProcessUID(void) {
-    return GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess)->ID;
+    return GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID);
 }
 
 void

@@ -13,9 +13,6 @@ LoadAndStartApplication(void *elf_loc,
                         const char **argv,
                         uint32_t argc,
                         const char **envp) {
-    ProcessInformation p_info;
-    GetProcessInformation(GetCurrentProcessUID(), &p_info);
-
     ElfInformation elf_info;
     if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
 

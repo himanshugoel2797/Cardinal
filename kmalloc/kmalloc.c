@@ -30,7 +30,7 @@ Spinlock alloc_sync;
 
 //Allocate a 256MB pool for the kernel and map it to a free address space
 void kmalloc_init(void) {
-#define STORE_SIZE MiB(16)
+#define STORE_SIZE MiB(32)
 
     //TODO Setup TLB shootdowns
     alloc_sync = CreateBootstrapSpinlock();
