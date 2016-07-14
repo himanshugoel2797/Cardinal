@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "managers/process_manager/process_info.h"
+#include "libs/libc/include/signal.h"
 #include "synchronization.h"
 
 //TODO: For the schedule manager, make sure to delete processes if their state suggests it
@@ -38,6 +39,8 @@ typedef struct ThreadInfo {
     UID                 ID;
 
     ProcessInformation  *ParentProcess;
+    
+    sigset_t            SignalMask;
 
     ThreadEntryPoint    entry_point;
     ThreadState         state;
@@ -153,5 +156,13 @@ GetCurrentThreadInfo(void);
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code);
+
+void
+SetThreadSigmask(UID id,
+                 const sigset_t *flags);
+
+void
+GetThreadSigmask(UID           id,
+                 sigset_t    *procInfo);
 
 #endif

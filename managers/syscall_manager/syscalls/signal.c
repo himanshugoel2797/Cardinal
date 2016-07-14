@@ -11,7 +11,7 @@ rt_sigprocmask(int how, const sigset_t* set, sigset_t* oldset, size_t len) {
     if(len != sizeof(sigset_t))
         return EINVAL;
 
-    GetProcessSigmask(GetCurrentProcessUID(), &tmp_copy);
+    GetThreadSigmask(GetCurrentThreadUID(), &tmp_copy);
 
     if(oldset != NULL) {
         MemoryAllocationFlags flags = 0;
@@ -50,7 +50,7 @@ rt_sigprocmask(int how, const sigset_t* set, sigset_t* oldset, size_t len) {
             }
         }
 
-        SetProcessSigmask(GetCurrentProcessUID(), &tmp_copy);
+        SetThreadSigmask(GetCurrentThreadUID(), &tmp_copy);
     }
     return 0;
 }

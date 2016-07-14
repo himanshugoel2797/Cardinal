@@ -40,6 +40,16 @@ typedef enum {
     ProcessErrors_UIDNotFound = (1 << 1)
 } ProcessErrors;
 
+typedef struct PendingSignalInfo {
+    union {
+        void (*sa_handler)(int);
+        void (*sa_sigaction)(int, siginfo_t*, void*);
+    };
+    int sa_num;
+    int sa_flags;
+    void (*sa_restorer)(void);
+} PendingSignalInfo;
+
 typedef struct ProcessInformation {
     UID                         ID;
     char                        Name[MAX_PROCESS_NAME_LEN];
@@ -48,8 +58,8 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
-    sigset_t                    SignalMask;
     sigaction                   SignalHandlers[SUPPORTED_SIGNAL_COUNT];
+    List                        *PendingSignals;
 
     uint32_t                    reference_count;
     Spinlock                    lock;

@@ -23,4 +23,15 @@ UnlockSpinlock(Spinlock primitive);
 void
 FreeSpinlock(Spinlock primitive);
 
+void
+AtomicIncrement32(uint32_t *val);
+
+void
+AtomicIncrement64(uint64_t *val);
+
+void
+AtomicDecrement32(uint32_t *val);
+
+void
+AtomicDecrement64(uint64_t *val);
 #endif

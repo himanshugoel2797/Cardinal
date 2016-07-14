@@ -40,7 +40,7 @@ typedef struct {
         int64_t a_val;
         void *a_ptr;
         void (*a_func)();
-    } a_un;
+    };
 } AUXVector;
 
 void

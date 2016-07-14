@@ -14,6 +14,10 @@ ProcessSys_Initialize(void) {
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
     root->PageTable = GetActiveVirtualMemoryInstance();
+    root->SyscallFlags = ProcessSyscallFlags_PermissionsLocked;
+    root->HeapBreak = 0;
+    memset(root->SignalHandlers, 0, sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
+    root->PendingSignals = List_Create(CreateSpinlock());
 
     root->reference_count = 0;
     root->lock = CreateSpinlock();
@@ -130,48 +134,12 @@ SetProcessSyscallStatus(UID pid,
 }
 
 ProcessErrors
-SetProcessSigmask(UID pid,
-                  const sigset_t *flags) {
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            memcpy(&pInf->SignalMask, flags, sizeof(sigset_t));
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-GetProcessSigmask(UID           pid,
-                  sigset_t    *procInfo) {
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            if(procInfo != NULL)
-                memcpy(procInfo, &pInf->SignalMask, sizeof(sigset_t));
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
 SetProcessSigaction(UID pid,
                     int sig_no,
                     const sigaction *sig) {
+    if(sig_no >= SUPPORTED_SIGNAL_COUNT)
+        return ProcessErrors_Unknown;
+
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
@@ -193,6 +161,9 @@ ProcessErrors
 GetProcessSigaction(UID pid,
                     int sig_no,
                     sigaction *sig) {
+    if(sig_no >= SUPPORTED_SIGNAL_COUNT)
+        return ProcessErrors_Unknown;
+
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
@@ -207,4 +178,12 @@ GetProcessSigaction(UID pid,
         }
     }
     return ProcessErrors_UIDNotFound;
+}
+
+void
+RaiseSignal(UID pid, 
+            int sig_no)
+{
+    pid = 0;
+    sig_no = 0;
 }

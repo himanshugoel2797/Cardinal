@@ -28,15 +28,6 @@ ProcessErrors
 SetProcessSyscallStatus(UID pid,
                         ProcessSyscallFlags flags);
 
-
-ProcessErrors
-SetProcessSigmask(UID pid,
-                  const sigset_t *flags);
-
-ProcessErrors
-GetProcessSigmask(UID           pid,
-                  sigset_t    *procInfo);
-
 ProcessErrors
 SetProcessSigaction(UID pid,
                     int sig_no,
@@ -46,6 +37,10 @@ ProcessErrors
 GetProcessSigaction(UID pid,
                     int sig_no,
                     sigaction *sig);
+
+void
+RaiseSignal(UID pid,
+            int sig_no);
 
 void
 ProcessSys_Initialize(void);

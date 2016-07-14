@@ -162,8 +162,8 @@ CreateThread(UID parentProcess,
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
         goto error_exit;
 
+    AtomicIncrement32(&thd->ParentProcess->reference_count);
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
-
 
     //Setup the user stack
     uint64_t user_stack_base = 0;
@@ -448,7 +448,11 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
                 UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base + 128 - STACK_SIZE, STACK_SIZE);
 
-                //TODO Free process if reference count is zero
+                AtomicDecrement32(&next_thread->ParentProcess->reference_count);
+                if(next_thread->ParentProcess->reference_count == 0)
+                {
+                    //TODO Free process memory
+                }
 
                 UnlockSpinlock(next_thread->ParentProcess->lock);
                 FreeSpinlock(next_thread->lock);
@@ -575,4 +579,44 @@ int
 GetCoreLoad(int coreNum) {
     if(coreNum > (int)List_Length(cores))return -1;
     return ((CoreInfo*)List_EntryAt(cores, coreNum))->getCoreData();
+}
+
+void
+SetThreadSigmask(UID id,
+                  const sigset_t *flags) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        LockSpinlock(coreState->cur_thread->lock);
+        memcpy(&coreState->cur_thread->SignalMask, flags, sizeof(sigset_t));
+        UnlockSpinlock(coreState->cur_thread->lock);
+        return;
+    }
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+        LockSpinlock(thd->lock);
+        memcpy(&thd->SignalMask, flags, sizeof(sigset_t));
+        UnlockSpinlock(thd->lock);
+            return;
+        }
+    }
+}
+
+void
+GetThreadSigmask(UID           id,
+                 sigset_t    *procInfo) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        LockSpinlock(coreState->cur_thread->lock);
+        memcpy(procInfo, &coreState->cur_thread->SignalMask, sizeof(sigset_t));
+        UnlockSpinlock(coreState->cur_thread->lock);
+        return;
+    }
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+        LockSpinlock(thd->lock);
+        memcpy(procInfo, &thd->SignalMask, sizeof(sigset_t));
+        UnlockSpinlock(thd->lock);
+            return;
+        }
+    }
 }

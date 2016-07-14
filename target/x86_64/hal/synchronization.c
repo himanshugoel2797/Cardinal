@@ -39,8 +39,6 @@ LockSpinlock(Spinlock primitive) {
         "je 3f\n\t"
         "1:\n\t"
         "btq $25, %[rcx]\n\t"
-        "jnc 2f\n\t"
-        "2:"
         "pause\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "jne 1b\n\t"
@@ -89,4 +87,28 @@ UnlockSpinlock(Spinlock primitive) {
 void
 FreeSpinlock(Spinlock primitive) {
     if(primitive != NULL)kfree(primitive);
+}
+
+void
+AtomicIncrement32(uint32_t *val)
+{
+    __asm__ ("lock incl %0" : "=g"(*val) : "g"(*val) : "memory");
+}
+
+void
+AtomicIncrement64(uint64_t *val)
+{
+    __asm__ ("lock incq %0" : "=g"(*val) : "g"(*val) : "memory");
+}
+
+void
+AtomicDecrement32(uint32_t *val)
+{
+    __asm__ ("lock decl %0" : "=g"(*val) : "g"(*val) : "memory");
+}
+
+void
+AtomicDecrement64(uint64_t *val)
+{
+    __asm__ ("lock decq %0" : "=g"(*val) : "g"(*val) : "memory");
 }
