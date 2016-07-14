@@ -4,7 +4,7 @@
 #include "types.h"
 #include "time.h"
 
-#define SUPPORTED_SIGNAL_COUNT 1024
+#define SUPPORTED_SIGNAL_COUNT 512
 
 typedef struct {
     uint64_t val[SUPPORTED_SIGNAL_COUNT/(8 * sizeof(uint64_t))];
