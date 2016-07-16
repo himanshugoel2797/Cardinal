@@ -37,6 +37,7 @@ typedef void (*ThreadEntryPoint)(void);
 typedef struct ThreadInfo {
 
     UID                 ID;
+    UID                 UserID;
 
     ProcessInformation  *ParentProcess;
     

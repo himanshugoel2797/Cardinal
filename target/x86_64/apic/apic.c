@@ -230,7 +230,10 @@ APIC_SetEnableMode(uint8_t enabled) {
 
 uint8_t
 APIC_GetID(void) {
-    return (uint8_t)APIC_Read(APIC_ID);
+    if(apic_data != NULL)
+        return (uint8_t)APIC_Read(APIC_ID);
+    else
+        return (uint8_t)-1;
 }
 
 void

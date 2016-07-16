@@ -63,10 +63,21 @@ typedef struct MemoryAllocationsMap {
     uint64_t    Length;
     MemoryAllocationFlags Flags;
     MemoryAllocationType  AllocationType;
-    uint64_t    AdditionalData;
+    void*    AdditionalData;
 
     struct MemoryAllocationsMap *next;
 } MemoryAllocationsMap;
+
+typedef struct ForkedMemoryData {
+    CachingMode CacheMode;
+    uint64_t VirtualAddress;
+    uint64_t PhysicalAddress;
+    uint64_t Length;
+    uint32_t *PageReferenceCounts;
+    uint32_t NetReferenceCount;
+    MemoryAllocationFlags Flags;
+    MemoryAllocationType AllocationType;
+} ForkedMemoryData;
 
 typedef struct ManagedPageTable {
     UID                   PageTable;

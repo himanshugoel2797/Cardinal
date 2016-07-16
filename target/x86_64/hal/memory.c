@@ -297,6 +297,7 @@ ForkTable(ManagedPageTable *src,
     if(src == NULL)return MemoryAllocationErrors_Unknown;
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
+    LockSpinlock(src->lock);
     MemoryAllocationsMap *c = src->AllocationMap;
 
     //TODO review this code to make sure it works
@@ -312,6 +313,8 @@ ForkTable(ManagedPageTable *src,
                    );
         }
     }
+
+    UnlockSpinlock(src->lock);
 
     return MemoryAllocationErrors_None;
 }
@@ -380,6 +383,12 @@ HandlePageFault(uint64_t virtualAddress,
         do {
             if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
                 //Found an entry that describes this fault
+                if(map->AllocationType & MemoryAllocationType_Fork)
+                {
+                    //Make this mapping real, and create a copy to go in the other process
+                    //Then perform a TLB takedown 
+                }
+
                 if(map->AllocationType & MemoryAllocationType_Application) {
                     __asm__("cli\n\thlt");
                 }

@@ -1,5 +1,6 @@
 #include "synchronization.h"
 #include "CPUID/cpuid.h"
+#include "apic/apic.h"
 #include "managers.h"
 #include "kmalloc.h"
 #include "common.h"
@@ -26,9 +27,15 @@ LockSpinlock(Spinlock primitive) {
     uint64_t dummy1 = 0;
     uint64_t dummy2 = 0;
 
+    dummy1 = APIC_GetID();
+
+    //Test to see if the lock is set on the same core, if so, let it through
+    //Else obtain a ticket and spin waiting for your turn
     __asm__ volatile
     (
         "mfence\n\t"
+        "cmpq %[rcx], +8(%[prim])\n\t"
+        "je 4f\n\t"
         "pushfq\n\t"
         "cli\n\t"
         "popq %[rcx]\n\t"
@@ -47,10 +54,19 @@ LockSpinlock(Spinlock primitive) {
         "jnc 4f\n\t"
         "orw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        "cli\n\t"
+        "lock incw +6(%[prim])\n\t"
         :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory"
     );
+
+    __asm__ volatile
+    (
+        "movq %[dummy1], +8(%[prim])"
+        :: [prim]"r"(primitive), [dummy1]"r"(dummy1)
+    );
+
+    //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
+
     return TRUE;
 }
 
@@ -70,16 +86,24 @@ GetSpinlockContenderCount(Spinlock primitive) {
 bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
+
+    uint64_t id = APIC_GetID();
+
     __asm__ volatile
     (
         "mfence\n\t"
-        "lock incw (%0)\n\t"
-        "btw $0, +4(%0)\n\t"
+        "lock decw +6(%[prim])\n\t"
+        "jnz 1f\n\t"
+        "movq $0, +8(%[prim])\n\t"
+        "lock incw (%[prim])\n\t"
+        "jmp 2f\n\t"
+        "2:\n\t"
+        "btw $0, +4(%[prim])\n\t"
         "jnc 1f\n\t"
         "sti\n\t"
-        "movw $0, +4(%0)\n\t"
+        "movw $0, +4(%[prim])\n\t"
         "1:\n\t"
-        :: "r"(primitive) : "memory"
+        :: [prim]"r"(primitive), [id]"r"(id) : "memory"
     );
     return TRUE;
 }
@@ -92,23 +116,23 @@ FreeSpinlock(Spinlock primitive) {
 void
 AtomicIncrement32(uint32_t *val)
 {
-    __asm__ ("lock incl %0" : "=g"(*val) : "g"(*val) : "memory");
+    __asm__ ("lock incl %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
 AtomicIncrement64(uint64_t *val)
 {
-    __asm__ ("lock incq %0" : "=g"(*val) : "g"(*val) : "memory");
+    __asm__ ("lock incq %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
 AtomicDecrement32(uint32_t *val)
 {
-    __asm__ ("lock decl %0" : "=g"(*val) : "g"(*val) : "memory");
+    __asm__ ("lock decl %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
 AtomicDecrement64(uint64_t *val)
 {
-    __asm__ ("lock decq %0" : "=g"(*val) : "g"(*val) : "memory");
+    __asm__ ("lock decq %0" : "=m"(val) : "m"(val) : "memory");
 }

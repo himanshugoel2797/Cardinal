@@ -16,8 +16,11 @@ ProcessSys_Initialize(void) {
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->SyscallFlags = ProcessSyscallFlags_PermissionsLocked;
     root->HeapBreak = 0;
+    root->SignalHandlers = kmalloc(sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
     memset(root->SignalHandlers, 0, sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
     root->PendingSignals = List_Create(CreateSpinlock());
+    root->Children = List_Create(CreateSpinlock());
+    root->Parent = NULL;
 
     root->reference_count = 0;
     root->lock = CreateSpinlock();

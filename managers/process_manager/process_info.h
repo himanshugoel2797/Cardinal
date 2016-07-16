@@ -58,8 +58,10 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
-    sigaction                   SignalHandlers[SUPPORTED_SIGNAL_COUNT];
+    sigaction                   *SignalHandlers;
     List                        *PendingSignals;
+    List                        *Children;
+    struct ProcessInformation   *Parent;
 
     uint32_t                    reference_count;
     Spinlock                    lock;

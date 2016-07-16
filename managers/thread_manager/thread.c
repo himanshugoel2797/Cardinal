@@ -97,12 +97,18 @@ PROPERTY_GET_SET(void*, arch_specific_data, NULL)
 
 UID
 GetCurrentThreadUID(void) {
-    return GET_PROPERTY_VAL(coreState->cur_thread, ID);
+    if(coreState != NULL && coreState->cur_thread != NULL)
+        return GET_PROPERTY_VAL(coreState->cur_thread, ID);
+    else
+        return -1;
 }
 
 UID
 GetCurrentProcessUID(void) {
+    if(coreState != NULL && coreState->cur_thread != NULL)
     return GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID);
+    else
+        return -1;
 }
 
 void

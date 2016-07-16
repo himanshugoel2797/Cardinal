@@ -58,7 +58,7 @@ bootstrap_kernel(void *param,
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
 
-    info->framebuffer_addr = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
+    info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
     if(magic != MULTIBOOT_MAGIC) {
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
