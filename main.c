@@ -36,7 +36,7 @@ kernel_main_init(void) {
     ProcessSys_Initialize();
     Thread_Initialize();
     RegisterCore(0, NULL);
-    CreateThread(0, kernel_main);
+    CreateThread(0, (ThreadEntryPoint)kernel_main, NULL);
     CoreUpdate();  //BSP is core 0
 }
 
@@ -56,6 +56,7 @@ volatile int coreCount = 0;
 
 void
 kernel_main(void) {
+
     //Initialize process manager, setup timers, get threading up and running
     // Enumerate and initialize drivers
     // Load UI elf from disk
@@ -78,13 +79,13 @@ kernel_main(void) {
 
     ProcessInformation p_info;
     GetProcessInformation(0, &p_info);
-    ProcessInformation *elf_proc;
-    ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, load_elf))__asm__("cli\n\thlt");
+    //ProcessInformation *elf_proc;
+    //ForkProcess(&p_info, &elf_proc);
+    if(!CreateThread(0, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
     //CreateThread(0, hlt2_kernel);
 
-    FreeThread(GetCurrentThreadUID());
     while(1);
+    FreeThread(GetCurrentThreadUID());
 }
 
 
@@ -104,7 +105,7 @@ smp_core_main(int coreID,
     getCoreData = NULL;
     Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
-    CreateThread(0, smp_main);
+    CreateThread(0, (ThreadEntryPoint)smp_main, NULL);
     CoreUpdate();
     while(1);
     //Start the local timer and set it to call the thread switch handler

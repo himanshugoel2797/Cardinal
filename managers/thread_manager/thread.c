@@ -74,7 +74,6 @@ PROPERTY_GET_SET(UID, ID, 0)
 
 PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 
-PROPERTY_GET_SET(ThreadEntryPoint, entry_point, NULL)
 PROPERTY_GET_SET(ThreadState, state, 0)
 PROPERTY_GET_SET(ThreadWakeCondition, wakeCondition, 0)
 PROPERTY_GET_SET(ThreadPriority, priority, 0)
@@ -83,7 +82,6 @@ PROPERTY_GET_SET(uint64_t, interrupt_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, interrupt_stack_aligned, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, kernel_stack_aligned, 0)
-PROPERTY_GET_SET(uint64_t, user_stack_base, 0)
 PROPERTY_GET_SET(uint64_t, current_stack, 0)
 PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
 PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
@@ -130,11 +128,71 @@ Thread_Initialize(void) {
 
 UID
 CreateThread(UID parentProcess,
-             ThreadEntryPoint entry_point) {
+             ThreadEntryPoint entry_point,
+             void *arg) {
+    
+
+    ProcessInformation *pInfo = NULL;
+    if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
+        return -1;
+
+    LockSpinlock(pInfo->lock);
+    //Setup the user stack
+    uint64_t user_stack_base = 0;
+
+    FindFreeVirtualAddress(
+        pInfo->PageTable,
+        (uint64_t*)&user_stack_base,
+        STACK_SIZE,
+        MemoryAllocationType_Stack,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    if(user_stack_base == 0)while(1);
+
+    MapPage(pInfo->PageTable,
+            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+            user_stack_base,
+            STACK_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Stack,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+           );
+
+    UnlockSpinlock(pInfo->lock);
+
+    CRegisters regs;
+    regs.rip = (uint64_t)entry_point;
+    regs.rsp = user_stack_base + STACK_SIZE - 128;
+    regs.rbp = 1;
+    regs.rax = 2;
+    regs.rbx = 3;
+    regs.rcx = 4;
+    regs.rdx = 5;
+    regs.rsi = 6;
+    regs.rdi = (uint64_t)arg;
+    regs.r8 = 7;
+    regs.r9 = 8;
+    regs.r10 = 9;
+    regs.r11 = 10;
+    regs.r12 = 11;
+    regs.r13 = 12;
+    regs.r14 = 13;
+    regs.r15 = 14;
+    regs.rflags = 0;
+    regs.ss = 0x10;
+    regs.cs = 0x8;
+
+    return CreateThreadADV(parentProcess, &regs);
+}
+
+UID
+CreateThreadADV(UID parentProcess,
+                CRegisters *regs)
+{
+
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
 
-    SET_PROPERTY_VAL(thd, entry_point, entry_point);
     SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
     SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
@@ -171,30 +229,59 @@ CreateThread(UID parentProcess,
     AtomicIncrement32(&thd->ParentProcess->reference_count);
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
 
-    //Setup the user stack
-    uint64_t user_stack_base = 0;
 
-    FindFreeVirtualAddress(
-        GET_PROPERTY_PROC_VAL(thd, PageTable),
-        (uint64_t*)&user_stack_base,
-        STACK_SIZE,
-        MemoryAllocationType_Stack,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-    if(user_stack_base == 0)while(1);
-
-    SET_PROPERTY_VAL(thd, user_stack_base, user_stack_base + STACK_SIZE - 128);
-
-    MapPage(GET_PROPERTY_PROC_VAL(thd, PageTable),
-            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
-            user_stack_base,
-            STACK_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Stack,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-           );
-
+    
+    uint64_t *cur_stack_frame = (uint64_t*)kstack;
+    int offset = 0;
+    cur_stack_frame[--offset] = regs->ss;
+    cur_stack_frame[--offset] = regs->rsp;
+    cur_stack_frame[--offset] = (uint64_t)regs->rflags | (1 << 9);
+    cur_stack_frame[--offset] = regs->cs;
+    cur_stack_frame[--offset] = regs->rip;
+    cur_stack_frame[--offset] = 0;
+    cur_stack_frame[--offset] = 0;
+    cur_stack_frame[--offset] = regs->rax;
+    cur_stack_frame[--offset] = regs->rbx;
+    cur_stack_frame[--offset] = regs->rcx;
+    cur_stack_frame[--offset] = regs->rdx;
+    cur_stack_frame[--offset] = regs->rbp;
+    cur_stack_frame[--offset] = regs->rsi;
+    cur_stack_frame[--offset] = regs->rdi;
+    cur_stack_frame[--offset] = regs->r8;
+    cur_stack_frame[--offset] = regs->r9;
+    cur_stack_frame[--offset] = regs->r10;
+    cur_stack_frame[--offset] = regs->r11;
+    cur_stack_frame[--offset] = regs->r12;
+    cur_stack_frame[--offset] = regs->r13;
+    cur_stack_frame[--offset] = regs->r14;
+    cur_stack_frame[--offset] = regs->r15;
+    //push ss
+    //push rsp
+    //push rflags
+    //push cs
+    //push rip
+    //push 0
+    //push 0
+    //push rax
+    //push rbx
+    //push rcx
+    //push rdx
+    //push rbp
+    //push rsi
+    //push rdi
+    //push r8
+    //push r9
+    //push r10
+    //push r11
+    //push r12
+    //push r13
+    //push r14
+    //push r15
+    
     //Update the thread list
+    SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]); 
+
     List_AddEntry(neutral, thd);
 
     SET_PROPERTY_VAL(thd, ID, new_uid());
@@ -207,7 +294,6 @@ error_exit:
     kfree(thd);
     return -1;
 }
-
 
 void
 Thread_SetChildTIDAddress(UID id,
@@ -304,13 +390,65 @@ GetThreadState(UID id) {
 void*
 GetThreadUserStack(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, user_stack_base);
+    
+    ProcessInformation *pInfo = GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess);
+
+    LockSpinlock(pInfo->lock);
+    //Setup the user stack
+    uint64_t user_stack_base = 0;
+
+    FindFreeVirtualAddress(
+        pInfo->PageTable,
+        (uint64_t*)&user_stack_base,
+        STACK_SIZE,
+        MemoryAllocationType_Stack,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    if(user_stack_base == 0)while(1);
+
+    MapPage(pInfo->PageTable,
+            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+            user_stack_base,
+            STACK_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Stack,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+           );
+
+    UnlockSpinlock(pInfo->lock);
+    return (void*)(user_stack_base + STACK_SIZE - 128);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return (void*)GET_PROPERTY_VAL(thd, user_stack_base);
+
+    ProcessInformation *pInfo = GET_PROPERTY_VAL(thd, ParentProcess);
+
+    LockSpinlock(pInfo->lock);
+    //Setup the user stack
+    uint64_t user_stack_base = 0;
+
+    FindFreeVirtualAddress(
+        pInfo->PageTable,
+        (uint64_t*)&user_stack_base,
+        STACK_SIZE,
+        MemoryAllocationType_Stack,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    if(user_stack_base == 0)while(1);
+
+    MapPage(pInfo->PageTable,
+            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+            user_stack_base,
+            STACK_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Stack,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+           );
+
+    UnlockSpinlock(pInfo->lock);
+    return (void*)(user_stack_base + STACK_SIZE - 128);
         }
     }
     return NULL;
@@ -450,9 +588,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->lock);
                 kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
                 kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
-                FreePhysicalPageCont((uint64_t)GetPhysicalAddress((void*)(next_thread->user_stack_base + 128 - STACK_SIZE)), 2);
                 LockSpinlock(next_thread->ParentProcess->lock);
-                UnmapPage(next_thread->ParentProcess->PageTable, next_thread->user_stack_base + 128 - STACK_SIZE, STACK_SIZE);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
                 if(next_thread->ParentProcess->reference_count == 0)
@@ -523,7 +659,7 @@ TaskSwitch(uint32_t int_no,
     } else if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
         HandleInterruptNoReturn(int_no);
-        SwitchAndInitializeThread(coreState->cur_thread);
+        SwitchToThread(coreState->cur_thread);
     }
 }
 
@@ -550,7 +686,7 @@ SwitchThread(void) {
     //Resume execution of the thread
     if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Initialize) {
         SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Running);
-        SwitchAndInitializeThread(coreState->cur_thread);
+        SwitchToThread(coreState->cur_thread);
     }
 
     __asm__ ("cli\n\thlt");

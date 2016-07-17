@@ -27,7 +27,9 @@ LockSpinlock(Spinlock primitive) {
     uint64_t dummy1 = 0;
     uint64_t dummy2 = 0;
 
-    dummy1 = APIC_GetID();
+    dummy2 = dummy1 = APIC_GetID() + 1;
+    if(dummy1 == 0)
+        dummy1 = dummy2 = -1;
 
     //Test to see if the lock is set on the same core, if so, let it through
     //Else obtain a ticket and spin waiting for your turn
@@ -55,14 +57,9 @@ LockSpinlock(Spinlock primitive) {
         "orw $1, +4(%[prim])\n\t"
         "4:\n\t"
         "lock incw +6(%[prim])\n\t"
+        "movq %[rdx], +8(%[prim])"
         :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory"
-    );
-
-    __asm__ volatile
-    (
-        "movq %[dummy1], +8(%[prim])"
-        :: [prim]"r"(primitive), [dummy1]"r"(dummy1)
     );
 
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
@@ -87,7 +84,8 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
-    uint64_t id = APIC_GetID();
+    uint64_t id = APIC_GetID() + 1;
+    if(id == 0)id = -1;
 
     __asm__ volatile
     (

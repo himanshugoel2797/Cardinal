@@ -57,6 +57,17 @@ ForkProcess(ProcessInformation *src,
     return ProcessErrors_None;
 }
 
+UID
+ForkCurrentProcess(void)
+{
+    ProcessInformation *dst_proc = NULL;
+    ProcessInformation *src_proc = NULL;
+    GetProcessReference(GetCurrentProcessUID(), &src_proc);
+    ForkProcess(src_proc, &dst_proc);
+
+    return -1;
+}
+
 ProcessErrors
 GetProcessInformation(UID           pid,
                       ProcessInformation	*procInfo) {

@@ -4,6 +4,7 @@
 #include "types.h"
 #include "managers/process_manager/process_info.h"
 #include "libs/libc/include/signal.h"
+#include "libs/libCardinal/include/registers.h"
 #include "synchronization.h"
 
 //TODO: For the schedule manager, make sure to delete processes if their state suggests it
@@ -32,7 +33,7 @@ typedef enum {
     ThreadWakeCondition_Signal
 } ThreadWakeCondition;
 
-typedef void (*ThreadEntryPoint)(void);
+typedef void (*ThreadEntryPoint)(void*);
 
 typedef struct ThreadInfo {
 
@@ -43,7 +44,6 @@ typedef struct ThreadInfo {
     
     sigset_t            SignalMask;
 
-    ThreadEntryPoint    entry_point;
     ThreadState         state;
     ThreadWakeCondition wakeCondition;
     ThreadPriority      priority;
@@ -52,7 +52,6 @@ typedef struct ThreadInfo {
     uint64_t            interrupt_stack_aligned;
     uint64_t            kernel_stack_base;
     uint64_t            kernel_stack_aligned;
-    uint64_t            user_stack_base;
     uint64_t            current_stack;
     uint64_t            sleep_duration_ns;
     uint64_t            sleep_start_time;
@@ -86,7 +85,12 @@ Thread_SetClearChildTIDAddress(UID id,
 
 UID
 CreateThread(UID parentProcess,
-             ThreadEntryPoint entry_point);
+             ThreadEntryPoint entry_point,
+             void *arg);
+
+UID
+CreateThreadADV(UID parentProcess,
+                CRegisters *regs);
 
 void
 SetThreadState(UID id,

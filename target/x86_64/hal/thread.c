@@ -28,7 +28,7 @@ SwitchAndInitializeThread(ThreadInfo *cur_thread) {
         "sti\n\t"
         "retq"
         ::
-        "a"(cur_thread->entry_point),
+        "a"(NULL),
         "b"(cur_thread->kernel_stack_aligned)
     );
 }

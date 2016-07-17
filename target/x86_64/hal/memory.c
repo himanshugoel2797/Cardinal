@@ -302,16 +302,31 @@ ForkTable(ManagedPageTable *src,
 
     //TODO review this code to make sure it works
     while(c != NULL) {
-        if((c->AllocationType & MemoryAllocationType_Stack) != MemoryAllocationType_Stack) {
+        MemoryAllocationsMap tmpCopy;
+        memcpy(&tmpCopy, c,  sizeof(MemoryAllocationsMap));
+        
             MapPage(dst,
-                    (uint64_t)GetPhysicalAddressPageTable(src, (void*)c->VirtualAddress),
-                    c->VirtualAddress,
-                    c->Length,
-                    c->CacheMode,
-                    c->AllocationType | MemoryAllocationType_Fork,
-                    c->Flags
+                    tmpCopy.PhysicalAddress,
+                    tmpCopy.VirtualAddress,
+                    tmpCopy.Length,
+                    tmpCopy.CacheMode,
+                    tmpCopy.AllocationType | MemoryAllocationType_Fork,
+                    tmpCopy.Flags
                    );
-        }
+
+            UnmapPage(src,
+                      tmpCopy.VirtualAddress,
+                      tmpCopy.Length);
+            MapPage(src,
+                    tmpCopy.PhysicalAddress,
+                    tmpCopy.VirtualAddress,
+                    tmpCopy.Length,
+                    tmpCopy.CacheMode,
+                    tmpCopy.AllocationType | MemoryAllocationType_Fork,
+                    tmpCopy.Flags
+                   );
+
+        c = tmpCopy.next;
     }
 
     UnlockSpinlock(src->lock);
