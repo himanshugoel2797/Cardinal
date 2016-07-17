@@ -36,12 +36,13 @@ kernel_main_init(void) {
     ProcessSys_Initialize();
     Thread_Initialize();
     RegisterCore(0, NULL);
-    CreateThread(0, (ThreadEntryPoint)kernel_main, NULL);
+    CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
     CoreUpdate();  //BSP is core 0
 }
 
 void
 load_elf(void) {
+    __asm__("cli\n\thlt");
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
@@ -79,13 +80,13 @@ kernel_main(void) {
 
     ProcessInformation p_info;
     GetProcessInformation(0, &p_info);
-    //ProcessInformation *elf_proc;
-    //ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(0, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+    ProcessInformation *elf_proc;
+    ForkProcess(&p_info, &elf_proc);
+    if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
     //CreateThread(0, hlt2_kernel);
 
-    while(1);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
@@ -105,7 +106,7 @@ smp_core_main(int coreID,
     getCoreData = NULL;
     Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
-    CreateThread(0, (ThreadEntryPoint)smp_main, NULL);
+    CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)smp_main, NULL);
     CoreUpdate();
     while(1);
     //Start the local timer and set it to call the thread switch handler

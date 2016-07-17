@@ -6,34 +6,6 @@
 #include "synchronization.h"
 
 void
-SwitchAndInitializeThread(ThreadInfo *cur_thread) {
-    __asm__ volatile
-    (
-        "mov %%rbx, %%rsp\n\t"
-        "pushq %%rax\n\t"
-        "mov $0, %%rax\n\t"
-        "mov $0, %%rbx\n\t"
-        "mov $0, %%rcx\n\t"
-        "mov $0, %%rdx\n\t"
-        "mov $0, %%rsi\n\t"
-        "mov $0, %%rdi\n\t"
-        "mov $0, %%r8\n\t"
-        "mov $0, %%r9\n\t"
-        "mov $0, %%r10\n\t"
-        "mov $0, %%r11\n\t"
-        "mov $0, %%r12\n\t"
-        "mov $0, %%r13\n\t"
-        "mov $0, %%r14\n\t"
-        "mov $0, %%r15\n\t"
-        "sti\n\t"
-        "retq"
-        ::
-        "a"(NULL),
-        "b"(cur_thread->kernel_stack_aligned)
-    );
-}
-
-void
 SavePreviousThread(ThreadInfo *src) {
     Registers *regs = GetSavedInterruptState();
     if(src != NULL) {

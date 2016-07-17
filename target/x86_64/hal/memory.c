@@ -158,7 +158,7 @@ MapPage(ManagedPageTable *pageTable,
 
     //At this point, all parameters have been verified
     allocMap->next = pageTable->AllocationMap;
-    pageTable->AllocationMap = allocMap->next;
+    pageTable->AllocationMap = allocMap;
 
     if(allocType & MemoryAllocationType_Fork) {
         access = access & ~MEM_WRITE; //Forked pages are copy on write
@@ -177,6 +177,68 @@ MapPage(ManagedPageTable *pageTable,
 
     return MemoryAllocationErrors_None;
 }
+
+MemoryAllocationErrors
+ChangePageFlags(ManagedPageTable *pageTable,
+        uint64_t        virtualAddress,
+        CachingMode         cacheMode,
+        MemoryAllocationType    allocType,
+        MemoryAllocationFlags   flags) {
+
+    if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
+
+    MEM_TYPES cache = 0;
+    if(cacheMode == CachingModeUncachable)cache = MEM_TYPE_UC;
+    else if(cacheMode == CachingModeWriteBack)cache = MEM_TYPE_WB;
+    else if(cacheMode == CachingModeWriteThrough)cache = MEM_TYPE_WT;
+    else return MemoryAllocationErrors_InvalidFlags;
+
+    MEM_ACCESS_PERMS access = 0;
+    if(flags & MemoryAllocationFlags_Exec)access |= MEM_EXEC;
+    if(flags & MemoryAllocationFlags_Write)access |= MEM_WRITE;
+
+    MEM_SECURITY_PERMS perms = 0;
+    if((flags & MemoryAllocationFlags_Kernel) == MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
+    if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
+
+    LockSpinlock(pageTable->lock);
+
+    MemoryAllocationsMap *map = pageTable->AllocationMap;
+
+    while(map != NULL)
+    {
+        if(map->VirtualAddress == virtualAddress)
+            break;
+
+        map = map->next;
+    }
+
+    if(map == NULL)
+        return UnlockSpinlock(pageTable->lock), MemoryAllocationErrors_InvalidFlags;
+
+    map->CacheMode = cacheMode;
+    map->Flags = flags;
+    map->AllocationType = allocType;
+
+    //At this point, all parameters have been verified
+    if(allocType & MemoryAllocationType_Fork) {
+        access = access & ~MEM_WRITE; //Forked pages are copy on write
+    }
+
+    VirtMemMan_Map((PML_Instance)pageTable->PageTable,
+                   virtualAddress,
+                   map->PhysicalAddress,
+                   map->Length,
+                   TRUE,
+                   cache,
+                   access,
+                   perms);
+
+    UnlockSpinlock(pageTable->lock);
+
+    return MemoryAllocationErrors_None;
+}
+
 
 MemoryAllocationErrors
 UnmapPage(ManagedPageTable 	*pageTable,
@@ -302,31 +364,31 @@ ForkTable(ManagedPageTable *src,
 
     //TODO review this code to make sure it works
     while(c != NULL) {
-        MemoryAllocationsMap tmpCopy;
-        memcpy(&tmpCopy, c,  sizeof(MemoryAllocationsMap));
-
         MapPage(dst,
-                tmpCopy.PhysicalAddress,
-                tmpCopy.VirtualAddress,
-                tmpCopy.Length,
-                tmpCopy.CacheMode,
-                tmpCopy.AllocationType | MemoryAllocationType_Fork,
-                tmpCopy.Flags
+                c->PhysicalAddress,
+                c->VirtualAddress,
+                c->Length,
+                c->CacheMode,
+                c->AllocationType | MemoryAllocationType_Fork,
+                c->Flags
                );
 
-        UnmapPage(src,
-                  tmpCopy.VirtualAddress,
-                  tmpCopy.Length);
-        MapPage(src,
-                tmpCopy.PhysicalAddress,
-                tmpCopy.VirtualAddress,
-                tmpCopy.Length,
-                tmpCopy.CacheMode,
-                tmpCopy.AllocationType | MemoryAllocationType_Fork,
-                tmpCopy.Flags
+        c = c->next;
+    }
+
+    c = dst->AllocationMap;
+
+    while(c != NULL) {
+
+
+        ChangePageFlags(src,
+                c->VirtualAddress,
+                c->CacheMode,
+                c->AllocationType | MemoryAllocationType_Fork,
+                c->Flags
                );
 
-        c = tmpCopy.next;
+        c = c->next;
     }
 
     UnlockSpinlock(src->lock);
@@ -390,7 +452,7 @@ HandlePageFault(uint64_t virtualAddress,
         ProcessInformation *procInfo = NULL;
         GetProcessReference(GetCurrentProcessUID(), &procInfo);
         if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {
-            __asm__("cli\n\thlt" :: "a"(instruction_pointer));
+            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->PageTable->AllocationMap));
             //while(1)debug_gfx_writeLine("Error: Page Fault");
         }
 
@@ -399,12 +461,11 @@ HandlePageFault(uint64_t virtualAddress,
             if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
                 //Found an entry that describes this fault
                 if(map->AllocationType & MemoryAllocationType_Fork) {
-                    //Make this mapping real, and create a copy to go in the other process
-                    //Then perform a TLB takedown
+                    __asm__("cli\n\thlt" :: "b"(2));
                 }
 
                 if(map->AllocationType & MemoryAllocationType_Application) {
-                    __asm__("cli\n\thlt");
+                    __asm__("cli\n\thlt" :: "b"(3));
                 }
 
 

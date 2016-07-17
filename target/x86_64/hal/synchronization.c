@@ -27,16 +27,16 @@ LockSpinlock(Spinlock primitive) {
     uint64_t dummy1 = 0;
     uint64_t dummy2 = 0;
 
-    dummy2 = dummy1 = APIC_GetID() + 1;
-    if(dummy1 == 0)
-        dummy1 = dummy2 = -1;
+    dummy2 = APIC_GetID() + 1;
+    if(dummy2 == 0)
+        dummy2 = -1;
 
     //Test to see if the lock is set on the same core, if so, let it through
     //Else obtain a ticket and spin waiting for your turn
     __asm__ volatile
     (
         "mfence\n\t"
-        "cmpq %[rcx], +8(%[prim])\n\t"
+        "cmpq %[rdx], +8(%[prim])\n\t"
         "je 4f\n\t"
         "pushfq\n\t"
         "cli\n\t"

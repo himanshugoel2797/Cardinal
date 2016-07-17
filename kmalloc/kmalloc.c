@@ -51,6 +51,7 @@ void kmalloc_init(void) {
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
             MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+    GetActiveVirtualMemoryInstance()->AllocationMap = NULL;
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
     k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));
@@ -184,6 +185,8 @@ void kfree(void *addr) {
         UnlockSpinlock(alloc_sync);
         return;
     }*/
+    if(((uint64_t)addr < (uint64_t)k_pages_base_addr) | ((uint64_t)addr >= ((uint64_t)k_pages_base_addr + STORE_SIZE)))
+        return;
 
 #if defined(DEBUG)
     uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);

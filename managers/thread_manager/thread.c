@@ -128,6 +128,7 @@ Thread_Initialize(void) {
 
 UID
 CreateThread(UID parentProcess,
+             ThreadPermissionLevel perm_level,
              ThreadEntryPoint entry_point,
              void *arg) {
 
@@ -145,7 +146,7 @@ CreateThread(UID parentProcess,
         (uint64_t*)&user_stack_base,
         STACK_SIZE,
         MemoryAllocationType_Stack,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+        MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0));
 
     if(user_stack_base == 0)while(1);
 
@@ -155,7 +156,7 @@ CreateThread(UID parentProcess,
             STACK_SIZE,
             CachingModeWriteBack,
             MemoryAllocationType_Stack,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+            MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
            );
 
     UnlockSpinlock(pInfo->lock);
@@ -163,24 +164,30 @@ CreateThread(UID parentProcess,
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
     regs.rsp = user_stack_base + STACK_SIZE - 128;
-    regs.rbp = 1;
-    regs.rax = 2;
-    regs.rbx = 3;
-    regs.rcx = 4;
-    regs.rdx = 5;
-    regs.rsi = 6;
+    regs.rbp = 0;
+    regs.rax = 0;
+    regs.rbx = 0;
+    regs.rcx = 0;
+    regs.rdx = 0;
+    regs.rsi = 0;
     regs.rdi = (uint64_t)arg;
-    regs.r8 = 7;
-    regs.r9 = 8;
-    regs.r10 = 9;
-    regs.r11 = 10;
-    regs.r12 = 11;
-    regs.r13 = 12;
-    regs.r14 = 13;
-    regs.r15 = 14;
+    regs.r8 = 0;
+    regs.r9 = 0;
+    regs.r10 = 0;
+    regs.r11 = 0;
+    regs.r12 = 0;
+    regs.r13 = 0;
+    regs.r14 = 0;
+    regs.r15 = 0;
     regs.rflags = 0;
-    regs.ss = 0x10;
-    regs.cs = 0x8;
+
+    if(perm_level == ThreadPermissionLevel_User){
+        regs.ss = 0x20;
+        regs.cs = 0x28;
+    }else if(perm_level == ThreadPermissionLevel_Kernel){
+        regs.ss = 0x10;
+        regs.cs = 0x8;
+    }
 
     return CreateThreadADV(parentProcess, &regs);
 }

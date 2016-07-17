@@ -123,6 +123,14 @@ MapPage(ManagedPageTable *pageTable,
         MemoryAllocationType 	allocType,
         MemoryAllocationFlags 	flags);
 
+
+MemoryAllocationErrors
+ChangePageFlags(ManagedPageTable *pageTable,
+        uint64_t        virtualAddress,
+        CachingMode         cacheMode,
+        MemoryAllocationType    allocType,
+        MemoryAllocationFlags   flags);
+
 MemoryAllocationErrors
 UnmapPage(ManagedPageTable* 			pageTable,
           uint64_t 		virtualAddress,

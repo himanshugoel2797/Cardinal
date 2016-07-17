@@ -33,6 +33,11 @@ typedef enum {
     ThreadWakeCondition_Signal
 } ThreadWakeCondition;
 
+typedef enum {
+  ThreadPermissionLevel_User,
+  ThreadPermissionLevel_Kernel
+} ThreadPermissionLevel;
+
 typedef void (*ThreadEntryPoint)(void*);
 
 typedef struct ThreadInfo {
@@ -85,6 +90,7 @@ Thread_SetClearChildTIDAddress(UID id,
 
 UID
 CreateThread(UID parentProcess,
+             ThreadPermissionLevel perm_level,
              ThreadEntryPoint entry_point,
              void *arg);
 
