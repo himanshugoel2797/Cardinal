@@ -41,7 +41,7 @@ typedef struct ThreadInfo {
     UID                 UserID;
 
     ProcessInformation  *ParentProcess;
-    
+
     sigset_t            SignalMask;
 
     ThreadState         state;

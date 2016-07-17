@@ -112,25 +112,21 @@ FreeSpinlock(Spinlock primitive) {
 }
 
 void
-AtomicIncrement32(uint32_t *val)
-{
+AtomicIncrement32(uint32_t *val) {
     __asm__ ("lock incl %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
-AtomicIncrement64(uint64_t *val)
-{
+AtomicIncrement64(uint64_t *val) {
     __asm__ ("lock incq %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
-AtomicDecrement32(uint32_t *val)
-{
+AtomicDecrement32(uint32_t *val) {
     __asm__ ("lock decl %0" : "=m"(val) : "m"(val) : "memory");
 }
 
 void
-AtomicDecrement64(uint64_t *val)
-{
+AtomicDecrement64(uint64_t *val) {
     __asm__ ("lock decq %0" : "=m"(val) : "m"(val) : "memory");
 }

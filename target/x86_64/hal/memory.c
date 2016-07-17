@@ -304,27 +304,27 @@ ForkTable(ManagedPageTable *src,
     while(c != NULL) {
         MemoryAllocationsMap tmpCopy;
         memcpy(&tmpCopy, c,  sizeof(MemoryAllocationsMap));
-        
-            MapPage(dst,
-                    tmpCopy.PhysicalAddress,
-                    tmpCopy.VirtualAddress,
-                    tmpCopy.Length,
-                    tmpCopy.CacheMode,
-                    tmpCopy.AllocationType | MemoryAllocationType_Fork,
-                    tmpCopy.Flags
-                   );
 
-            UnmapPage(src,
-                      tmpCopy.VirtualAddress,
-                      tmpCopy.Length);
-            MapPage(src,
-                    tmpCopy.PhysicalAddress,
-                    tmpCopy.VirtualAddress,
-                    tmpCopy.Length,
-                    tmpCopy.CacheMode,
-                    tmpCopy.AllocationType | MemoryAllocationType_Fork,
-                    tmpCopy.Flags
-                   );
+        MapPage(dst,
+                tmpCopy.PhysicalAddress,
+                tmpCopy.VirtualAddress,
+                tmpCopy.Length,
+                tmpCopy.CacheMode,
+                tmpCopy.AllocationType | MemoryAllocationType_Fork,
+                tmpCopy.Flags
+               );
+
+        UnmapPage(src,
+                  tmpCopy.VirtualAddress,
+                  tmpCopy.Length);
+        MapPage(src,
+                tmpCopy.PhysicalAddress,
+                tmpCopy.VirtualAddress,
+                tmpCopy.Length,
+                tmpCopy.CacheMode,
+                tmpCopy.AllocationType | MemoryAllocationType_Fork,
+                tmpCopy.Flags
+               );
 
         c = tmpCopy.next;
     }
@@ -398,10 +398,9 @@ HandlePageFault(uint64_t virtualAddress,
         do {
             if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
                 //Found an entry that describes this fault
-                if(map->AllocationType & MemoryAllocationType_Fork)
-                {
+                if(map->AllocationType & MemoryAllocationType_Fork) {
                     //Make this mapping real, and create a copy to go in the other process
-                    //Then perform a TLB takedown 
+                    //Then perform a TLB takedown
                 }
 
                 if(map->AllocationType & MemoryAllocationType_Application) {

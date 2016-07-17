@@ -104,7 +104,7 @@ GetCurrentThreadUID(void) {
 UID
 GetCurrentProcessUID(void) {
     if(coreState != NULL && coreState->cur_thread != NULL)
-    return GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID);
+        return GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID);
     else
         return -1;
 }
@@ -130,7 +130,7 @@ UID
 CreateThread(UID parentProcess,
              ThreadEntryPoint entry_point,
              void *arg) {
-    
+
 
     ProcessInformation *pInfo = NULL;
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
@@ -187,8 +187,7 @@ CreateThread(UID parentProcess,
 
 UID
 CreateThreadADV(UID parentProcess,
-                CRegisters *regs)
-{
+                CRegisters *regs) {
 
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
@@ -231,7 +230,7 @@ CreateThreadADV(UID parentProcess,
 
 
 
-    
+
     uint64_t *cur_stack_frame = (uint64_t*)kstack;
     int offset = 0;
     cur_stack_frame[--offset] = regs->ss;
@@ -278,9 +277,9 @@ CreateThreadADV(UID parentProcess,
     //push r13
     //push r14
     //push r15
-    
+
     //Update the thread list
-    SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]); 
+    SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]);
 
     List_AddEntry(neutral, thd);
 
@@ -390,65 +389,65 @@ GetThreadState(UID id) {
 void*
 GetThreadUserStack(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-    
-    ProcessInformation *pInfo = GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess);
 
-    LockSpinlock(pInfo->lock);
-    //Setup the user stack
-    uint64_t user_stack_base = 0;
+        ProcessInformation *pInfo = GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess);
 
-    FindFreeVirtualAddress(
-        pInfo->PageTable,
-        (uint64_t*)&user_stack_base,
-        STACK_SIZE,
-        MemoryAllocationType_Stack,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+        LockSpinlock(pInfo->lock);
+        //Setup the user stack
+        uint64_t user_stack_base = 0;
 
-    if(user_stack_base == 0)while(1);
-
-    MapPage(pInfo->PageTable,
-            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
-            user_stack_base,
+        FindFreeVirtualAddress(
+            pInfo->PageTable,
+            (uint64_t*)&user_stack_base,
             STACK_SIZE,
-            CachingModeWriteBack,
             MemoryAllocationType_Stack,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-           );
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-    UnlockSpinlock(pInfo->lock);
-    return (void*)(user_stack_base + STACK_SIZE - 128);
+        if(user_stack_base == 0)while(1);
+
+        MapPage(pInfo->PageTable,
+                AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+                user_stack_base,
+                STACK_SIZE,
+                CachingModeWriteBack,
+                MemoryAllocationType_Stack,
+                MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+               );
+
+        UnlockSpinlock(pInfo->lock);
+        return (void*)(user_stack_base + STACK_SIZE - 128);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
 
-    ProcessInformation *pInfo = GET_PROPERTY_VAL(thd, ParentProcess);
+            ProcessInformation *pInfo = GET_PROPERTY_VAL(thd, ParentProcess);
 
-    LockSpinlock(pInfo->lock);
-    //Setup the user stack
-    uint64_t user_stack_base = 0;
+            LockSpinlock(pInfo->lock);
+            //Setup the user stack
+            uint64_t user_stack_base = 0;
 
-    FindFreeVirtualAddress(
-        pInfo->PageTable,
-        (uint64_t*)&user_stack_base,
-        STACK_SIZE,
-        MemoryAllocationType_Stack,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+            FindFreeVirtualAddress(
+                pInfo->PageTable,
+                (uint64_t*)&user_stack_base,
+                STACK_SIZE,
+                MemoryAllocationType_Stack,
+                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-    if(user_stack_base == 0)while(1);
+            if(user_stack_base == 0)while(1);
 
-    MapPage(pInfo->PageTable,
-            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
-            user_stack_base,
-            STACK_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Stack,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-           );
+            MapPage(pInfo->PageTable,
+                    AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+                    user_stack_base,
+                    STACK_SIZE,
+                    CachingModeWriteBack,
+                    MemoryAllocationType_Stack,
+                    MemoryAllocationFlags_Write | MemoryAllocationFlags_User
+                   );
 
-    UnlockSpinlock(pInfo->lock);
-    return (void*)(user_stack_base + STACK_SIZE - 128);
+            UnlockSpinlock(pInfo->lock);
+            return (void*)(user_stack_base + STACK_SIZE - 128);
         }
     }
     return NULL;
@@ -591,8 +590,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-                if(next_thread->ParentProcess->reference_count == 0)
-                {
+                if(next_thread->ParentProcess->reference_count == 0) {
                     //TODO Free process memory
                 }
 
@@ -725,7 +723,7 @@ GetCoreLoad(int coreNum) {
 
 void
 SetThreadSigmask(UID id,
-                  const sigset_t *flags) {
+                 const sigset_t *flags) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         LockSpinlock(coreState->cur_thread->lock);
         memcpy(&coreState->cur_thread->SignalMask, flags, sizeof(sigset_t));
@@ -735,9 +733,9 @@ SetThreadSigmask(UID id,
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-        LockSpinlock(thd->lock);
-        memcpy(&thd->SignalMask, flags, sizeof(sigset_t));
-        UnlockSpinlock(thd->lock);
+            LockSpinlock(thd->lock);
+            memcpy(&thd->SignalMask, flags, sizeof(sigset_t));
+            UnlockSpinlock(thd->lock);
             return;
         }
     }
@@ -755,9 +753,9 @@ GetThreadSigmask(UID           id,
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-        LockSpinlock(thd->lock);
-        memcpy(procInfo, &thd->SignalMask, sizeof(sigset_t));
-        UnlockSpinlock(thd->lock);
+            LockSpinlock(thd->lock);
+            memcpy(procInfo, &thd->SignalMask, sizeof(sigset_t));
+            UnlockSpinlock(thd->lock);
             return;
         }
     }

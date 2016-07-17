@@ -58,8 +58,7 @@ ForkProcess(ProcessInformation *src,
 }
 
 UID
-ForkCurrentProcess(void)
-{
+ForkCurrentProcess(void) {
     ProcessInformation *dst_proc = NULL;
     ProcessInformation *src_proc = NULL;
     GetProcessReference(GetCurrentProcessUID(), &src_proc);
@@ -195,9 +194,8 @@ GetProcessSigaction(UID pid,
 }
 
 void
-RaiseSignal(UID pid, 
-            int sig_no)
-{
+RaiseSignal(UID pid,
+            int sig_no) {
     pid = 0;
     sig_no = 0;
 }
