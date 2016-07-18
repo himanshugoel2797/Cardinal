@@ -64,6 +64,7 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    __asm__("cli\n\thlt");
     coreCount++;
     SyscallMan_Initialize();
     Syscall_Initialize();

@@ -66,6 +66,7 @@ typedef struct MemoryAllocationsMap {
     void*    AdditionalData;
 
     struct MemoryAllocationsMap *next;
+    struct MemoryAllocationsMap *prev;
 } MemoryAllocationsMap;
 
 typedef struct ForkedMemoryData {
@@ -73,10 +74,10 @@ typedef struct ForkedMemoryData {
     uint64_t VirtualAddress;
     uint64_t PhysicalAddress;
     uint64_t Length;
-    uint32_t *PageReferenceCounts;
     uint32_t NetReferenceCount;
     MemoryAllocationFlags Flags;
     MemoryAllocationType AllocationType;
+    Spinlock Lock;
 } ForkedMemoryData;
 
 typedef struct ManagedPageTable {

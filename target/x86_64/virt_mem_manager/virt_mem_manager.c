@@ -912,6 +912,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
             break;
         default:
             pml_base = 0;
+            pdpt_base = 1;
             break;
         }
     }
