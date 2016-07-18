@@ -22,10 +22,10 @@ void
 MemoryHAL_Initialize(void) {
     if(vmem_lock == NULL)
         vmem_lock = CreateBootstrapSpinlock();
-    
+
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
     RegisterInterruptHandler(34, HandleTLBShootdown);
-    
+
     if(curPageTable == NULL)
         curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
 }
@@ -550,7 +550,7 @@ GetCoreCount(void) {
     return SMP_GetCoreCount();
 }
 
-static bool tlb_shootdown = FALSE; 
+static bool tlb_shootdown = FALSE;
 static volatile int tlb_core_count = 0;
 
 void
@@ -561,91 +561,91 @@ HandlePageFault(uint64_t virtualAddress,
     if(!ProcessSys_IsInitialized()) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer));
     }
-        //Check the current process's memory info table
-        ProcessInformation *procInfo = NULL;
-        GetProcessReference(GetCurrentProcessUID(), &procInfo);
-        if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {
-            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->PageTable->AllocationMap));
-            //while(1)debug_gfx_writeLine("Error: Page Fault");
-        }
+    //Check the current process's memory info table
+    ProcessInformation *procInfo = NULL;
+    GetProcessReference(GetCurrentProcessUID(), &procInfo);
+    if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->PageTable->AllocationMap));
+        //while(1)debug_gfx_writeLine("Error: Page Fault");
+    }
 
-        LockSpinlock(procInfo->lock);
-        MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
-        while(map != NULL) {
-            if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
-                //Found an entry that describes this fault
-                if((map->AllocationType & MemoryAllocationType_Fork) && (error & MemoryAllocationFlags_Write)) {
+    LockSpinlock(procInfo->lock);
+    MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
+    while(map != NULL) {
+        if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
+            //Found an entry that describes this fault
+            if((map->AllocationType & MemoryAllocationType_Fork) && (error & MemoryAllocationFlags_Write)) {
 
-                    ForkedMemoryData *fork_data = (ForkedMemoryData*)map->AdditionalData;
-                    LockSpinlock(fork_data->Lock);
+                ForkedMemoryData *fork_data = (ForkedMemoryData*)map->AdditionalData;
+                LockSpinlock(fork_data->Lock);
 
-                    uint64_t tmp_loc_virt = 0;
-                    uint64_t tmp_loc_phys = fork_data->NetReferenceCount-- > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
+                uint64_t tmp_loc_virt = 0;
+                uint64_t tmp_loc_phys = fork_data->NetReferenceCount-- > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
 
-                    //First allocate the same amount of memory in another location
-                    FindFreeVirtualAddress(
-                        procInfo->PageTable,
-                        &tmp_loc_virt,
+                //First allocate the same amount of memory in another location
+                FindFreeVirtualAddress(
+                    procInfo->PageTable,
+                    &tmp_loc_virt,
+                    fork_data->Length,
+                    MemoryAllocationType_Heap,
+                    MemoryAllocationFlags_Write);
+
+                MapPage(procInfo->PageTable,
+                        tmp_loc_phys,
+                        tmp_loc_virt,
                         fork_data->Length,
+                        CachingModeWriteBack,
                         MemoryAllocationType_Heap,
                         MemoryAllocationFlags_Write);
 
-                    MapPage(procInfo->PageTable,
-                            tmp_loc_phys,
-                            tmp_loc_virt,
-                            fork_data->Length,
-                            CachingModeWriteBack,
-                            MemoryAllocationType_Heap,
-                            MemoryAllocationFlags_Write);
+                //Then copy over the data
+                memcpy((void*)tmp_loc_virt, (void*)fork_data->VirtualAddress, fork_data->Length);
 
-                    //Then copy over the data
-                    memcpy((void*)tmp_loc_virt, (void*)fork_data->VirtualAddress, fork_data->Length);
+                //Then undo the above mapping
+                UnmapPage(procInfo->PageTable,
+                          tmp_loc_virt,
+                          fork_data->Length);
 
-                    //Then undo the above mapping
-                    UnmapPage(procInfo->PageTable,
-                              tmp_loc_virt,
-                              fork_data->Length);
+                //Then map the same pages on top of the existing set
+                UnmapPage(procInfo->PageTable,
+                          fork_data->VirtualAddress,
+                          fork_data->Length);
 
-                    //Then map the same pages on top of the existing set
-                    UnmapPage(procInfo->PageTable,
-                              fork_data->VirtualAddress,
-                              fork_data->Length);
+                MapPage(procInfo->PageTable,
+                        tmp_loc_phys,
+                        fork_data->VirtualAddress,
+                        fork_data->Length,
+                        fork_data->CacheMode,
+                        fork_data->AllocationType,
+                        fork_data->Flags
+                       );
 
-                    MapPage(procInfo->PageTable,
-                            tmp_loc_phys,
-                            fork_data->VirtualAddress,
-                            fork_data->Length,
-                            fork_data->CacheMode,
-                            fork_data->AllocationType,
-                            fork_data->Flags
-                           );
+                map->AllocationType &= ~MemoryAllocationType_Fork;
 
-                    map->AllocationType &= ~MemoryAllocationType_Fork;
+                //Now cause a TLB shootdown
+                PerformTLBShootdown();
 
-                    //Now cause a TLB shootdown
-                    PerformTLBShootdown();
-
-                    UnlockSpinlock(fork_data->Lock);
-                    if(fork_data->NetReferenceCount == 0)
-                        kfree(fork_data);
-
-                    break;
-
-                }
-
-                if(map->AllocationType & MemoryAllocationType_Application) {
-                    __asm__("cli\n\thlt" :: "b"(3));
-                }
-
+                UnlockSpinlock(fork_data->Lock);
+                if(fork_data->NetReferenceCount == 0)
+                    kfree(fork_data);
 
                 break;
+
             }
 
-            MemoryAllocationsMap *tmp_next = map->next;
+            if(map->AllocationType & MemoryAllocationType_Application) {
+                __asm__("cli\n\thlt" :: "b"(3));
+            }
 
-            map = tmp_next;
+
+            break;
         }
-        UnlockSpinlock(procInfo->lock);
+
+        MemoryAllocationsMap *tmp_next = map->next;
+
+        map = tmp_next;
+    }
+    UnlockSpinlock(procInfo->lock);
 }
 
 void

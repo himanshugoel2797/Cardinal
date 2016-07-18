@@ -98,7 +98,7 @@ APIC_SendEOI(uint8_t int_num);
 
 void
 APIC_SendIPI(uint32_t dest,
-			 uint8_t destination_shorthand,
+             uint8_t destination_shorthand,
              uint8_t vector,
              uint8_t delivery_mode);
 

@@ -83,7 +83,7 @@ kernel_main(void) {
     ForkProcess(&p_info, &elf_proc);
     if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
     //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
-    
+
     FreeThread(GetCurrentThreadUID());
     while(1);
 }

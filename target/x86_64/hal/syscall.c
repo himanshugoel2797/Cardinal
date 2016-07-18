@@ -66,8 +66,7 @@ SetKernelStack(void* stack) {
 }
 
 void*
-GetKernelStack(void)
-{
+GetKernelStack(void) {
     return k_stack_info->k_stack;
 }
 
