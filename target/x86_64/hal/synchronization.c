@@ -23,8 +23,8 @@ bool
 LockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
-    uint16_t dummy0 = 0;
-    uint64_t dummy1 = 0;
+    register uint16_t dummy0 = 0;
+    register uint64_t dummy1 = 0;
     uint64_t dummy2 = 0;
 
     dummy2 = APIC_GetID() + 1;
@@ -36,25 +36,24 @@ LockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "cmpq %[rdx], +8(%[prim])\n\t"
-        "je 4f\n\t"
         "pushfq\n\t"
         "cli\n\t"
         "popq %[rcx]\n\t"
+        "cmpq %[rdx], +8(%[prim])\n\t"
+        "je 4f\n\t"
         "shlq $16, %[rcx]\n\t"
         "movw $1, %[cx]\n\t"
         "lock xaddw %[cx], +2(%[prim])\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "je 3f\n\t"
         "1:\n\t"
-        "btq $25, %[rcx]\n\t"
         "pause\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "jne 1b\n\t"
         "3:\n\t"
         "btq $25, %[rcx]\n\t"
         "jnc 4f\n\t"
-        "orw $1, +4(%[prim])\n\t"
+        "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
         "lock incw +6(%[prim])\n\t"
         "movq %[rdx], +8(%[prim])"
@@ -84,7 +83,7 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
-    uint16_t dummy0 = 0;
+    register uint16_t dummy0 = 0;
 
     __asm__ volatile
     (
@@ -94,8 +93,6 @@ UnlockSpinlock(Spinlock primitive) {
         "movq $0, +8(%[prim])\n\t"
         "xchgw %[dm0], +4(%[prim])\n\t"
         "lock incw (%[prim])\n\t"
-        "jmp 2f\n\t"
-        "2:\n\t"
         "btw $0, %[dm0]\n\t"
         "jnc 1f\n\t"
         "sti\n\t"

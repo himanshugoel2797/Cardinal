@@ -1126,4 +1126,6 @@ VirtMemMan_HandlePageFault(uint32_t UNUSED(int_no),
     HandlePageFault(addr,
                     regs->rip,
                     flags);
+    
+    __asm__ volatile("movq %0, %%cr2" :: "r"((uint64_t)0) : );
 }

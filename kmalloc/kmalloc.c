@@ -188,7 +188,10 @@ void kfree(void *addr) {
         return;
     }*/
     if(((uint64_t)addr < (uint64_t)k_pages_base_addr) | ((uint64_t)addr >= ((uint64_t)k_pages_base_addr + STORE_SIZE)))
-        return;
+        {
+            UnlockSpinlock(alloc_sync);
+            return;
+        }
 
 #if defined(DEBUG)
     uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);

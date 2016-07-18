@@ -21,9 +21,9 @@ hlt_kernel(void) {
     while(1);
 }
 
-void
+void __attribute__((naked))
 hlt2_kernel(void) {
-    while(1);
+    __asm__("cli\n\thlt" :: "a"(0xDEADB33F));
 }
 void
 kernel_main_init(void) {
@@ -71,10 +71,10 @@ kernel_main(void) {
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();
-    smp_lock = CreateSpinlock();
-    smp_unlock_cores();
+    //smp_lock = CreateSpinlock();
+    //smp_unlock_cores();
 
-    while(coreCount != GetCoreCount());
+    //while(coreCount != GetCoreCount());
     setup_preemption();
     target_device_setup();
 
@@ -82,11 +82,11 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
-    //CreateThread(0, hlt2_kernel);
-
-    FreeThread(GetCurrentThreadUID());
+    //if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+    CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    
     while(1);
+    FreeThread(GetCurrentThreadUID());
 }
 
 

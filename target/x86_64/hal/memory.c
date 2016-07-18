@@ -8,6 +8,7 @@
 #include "debug_gfx.h"
 #include "interrupts.h"
 #include "managers.h"
+#include "target/x86_64/IDT/idt.h"
 
 static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
@@ -412,6 +413,8 @@ ForkTable(ManagedPageTable *src,
     LockSpinlock(src->lock);
     MemoryAllocationsMap *c = src->AllocationMap;
 
+    int b_ent_cnt = 0;
+
     //TODO review this code to make sure it works
     while(c != NULL) {
         MapPage(dst,
@@ -423,6 +426,7 @@ ForkTable(ManagedPageTable *src,
                 c->Flags
                );
 
+        b_ent_cnt++;
         c = c->next;
     }
 
@@ -446,6 +450,9 @@ ForkTable(ManagedPageTable *src,
     MemoryAllocationsMap *dst_map = dst->AllocationMap;
 
     while(src_map != NULL && dst_map != NULL) {
+
+        if(src_map->VirtualAddress != dst_map->VirtualAddress)
+            __asm__ ("cli\n\thlt");
 
         if(src_map->AllocationType & MemoryAllocationType_Fork)
             dst_map->AdditionalData = src_map->AdditionalData;
@@ -476,6 +483,7 @@ ForkTable(ManagedPageTable *src,
         dst_map = dst_map->next;
     }
 
+    int b2_ent_cnt = 0;
     c = dst->AllocationMap;
 
     while(c != NULL) {
@@ -487,9 +495,9 @@ ForkTable(ManagedPageTable *src,
                         c->Flags
                        );
 
+        b2_ent_cnt++;
         c = c->next;
     }
-
 
     UnlockSpinlock(src->lock);
 
@@ -546,7 +554,7 @@ HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error) {
     if(!ProcessSys_IsInitialized()) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer));
-    } else {
+    }
         //Check the current process's memory info table
         ProcessInformation *procInfo = NULL;
         GetProcessReference(GetCurrentProcessUID(), &procInfo);
@@ -566,7 +574,7 @@ HandlePageFault(uint64_t virtualAddress,
                     LockSpinlock(fork_data->Lock);
 
                     uint64_t tmp_loc_virt = 0;
-                    uint64_t tmp_loc_phys = fork_data->NetReferenceCount > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
+                    uint64_t tmp_loc_phys = fork_data->NetReferenceCount-- > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
 
                     //First allocate the same amount of memory in another location
                     FindFreeVirtualAddress(
@@ -608,8 +616,6 @@ HandlePageFault(uint64_t virtualAddress,
 
                     map->AllocationType &= ~MemoryAllocationType_Fork;
 
-                    AtomicDecrement32(&fork_data->NetReferenceCount);
-
                     UnlockSpinlock(fork_data->Lock);
                     if(fork_data->NetReferenceCount == 0)
                         kfree(fork_data);
@@ -631,8 +637,6 @@ HandlePageFault(uint64_t virtualAddress,
             map = tmp_next;
         }
         UnlockSpinlock(procInfo->lock);
-
-    }
 }
 
 void

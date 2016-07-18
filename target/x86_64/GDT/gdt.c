@@ -174,6 +174,7 @@ GDT_SetEntry(int num,
 void
 SetInterruptStack(void* sp) {
     coreLocalData->sys_tss.rsp0 = (uint64_t)sp;
+    coreLocalData->sys_tss.ist7 = (uint64_t)sp;
 }
 
 void

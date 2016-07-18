@@ -43,6 +43,15 @@ ForkProcess(ProcessInformation *src,
     dst->Status = src->Status;
     dst->Permissions = src->Permissions;
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
+    dst->SyscallFlags = ProcessSyscallFlags_None;
+    dst->HeapBreak = 0;
+    dst->SignalHandlers = kmalloc(sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
+    memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
+
+    dst->PendingSignals = List_Create(CreateSpinlock());
+    dst->Children = List_Create(CreateSpinlock());
+    List_AddEntry(src->Children, (void*)dst->ID);
+    dst->Parent = src;
 
     ForkTable(src->PageTable, dst->PageTable);
 
@@ -51,7 +60,7 @@ ForkProcess(ProcessInformation *src,
 
     //Add dst to src's children
     UnlockSpinlock(src->lock);
-    __asm__ volatile ("hlt" :: "a"(*(uint16_t*)((uint8_t*)src->lock + 6)));
+
     List_AddEntry(processes, dst);
     *dest = dst;
 
