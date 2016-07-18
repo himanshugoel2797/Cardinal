@@ -51,9 +51,9 @@ APIC_Initialize(void) {
                         thread->next = smp_threads;
                         smp_threads = thread;
                     } else if(lapic->apic_id != APIC_GetID() && passNum == 2) {
-                        APIC_SendIPI(lapic->apic_id, 0, 5);
+                        APIC_SendIPI(lapic->apic_id, APIC_DESTINATION_SHORT_NONE, 0, 5);
                         PIT_Sleep(10);
-                        APIC_SendIPI(lapic->apic_id, 0x0f, 6);
+                        APIC_SendIPI(lapic->apic_id, APIC_DESTINATION_SHORT_NONE, 0x0f, 6);
                         SMP_WaitForCoreCountIncrement();
                     }
                 }

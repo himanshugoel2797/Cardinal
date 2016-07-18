@@ -22,6 +22,11 @@
 #define APIC_TIMER_PERIODIC 0x1
 #define APIC_TIMER_TSC      0x2
 
+#define APIC_DESTINATION_SHORT_NONE 0x0
+#define APIC_DESTINATION_SHORT_SELF 0x1
+#define APIC_DESTINATION_SHORT_ALL 0x2
+#define APIC_DESTINATION_SHORT_ALLBUTSELF 0x3
+
 #define APIC_DELIVERY_MODE_FIXED 0x0
 #define APIC_DELIVERY_MODE_SMI  0x2
 #define APIC_DELIVERY_MODE_NMI  0x4
@@ -93,6 +98,7 @@ APIC_SendEOI(uint8_t int_num);
 
 void
 APIC_SendIPI(uint32_t dest,
+			 uint8_t destination_shorthand,
              uint8_t vector,
              uint8_t delivery_mode);
 

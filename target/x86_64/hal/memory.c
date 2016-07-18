@@ -8,15 +8,18 @@
 #include "debug_gfx.h"
 #include "interrupts.h"
 #include "managers.h"
-#include "target/x86_64/IDT/idt.h"
+#include "target/x86_64/apic/apic.h"
 
 static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
 
 void
 MemoryHAL_Initialize(void) {
-    vmem_lock = CreateBootstrapSpinlock();
+    if(vmem_lock == NULL)
+        vmem_lock = CreateBootstrapSpinlock();
+    
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
+    
     if(curPageTable == NULL)
         curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
 }
@@ -413,8 +416,6 @@ ForkTable(ManagedPageTable *src,
     LockSpinlock(src->lock);
     MemoryAllocationsMap *c = src->AllocationMap;
 
-    int b_ent_cnt = 0;
-
     //TODO review this code to make sure it works
     while(c != NULL) {
         MapPage(dst,
@@ -426,7 +427,6 @@ ForkTable(ManagedPageTable *src,
                 c->Flags
                );
 
-        b_ent_cnt++;
         c = c->next;
     }
 
@@ -483,7 +483,6 @@ ForkTable(ManagedPageTable *src,
         dst_map = dst_map->next;
     }
 
-    int b2_ent_cnt = 0;
     c = dst->AllocationMap;
 
     while(c != NULL) {
@@ -495,7 +494,6 @@ ForkTable(ManagedPageTable *src,
                         c->Flags
                        );
 
-        b2_ent_cnt++;
         c = c->next;
     }
 
@@ -548,10 +546,14 @@ GetCoreCount(void) {
     return SMP_GetCoreCount();
 }
 
+static bool tlb_shootdown = FALSE; 
+static volatile int tlb_core_count = 0;
+
 void
 HandlePageFault(uint64_t virtualAddress,
                 uint64_t instruction_pointer,
                 MemoryAllocationFlags error) {
+
     if(!ProcessSys_IsInitialized()) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer));
     }
@@ -615,6 +617,9 @@ HandlePageFault(uint64_t virtualAddress,
                            );
 
                     map->AllocationType &= ~MemoryAllocationType_Fork;
+
+                    //Now cause a TLB shootdown
+                    //PerformTLBShootdown();
 
                     UnlockSpinlock(fork_data->Lock);
                     if(fork_data->NetReferenceCount == 0)
@@ -692,4 +697,24 @@ CheckAddressPermissions(ManagedPageTable      *pageTable,
 void
 HaltProcessor(void) {
     __asm__ volatile("cli\n\thlt");
+}
+
+void
+HandleTLBShootdown(uint32_t UNUSED(int_no),
+                   uint32_t UNUSED(err_code)) {
+    SetActiveVirtualMemoryInstance(GetActiveVirtualMemoryInstance());
+    AtomicIncrement32((uint32_t*)&tlb_core_count);
+}
+
+void
+PerformTLBShootdown(void) {
+    //Reload the current virtual memory instance
+    tlb_shootdown = TRUE;
+    __asm__ volatile("mfence");
+    RegisterInterruptHandler(34, HandleTLBShootdown);
+    APIC_SendIPI(34, APIC_DESTINATION_SHORT_ALLBUTSELF, 0, APIC_DELIVERY_MODE_NMI);
+
+    while(tlb_core_count != GetCoreCount());
+    tlb_core_count = 0;
+    tlb_shootdown = FALSE;
 }

@@ -158,6 +158,9 @@ HandlePageFault(uint64_t virtualAddress,
                 MemoryAllocationFlags error);
 
 void
+PerformTLBShootdown(void);
+
+void
 CheckAddressPermissions(ManagedPageTable *pageTable,
                         uint64_t addr,
                         CachingMode *cacheMode,

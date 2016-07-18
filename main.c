@@ -42,7 +42,6 @@ kernel_main_init(void) {
 
 void
 load_elf(void) {
-    __asm__("cli\n\thlt");
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
@@ -71,10 +70,10 @@ kernel_main(void) {
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();
-    //smp_lock = CreateSpinlock();
-    //smp_unlock_cores();
+    smp_lock = CreateSpinlock();
+    smp_unlock_cores();
 
-    //while(coreCount != GetCoreCount());
+    while(coreCount != GetCoreCount());
     setup_preemption();
     target_device_setup();
 
@@ -82,11 +81,11 @@ kernel_main(void) {
     GetProcessInformation(0, &p_info);
     ProcessInformation *elf_proc;
     ForkProcess(&p_info, &elf_proc);
-    //if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
-    CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+    //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
     
-    while(1);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
@@ -95,9 +94,9 @@ smp_main(void) {
     LockSpinlock(smp_lock);
     coreCount++;
     UnlockSpinlock(smp_lock);
-    while(1);
     setup_preemption();
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 void

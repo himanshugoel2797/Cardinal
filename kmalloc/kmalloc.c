@@ -144,14 +144,15 @@ void *kmalloc(size_t size) {
 
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
-        UnlockSpinlock(alloc_sync);
         if(!retry) {
             retry = TRUE;
             //kcompact();
             uint64_t res = (uint64_t)kmalloc(size);
             retry = FALSE;
+            UnlockSpinlock(alloc_sync);
             return ksetup_instrumentation((void*)res, size);
         }
+        UnlockSpinlock(alloc_sync);
         return (void*)NULL;
     }
 

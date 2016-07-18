@@ -248,10 +248,11 @@ APIC_SendEOI(uint8_t int_num) {
 
 void
 APIC_SendIPI(uint32_t dest,
+             uint8_t destination_shorthand,
              uint8_t vector,
              uint8_t delivery_mode) {
     uint32_t hi = (dest << 24);
-    uint32_t lo = (1 << 14) | (delivery_mode & 7) << 8 | vector;
+    uint32_t lo = ((destination_shorthand & 3) << 18) | (1 << 14) | (delivery_mode & 7) << 8 | vector;
 
     APIC_Write(APIC_ICR_HI, hi);
     APIC_Write(APIC_ICR_LO, lo);
