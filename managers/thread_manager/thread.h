@@ -34,8 +34,8 @@ typedef enum {
 } ThreadWakeCondition;
 
 typedef enum {
-  ThreadPermissionLevel_User,
-  ThreadPermissionLevel_Kernel
+    ThreadPermissionLevel_User,
+    ThreadPermissionLevel_Kernel
 } ThreadPermissionLevel;
 
 typedef void (*ThreadEntryPoint)(void*);

@@ -136,13 +136,13 @@ set_bit_cnt(uint32_t bit_array) {
 static volatile UID uids_base = 0;
 UID
 new_uid(void) {
-    #if defined(x86_64)
+#if defined(x86_64)
     uint64_t tmp = 1;
     __asm__ volatile("lock xaddq %[tmp], (%[bs])" : [tmp]"=r"(tmp) : [bs]"r"(&uids_base));
     return tmp & 0xFFFFFFFF;
-    #else
+#else
     return (++uids_base & 0xFFFFFFFF);
-    #endif
+#endif
 }
 
 

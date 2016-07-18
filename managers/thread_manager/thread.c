@@ -181,10 +181,10 @@ CreateThread(UID parentProcess,
     regs.r15 = 0;
     regs.rflags = 0;
 
-    if(perm_level == ThreadPermissionLevel_User){
+    if(perm_level == ThreadPermissionLevel_User) {
         regs.ss = 0x20;
         regs.cs = 0x28;
-    }else if(perm_level == ThreadPermissionLevel_Kernel){
+    } else if(perm_level == ThreadPermissionLevel_Kernel) {
         regs.ss = 0x10;
         regs.cs = 0x8;
     }

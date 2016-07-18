@@ -182,11 +182,10 @@ MapPage(ManagedPageTable *pageTable,
                 } else kfree(top);
 
                 if(map->Length == 0) {
-                    if(pageTable->AllocationMap != map){
+                    if(pageTable->AllocationMap != map) {
                         prev->next = map->next;
                         if(map->next != NULL)map->next->prev = prev;
-                    }
-                    else{
+                    } else {
                         pageTable->AllocationMap = map->next;
                         if(map->next != NULL)map->next->prev = NULL;
                     }
@@ -227,10 +226,10 @@ MapPage(ManagedPageTable *pageTable,
 
 MemoryAllocationErrors
 ChangePageFlags(ManagedPageTable *pageTable,
-        uint64_t        virtualAddress,
-        CachingMode         cacheMode,
-        MemoryAllocationType    allocType,
-        MemoryAllocationFlags   flags) {
+                uint64_t        virtualAddress,
+                CachingMode         cacheMode,
+                MemoryAllocationType    allocType,
+                MemoryAllocationFlags   flags) {
 
     if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
 
@@ -252,8 +251,7 @@ ChangePageFlags(ManagedPageTable *pageTable,
 
     MemoryAllocationsMap *map = pageTable->AllocationMap;
 
-    while(map != NULL)
-    {
+    while(map != NULL) {
         if(map->VirtualAddress == virtualAddress)
             break;
 
@@ -322,11 +320,10 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 } else kfree(top);
 
                 if(map->Length == 0) {
-                    if(pageTable->AllocationMap != map){
+                    if(pageTable->AllocationMap != map) {
                         prev->next = map->next;
                         if(map->next != NULL)map->next->prev = prev;
-                    }
-                    else{
+                    } else {
                         pageTable->AllocationMap = map->next;
                         if(map->next != NULL)map->next->prev = NULL;
                     }
@@ -432,14 +429,13 @@ ForkTable(ManagedPageTable *src,
     c = dst->AllocationMap;
     MemoryAllocationsMap *tmp_node = NULL;
 
-    while(c != NULL)
-    {
+    while(c != NULL) {
         tmp_node = c->prev;
         c->prev = c->next;
         c->next = tmp_node;
 
         tmp_node = c;
-        c = c->prev; 
+        c = c->prev;
     }
 
     if(tmp_node != NULL)
@@ -449,13 +445,11 @@ ForkTable(ManagedPageTable *src,
     MemoryAllocationsMap *src_map = src->AllocationMap;
     MemoryAllocationsMap *dst_map = dst->AllocationMap;
 
-    while(src_map != NULL && dst_map != NULL)
-    {
+    while(src_map != NULL && dst_map != NULL) {
 
         if(src_map->AllocationType & MemoryAllocationType_Fork)
             dst_map->AdditionalData = src_map->AdditionalData;
-        else
-        {
+        else {
             dst_map->AdditionalData = kmalloc(sizeof(ForkedMemoryData));
             ((ForkedMemoryData*)dst_map->AdditionalData)->Lock = CreateSpinlock();
         }
@@ -468,7 +462,7 @@ ForkTable(ManagedPageTable *src,
 
         if(src_map->AllocationType & MemoryAllocationType_Fork)
             AtomicIncrement32(&fork_data->NetReferenceCount);
-        else 
+        else
             fork_data->NetReferenceCount = 2;
 
         fork_data->Flags = src_map->Flags;
@@ -487,11 +481,11 @@ ForkTable(ManagedPageTable *src,
     while(c != NULL) {
 
         ChangePageFlags(src,
-                c->VirtualAddress,
-                c->CacheMode,
-                c->AllocationType | MemoryAllocationType_Fork,
-                c->Flags
-               );
+                        c->VirtualAddress,
+                        c->CacheMode,
+                        c->AllocationType | MemoryAllocationType_Fork,
+                        c->Flags
+                       );
 
         c = c->next;
     }
@@ -561,7 +555,7 @@ HandlePageFault(uint64_t virtualAddress,
             //while(1)debug_gfx_writeLine("Error: Page Fault");
         }
 
-            LockSpinlock(procInfo->lock);
+        LockSpinlock(procInfo->lock);
         MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
         while(map != NULL) {
             if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
@@ -575,20 +569,20 @@ HandlePageFault(uint64_t virtualAddress,
                     uint64_t tmp_loc_phys = fork_data->NetReferenceCount > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
 
                     //First allocate the same amount of memory in another location
-        FindFreeVirtualAddress(
-                procInfo->PageTable,
-                &tmp_loc_virt,
-                fork_data->Length,
-                MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Write);
+                    FindFreeVirtualAddress(
+                        procInfo->PageTable,
+                        &tmp_loc_virt,
+                        fork_data->Length,
+                        MemoryAllocationType_Heap,
+                        MemoryAllocationFlags_Write);
 
-        MapPage(procInfo->PageTable,
-                tmp_loc_phys,
-                tmp_loc_virt,
-                fork_data->Length,
-                CachingModeWriteBack,
-                MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Write);
+                    MapPage(procInfo->PageTable,
+                            tmp_loc_phys,
+                            tmp_loc_virt,
+                            fork_data->Length,
+                            CachingModeWriteBack,
+                            MemoryAllocationType_Heap,
+                            MemoryAllocationFlags_Write);
 
                     //Then copy over the data
                     memcpy((void*)tmp_loc_virt, (void*)fork_data->VirtualAddress, fork_data->Length);
@@ -610,7 +604,7 @@ HandlePageFault(uint64_t virtualAddress,
                             fork_data->CacheMode,
                             fork_data->AllocationType,
                             fork_data->Flags
-                            );
+                           );
 
                     map->AllocationType &= ~MemoryAllocationType_Fork;
 
@@ -636,7 +630,7 @@ HandlePageFault(uint64_t virtualAddress,
 
             map = tmp_next;
         }
-            UnlockSpinlock(procInfo->lock);
+        UnlockSpinlock(procInfo->lock);
 
     }
 }
