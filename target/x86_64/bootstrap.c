@@ -188,6 +188,7 @@ smp_bootstrap(void) {
     int coreID = SMP_GetCoreCount();
     SMP_UnlockTrampoline();
 
+    MemoryHAL_Initialize();
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
     while(1);

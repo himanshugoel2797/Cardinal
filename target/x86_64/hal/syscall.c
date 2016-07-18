@@ -27,6 +27,7 @@ Syscall_Handler(void) {
         "pushq %%rcx\n\t"
         "pushq %%rdi\n\t"
         "xchg %%rcx, %%rdi\n\t"
+        "sti\n\t"
         "callq (SyscallReceived)\n\t"
         "movq %%rax, %%rsi\n\t"
         "popq %%rdi\n\t"
@@ -62,6 +63,12 @@ SetKernelStack(void* stack) {
         k_stack_info = AllocateAPLSMemory(sizeof(k_stack_info));
 
     k_stack_info->k_stack = stack;
+}
+
+void*
+GetKernelStack(void)
+{
+    return k_stack_info->k_stack;
 }
 
 uint64_t

@@ -13,12 +13,18 @@
 static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
 
+
+void
+HandleTLBShootdown(uint32_t UNUSED(int_no),
+                   uint32_t UNUSED(err_code));
+
 void
 MemoryHAL_Initialize(void) {
     if(vmem_lock == NULL)
         vmem_lock = CreateBootstrapSpinlock();
     
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
+    RegisterInterruptHandler(34, HandleTLBShootdown);
     
     if(curPageTable == NULL)
         curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
@@ -106,9 +112,7 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     UnlockSpinlock(inst->lock);
 
     if(tmp != NULL) {
-        LockSpinlock(tmp->lock);
-        tmp->reference_count--;
-        UnlockSpinlock(tmp->lock);
+        AtomicDecrement32(&tmp->reference_count);
     }
 
     UnlockSpinlock(vmem_lock);
@@ -619,7 +623,7 @@ HandlePageFault(uint64_t virtualAddress,
                     map->AllocationType &= ~MemoryAllocationType_Fork;
 
                     //Now cause a TLB shootdown
-                    //PerformTLBShootdown();
+                    PerformTLBShootdown();
 
                     UnlockSpinlock(fork_data->Lock);
                     if(fork_data->NetReferenceCount == 0)
@@ -702,7 +706,7 @@ HaltProcessor(void) {
 void
 HandleTLBShootdown(uint32_t UNUSED(int_no),
                    uint32_t UNUSED(err_code)) {
-    SetActiveVirtualMemoryInstance(GetActiveVirtualMemoryInstance());
+    VirtMemMan_SetCurrent((PML_Instance)((*curPageTable)->PageTable));
     AtomicIncrement32((uint32_t*)&tlb_core_count);
 }
 
@@ -711,10 +715,10 @@ PerformTLBShootdown(void) {
     //Reload the current virtual memory instance
     tlb_shootdown = TRUE;
     __asm__ volatile("mfence");
-    RegisterInterruptHandler(34, HandleTLBShootdown);
-    APIC_SendIPI(34, APIC_DESTINATION_SHORT_ALLBUTSELF, 0, APIC_DELIVERY_MODE_NMI);
+    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 34, APIC_DELIVERY_MODE_FIXED);
 
+    tlb_core_count = 1;
     while(tlb_core_count != GetCoreCount());
-    tlb_core_count = 0;
+    tlb_core_count = 1;
     tlb_shootdown = FALSE;
 }
