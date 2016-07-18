@@ -133,10 +133,16 @@ set_bit_cnt(uint32_t bit_array) {
     return set_bit;
 }
 
-static UID uids_base = 0;
+static volatile UID uids_base = 0;
 UID
 new_uid(void) {
+    #if defined(x86_64)
+    uint64_t tmp = 1;
+    __asm__ volatile("lock xaddq %[tmp], (%[bs])" : [tmp]"=r"(tmp) : [bs]"r"(&uids_base));
+    return tmp & 0xFFFFFFFF;
+    #else
     return (++uids_base & 0xFFFFFFFF);
+    #endif
 }
 
 
@@ -144,8 +150,8 @@ uint32_t
 rand(int seed) {
     uint32_t a = 16807;
     uint32_t m = 2147483647;
-    seed = (a * seed) % m;
-    return seed / m;
+    uint64_t s = (a * seed) % m;
+    return (uint32_t)(s / m);
 }
 
 int

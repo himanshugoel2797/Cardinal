@@ -143,8 +143,6 @@ MapPage(ManagedPageTable *pageTable,
     if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
 
     MemoryAllocationsMap *allocMap = kmalloc(sizeof(MemoryAllocationsMap));
-    if(allocMap == NULL)
-        allocMap = bootstrap_malloc(sizeof(MemoryAllocationsMap));
 
     allocMap->CacheMode = cacheMode;
     allocMap->VirtualAddress = virtualAddress;
@@ -164,8 +162,6 @@ MapPage(ManagedPageTable *pageTable,
             if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size)) {
                 //TODO define the possible situations and update the allocation map appropriately
                 MemoryAllocationsMap *top = kmalloc(sizeof(MemoryAllocationsMap));
-                if(top == NULL)
-                    top = bootstrap_malloc(sizeof(MemoryAllocationsMap));
 
                 top->CacheMode = map->CacheMode;
                 top->Flags = map->Flags;
@@ -406,7 +402,6 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
 MemoryAllocationErrors
 ForkTable(ManagedPageTable *src,
           ManagedPageTable *dst) {
-    __asm__("cli\n\thlt");
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
     dst->reference_count = 0;
@@ -556,7 +551,7 @@ HandlePageFault(uint64_t virtualAddress,
                 uint64_t instruction_pointer,
                 MemoryAllocationFlags error) {
     if(!ProcessSys_IsInitialized()) {
-        while(1)debug_gfx_writeLine("Error: Page Fault");
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer));
     } else {
         //Check the current process's memory info table
         ProcessInformation *procInfo = NULL;

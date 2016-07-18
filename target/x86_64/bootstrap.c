@@ -119,9 +119,9 @@ bootstrap_kernel(void *param,
 
     //When threading is up again, call kernel on new thread
     kernel_main_init();
+    __asm__ volatile("cli\n\thlt\n\t");
 
     //We aren't supposed to reach here!
-    __asm__ volatile("cli\n\thlt\n\t");
 }
 
 void

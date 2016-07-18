@@ -2,6 +2,7 @@
 #include "synchronization.h"
 #include "common/common.h"
 #include "memory.h"
+#include "managers.h"
 #include "block_alloc.h"
 
 typedef struct kmalloc_info {
@@ -112,7 +113,7 @@ void *kmalloc(size_t size) {
     LockSpinlock(alloc_sync);
     if(allocation_info == NULL) {
         UnlockSpinlock(alloc_sync);
-        return NULL;
+        return bootstrap_malloc(size);
     }
 
 #if defined(DEBUG)

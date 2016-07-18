@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-typedef uint64_t* Spinlock;
+typedef volatile uint64_t* Spinlock;
 
 Spinlock
 CreateSpinlock(void);

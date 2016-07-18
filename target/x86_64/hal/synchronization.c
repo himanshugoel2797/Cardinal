@@ -8,14 +8,14 @@
 Spinlock
 CreateSpinlock(void) {
     Spinlock p = kmalloc(CPUID_GetCacheLineSize());
-    memset(p, 0, CPUID_GetCacheLineSize());
+    memset((void*)p, 0, CPUID_GetCacheLineSize());
     return p;
 }
 
 Spinlock
 CreateBootstrapSpinlock(void) {
     Spinlock p = (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
-    memset(p, 0, CPUID_GetCacheLineSize());
+    memset((void*)p, 0, CPUID_GetCacheLineSize());
     return p;
 }
 
@@ -84,8 +84,7 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
-    uint64_t id = APIC_GetID() + 1;
-    if(id == 0)id = -1;
+    uint16_t id = 0;
 
     __asm__ volatile
     (
@@ -93,13 +92,11 @@ UnlockSpinlock(Spinlock primitive) {
         "lock decw +6(%[prim])\n\t"
         "jnz 1f\n\t"
         "movq $0, +8(%[prim])\n\t"
+        "xchgw %[id], +4(%[prim])\n\t"
         "lock incw (%[prim])\n\t"
-        "jmp 2f\n\t"
-        "2:\n\t"
-        "btw $0, +4(%[prim])\n\t"
+        "btw $0, %[id]\n\t"
         "jnc 1f\n\t"
         "sti\n\t"
-        "movw $0, +4(%[prim])\n\t"
         "1:\n\t"
         :: [prim]"r"(primitive), [id]"r"(id) : "memory"
     );
@@ -108,7 +105,7 @@ UnlockSpinlock(Spinlock primitive) {
 
 void
 FreeSpinlock(Spinlock primitive) {
-    if(primitive != NULL)kfree(primitive);
+    if(primitive != NULL)kfree((void*)primitive);
 }
 
 void

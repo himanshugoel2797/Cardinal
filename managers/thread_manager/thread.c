@@ -232,8 +232,8 @@ CreateThreadADV(UID parentProcess,
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
         goto error_exit;
 
-    AtomicIncrement32(&thd->ParentProcess->reference_count);
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
+    AtomicIncrement32(&thd->ParentProcess->reference_count);
 
 
 

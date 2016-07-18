@@ -51,6 +51,7 @@ ForkProcess(ProcessInformation *src,
 
     //Add dst to src's children
     UnlockSpinlock(src->lock);
+    __asm__ volatile ("hlt" :: "a"(*(uint16_t*)((uint8_t*)src->lock + 6)));
     List_AddEntry(processes, dst);
     *dest = dst;
 

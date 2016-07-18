@@ -64,7 +64,6 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
-    __asm__("cli\n\thlt");
     coreCount++;
     SyscallMan_Initialize();
     Syscall_Initialize();
@@ -96,9 +95,9 @@ smp_main(void) {
     LockSpinlock(smp_lock);
     coreCount++;
     UnlockSpinlock(smp_lock);
+    while(1);
     setup_preemption();
     FreeThread(GetCurrentThreadUID());
-    while(1);
 }
 
 void

@@ -3,7 +3,7 @@
 #include "common/common.h"
 
 static uint8_t mem_pool[BOOTSTRAP_MEM_POOL];
-static uint32_t pos = 0;
+static volatile uint32_t pos = 0;
 
 void*
 bootstrap_malloc(size_t size) {
