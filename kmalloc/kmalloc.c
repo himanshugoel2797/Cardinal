@@ -112,8 +112,9 @@ bool retry = FALSE;
 void *kmalloc(size_t size) {
     LockSpinlock(alloc_sync);
     if(allocation_info == NULL) {
+        void *val = bootstrap_malloc(size);
         UnlockSpinlock(alloc_sync);
-        return bootstrap_malloc(size);
+        return val;
     }
 
 #if defined(DEBUG)

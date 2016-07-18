@@ -59,7 +59,7 @@ LockSpinlock(Spinlock primitive) {
         "lock incw +6(%[prim])\n\t"
         "movq %[rdx], +8(%[prim])"
         :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
-        : "memory"
+        : "memory", "cc"
     );
 
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
@@ -84,7 +84,7 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
-    uint16_t id = 0;
+    uint16_t dummy0 = 0;
 
     __asm__ volatile
     (
@@ -92,13 +92,15 @@ UnlockSpinlock(Spinlock primitive) {
         "lock decw +6(%[prim])\n\t"
         "jnz 1f\n\t"
         "movq $0, +8(%[prim])\n\t"
-        "xchgw %[id], +4(%[prim])\n\t"
+        "xchgw %[dm0], +4(%[prim])\n\t"
         "lock incw (%[prim])\n\t"
-        "btw $0, %[id]\n\t"
+        "jmp 2f\n\t"
+        "2:\n\t"
+        "btw $0, %[dm0]\n\t"
         "jnc 1f\n\t"
         "sti\n\t"
         "1:\n\t"
-        :: [prim]"r"(primitive), [id]"r"(id) : "memory"
+        :: [prim]"r"(primitive), [dm0]"r"(dummy0) : "memory", "cc"
     );
     return TRUE;
 }
@@ -110,20 +112,20 @@ FreeSpinlock(Spinlock primitive) {
 
 void
 AtomicIncrement32(uint32_t *val) {
-    __asm__ ("lock incl (%0)" :: "r"(val) : "memory");
+    __asm__ ("lock incl (%0)" :: "r"(val) : "memory", "cc");
 }
 
 void
 AtomicIncrement64(uint64_t *val) {
-    __asm__ ("lock incq (%0)" :: "r"(val) : "memory");
+    __asm__ ("lock incq (%0)" :: "r"(val) : "memory", "cc");
 }
 
 void
 AtomicDecrement32(uint32_t *val) {
-    __asm__ ("lock decl (%0)" :: "r"(val) : "memory");
+    __asm__ ("lock decl (%0)" :: "r"(val) : "memory", "cc");
 }
 
 void
 AtomicDecrement64(uint64_t *val) {
-    __asm__ ("lock decq (%0)" :: "r"(val) : "memory");
+    __asm__ ("lock decq (%0)" :: "r"(val) : "memory", "cc");
 }
