@@ -18,6 +18,15 @@ static List* cores;
 static volatile CoreThreadState *coreState = NULL;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
+static volatile UID base_thread_ID = 0;
+
+static UID
+new_thd_uid(void)
+{
+    register UID dummy = 1;
+    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"=r"(dummy) : [dummy]"r"(dummy), [bs]"r"(&base_thread_ID));
+    return (UID)(uint32_t)dummy;
+}
 
 #define PROPERTY_GET(type, name, default_val) type get_thread_##name (ThreadInfo *t) \
                              { \
@@ -239,7 +248,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
     AtomicIncrement32(&thd->ParentProcess->reference_count);
 
-
+    SetupArchSpecificData(thd, regs);
 
 
     uint64_t *cur_stack_frame = (uint64_t*)kstack;
@@ -293,7 +302,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]);
 
 
-    SET_PROPERTY_VAL(thd, ID, new_uid());
+    SET_PROPERTY_VAL(thd, ID, new_thd_uid());
     List_AddEntry(thds, thd);
     List_AddEntry(neutral, thd);
 
@@ -609,8 +618,8 @@ GetNextThread(ThreadInfo *prevThread) {
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)
-                        WriteValueAtAddress64(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                              (uint64_t*)next_thread->clear_child_tid,
+                        WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                              (uint32_t*)next_thread->clear_child_tid,
                                               0);
                 }
 
@@ -703,7 +712,7 @@ TaskSwitch(uint32_t int_no,
 
         if(cMode != 0 && cFlags != 0) {
             if(cFlags & MemoryAllocationFlags_User)
-                *(uint64_t*)coreState->cur_thread->set_child_tid = coreState->cur_thread->ID;
+                *(uint32_t*)coreState->cur_thread->set_child_tid = (uint32_t)coreState->cur_thread->ID;
         }
 
         if(coreState->cur_thread->ParentProcess->Parent != NULL) {
@@ -714,9 +723,9 @@ TaskSwitch(uint32_t int_no,
 
             if(cMode != 0 && cFlags != 0) {
                 if(cFlags & MemoryAllocationFlags_User)
-                    WriteValueAtAddress64(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                          (uint64_t*)coreState->cur_thread->set_parent_tid,
-                                          coreState->cur_thread->ID);
+                    WriteValueAtAddress32(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                          (uint32_t*)coreState->cur_thread->set_parent_tid,
+                                          (uint32_t)coreState->cur_thread->ID);
             }
         }
 

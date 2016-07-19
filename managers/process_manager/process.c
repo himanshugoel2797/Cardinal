@@ -5,11 +5,20 @@
 
 static List *processes;
 static ProcessInformation *root = NULL;
+static UID baseID = 0;
+
+static UID
+new_proc_uid(void)
+{
+    register UID dummy = 1;
+    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"=r"(dummy) : [dummy]"r"(dummy), [bs]"r"(&baseID));
+    return (UID)(uint32_t)dummy;
+}
 
 void
 ProcessSys_Initialize(void) {
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = 0;	//Root process ID is 0
+    root->ID = baseID++;	//Root process ID is 0
     strcpy(root->Name, "Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
@@ -39,7 +48,7 @@ ForkProcess(ProcessInformation *src,
             ProcessInformation **dest) {
     LockSpinlock(src->lock);
     ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
-    dst->ID = new_uid();
+    dst->ID = new_proc_uid();
     dst->Status = src->Status;
     dst->Permissions = src->Permissions;
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
@@ -50,7 +59,7 @@ ForkProcess(ProcessInformation *src,
 
     dst->PendingSignals = List_Create(CreateSpinlock());
     dst->Children = List_Create(CreateSpinlock());
-    List_AddEntry(src->Children, (void*)dst->ID);
+    List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
     dst->Parent = src;
 
     ForkTable(src->PageTable, dst->PageTable);

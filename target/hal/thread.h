@@ -43,6 +43,10 @@ uint64_t
 GetFPUStateSize(void);
 
 void
+SetupArchSpecificData(ThreadInfo *tInfo, 
+					  CRegisters *regs);
+
+void
 PerformArchSpecificTaskSave(ThreadInfo *tInfo);
 
 void

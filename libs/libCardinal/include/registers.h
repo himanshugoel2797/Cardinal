@@ -28,6 +28,7 @@ typedef struct {
     void *set_tid;
     void *clear_tid;
     void *p_tid;
+    void *tls;
 } CRegisters;
 
 #endif

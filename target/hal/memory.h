@@ -171,6 +171,11 @@ WriteValueAtAddress64(ManagedPageTable *pageTable,
                       uint64_t *addr,
                       uint64_t val);
 
+void
+WriteValueAtAddress32(ManagedPageTable *pageTable,
+                      uint32_t *addr,
+                      uint32_t val);
+
 uint64_t
 AllocatePhysicalPage(void);
 

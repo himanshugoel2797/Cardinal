@@ -35,17 +35,25 @@ clone(int (*func)(void*),
       void *ptid,
       void *ctid,
       void *tls) {
-    arg = ptid = ctid = tls = child_stack = NULL;
-    flags = 0;
-    func = NULL;
-    /* UID parentProcID = GetCurrentProcessUID();
-     if(~flags & CLONE_THREAD)
+    
+    UID parentProcID = GetCurrentProcessUID();
+     if(flags & CLONE_THREAD)
      {
-
+        //Create a new thread
+     }else{
        //Fork a new process
+        UID cpid = ForkCurrentProcess();
+        if(cpid == 0)
+        {
+            if(child_stack == NULL)
+              CreateThread(GetCurrentProcessUID(), ThreadPermissionLevel_User, (ThreadEntryPoint)func, arg);
+              FreeThread(GetCurrentThreadUID());
+              while(1);
+            }else{
 
+            }
+        }
      }
-    */
     return -1;
     //Create the thread with the parentProcID
 }
