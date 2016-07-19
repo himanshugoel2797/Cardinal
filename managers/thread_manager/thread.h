@@ -65,6 +65,7 @@ typedef struct ThreadInfo {
 
     void                *set_child_tid;
     void                *clear_child_tid;
+    void                *set_parent_tid;
     void                *fpu_state;
     void                *arch_specific_data;
 
@@ -81,12 +82,21 @@ void
 Thread_Initialize(void);
 
 void
-Thread_SetChildTIDAddress(UID id,
-                          void *address);
+SetChildTIDAddress(UID id,
+                   void *address);
 
 void
-Thread_SetClearChildTIDAddress(UID id,
-                               void *address);
+SetClearChildTIDAddress(UID id,
+                        void *address);
+
+void*
+GetClearChildTIDAddress(UID id);
+
+void*
+GetChildTIDAddress(UID id);
+
+void*
+GetParentTIDAddress(UID id);
 
 uint64_t
 AllocateStack(UID parentProcess,

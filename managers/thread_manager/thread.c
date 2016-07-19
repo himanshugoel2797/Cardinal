@@ -13,7 +13,7 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 static Spinlock sync_lock;
-static List *vLow, *low, *medium, *neutral, *high, *vHigh, *max, *thds;
+static List *neutral, *thds;
 static List* cores;
 static volatile CoreThreadState *coreState = NULL;
 static uint64_t preempt_frequency;
@@ -90,6 +90,7 @@ PROPERTY_GET_SET(int32_t, core_affinity, 0)
 
 PROPERTY_GET_SET(void*, set_child_tid, NULL)
 PROPERTY_GET_SET(void*, clear_child_tid, NULL)
+PROPERTY_GET_SET(void*, set_parent_tid, NULL)
 PROPERTY_GET_SET(void*, fpu_state, NULL)
 PROPERTY_GET_SET(void*, arch_specific_data, NULL)
 
@@ -111,14 +112,9 @@ GetCurrentProcessUID(void) {
 
 void
 Thread_Initialize(void) {
-    vLow = List_Create(CreateSpinlock());
-    low = List_Create(CreateSpinlock());
-    medium = List_Create(CreateSpinlock());
-    neutral = List_Create(CreateSpinlock());
-    high = List_Create(CreateSpinlock());
-    vHigh = List_Create(CreateSpinlock());
-    max = List_Create(CreateSpinlock());
-    thds = List_Create(CreateSpinlock());
+    Spinlock tmp = CreateSpinlock();
+    neutral = List_Create(tmp);
+    thds = List_Create(tmp);
 
     cores = List_Create(CreateSpinlock());
     sync_lock = CreateSpinlock();
@@ -215,6 +211,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
     SET_PROPERTY_VAL(thd, clear_child_tid, regs->clear_tid);
     SET_PROPERTY_VAL(thd, set_child_tid, regs->set_tid);
+    SET_PROPERTY_VAL(thd, set_parent_tid, regs->p_tid);
 
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base);
@@ -295,10 +292,10 @@ CreateThreadADV(UID parentProcess,
     //Update the thread list
     SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]);
 
-    List_AddEntry(neutral, thd);
 
     SET_PROPERTY_VAL(thd, ID, new_uid());
     List_AddEntry(thds, thd);
+    List_AddEntry(neutral, thd);
 
     return GET_PROPERTY_VAL(thd, ID);
 
@@ -309,7 +306,7 @@ error_exit:
 }
 
 void
-Thread_SetChildTIDAddress(UID id,
+SetChildTIDAddress(UID id,
                           void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, set_child_tid, address);
@@ -327,7 +324,7 @@ Thread_SetChildTIDAddress(UID id,
 }
 
 void
-Thread_SetClearChildTIDAddress(UID id,
+SetClearChildTIDAddress(UID id,
                                void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid, address);
@@ -342,6 +339,54 @@ Thread_SetClearChildTIDAddress(UID id,
         }
     }
 
+}
+
+void*
+GetClearChildTIDAddress(UID id) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        return GET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid);
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            return GET_PROPERTY_VAL(thd, clear_child_tid);
+        }
+    }
+
+    return NULL;
+}
+
+void*
+GetChildTIDAddress(UID id) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        return GET_PROPERTY_VAL(coreState->cur_thread, set_child_tid);
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            return GET_PROPERTY_VAL(thd, set_child_tid);
+        }
+    }
+
+    return NULL;
+}
+
+void*
+GetParentTIDAddress(UID id) {
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        return GET_PROPERTY_VAL(coreState->cur_thread, set_parent_tid);
+    }
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            return GET_PROPERTY_VAL(thd, set_parent_tid);
+        }
+    }
+
+    return NULL;
 }
 
 void
@@ -535,7 +580,7 @@ GetNextThread(ThreadInfo *prevThread) {
     */
 
     if(prevThread != NULL) {
-        List_AddEntry(thds, prevThread);
+        List_AddEntry(neutral, prevThread);
     }
 
     ThreadInfo *next_thread = NULL;
@@ -544,8 +589,8 @@ GetNextThread(ThreadInfo *prevThread) {
     while(!exit_loop) {
 
         LockSpinlock(sync_lock);
-        next_thread = List_EntryAt(thds, 0);
-        if(next_thread != NULL)List_Remove(thds, 0);
+        next_thread = List_EntryAt(neutral, 0);
+        if(next_thread != NULL)List_Remove(neutral, 0);
         UnlockSpinlock(sync_lock);
 
         if(next_thread == NULL)continue;
@@ -566,11 +611,22 @@ GetNextThread(ThreadInfo *prevThread) {
                     if(cFlags & MemoryAllocationFlags_User)
                         WriteValueAtAddress64(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
                                               (uint64_t*)next_thread->clear_child_tid,
-                                              next_thread->ID);
+                                              0);
                 }
 
                 kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
                 kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
+                
+                for(uint64_t i = 0; i < List_Length(thds); i++)
+                {   
+                    ThreadInfo *tInfo = List_EntryAt(thds, i);
+                    if(GET_PROPERTY_VAL(tInfo, ID) == next_thread->ID)
+                    {
+                        List_Remove(thds, i);
+                        break;
+                    }
+                }
+
                 LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
@@ -580,10 +636,12 @@ GetNextThread(ThreadInfo *prevThread) {
 
                 UnlockSpinlock(next_thread->ParentProcess->lock);
                 FreeSpinlock(next_thread->lock);
+
+
                 kfree(next_thread);
                 next_thread = NULL;
             } else {
-                List_AddEntry(thds, next_thread);
+                List_AddEntry(neutral, next_thread);
             }
             break;
         case ThreadState_Paused:
@@ -598,11 +656,11 @@ GetNextThread(ThreadInfo *prevThread) {
                     UnlockSpinlock(next_thread->lock);
                 } else {
                     UnlockSpinlock(next_thread->lock);
-                    List_AddEntry(thds, next_thread);
+                    List_AddEntry(neutral, next_thread);
                 }
             } else {
                 UnlockSpinlock(next_thread->lock);
-                List_AddEntry(thds, next_thread);
+                List_AddEntry(neutral, next_thread);
             }
             break;
         default:
@@ -648,6 +706,20 @@ TaskSwitch(uint32_t int_no,
         if(cMode != 0 && cFlags != 0) {
             if(cFlags & MemoryAllocationFlags_User)
                 *(uint64_t*)coreState->cur_thread->set_child_tid = coreState->cur_thread->ID;
+        }
+
+        if(coreState->cur_thread->ParentProcess->Parent != NULL){
+        CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                (uint64_t)coreState->cur_thread->set_parent_tid,
+                                &cMode,
+                                &cFlags);
+
+        if(cMode != 0 && cFlags != 0) {
+            if(cFlags & MemoryAllocationFlags_User)
+                WriteValueAtAddress64(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                      (uint64_t*)coreState->cur_thread->set_parent_tid,
+                                      coreState->cur_thread->ID);
+            }
         }
 
     }

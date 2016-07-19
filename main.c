@@ -74,28 +74,30 @@ kernel_main(void) {
     smp_unlock_cores();
 
     while(coreCount != GetCoreCount());
+    LockSpinlock(smp_lock);
     setup_preemption();
+    LockSpinlock(smp_lock);
     target_device_setup();
 
     UID cpid = ForkCurrentProcess();
-
     if(cpid == 0) {
-        __asm__ volatile("cli\n\thlt");
-        if(!CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+        if(!CreateThread(GetCurrentProcessUID(), ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
         //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
     }
 
-    while(1);
     FreeThread(GetCurrentThreadUID());
+    while(1);
 }
 
 
 void
 smp_main(void) {
-    LockSpinlock(smp_lock);
     coreCount++;
     UnlockSpinlock(smp_lock);
+    while(coreCount != GetCoreCount());
+    LockSpinlock(smp_lock);
     setup_preemption();
+    UnlockSpinlock(smp_lock);
     FreeThread(GetCurrentThreadUID());
     while(1);
 }
@@ -104,6 +106,7 @@ void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     getCoreData = NULL;
+    LockSpinlock(smp_lock);
     Syscall_Initialize();
     RegisterCore(coreID, getCoreData);
     CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)smp_main, NULL);

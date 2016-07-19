@@ -58,6 +58,8 @@ ForkProcess(ProcessInformation *src,
     dst->reference_count = 0;
     dst->lock = CreateSpinlock();
 
+    src->reference_count++;
+
     //Add dst to src's children
     UnlockSpinlock(src->lock);
 
@@ -72,9 +74,10 @@ ForkCurrentProcess(void) {
 
     CRegisters regs;
     regs.rip = (uint64_t)__builtin_return_address(0);
+    regs.rbp = *(uint64_t*)__builtin_frame_address(0);
     regs.rsp = (uint64_t)__builtin_frame_address(0);
-    regs.rsp += 8;
-    __asm__ ("movq %%rbp, %%rax" : "=a"(regs.rbp));
+    regs.rsp += 16;
+    regs.rax = 0;
     __asm__ ("movq %%rbx, %%rax" : "=a"(regs.rbx));
     __asm__ ("movq %%rcx, %%rax" : "=a"(regs.rcx));
     __asm__ ("movq %%rdx, %%rax" : "=a"(regs.rdx));
@@ -92,12 +95,12 @@ ForkCurrentProcess(void) {
     __asm__ ("movw %%ss, %%ax" : "=a"(regs.ss));
     __asm__ ("movw %%cs, %%ax" : "=a"(regs.cs));
 
+
     ProcessInformation *dst_proc = NULL;
     ProcessInformation *src_proc = NULL;
     GetProcessReference(GetCurrentProcessUID(), &src_proc);
 
     ForkProcess(src_proc, &dst_proc);
-    regs.rax = 0;
     CreateThreadADV(dst_proc->ID, &regs);
 
     return dst_proc->ID;
