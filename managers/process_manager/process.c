@@ -8,8 +8,7 @@ static ProcessInformation *root = NULL;
 static UID baseID = 0;
 
 static UID
-new_proc_uid(void)
-{
+new_proc_uid(void) {
     register UID dummy = 1;
     __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"=r"(dummy) : [dummy]"r"(dummy), [bs]"r"(&baseID));
     return (UID)(uint32_t)dummy;

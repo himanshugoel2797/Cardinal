@@ -71,8 +71,7 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
 }
 
 void
-SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs)
-{
+SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs) {
     uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)regs->tls;

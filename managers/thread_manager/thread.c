@@ -21,8 +21,7 @@ static uint32_t preempt_vector;
 static volatile UID base_thread_ID = 0;
 
 static UID
-new_thd_uid(void)
-{
+new_thd_uid(void) {
     register UID dummy = 1;
     __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"=r"(dummy) : [dummy]"r"(dummy), [bs]"r"(&base_thread_ID));
     return (UID)(uint32_t)dummy;
