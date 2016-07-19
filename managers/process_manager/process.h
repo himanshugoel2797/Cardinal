@@ -12,6 +12,9 @@ ProcessErrors
 ForkProcess(ProcessInformation *src,
             ProcessInformation **dst);
 
+UID
+ForkCurrentProcess(void);
+
 ProcessErrors
 GetProcessInformation(UID           pid,
                       ProcessInformation    *procInfo);

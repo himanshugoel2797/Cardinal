@@ -77,15 +77,16 @@ kernel_main(void) {
     setup_preemption();
     target_device_setup();
 
-    ProcessInformation p_info;
-    GetProcessInformation(0, &p_info);
-    ProcessInformation *elf_proc;
-    ForkProcess(&p_info, &elf_proc);
-    if(!CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
-    //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    UID cpid = ForkCurrentProcess();
 
-    FreeThread(GetCurrentThreadUID());
+    if(cpid == 0){
+        __asm__ volatile("cli\n\thlt");
+        if(!CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+        //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    }
+
     while(1);
+    FreeThread(GetCurrentThreadUID());
 }
 
 

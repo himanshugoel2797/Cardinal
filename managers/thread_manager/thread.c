@@ -407,7 +407,7 @@ GetThreadUserStack(UID id) {
         uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID),
                                    ThreadPermissionLevel_User);
 
-        return (void*)(user_stack_base + STACK_SIZE - 128);
+        return (void*)(user_stack_base);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
@@ -416,7 +416,7 @@ GetThreadUserStack(UID id) {
 
             uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(thd, ID),
                                        ThreadPermissionLevel_User);
-            return (void*)(user_stack_base + STACK_SIZE - 128);
+            return (void*)(user_stack_base);
         }
     }
     return NULL;

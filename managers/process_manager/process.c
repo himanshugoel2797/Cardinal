@@ -69,14 +69,11 @@ ForkProcess(ProcessInformation *src,
 
 UID
 ForkCurrentProcess(void) {
-    ProcessInformation *dst_proc = NULL;
-    ProcessInformation *src_proc = NULL;
-    GetProcessReference(GetCurrentProcessUID(), &src_proc);
 
     CRegisters regs;
     regs.rip = (uint64_t)__builtin_return_address(0);
     regs.rsp = (uint64_t)__builtin_frame_address(0);
-    __asm__ ("movq %%rax, %%rax" : "=a"(regs.rax));
+    regs.rsp += 8;
     __asm__ ("movq %%rbp, %%rax" : "=a"(regs.rbp));
     __asm__ ("movq %%rbx, %%rax" : "=a"(regs.rbx));
     __asm__ ("movq %%rcx, %%rax" : "=a"(regs.rcx));
@@ -95,10 +92,15 @@ ForkCurrentProcess(void) {
     __asm__ ("movw %%ss, %%ax" : "=a"(regs.ss));
     __asm__ ("movw %%cs, %%ax" : "=a"(regs.cs));
 
+    ProcessInformation *dst_proc = NULL;
+    ProcessInformation *src_proc = NULL;
+    GetProcessReference(GetCurrentProcessUID(), &src_proc);
+    
     ForkProcess(src_proc, &dst_proc);
+    regs.rax = 0;
     CreateThreadADV(dst_proc->ID, &regs);
 
-    return -1;
+    return dst_proc->ID;
 }
 
 ProcessErrors
