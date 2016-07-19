@@ -151,6 +151,8 @@ typedef enum {
     Syscall_Brk = 12,
     Syscall_RTSigAction = 13,
     Syscall_RTSigProcMask = 14,
+    Syscall_Clone = 56,
+    Syscall_Fork = 57,
     Syscall_ArchPrctl = 158,
     Syscall_SetTidAddress = 218,
     Syscall_IOPL,
