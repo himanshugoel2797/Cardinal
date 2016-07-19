@@ -95,7 +95,7 @@ ForkCurrentProcess(void) {
     ProcessInformation *dst_proc = NULL;
     ProcessInformation *src_proc = NULL;
     GetProcessReference(GetCurrentProcessUID(), &src_proc);
-    
+
     ForkProcess(src_proc, &dst_proc);
     regs.rax = 0;
     CreateThreadADV(dst_proc->ID, &regs);

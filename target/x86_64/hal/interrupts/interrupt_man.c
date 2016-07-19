@@ -36,16 +36,15 @@ ShadowInterruptHandler(Registers *regs) {
 
     memcpy((void*)regs_saved, regs, sizeof(Registers));
 
-    if(intHandlers[regs->int_no] != NULL)
-        {
-            __asm__ volatile("xchgq %%rax, %%rsp\n\t"
-                             "pushq %%rax\n\t"
-                             "callq *%%rbx\n\t"
-                             "popq %%rax\n\t"
-                             "xchgq %%rax, %%rsp\n\t"
-                             :: "a"(int_stack), "b"(intHandlers[regs->int_no]), 
-                                "D"(regs->int_no), "S"(regs->err_code) :);
-        }
+    if(intHandlers[regs->int_no] != NULL) {
+        __asm__ volatile("xchgq %%rax, %%rsp\n\t"
+                         "pushq %%rax\n\t"
+                         "callq *%%rbx\n\t"
+                         "popq %%rax\n\t"
+                         "xchgq %%rax, %%rsp\n\t"
+                         :: "a"(int_stack), "b"(intHandlers[regs->int_no]),
+                         "D"(regs->int_no), "S"(regs->err_code) :);
+    }
 
     memset((void*)regs_saved, 0, sizeof(Registers));
     if(regs->int_no > 31)APIC_SendEOI(regs->int_no);

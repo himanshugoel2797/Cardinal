@@ -79,7 +79,7 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
 
-    if(cpid == 0){
+    if(cpid == 0) {
         __asm__ volatile("cli\n\thlt");
         if(!CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
         //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
