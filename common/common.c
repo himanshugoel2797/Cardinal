@@ -137,8 +137,8 @@ static volatile UID uids_base = 0;
 UID
 new_uid(void) {
 #if defined(x86_64)
-    uint64_t tmp = 1;
-    __asm__ volatile("lock xaddq %[tmp], (%[bs])" : [tmp]"=r"(tmp) : [bs]"r"(&uids_base));
+    UID tmp = 1;
+    __asm__ volatile("lock xadd %[tmp], (%[bs])" : [tmp]"=r"(tmp) : [bs]"r"(&uids_base));
     return tmp & 0xFFFFFFFF;
 #else
     return (++uids_base & 0xFFFFFFFF);
