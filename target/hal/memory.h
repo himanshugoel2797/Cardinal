@@ -166,6 +166,11 @@ CheckAddressPermissions(ManagedPageTable *pageTable,
                         CachingMode *cacheMode,
                         MemoryAllocationFlags *flags);
 
+void
+WriteValueAtAddress64(ManagedPageTable *pageTable,
+                    uint64_t *addr,
+                    uint64_t val);
+
 uint64_t
 AllocatePhysicalPage(void);
 

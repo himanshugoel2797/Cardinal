@@ -213,8 +213,8 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, interrupt_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
     SET_PROPERTY_VAL(thd, kernel_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
     SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
-    SET_PROPERTY_VAL(thd, clear_child_tid, NULL);
-    SET_PROPERTY_VAL(thd, set_child_tid, NULL);
+    SET_PROPERTY_VAL(thd, clear_child_tid, regs->clear_tid);
+    SET_PROPERTY_VAL(thd, set_child_tid, regs->set_tid);
 
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base);
@@ -554,6 +554,22 @@ GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Exiting:
             if(GetSpinlockContenderCount(next_thread->lock) == 0) {
                 LockSpinlock(next_thread->lock);
+
+                CachingMode cMode = 0;
+        MemoryAllocationFlags cFlags = 0;
+        CheckAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                (uint64_t)next_thread->set_child_tid,
+                                &cMode,
+                                &cFlags);
+
+        if(cMode != 0 && cFlags != 0)
+        {
+            if(cFlags & MemoryAllocationFlags_User)
+                WriteValueAtAddress64(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                (uint64_t*)next_thread->clear_child_tid,
+                                next_thread->ID);
+        }
+
                 kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
                 kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
                 LockSpinlock(next_thread->ParentProcess->lock);
@@ -620,15 +636,25 @@ TaskSwitch(uint32_t int_no,
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);
 
-
-    if(coreState->cur_thread->state == ThreadState_Running) {
-        HandleInterruptNoReturn(int_no);
-        SwitchToThread(coreState->cur_thread);
-    } else if(coreState->cur_thread->state == ThreadState_Initialize) {
+    if(coreState->cur_thread->state == ThreadState_Initialize) {
         coreState->cur_thread->state = ThreadState_Running;
+
+        CachingMode cMode = 0;
+        MemoryAllocationFlags cFlags = 0;
+        CheckAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
+                                (uint64_t)coreState->cur_thread->set_child_tid,
+                                &cMode,
+                                &cFlags);
+
+        if(cMode != 0 && cFlags != 0)
+        {
+            if(cFlags & MemoryAllocationFlags_User)
+                *(uint64_t*)coreState->cur_thread->set_child_tid = coreState->cur_thread->ID;
+        }
+
+    }
         HandleInterruptNoReturn(int_no);
         SwitchToThread(coreState->cur_thread);
-    }
 }
 
 void

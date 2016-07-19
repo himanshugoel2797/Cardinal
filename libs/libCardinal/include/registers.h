@@ -25,6 +25,9 @@ typedef struct {
     uint8_t rflags;
     uint8_t ss;
     uint8_t cs;
+    void *set_tid;
+    void *clear_tid;
+    void *p_tid;
 } CRegisters;
 
 #endif
