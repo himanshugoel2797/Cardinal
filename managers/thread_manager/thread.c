@@ -307,7 +307,7 @@ error_exit:
 
 void
 SetChildTIDAddress(UID id,
-                          void *address) {
+                   void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, set_child_tid, address);
         return;
@@ -325,7 +325,7 @@ SetChildTIDAddress(UID id,
 
 void
 SetClearChildTIDAddress(UID id,
-                               void *address) {
+                        void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid, address);
         return;
@@ -616,12 +616,10 @@ GetNextThread(ThreadInfo *prevThread) {
 
                 kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
                 kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
-                
-                for(uint64_t i = 0; i < List_Length(thds); i++)
-                {   
+
+                for(uint64_t i = 0; i < List_Length(thds); i++) {
                     ThreadInfo *tInfo = List_EntryAt(thds, i);
-                    if(GET_PROPERTY_VAL(tInfo, ID) == next_thread->ID)
-                    {
+                    if(GET_PROPERTY_VAL(tInfo, ID) == next_thread->ID) {
                         List_Remove(thds, i);
                         break;
                     }
@@ -708,17 +706,17 @@ TaskSwitch(uint32_t int_no,
                 *(uint64_t*)coreState->cur_thread->set_child_tid = coreState->cur_thread->ID;
         }
 
-        if(coreState->cur_thread->ParentProcess->Parent != NULL){
-        CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                (uint64_t)coreState->cur_thread->set_parent_tid,
-                                &cMode,
-                                &cFlags);
+        if(coreState->cur_thread->ParentProcess->Parent != NULL) {
+            CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                    (uint64_t)coreState->cur_thread->set_parent_tid,
+                                    &cMode,
+                                    &cFlags);
 
-        if(cMode != 0 && cFlags != 0) {
-            if(cFlags & MemoryAllocationFlags_User)
-                WriteValueAtAddress64(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                      (uint64_t*)coreState->cur_thread->set_parent_tid,
-                                      coreState->cur_thread->ID);
+            if(cMode != 0 && cFlags != 0) {
+                if(cFlags & MemoryAllocationFlags_User)
+                    WriteValueAtAddress64(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                          (uint64_t*)coreState->cur_thread->set_parent_tid,
+                                          coreState->cur_thread->ID);
             }
         }
 

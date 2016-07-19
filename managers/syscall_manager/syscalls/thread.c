@@ -7,7 +7,7 @@
 uint64_t
 set_tid_address(void* address) {
     SetClearChildTIDAddress(GetCurrentThreadUID(),
-                                   address);
+                            address);
 
     return GetCurrentThreadUID();
 }
