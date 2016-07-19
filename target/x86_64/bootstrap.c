@@ -132,7 +132,6 @@ setup_preemption(void) {
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
-    IDT_ChangeEntry(IRQ(1), 0x08, 0x8E, 0x7);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

@@ -29,6 +29,7 @@ Syscall_Handler(void) {
         "xchg %%rcx, %%rdi\n\t"
         "sti\n\t"
         "callq (SyscallReceived)\n\t"
+        "cli\n\t"
         "movq %%rax, %%rsi\n\t"
         "popq %%rdi\n\t"
         "popq %%rcx\n\t"

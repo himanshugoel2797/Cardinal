@@ -88,6 +88,10 @@ void
 Thread_SetClearChildTIDAddress(UID id,
                                void *address);
 
+uint64_t
+AllocateStack(UID parentProcess,
+              ThreadPermissionLevel perm_level);
+
 UID
 CreateThread(UID parentProcess,
              ThreadPermissionLevel perm_level,

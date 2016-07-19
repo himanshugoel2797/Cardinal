@@ -126,12 +126,9 @@ Thread_Initialize(void) {
 
 #define STACK_SIZE KiB(16)
 
-UID
-CreateThread(UID parentProcess,
-             ThreadPermissionLevel perm_level,
-             ThreadEntryPoint entry_point,
-             void *arg) {
-
+uint64_t
+AllocateStack(UID parentProcess,
+              ThreadPermissionLevel perm_level) {
 
     ProcessInformation *pInfo = NULL;
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
@@ -160,10 +157,20 @@ CreateThread(UID parentProcess,
            );
 
     UnlockSpinlock(pInfo->lock);
+    return user_stack_base + STACK_SIZE - 128;
+}
+
+UID
+CreateThread(UID parentProcess,
+             ThreadPermissionLevel perm_level,
+             ThreadEntryPoint entry_point,
+             void *arg) {
+
+    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
 
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
-    regs.rsp = user_stack_base + STACK_SIZE - 128;
+    regs.rsp = user_stack_base;
     regs.rbp = 0;
     regs.rax = 0;
     regs.rbx = 0;
@@ -396,32 +403,10 @@ GetThreadState(UID id) {
 void*
 GetThreadUserStack(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-
-        ProcessInformation *pInfo = GET_PROPERTY_VAL(coreState->cur_thread, ParentProcess);
-
-        LockSpinlock(pInfo->lock);
         //Setup the user stack
-        uint64_t user_stack_base = 0;
+        uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(coreState->cur_thread, ID),
+                                   ThreadPermissionLevel_User);
 
-        FindFreeVirtualAddress(
-            pInfo->PageTable,
-            (uint64_t*)&user_stack_base,
-            STACK_SIZE,
-            MemoryAllocationType_Stack,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
-
-        if(user_stack_base == 0)while(1);
-
-        MapPage(pInfo->PageTable,
-                AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
-                user_stack_base,
-                STACK_SIZE,
-                CachingModeWriteBack,
-                MemoryAllocationType_Stack,
-                MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-               );
-
-        UnlockSpinlock(pInfo->lock);
         return (void*)(user_stack_base + STACK_SIZE - 128);
     }
 
@@ -429,31 +414,8 @@ GetThreadUserStack(UID id) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
 
-            ProcessInformation *pInfo = GET_PROPERTY_VAL(thd, ParentProcess);
-
-            LockSpinlock(pInfo->lock);
-            //Setup the user stack
-            uint64_t user_stack_base = 0;
-
-            FindFreeVirtualAddress(
-                pInfo->PageTable,
-                (uint64_t*)&user_stack_base,
-                STACK_SIZE,
-                MemoryAllocationType_Stack,
-                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
-
-            if(user_stack_base == 0)while(1);
-
-            MapPage(pInfo->PageTable,
-                    AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
-                    user_stack_base,
-                    STACK_SIZE,
-                    CachingModeWriteBack,
-                    MemoryAllocationType_Stack,
-                    MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-                   );
-
-            UnlockSpinlock(pInfo->lock);
+            uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(thd, ID),
+                                       ThreadPermissionLevel_User);
             return (void*)(user_stack_base + STACK_SIZE - 128);
         }
     }
@@ -642,6 +604,7 @@ GetNextThread(ThreadInfo *prevThread) {
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
+
     err_code = 0;
 
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));

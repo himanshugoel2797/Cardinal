@@ -72,7 +72,31 @@ ForkCurrentProcess(void) {
     ProcessInformation *dst_proc = NULL;
     ProcessInformation *src_proc = NULL;
     GetProcessReference(GetCurrentProcessUID(), &src_proc);
+
+    CRegisters regs;
+    regs.rip = (uint64_t)__builtin_return_address(0);
+    regs.rsp = (uint64_t)__builtin_frame_address(0);
+    __asm__ ("movq %%rax, %%rax" : "=a"(regs.rax));
+    __asm__ ("movq %%rbp, %%rax" : "=a"(regs.rbp));
+    __asm__ ("movq %%rbx, %%rax" : "=a"(regs.rbx));
+    __asm__ ("movq %%rcx, %%rax" : "=a"(regs.rcx));
+    __asm__ ("movq %%rdx, %%rax" : "=a"(regs.rdx));
+    __asm__ ("movq %%rsi, %%rax" : "=a"(regs.rsi));
+    __asm__ ("movq %%rdi, %%rax" : "=a"(regs.rdi));
+    __asm__ ("movq %%r8, %%rax" : "=a"(regs.r8));
+    __asm__ ("movq %%r9, %%rax" : "=a"(regs.r9));
+    __asm__ ("movq %%r10, %%rax" : "=a"(regs.r10));
+    __asm__ ("movq %%r11, %%rax" : "=a"(regs.r11));
+    __asm__ ("movq %%r12, %%rax" : "=a"(regs.r12));
+    __asm__ ("movq %%r13, %%rax" : "=a"(regs.r13));
+    __asm__ ("movq %%r14, %%rax" : "=a"(regs.r14));
+    __asm__ ("movq %%r15, %%rax" : "=a"(regs.r15));
+    __asm__ ("pushf\n\tpopq %%rax" : "=a"(regs.rflags));
+    __asm__ ("movw %%ss, %%ax" : "=a"(regs.ss));
+    __asm__ ("movw %%cs, %%ax" : "=a"(regs.cs));
+
     ForkProcess(src_proc, &dst_proc);
+    CreateThreadADV(dst_proc->ID, &regs);
 
     return -1;
 }
