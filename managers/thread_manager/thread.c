@@ -556,19 +556,18 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->lock);
 
                 CachingMode cMode = 0;
-        MemoryAllocationFlags cFlags = 0;
-        CheckAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                (uint64_t)next_thread->set_child_tid,
-                                &cMode,
-                                &cFlags);
+                MemoryAllocationFlags cFlags = 0;
+                CheckAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                        (uint64_t)next_thread->set_child_tid,
+                                        &cMode,
+                                        &cFlags);
 
-        if(cMode != 0 && cFlags != 0)
-        {
-            if(cFlags & MemoryAllocationFlags_User)
-                WriteValueAtAddress64(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                (uint64_t*)next_thread->clear_child_tid,
-                                next_thread->ID);
-        }
+                if(cMode != 0 && cFlags != 0) {
+                    if(cFlags & MemoryAllocationFlags_User)
+                        WriteValueAtAddress64(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                              (uint64_t*)next_thread->clear_child_tid,
+                                              next_thread->ID);
+                }
 
                 kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
                 kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
@@ -646,15 +645,14 @@ TaskSwitch(uint32_t int_no,
                                 &cMode,
                                 &cFlags);
 
-        if(cMode != 0 && cFlags != 0)
-        {
+        if(cMode != 0 && cFlags != 0) {
             if(cFlags & MemoryAllocationFlags_User)
                 *(uint64_t*)coreState->cur_thread->set_child_tid = coreState->cur_thread->ID;
         }
 
     }
-        HandleInterruptNoReturn(int_no);
-        SwitchToThread(coreState->cur_thread);
+    HandleInterruptNoReturn(int_no);
+    SwitchToThread(coreState->cur_thread);
 }
 
 void

@@ -737,31 +737,31 @@ WriteValueAtAddress64(ManagedPageTable *pageTable,
     uint64_t tmp_loc_virt = 0;
     uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
-                //First allocate the same amount of memory in another location
-                FindFreeVirtualAddress(
-                    GetActiveVirtualMemoryInstance(),
-                    &tmp_loc_virt,
-                    PAGE_SIZE,
-                    MemoryAllocationType_Heap,
-                    MemoryAllocationFlags_Write);
+    //First allocate the same amount of memory in another location
+    FindFreeVirtualAddress(
+        GetActiveVirtualMemoryInstance(),
+        &tmp_loc_virt,
+        PAGE_SIZE,
+        MemoryAllocationType_Heap,
+        MemoryAllocationFlags_Write);
 
     uint64_t target_addr = tmp_loc_virt + (uint64_t)addr % PAGE_SIZE;
 
-                MapPage(GetActiveVirtualMemoryInstance(),
-                        tmp_loc_phys,
-                        tmp_loc_virt,
-                        PAGE_SIZE,
-                        CachingModeWriteBack,
-                        MemoryAllocationType_Heap,
-                        MemoryAllocationFlags_Write);
+    MapPage(GetActiveVirtualMemoryInstance(),
+            tmp_loc_phys,
+            tmp_loc_virt,
+            PAGE_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Write);
 
-                //Then copy over the data
-                *(uint64_t*)target_addr = val;
+    //Then copy over the data
+    *(uint64_t*)target_addr = val;
 
-                //Then undo the above mapping
-                UnmapPage(GetActiveVirtualMemoryInstance(),
-                          tmp_loc_virt,
-                          PAGE_SIZE);
+    //Then undo the above mapping
+    UnmapPage(GetActiveVirtualMemoryInstance(),
+              tmp_loc_virt,
+              PAGE_SIZE);
 
 
 
