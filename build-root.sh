@@ -1,0 +1,19 @@
+#!/bin/sh
+
+ROOTDIR=$(pwd)/root
+
+mkdir root
+cd root
+mkdir sys
+cd sys
+mkdir src
+cd src
+mkdir musl
+
+wget https://github.com/himanshugoel2797/Cardinal-musl/archive/master.zip -O musl.zip
+unzip musl.zip -d .
+
+cd Cardinal-musl-master
+./configure --disable-shared CFLAGS=-fshort-wchar --prefix=$ROOTDIR/sys
+make -j4 all
+make install

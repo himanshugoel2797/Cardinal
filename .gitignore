@@ -25,6 +25,7 @@ tmp.S
 *.iso
 flash.img
 build/*
+root/*
 # Executables
 *.exe
 *.out
