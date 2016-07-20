@@ -81,6 +81,24 @@ strcpy(char* destination,
     return (char*)memcpy(destination, (void*)source, strlen(source));
 }
 
+wchar_t*
+wcscpy( wchar_t* destination,
+        const wchar_t *source) {
+    wchar_t *a = destination;
+    while((*destination++ = *source++));
+    return a;
+}
+
+size_t
+wcslen(const wchar_t *str) {
+    size_t size = 0;
+    while(str[size] != 0) {
+        size++;
+    }
+    return size;
+}
+
+
 char*
 strcpy_s(char *dst,
          size_t d_len,

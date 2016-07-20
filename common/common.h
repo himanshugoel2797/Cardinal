@@ -40,6 +40,13 @@ char*
 strcpy ( char * destination,
          const char * source );
 
+wchar_t*
+wcscpy( wchar_t* destination,
+        const wchar_t *source);
+
+size_t
+wcslen(const wchar_t* str);
+
 char*
 strcpy_s(char *dst,
          size_t d_len,

@@ -175,6 +175,9 @@ GetCurrentThreadUID(void);
 UID
 GetCurrentProcessUID(void);
 
+UID
+GetCurrentProcessParentUID(void);
+
 ThreadInfo*
 GetCurrentThreadInfo(void);
 

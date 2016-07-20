@@ -5,6 +5,7 @@
 #include "list.h"
 #include "memory.h"
 #include "synchronization.h"
+#include "file_manager/file.h"
 
 #include "libs/libc/include/signal.h"
 
@@ -53,7 +54,7 @@ typedef struct PendingSignalInfo {
 typedef struct ProcessInformation {
     UID                         ID;
 
-    char                        Name[MAX_PROCESS_NAME_LEN];
+    wchar_t                     Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus               Status;
     ProcessPermissions          Permissions;
     ManagedPageTable            *PageTable;
@@ -62,6 +63,7 @@ typedef struct ProcessInformation {
     sigaction                   *SignalHandlers;
     List                        *PendingSignals;
     List                        *Children;
+    List                        *FileDescriptors;
     struct ProcessInformation   *Parent;
 
     uint32_t                    reference_count;

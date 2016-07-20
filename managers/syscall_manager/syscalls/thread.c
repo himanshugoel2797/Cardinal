@@ -37,6 +37,11 @@ clone(int (*func)(void*),
       void *tls) {
 
     UID id = 0;
+    UID parentProcess = GetCurrentProcessUID();
+
+    if(flags & CLONE_PARENT)
+      parentProcess = GetCurrentProcessParentUID();
+
     if(flags & CLONE_THREAD) {
         //Create a new thread
 
@@ -61,7 +66,7 @@ clone(int (*func)(void*),
         regs.rflags = 0;
         regs.ss = 0x20;
         regs.cs = 0x28;
-        regs.tls = tls;
+        if(flags & CLONE_SETTLS)regs.tls = tls;
         if(flags & CLONE_CHILD_SETTID)regs.set_tid = ctid;
         if(flags & CLONE_CHILD_CLEARTID)regs.clear_tid = ctid;
         if(flags & CLONE_PARENT_SETTID)regs.p_tid = ptid;
@@ -94,16 +99,16 @@ clone(int (*func)(void*),
             regs.rflags = 0;
             regs.ss = 0x20;
             regs.cs = 0x28;
-            regs.tls = tls;
+            if(flags & CLONE_SETTLS)regs.tls = tls;
             if(flags & CLONE_CHILD_SETTID)regs.set_tid = ctid;
             if(flags & CLONE_CHILD_CLEARTID)regs.clear_tid = ctid;
             if(flags & CLONE_PARENT_SETTID)regs.p_tid = ptid;
             id = CreateThreadADV(GetCurrentProcessUID(), &regs);
         }
     }
-    FreeThread(GetCurrentThreadUID());
-    return id;
+    
     //Create the thread with the parentProcID
+    return id;
 }
 
 uint64_t
