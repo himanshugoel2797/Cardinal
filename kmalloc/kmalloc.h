@@ -34,6 +34,10 @@ void kfree(void* addr);
 //! \sa kmalloc(), kfree()
 void kcompact();
 
+void* AllocateMapping(size_t size);
+
+void FreeMapping(void* mem, size_t size);
+
 /**@}*/
 
 #endif /* end of include guard: _K_MALLOC_H_ */

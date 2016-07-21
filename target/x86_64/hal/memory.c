@@ -150,15 +150,18 @@ MapPage(ManagedPageTable *pageTable,
     if((flags & MemoryAllocationFlags_Kernel) == MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
     if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
 
-    MemoryAllocationsMap *allocMap = kmalloc(sizeof(MemoryAllocationsMap));
+    MemoryAllocationsMap *allocMap = NULL;
+    if(((virtualAddress >> 39) & 0x1FF) != 511) {
+        allocMap = kmalloc(sizeof(MemoryAllocationsMap));
 
-    allocMap->CacheMode = cacheMode;
-    allocMap->VirtualAddress = virtualAddress;
-    allocMap->PhysicalAddress = physicalAddress;
-    allocMap->Length = size;
-    allocMap->Flags = flags;
-    allocMap->AllocationType = allocType;
-    allocMap->AdditionalData = 0;
+        allocMap->CacheMode = cacheMode;
+        allocMap->VirtualAddress = virtualAddress;
+        allocMap->PhysicalAddress = physicalAddress;
+        allocMap->Length = size;
+        allocMap->Flags = flags;
+        allocMap->AllocationType = allocType;
+        allocMap->AdditionalData = 0;
+    }
 
     LockSpinlock(pageTable->lock);
 
@@ -209,10 +212,12 @@ MapPage(ManagedPageTable *pageTable,
     }
 
     //At this point, all parameters have been verified
-    allocMap->next = pageTable->AllocationMap;
-    if(pageTable->AllocationMap != NULL)pageTable->AllocationMap->prev = allocMap;
-    allocMap->prev = NULL;
-    pageTable->AllocationMap = allocMap;
+    if(((virtualAddress >> 39) & 0x1FF) != 511) {
+        allocMap->next = pageTable->AllocationMap;
+        if(pageTable->AllocationMap != NULL)pageTable->AllocationMap->prev = allocMap;
+        allocMap->prev = NULL;
+        pageTable->AllocationMap = allocMap;
+    }
 
     if(allocType & MemoryAllocationType_Fork) {
         access = access & ~MEM_WRITE; //Forked pages are copy on write

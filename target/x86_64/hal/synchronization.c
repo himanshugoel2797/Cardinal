@@ -108,7 +108,11 @@ LockScheduledSpinlock(Spinlock primitive)
         "cmpw %[cx], (%[prim])\n\t"
         "je 3f\n\t"
         "1:\n\t"
+        "push %[cx]\n\t"
+        "push %[prim]\n\t"
         "callq YieldThread\n\t"
+        "pop %[prim]\n\t"
+        "pop %[cx]\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "jne 1b\n\t"
         "3:\n\t"
@@ -166,6 +170,11 @@ AtomicIncrement64(uint64_t *val) {
 }
 
 void
+AtomicIncrementSize(size_t *val) {
+    __asm__ ("lock incq (%0)" :: "r"(val) : "memory", "cc");
+}
+
+void
 AtomicDecrement32(uint32_t *val) {
     __asm__ ("lock decl (%0)" :: "r"(val) : "memory", "cc");
 }
@@ -173,4 +182,19 @@ AtomicDecrement32(uint32_t *val) {
 void
 AtomicDecrement64(uint64_t *val) {
     __asm__ ("lock decq (%0)" :: "r"(val) : "memory", "cc");
+}
+
+void
+AtomicDecrementSize(size_t *val) {
+    __asm__ ("lock decq (%0)" :: "r"(val) : "memory", "cc");
+}
+
+void
+AtomicSubtractSize(size_t *val, size_t sub) {
+    __asm__ ("xadd %[sub], (%[val])" :: [val]"r"(val), [sub]"r"(-sub) : "memory", "cc");
+}
+
+void
+AtomicAddSize(size_t *val, size_t add) {
+    __asm__ ("xadd %[add], (%[val])" :: [val]"r"(val), [add]"r"(add) : "memory", "cc");
 }

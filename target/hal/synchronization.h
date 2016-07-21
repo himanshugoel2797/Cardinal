@@ -37,4 +37,17 @@ AtomicDecrement32(uint32_t *val);
 
 void
 AtomicDecrement64(uint64_t *val);
+
+void
+AtomicDecrementSize(size_t *val);
+
+void
+AtomicIncrementSize(size_t *val);
+
+void
+AtomicSubtractSize(size_t *val, size_t sub);
+
+void
+AtomicAddSize(size_t *val, size_t add);
+
 #endif

@@ -7,9 +7,9 @@ UID
 CreatePipe(void);
 
 size_t
-WriteToPipe(UID id, 
-			const char *data, 
-			size_t len);
+WritePipe(UID id, 
+		  const char *data, 
+		  size_t len);
 
 size_t
 ReadPipe(UID id,

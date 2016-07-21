@@ -212,3 +212,51 @@ void kfree(void *addr) {
 
     UnlockSpinlock(alloc_sync);
 }
+
+void* AllocateMapping(size_t size) {
+        uint64_t user_stack_base = 0;
+
+    if(size % PAGE_SIZE != 0)
+        return NULL;
+
+    FindFreeVirtualAddress(
+        GetActiveVirtualMemoryInstance(),
+        (uint64_t*)&user_stack_base,
+        size,
+        MemoryAllocationType_Heap,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+
+    if(user_stack_base == 0)while(1);
+
+    MapPage(GetActiveVirtualMemoryInstance(),
+            AllocatePhysicalPageCont(size/PAGE_SIZE),
+            user_stack_base,
+            size,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel
+           );
+
+    return (void*)user_stack_base;
+}
+
+void FreeMapping(void* mem, size_t size) {
+
+    if(size % PAGE_SIZE != 0)return;
+
+    CachingMode cMode = 0;
+    MemoryAllocationFlags cFlags = 0;
+    CheckAddressPermissions(GetActiveVirtualMemoryInstance(),
+                           (uint64_t)mem,
+                           &cMode,
+                           &cFlags);
+
+    if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
+        uint64_t addr = (uint64_t)GetPhysicalAddress(mem);
+        UnmapPage(GetActiveVirtualMemoryInstance(),
+                  (uint64_t)mem,
+                  size);
+
+        FreePhysicalPageCont(addr, size / PAGE_SIZE);
+    }
+}
