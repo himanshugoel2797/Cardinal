@@ -80,8 +80,7 @@ GetSpinlockContenderCount(Spinlock primitive) {
 }
 
 bool
-LockScheduledSpinlock(Spinlock primitive)
-{
+LockScheduledSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
     register uint16_t dummy0 = 0;
@@ -156,7 +155,10 @@ UnlockSpinlock(Spinlock primitive) {
 
 void
 FreeSpinlock(Spinlock primitive) {
-    if(primitive != NULL)kfree((void*)primitive);
+    if(primitive != NULL) {
+        memset(primitive, 0, CPUID_GetCacheLineSize());
+        kfree((void*)primitive);
+    }
 }
 
 void

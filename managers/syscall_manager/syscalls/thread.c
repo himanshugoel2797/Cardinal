@@ -40,7 +40,7 @@ clone(int (*func)(void*),
     UID parentProcess = GetCurrentProcessUID();
 
     if(flags & CLONE_PARENT)
-      parentProcess = GetCurrentProcessParentUID();
+        parentProcess = GetCurrentProcessParentUID();
 
     if(flags & CLONE_THREAD) {
         //Create a new thread
@@ -106,7 +106,7 @@ clone(int (*func)(void*),
             id = CreateThreadADV(GetCurrentProcessUID(), &regs);
         }
     }
-    
+
     //Create the thread with the parentProcID
     return id;
 }

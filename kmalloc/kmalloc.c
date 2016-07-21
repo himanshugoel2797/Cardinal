@@ -214,7 +214,7 @@ void kfree(void *addr) {
 }
 
 void* AllocateMapping(size_t size) {
-        uint64_t user_stack_base = 0;
+    uint64_t user_stack_base = 0;
 
     if(size % PAGE_SIZE != 0)
         return NULL;
@@ -247,9 +247,9 @@ void FreeMapping(void* mem, size_t size) {
     CachingMode cMode = 0;
     MemoryAllocationFlags cFlags = 0;
     CheckAddressPermissions(GetActiveVirtualMemoryInstance(),
-                           (uint64_t)mem,
-                           &cMode,
-                           &cFlags);
+                            (uint64_t)mem,
+                            &cMode,
+                            &cFlags);
 
     if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
         uint64_t addr = (uint64_t)GetPhysicalAddress(mem);
