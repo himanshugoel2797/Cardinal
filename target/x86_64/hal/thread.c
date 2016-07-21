@@ -1,5 +1,6 @@
 #include "thread.h"
 #include "IDT/idt.h"
+#include "apic/apic.h"
 #include "utils/native.h"
 #include "interrupts.h"
 #include "common.h"
@@ -84,4 +85,24 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
     SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);
+}
+
+void
+SetupPreemption(void) {
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
+    APIC_SetVector(APIC_TIMER, IRQ(1));
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetTimerMode(APIC_TIMER_PERIODIC);
+    __asm__("sti");
+    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
+
+}
+
+void
+ResetPreemption(void) {
+    __asm__("cli");
+    APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
+    __asm__("sti");
 }

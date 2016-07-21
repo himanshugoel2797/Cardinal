@@ -8,6 +8,7 @@
 #include "initrd.h"
 #include "synchronization.h"
 #include "timer.h"
+#include "thread.h"
 
 Spinlock smp_lock;
 
@@ -75,9 +76,10 @@ kernel_main(void) {
 
     while(coreCount != GetCoreCount());
     LockSpinlock(smp_lock);
-    setup_preemption();
-    LockSpinlock(smp_lock);
+    SetupPreemption();
+    UnlockSpinlock(smp_lock);
     target_device_setup();
+
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
@@ -96,7 +98,7 @@ smp_main(void) {
     UnlockSpinlock(smp_lock);
     while(coreCount != GetCoreCount());
     LockSpinlock(smp_lock);
-    setup_preemption();
+    SetupPreemption();
     UnlockSpinlock(smp_lock);
     FreeThread(GetCurrentThreadUID());
     while(1);

@@ -1,10 +1,6 @@
 #ifndef _KERNEL_MAIN_H_
 #define _KERNEL_MAIN_H_
 
-
-void
-setup_preemption(void);
-
 void
 kernel_main_init(void);
 

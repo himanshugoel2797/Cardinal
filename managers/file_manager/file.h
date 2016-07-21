@@ -2,6 +2,7 @@
 #define _CARDINAL_FILE_FD_H_
 
 #include "types.h"
+#include "synchronization.h"
 
 #define MAX_FILENAME_LENGTH 256
 
@@ -30,6 +31,10 @@ typedef struct FileTreeEntry {
 	FileTreeEntryFlags 		Flags;
 	FileTreeEntryType 		Type;
 	UID 					FileSystemDriverPID;
+	UID						Identifier;
+
+	Spinlock				ReadLock;
+	Spinlock				WriteLock;
 
 	uint32_t 				reference_count;
 

@@ -18,6 +18,9 @@ uint64_t
 GetSpinlockContenderCount(Spinlock primitive);
 
 bool
+LockScheduledSpinlock(Spinlock primitive);
+
+bool
 UnlockSpinlock(Spinlock primitive);
 
 void

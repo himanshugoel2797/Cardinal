@@ -80,6 +80,54 @@ GetSpinlockContenderCount(Spinlock primitive) {
 }
 
 bool
+LockScheduledSpinlock(Spinlock primitive)
+{
+    if(primitive == NULL)return FALSE;
+
+    register uint16_t dummy0 = 0;
+    register uint64_t dummy1 = 0;
+    uint64_t dummy2 = 0;
+
+    dummy2 = APIC_GetID() + 1;
+    if(dummy2 == 0)
+        dummy2 = -1;
+
+    //Test to see if the lock is set on the same core, if so, let it through
+    //Else obtain a ticket and spin waiting for your turn
+    __asm__ volatile
+    (
+        "mfence\n\t"
+        "pushfq\n\t"
+        "cli\n\t"
+        "popq %[rcx]\n\t"
+        "cmpq %[rdx], +8(%[prim])\n\t"
+        "je 4f\n\t"
+        "shlq $16, %[rcx]\n\t"
+        "movw $1, %[cx]\n\t"
+        "lock xaddw %[cx], +2(%[prim])\n\t"
+        "cmpw %[cx], (%[prim])\n\t"
+        "je 3f\n\t"
+        "1:\n\t"
+        "callq YieldThread\n\t"
+        "cmpw %[cx], (%[prim])\n\t"
+        "jne 1b\n\t"
+        "3:\n\t"
+        "btq $25, %[rcx]\n\t"
+        "jnc 4f\n\t"
+        "movw $1, +4(%[prim])\n\t"
+        "4:\n\t"
+        "lock incw +6(%[prim])\n\t"
+        "movq %[rdx], +8(%[prim])"
+        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
+        : "memory", "cc"
+    );
+
+    //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
+
+    return TRUE;
+}
+
+bool
 UnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 

@@ -584,6 +584,7 @@ FreeThread(UID id) {
 
 void
 YieldThread(void) {
+    ResetPreemption();
     RaiseInterrupt(preempt_vector);
 }
 

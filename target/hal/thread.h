@@ -43,6 +43,12 @@ uint64_t
 GetFPUStateSize(void);
 
 void
+SetupPreemption(void);
+
+void
+ResetPreemption(void);
+
+void
 SetupArchSpecificData(ThreadInfo *tInfo,
                       CRegisters *regs);
 

@@ -23,7 +23,7 @@ tmp.S
 *.so.*
 *.dylib
 *.iso
-flash.img
+disk.img
 build/*
 root/*
 # Executables
