@@ -11,7 +11,7 @@ typedef enum {
     FileTreeEntryType_Directory,
     FileTreeEntryType_FIFO,
     FileTreeEntryType_Pipe,
-    FileTreeEntryType_Block,
+    FileTreeEntryType_Character,
     FileTreeEntryType_Symlink
 } FileTreeEntryType;
 
@@ -37,8 +37,6 @@ typedef struct FileTreeEntry {
     Spinlock				WriteLock;
 
     uint32_t 				reference_count;
-
-    struct FileTreeEntry 	*symlink;
 
     struct FileTreeEntry 	*parent;
     struct FileTreeEntry 	*children;

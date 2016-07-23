@@ -1,6 +1,6 @@
 #include "syscalls_all.h"
 #include "libs/libCardinal/include/syscall.h"
-#include "libs/libc/include/signal.h"
+#include <signal.h>
 #include "managers.h"
 #include "common.h"
 
@@ -78,16 +78,16 @@ RTSigProcMask_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 rt_sigaction(int signum,
-             const sigaction *act,
-             sigaction *oldact,
+             const struct sigaction *act,
+             struct sigaction *oldact,
              size_t len) {
     //TODO finish implementing sigaction
-    sigaction tmp_copy;
+    struct sigaction tmp_copy;
 
     if(signum >= SUPPORTED_SIGNAL_COUNT)
         return EINVAL;
 
-    if(len != sizeof(sigaction))
+    if(len != sizeof(struct sigaction))
         return EINVAL;
 
     GetProcessSigaction(GetCurrentProcessUID(), signum, &tmp_copy);
@@ -99,7 +99,7 @@ rt_sigaction(int signum,
         if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
             return EINVAL;
 
-        memcpy(oldact, &tmp_copy, sizeof(sigaction));
+        memcpy(oldact, &tmp_copy, sizeof(struct sigaction));
     }
 
     if(act != NULL) {
@@ -128,8 +128,8 @@ RTSigAction_Syscall(uint64_t UNUSED(instruction_pointer),
         return ENOSYS;
 
     int signum = data->params[0];
-    const sigaction *act = (const sigaction*)data->params[1];
-    sigaction *oldact = (sigaction*)data->params[2];
+    const struct sigaction *act = (const struct sigaction*)data->params[1];
+    struct sigaction *oldact = (struct sigaction*)data->params[2];
     size_t len = (size_t)data->params[3];
 
     return rt_sigaction(signum, act, oldact, len);

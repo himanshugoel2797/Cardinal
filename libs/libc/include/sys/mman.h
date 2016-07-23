@@ -30,7 +30,7 @@
 #define MAP_HUGETLB    0x40000
 
 
-uint64_t
+void*
 mmap(void* addr,
      size_t target_len,
      int prot,

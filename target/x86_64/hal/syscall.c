@@ -3,8 +3,6 @@
 #include "managers.h"
 #include "common/common.h"
 
-#include <pthread.h>
-
 typedef struct CoreKernelStackInfo {
     uint8_t *k_stack;
     uint64_t rflags;

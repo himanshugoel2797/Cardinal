@@ -156,7 +156,7 @@ UnlockSpinlock(Spinlock primitive) {
 void
 FreeSpinlock(Spinlock primitive) {
     if(primitive != NULL) {
-        memset(primitive, 0, CPUID_GetCacheLineSize());
+        memset((void*)primitive, 0, CPUID_GetCacheLineSize());
         kfree((void*)primitive);
     }
 }

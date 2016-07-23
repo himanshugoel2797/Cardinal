@@ -3,8 +3,9 @@ include Archs.inc
 TARGET_ARCH=$(ARCH_x86_64)
 
 BUILD_DIR=$(HOME)/Documents/Cardinal
+export BUILD_DIR
 
-INCLUDES= . common managers drivers kmalloc target/hal 
+INCLUDES= . common managers drivers kmalloc target/hal ./libs/libc/include/$(TARGET_ARCH)
 
 DEFINES=MULTIBOOT2 $(TARGET_ARCH)
 export DEFINES
@@ -36,7 +37,7 @@ CCADMIN=CCadmin
 CC=clang
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -target $(TARGET_TRIPLET) -fshort-wchar -std=c11 -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
+CFLAGS= -target $(TARGET_TRIPLET) -nostdinc -isystem$(BUILD_DIR)/libs/libc/include -std=c11 -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS)  -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O2 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
@@ -77,7 +78,7 @@ build:$(SOURCES:.o=.bc) clean_output initrd
 	rm tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
-	$(TARGET_ARCH_CC) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
+	$(TARGET_ARCH_LD) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
 	cd initrd && $(MAKE) $(TARGET_MAKE)
 	cp initrd/initrd build/$(CONF)/initrd
 

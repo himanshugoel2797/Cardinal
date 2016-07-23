@@ -1,9 +1,9 @@
 #ifndef _OS_TYPES_H_
 #define _OS_TYPES_H_
 
-#include "stddef.h"
-#include "stdint.h"
-#include "stdarg.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef uint64_t UID;
 typedef uint64_t SysID;
@@ -11,7 +11,7 @@ typedef uint64_t SysID;
 typedef void (*Callback)(void*);
 typedef uint32_t (*Initializer)();
 typedef int(*ProcessEntryPoint)(int, char**);
-typedef uint8_t bool;
+
 typedef uint64_t off_t;
 
 #define TRUE 1

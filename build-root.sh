@@ -20,7 +20,7 @@ wget https://github.com/himanshugoel2797/Cardinal-musl/archive/master.zip -O mus
 unzip musl.zip -d .
 
 cd Cardinal-musl-master
-./configure --disable-shared CFLAGS=-fshort-wchar --prefix=$ROOTDIR/sys
+./configure --disable-shared --prefix=$ROOTDIR/sys
 make -j4 all
 make install
 cd ..

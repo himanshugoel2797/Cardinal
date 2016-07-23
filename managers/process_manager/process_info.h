@@ -60,7 +60,7 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
-    sigaction                   *SignalHandlers;
+    struct sigaction            *SignalHandlers;
     List                        *PendingSignals;
     List                        *Children;
     List                        *FileDescriptors;

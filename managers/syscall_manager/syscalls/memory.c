@@ -2,10 +2,9 @@
 #include "libs/libCardinal/include/syscall.h"
 #include "memory.h"
 #include "kmalloc.h"
+#include <sys/mman.h>
 
-#include "libs/libc/include/sys/mman.h"
-
-uint64_t
+void*
 mmap(void* addr,
      size_t target_len,
      int prot,
@@ -50,7 +49,7 @@ mmap(void* addr,
 
         uint64_t target_phys_addr = AllocatePhysicalPageCont(target_len / PAGE_SIZE);
         if(target_phys_addr == 0)
-            return ENOMEM;
+            return (void*)ENOMEM;
 
         MapPage(GetActiveVirtualMemoryInstance(),
                 target_phys_addr,
@@ -62,10 +61,10 @@ mmap(void* addr,
 
 
 
-        return (uint64_t)addr;
+        return (void*)addr;
     }
 
-    return EINVAL;
+    return (void*)EINVAL;
 }
 
 uint64_t
@@ -88,7 +87,7 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
     off_t offset = data->params[5];
 
     //TODO make this work once files are actually implemented
-    return mmap(addr, target_len, prot, flags, fd, offset);
+    return (uint64_t)mmap(addr, target_len, prot, flags, fd, offset);
 }
 
 uint64_t

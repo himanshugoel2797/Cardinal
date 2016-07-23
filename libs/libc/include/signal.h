@@ -56,7 +56,7 @@ typedef struct {
 #define SA_RESETHAND  0x80000000
 #define SA_RESTORER   0x04000000
 
-typedef struct {
+struct sigaction {
     union {
         void (*sa_handler)(int);
         void (*sa_sigaction)(int, siginfo_t *, void *);
@@ -64,7 +64,7 @@ typedef struct {
     sigset_t sa_mask;
     int sa_flags;
     void (*sa_restorer)(void);
-} sigaction;
+};
 
 uint64_t
 rt_sigprocmask(int how,

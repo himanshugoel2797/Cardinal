@@ -34,12 +34,12 @@ SetProcessSyscallStatus(UID pid,
 ProcessErrors
 SetProcessSigaction(UID pid,
                     int sig_no,
-                    const sigaction *sig);
+                    const struct sigaction *sig);
 
 ProcessErrors
 GetProcessSigaction(UID pid,
                     int sig_no,
-                    sigaction *sig);
+                    struct sigaction *sig);
 
 void
 RaiseSignal(UID pid,

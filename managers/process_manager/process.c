@@ -24,8 +24,8 @@ ProcessSys_Initialize(void) {
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->SyscallFlags = ProcessSyscallFlags_PermissionsLocked;
     root->HeapBreak = 0;
-    root->SignalHandlers = kmalloc(sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
-    memset(root->SignalHandlers, 0, sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
+    root->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
+    memset(root->SignalHandlers, 0, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
     root->PendingSignals = List_Create(CreateSpinlock());
     root->Children = List_Create(CreateSpinlock());
     root->Parent = NULL;
@@ -53,8 +53,8 @@ ForkProcess(ProcessInformation *src,
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
     dst->SyscallFlags = ProcessSyscallFlags_None;
     dst->HeapBreak = 0;
-    dst->SignalHandlers = kmalloc(sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
-    memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(sigaction) * SUPPORTED_SIGNAL_COUNT);
+    dst->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
+    memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
 
     dst->PendingSignals = List_Create(CreateSpinlock());
     dst->Children = List_Create(CreateSpinlock());
@@ -196,7 +196,7 @@ SetProcessSyscallStatus(UID pid,
 ProcessErrors
 SetProcessSigaction(UID pid,
                     int sig_no,
-                    const sigaction *sig) {
+                    const struct sigaction *sig) {
     if(sig_no >= SUPPORTED_SIGNAL_COUNT)
         return ProcessErrors_Unknown;
 
@@ -209,7 +209,7 @@ SetProcessSigaction(UID pid,
 
         if(pInfID == pid) {
             LockSpinlock(pInf->lock);
-            memcpy(&pInf->SignalHandlers[sig_no], sig, sizeof(sigaction));
+            memcpy(&pInf->SignalHandlers[sig_no], sig, sizeof(struct sigaction));
             UnlockSpinlock(pInf->lock);
             return ProcessErrors_None;
         }
@@ -220,7 +220,7 @@ SetProcessSigaction(UID pid,
 ProcessErrors
 GetProcessSigaction(UID pid,
                     int sig_no,
-                    sigaction *sig) {
+                    struct sigaction *sig) {
     if(sig_no >= SUPPORTED_SIGNAL_COUNT)
         return ProcessErrors_Unknown;
 
@@ -233,7 +233,7 @@ GetProcessSigaction(UID pid,
 
         if(pInfID == pid) {
             if(sig != NULL)
-                memcpy(sig, &pInf->SignalHandlers[sig_no], sizeof(sigaction));
+                memcpy(sig, &pInf->SignalHandlers[sig_no], sizeof(struct sigaction));
             return ProcessErrors_None;
         }
     }
