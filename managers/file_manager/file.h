@@ -26,7 +26,7 @@ typedef enum {
 } FileDescriptorAccessMode;
 
 typedef struct FileTreeEntry {
-    wchar_t 				Name[MAX_FILENAME_LENGTH];
+    char    				Name[MAX_FILENAME_LENGTH];
     uint64_t 				AccessPermissions;
     FileTreeEntryFlags 		Flags;
     FileTreeEntryType 		Type;

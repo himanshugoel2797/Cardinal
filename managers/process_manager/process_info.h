@@ -54,7 +54,7 @@ typedef struct PendingSignalInfo {
 typedef struct ProcessInformation {
     UID                         ID;
 
-    wchar_t                     Name[MAX_PROCESS_NAME_LEN];
+    char                        Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus               Status;
     ProcessPermissions          Permissions;
     ManagedPageTable            *PageTable;

@@ -18,7 +18,7 @@ void
 ProcessSys_Initialize(void) {
     root = kmalloc(sizeof(ProcessInformation));
     root->ID = baseID++;	//Root process ID is 0
-    wcscpy(root->Name, L"Root Process");
+    strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
     root->PageTable = GetActiveVirtualMemoryInstance();
