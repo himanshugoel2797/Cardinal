@@ -4,6 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "fuse_common.h"
+#include <fcntl.h>
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <sys/uio.h>
+
 enum fuse_readdir_flags {
 	FUSE_READDIR_NONE = 0,
 	FUSE_READDIR_PLUS = (1 << 0)
@@ -56,8 +64,24 @@ struct fuse_operations {
 	int (*lock)(const char*, struct fuse_file_info*, int cmd, struct flock*);
 	int (*utimens)(const char*, const struct timespec tv[2]);
 	int (*bmap)(const char*, size_t, uint64_t*);
-		
+	//TODO keep or leave ioctl?
+	int (*poll)(const char*, struct fuse_file_info*, struct fuse_pollhandle *, unsigned *);
+	int (*write_buf)(const char*, struct fuse_bufvec*, off_t, structfuse_file_info*);
+	int (*read_buf)(const char*, struct fuse_bufvec **, size_t, off_t, struct fuse_file_info*);
+	int (*fallocate)(const char*, int, off_t, off_t, struct fuse_file_info*);	
 
 };
+
+struct fuse_context {
+	struct fuse *fuse;
+	uid_t uid;
+	gid_t uid;
+	pid_t pid;
+	void *private_data;
+	mode_t umask;
+};
+
+#define fuse_main(argc, argv, op, user_data) fuse_main_real(argc, argv, op, sizeof(*(op)), user_data)
+
 
 #endif
