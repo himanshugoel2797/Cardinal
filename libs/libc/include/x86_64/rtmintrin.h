@@ -47,9 +47,8 @@
    abort condition otherwise.  */
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xbegin (void)
-{
-  return __builtin_ia32_xbegin ();
+_xbegin (void) {
+    return __builtin_ia32_xbegin ();
 }
 
 /* Specify the end of an RTM code region.  If it corresponds to the
@@ -58,9 +57,8 @@ _xbegin (void)
    fallback handler.  */
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xend (void)
-{
-  __builtin_ia32_xend ();
+_xend (void) {
+    __builtin_ia32_xend ();
 }
 
 /* Force an RTM abort condition. The control is transferred to the
@@ -68,9 +66,8 @@ _xend (void)
 #ifdef __OPTIMIZE__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xabort (const unsigned int imm)
-{
-  __builtin_ia32_xabort (imm);
+_xabort (const unsigned int imm) {
+    __builtin_ia32_xabort (imm);
 }
 #else
 #define _xabort(N)  __builtin_ia32_xabort (N)

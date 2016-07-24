@@ -38,9 +38,8 @@
    region.  Return zero otherwise.   */
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xtest (void)
-{
-  return __builtin_ia32_xtest ();
+_xtest (void) {
+    return __builtin_ia32_xtest ();
 }
 
 #ifdef __DISABLE_RTM__

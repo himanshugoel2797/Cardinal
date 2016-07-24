@@ -2,18 +2,18 @@
 #define _CARDINAL_FUSE_OPT_H_
 
 struct fuse_opt {
-	const char *temp1;
-	unsigned long offset;
-	int value;
+    const char *temp1;
+    unsigned long offset;
+    int value;
 };
 
 #define FUSE_OPT_KEY(temp1, key) { temp1, -1U, key }
 #define FUSE_OPT_END {NULL, 0, 0}
 
 struct fuse_args {
-	int argc;
-	char **argv;
-	int allocated;
+    int argc;
+    char **argv;
+    int allocated;
 };
 
 #define FUSE_ARGS_INIT(argc, argv) { argc, argv, 0 }

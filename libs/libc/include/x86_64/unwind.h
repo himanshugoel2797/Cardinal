@@ -62,17 +62,16 @@ typedef unsigned _Unwind_Exception_Class __attribute__((__mode__(__DI__)));
 
 /* The unwind interface uses reason codes in several contexts to
    identify the reasons for failures or other actions.  */
-typedef enum
-{
-  _URC_NO_REASON = 0,
-  _URC_FOREIGN_EXCEPTION_CAUGHT = 1,
-  _URC_FATAL_PHASE2_ERROR = 2,
-  _URC_FATAL_PHASE1_ERROR = 3,
-  _URC_NORMAL_STOP = 4,
-  _URC_END_OF_STACK = 5,
-  _URC_HANDLER_FOUND = 6,
-  _URC_INSTALL_CONTEXT = 7,
-  _URC_CONTINUE_UNWIND = 8
+typedef enum {
+    _URC_NO_REASON = 0,
+    _URC_FOREIGN_EXCEPTION_CAUGHT = 1,
+    _URC_FATAL_PHASE2_ERROR = 2,
+    _URC_FATAL_PHASE1_ERROR = 3,
+    _URC_NORMAL_STOP = 4,
+    _URC_END_OF_STACK = 5,
+    _URC_HANDLER_FOUND = 6,
+    _URC_INSTALL_CONTEXT = 7,
+    _URC_CONTINUE_UNWIND = 8
 } _Unwind_Reason_Code;
 
 
@@ -85,23 +84,22 @@ typedef enum
 struct _Unwind_Exception;
 
 typedef void (*_Unwind_Exception_Cleanup_Fn) (_Unwind_Reason_Code,
-					      struct _Unwind_Exception *);
+        struct _Unwind_Exception *);
 
-struct _Unwind_Exception
-{
-  _Unwind_Exception_Class exception_class;
-  _Unwind_Exception_Cleanup_Fn exception_cleanup;
+struct _Unwind_Exception {
+    _Unwind_Exception_Class exception_class;
+    _Unwind_Exception_Cleanup_Fn exception_cleanup;
 
 #if !defined (__USING_SJLJ_EXCEPTIONS__) && defined (__SEH__)
-  _Unwind_Word private_[6];
+    _Unwind_Word private_[6];
 #else
-  _Unwind_Word private_1;
-  _Unwind_Word private_2;
+    _Unwind_Word private_1;
+    _Unwind_Word private_2;
 #endif
 
-  /* @@@ The IA-64 ABI says that this structure must be double-word aligned.
-     Taking that literally does not make much sense generically.  Instead we
-     provide the maximum alignment required by any type for the machine.  */
+    /* @@@ The IA-64 ABI says that this structure must be double-word aligned.
+       Taking that literally does not make much sense generically.  Instead we
+       provide the maximum alignment required by any type for the machine.  */
 } __attribute__((__aligned__));
 
 
@@ -134,8 +132,8 @@ _Unwind_RaiseException (struct _Unwind_Exception *);
 /* Raise an exception for forced unwinding.  */
 
 typedef _Unwind_Reason_Code (*_Unwind_Stop_Fn)
-     (int, _Unwind_Action, _Unwind_Exception_Class,
-      struct _Unwind_Exception *, struct _Unwind_Context *, void *);
+(int, _Unwind_Action, _Unwind_Exception_Class,
+ struct _Unwind_Exception *, struct _Unwind_Context *, void *);
 
 extern _Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_ForcedUnwind (struct _Unwind_Exception *, _Unwind_Stop_Fn, void *);
@@ -157,7 +155,7 @@ _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *);
    is called for every stack frame in the call chain, but no cleanup
    actions are performed.  */
 typedef _Unwind_Reason_Code (*_Unwind_Trace_Fn)
-     (struct _Unwind_Context *, void *);
+(struct _Unwind_Context *, void *);
 
 extern _Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Backtrace (_Unwind_Trace_Fn, void *);
@@ -197,8 +195,8 @@ extern _Unwind_Ptr _Unwind_GetRegionStart (struct _Unwind_Context *);
    lack of code to handle the different data format.  */
 
 typedef _Unwind_Reason_Code (*_Unwind_Personality_Fn)
-     (int, _Unwind_Action, _Unwind_Exception_Class,
-      struct _Unwind_Exception *, struct _Unwind_Context *);
+(int, _Unwind_Action, _Unwind_Exception_Class,
+ struct _Unwind_Exception *, struct _Unwind_Context *);
 
 /* @@@ The following alternate entry points are for setjmp/longjmp
    based unwinding.  */
@@ -224,17 +222,15 @@ _Unwind_SjLj_Resume_or_Rethrow (struct _Unwind_Exception *);
 #include <stdlib.h>
 
 static inline _Unwind_Ptr
-_Unwind_GetDataRelBase (struct _Unwind_Context *_C)
-{
-  /* The GP is stored in R1.  */
-  return _Unwind_GetGR (_C, 1);
+_Unwind_GetDataRelBase (struct _Unwind_Context *_C) {
+    /* The GP is stored in R1.  */
+    return _Unwind_GetGR (_C, 1);
 }
 
 static inline _Unwind_Ptr
-_Unwind_GetTextRelBase (struct _Unwind_Context *_C __attribute__ ((__unused__)))
-{
-  abort ();
-  return 0;
+_Unwind_GetTextRelBase (struct _Unwind_Context *_C __attribute__ ((__unused__))) {
+    abort ();
+    return 0;
 }
 
 /* @@@ Retrieve the Backing Store Pointer of the given context.  */
@@ -249,11 +245,11 @@ extern _Unwind_Ptr _Unwind_GetTextRelBase (struct _Unwind_Context *);
 extern void * _Unwind_FindEnclosingFunction (void *pc);
 
 #ifndef __SIZEOF_LONG__
-  #error "__SIZEOF_LONG__ macro not defined"
+#error "__SIZEOF_LONG__ macro not defined"
 #endif
 
 #ifndef __SIZEOF_POINTER__
-  #error "__SIZEOF_POINTER__ macro not defined"
+#error "__SIZEOF_POINTER__ macro not defined"
 #endif
 
 
@@ -266,11 +262,11 @@ extern void * _Unwind_FindEnclosingFunction (void *pc);
    capable of storing a pointer.  */
 
 #if __SIZEOF_LONG__ >= __SIZEOF_POINTER__
-  typedef long _sleb128_t;
-  typedef unsigned long _uleb128_t;
+typedef long _sleb128_t;
+typedef unsigned long _uleb128_t;
 #elif __SIZEOF_LONG_LONG__ >= __SIZEOF_POINTER__
-  typedef long long _sleb128_t;
-  typedef unsigned long long _uleb128_t;
+typedef long long _sleb128_t;
+typedef unsigned long long _uleb128_t;
 #else
 # error "What type shall we use for _sleb128_t?"
 #endif
@@ -278,8 +274,8 @@ extern void * _Unwind_FindEnclosingFunction (void *pc);
 #if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 /* Handles the mapping from SEH to GCC interfaces.  */
 EXCEPTION_DISPOSITION _GCC_specific_handler (PEXCEPTION_RECORD, void *,
-					     PCONTEXT, PDISPATCHER_CONTEXT,
-					     _Unwind_Personality_Fn);
+        PCONTEXT, PDISPATCHER_CONTEXT,
+        _Unwind_Personality_Fn);
 #endif
 
 #ifdef __cplusplus

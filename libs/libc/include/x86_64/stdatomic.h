@@ -26,15 +26,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _STDATOMIC_H
 #define _STDATOMIC_H
 
-typedef enum
-  {
+typedef enum {
     memory_order_relaxed = __ATOMIC_RELAXED,
     memory_order_consume = __ATOMIC_CONSUME,
     memory_order_acquire = __ATOMIC_ACQUIRE,
     memory_order_release = __ATOMIC_RELEASE,
     memory_order_acq_rel = __ATOMIC_ACQ_REL,
     memory_order_seq_cst = __ATOMIC_SEQ_CST
-  } memory_order;
+} memory_order;
 
 
 typedef _Atomic _Bool atomic_bool;
@@ -73,7 +72,7 @@ typedef _Atomic __UINTPTR_TYPE__ atomic_uintptr_t;
 typedef _Atomic __SIZE_TYPE__ atomic_size_t;
 typedef _Atomic __PTRDIFF_TYPE__ atomic_ptrdiff_t;
 typedef _Atomic __INTMAX_TYPE__ atomic_intmax_t;
-typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;        
+typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 
 
 #define ATOMIC_VAR_INIT(VALUE)	(VALUE)
@@ -110,7 +109,7 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 /* Note that these macros require __typeof__ and __auto_type to remove
    _Atomic qualifiers (and const qualifiers, if those are valid on
    macro operands).
-   
+
    Also note that the header file uses the generic form of __atomic
    builtins, which requires the address to be taken of the value
    parameter, and then we pass that value on.  This allows the macros
@@ -215,12 +214,11 @@ typedef _Atomic __UINTMAX_TYPE__ atomic_uintmax_t;
 			  __atomic_fetch_and ((PTR), (VAL), (MO))
 
 
-typedef _Atomic struct
-{
+typedef _Atomic struct {
 #if __GCC_ATOMIC_TEST_AND_SET_TRUEVAL == 1
-  _Bool __val;
+    _Bool __val;
 #else
-  unsigned char __val;
+    unsigned char __val;
 #endif
 } atomic_flag;
 

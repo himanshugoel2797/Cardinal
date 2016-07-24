@@ -36,9 +36,8 @@
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_pcommit (void)
-{
-  __builtin_ia32_pcommit ();
+_mm_pcommit (void) {
+    __builtin_ia32_pcommit ();
 }
 
 #ifdef __DISABLE_PCOMMIT__

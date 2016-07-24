@@ -12,17 +12,17 @@
 #define FUSE_VERSION FUSE_MAKE_VERSION(FUSE_MAJOR_VERSION, FUSE_MINOR_VERSION)
 
 struct fuse_file_info {
-	int32_t flags;
-	uint32_t writepage : 1;
-	uint32_t direct_io : 1;
-	uint32_t keep_cache : 1;
-	uint32_t flush : 1;
-	uint32_t nonseekable : 1;
-	uint32_t flock_release : 1;
-	uint32_t padding : 27;
-	uint64_t fh;
-	uint64_t lock_owner;
-	uint32_t poll_events;
+    int32_t flags;
+    uint32_t writepage : 1;
+    uint32_t direct_io : 1;
+    uint32_t keep_cache : 1;
+    uint32_t flush : 1;
+    uint32_t nonseekable : 1;
+    uint32_t flock_release : 1;
+    uint32_t padding : 27;
+    uint64_t fh;
+    uint64_t lock_owner;
+    uint32_t poll_events;
 };
 
 #define FUSE_CAP_ASNC_READ (1 << 0)
@@ -44,17 +44,17 @@ struct fuse_file_info {
 #define FUSE_CAP_NO_OPEN_SUPPORT (1 << 17)
 
 struct fuse_conn_info {
-	unsigned proto_major;
-	unsigned proto_minor;
-	unsigned async_read;
-	unsigned max_write;
-	unsigned max_readahead;
-	unsigned capable;
-	unsigned want;
-	unsigned max_background;
-	unsigned congestion_threshold;
-	unsigned time_gran;
-	unsigned reserved[22];
+    unsigned proto_major;
+    unsigned proto_minor;
+    unsigned async_read;
+    unsigned max_write;
+    unsigned max_readahead;
+    unsigned capable;
+    unsigned want;
+    unsigned max_background;
+    unsigned congestion_threshold;
+    unsigned time_gran;
+    unsigned reserved[22];
 };
 
 struct fuse_session;
@@ -64,31 +64,31 @@ struct fuse_pollhandle;
 int fuse_version(void);
 
 enum fuse_buf_flags {
-	FUSE_BUF_IS_FD = (1 << 1),
-	FUSE_BUF_FD_SEEK = (1 << 2),
-	FUSE_BUF_FD_RETRY = (1 << 3)
+    FUSE_BUF_IS_FD = (1 << 1),
+    FUSE_BUF_FD_SEEK = (1 << 2),
+    FUSE_BUF_FD_RETRY = (1 << 3)
 };
 
 enum fuse_buf_copy_flags {
-	FUSE_BUF_NO_SPLICE = (1 << 1),
-	FUSE_BUF_FORCE_SPLICE = (1 << 2),
-	FUSE_BUF_SPLICE_MOVE = (1 << 3),
-	FUSE_BUF_SPLICE_NONBLOCK = (1 << 4)
+    FUSE_BUF_NO_SPLICE = (1 << 1),
+    FUSE_BUF_FORCE_SPLICE = (1 << 2),
+    FUSE_BUF_SPLICE_MOVE = (1 << 3),
+    FUSE_BUF_SPLICE_NONBLOCK = (1 << 4)
 };
 
 struct fuse_buf {
-	size_t size;
-	enum fuse_buf_flags flags;
-	void *mem;
-	int fd;
-	off_t pos;
+    size_t size;
+    enum fuse_buf_flags flags;
+    void *mem;
+    int fd;
+    off_t pos;
 };
 
 struct fuse_bufvec {
-	size_t count;
-	size_t idx;
-	size_t off;
-	struct fuse_buf buf[1];
+    size_t count;
+    size_t idx;
+    size_t off;
+    struct fuse_buf buf[1];
 };
 
 int fuse_set_signal_handlers(struct fuse_sesion *se);

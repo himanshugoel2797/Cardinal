@@ -1,14 +1,14 @@
 #include "fuse_opt.h"
 
 int fuse_opt_parse(struct fuse_args *args, void *data, const struct fuse_opt opts[], fuse_opt_proc_t proc) {
-	
+
 }
 
 int fuse_opt_add_opt(char **opts, const char *opt) {
 
 }
 
-int fuse_opt_add_opt_escaped(char **opts, const char *opt){
+int fuse_opt_add_opt_escaped(char **opts, const char *opt) {
 
 }
 

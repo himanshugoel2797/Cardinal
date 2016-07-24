@@ -424,8 +424,8 @@ typedef __WINT_TYPE__ wint_t;
    as great as that of any standard type not using alignment
    specifiers.  */
 typedef struct {
-  long long __max_align_ll __attribute__((__aligned__(__alignof__(long long))));
-  long double __max_align_ld __attribute__((__aligned__(__alignof__(long double))));
+    long long __max_align_ll __attribute__((__aligned__(__alignof__(long long))));
+    long double __max_align_ld __attribute__((__aligned__(__alignof__(long double))));
 } max_align_t;
 #endif
 #endif /* C11 or C++11.  */
@@ -433,7 +433,7 @@ typedef struct {
 #if defined(__cplusplus) && __cplusplus >= 201103L
 #ifndef _GXX_NULLPTR_T
 #define _GXX_NULLPTR_T
-  typedef decltype(nullptr) nullptr_t;
+typedef decltype(nullptr) nullptr_t;
 #endif
 #endif /* C++11.  */
 

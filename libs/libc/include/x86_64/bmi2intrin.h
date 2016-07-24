@@ -36,67 +36,59 @@
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_bzhi_u32 (unsigned int __X, unsigned int __Y)
-{
-  return __builtin_ia32_bzhi_si (__X, __Y);
+_bzhi_u32 (unsigned int __X, unsigned int __Y) {
+    return __builtin_ia32_bzhi_si (__X, __Y);
 }
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_pdep_u32 (unsigned int __X, unsigned int __Y)
-{
-  return __builtin_ia32_pdep_si (__X, __Y);
+_pdep_u32 (unsigned int __X, unsigned int __Y) {
+    return __builtin_ia32_pdep_si (__X, __Y);
 }
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_pext_u32 (unsigned int __X, unsigned int __Y)
-{
-  return __builtin_ia32_pext_si (__X, __Y);
+_pext_u32 (unsigned int __X, unsigned int __Y) {
+    return __builtin_ia32_pext_si (__X, __Y);
 }
 
 #ifdef  __x86_64__
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_bzhi_u64 (unsigned long long __X, unsigned long long __Y)
-{
-  return __builtin_ia32_bzhi_di (__X, __Y);
+_bzhi_u64 (unsigned long long __X, unsigned long long __Y) {
+    return __builtin_ia32_bzhi_di (__X, __Y);
 }
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_pdep_u64 (unsigned long long __X, unsigned long long __Y)
-{
-  return __builtin_ia32_pdep_di (__X, __Y);
+_pdep_u64 (unsigned long long __X, unsigned long long __Y) {
+    return __builtin_ia32_pdep_di (__X, __Y);
 }
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_pext_u64 (unsigned long long __X, unsigned long long __Y)
-{
-  return __builtin_ia32_pext_di (__X, __Y);
+_pext_u64 (unsigned long long __X, unsigned long long __Y) {
+    return __builtin_ia32_pext_di (__X, __Y);
 }
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mulx_u64 (unsigned long long __X, unsigned long long __Y,
-	   unsigned long long *__P)
-{
-  unsigned __int128 __res = (unsigned __int128) __X * __Y;
-  *__P = (unsigned long long) (__res >> 64);
-  return (unsigned long long) __res;
+           unsigned long long *__P) {
+    unsigned __int128 __res = (unsigned __int128) __X * __Y;
+    *__P = (unsigned long long) (__res >> 64);
+    return (unsigned long long) __res;
 }
 
 #else /* !__x86_64__ */
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mulx_u32 (unsigned int __X, unsigned int __Y, unsigned int *__P)
-{
-  unsigned long long __res = (unsigned long long) __X * __Y;
-  *__P = (unsigned int) (__res >> 32);
-  return (unsigned int) __res;
+_mulx_u32 (unsigned int __X, unsigned int __Y, unsigned int *__P) {
+    unsigned long long __res = (unsigned long long) __X * __Y;
+    *__P = (unsigned int) (__res >> 32);
+    return (unsigned int) __res;
 }
 
 #endif /* !__x86_64__  */

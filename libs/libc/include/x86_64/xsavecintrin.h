@@ -36,17 +36,15 @@
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xsavec (void *__P, long long __M)
-{
-  __builtin_ia32_xsavec (__P, __M);
+_xsavec (void *__P, long long __M) {
+    __builtin_ia32_xsavec (__P, __M);
 }
 
 #ifdef __x86_64__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xsavec64 (void *__P, long long __M)
-{
-  __builtin_ia32_xsavec64 (__P, __M);
+_xsavec64 (void *__P, long long __M) {
+    __builtin_ia32_xsavec64 (__P, __M);
 }
 #endif
 

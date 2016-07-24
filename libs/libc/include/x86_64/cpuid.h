@@ -5,16 +5,16 @@
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 3, or (at your option) any
  * later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * Under Section 7 of GPL version 3, you are granted additional
  * permissions described in the GCC Runtime Library Exception, version
  * 3.1, as published by the Free Software Foundation.
- * 
+ *
  * You should have received a copy of the GNU General Public License and
  * a copy of the GCC Runtime Library Exception along with this program;
  * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
@@ -175,53 +175,52 @@
    (as found in ebx register) are returned in location pointed by sig.  */
 
 static __inline unsigned int
-__get_cpuid_max (unsigned int __ext, unsigned int *__sig)
-{
-  unsigned int __eax, __ebx, __ecx, __edx;
+__get_cpuid_max (unsigned int __ext, unsigned int *__sig) {
+    unsigned int __eax, __ebx, __ecx, __edx;
 
 #ifndef __x86_64__
-  /* See if we can use cpuid.  On AMD64 we always can.  */
+    /* See if we can use cpuid.  On AMD64 we always can.  */
 #if __GNUC__ >= 3
-  __asm__ ("pushf{l|d}\n\t"
-	   "pushf{l|d}\n\t"
-	   "pop{l}\t%0\n\t"
-	   "mov{l}\t{%0, %1|%1, %0}\n\t"
-	   "xor{l}\t{%2, %0|%0, %2}\n\t"
-	   "push{l}\t%0\n\t"
-	   "popf{l|d}\n\t"
-	   "pushf{l|d}\n\t"
-	   "pop{l}\t%0\n\t"
-	   "popf{l|d}\n\t"
-	   : "=&r" (__eax), "=&r" (__ebx)
-	   : "i" (0x00200000));
+    __asm__ ("pushf{l|d}\n\t"
+             "pushf{l|d}\n\t"
+             "pop{l}\t%0\n\t"
+             "mov{l}\t{%0, %1|%1, %0}\n\t"
+             "xor{l}\t{%2, %0|%0, %2}\n\t"
+             "push{l}\t%0\n\t"
+             "popf{l|d}\n\t"
+             "pushf{l|d}\n\t"
+             "pop{l}\t%0\n\t"
+             "popf{l|d}\n\t"
+             : "=&r" (__eax), "=&r" (__ebx)
+             : "i" (0x00200000));
 #else
-/* Host GCCs older than 3.0 weren't supporting Intel asm syntax
-   nor alternatives in i386 code.  */
-  __asm__ ("pushfl\n\t"
-	   "pushfl\n\t"
-	   "popl\t%0\n\t"
-	   "movl\t%0, %1\n\t"
-	   "xorl\t%2, %0\n\t"
-	   "pushl\t%0\n\t"
-	   "popfl\n\t"
-	   "pushfl\n\t"
-	   "popl\t%0\n\t"
-	   "popfl\n\t"
-	   : "=&r" (__eax), "=&r" (__ebx)
-	   : "i" (0x00200000));
+    /* Host GCCs older than 3.0 weren't supporting Intel asm syntax
+       nor alternatives in i386 code.  */
+    __asm__ ("pushfl\n\t"
+             "pushfl\n\t"
+             "popl\t%0\n\t"
+             "movl\t%0, %1\n\t"
+             "xorl\t%2, %0\n\t"
+             "pushl\t%0\n\t"
+             "popfl\n\t"
+             "pushfl\n\t"
+             "popl\t%0\n\t"
+             "popfl\n\t"
+             : "=&r" (__eax), "=&r" (__ebx)
+             : "i" (0x00200000));
 #endif
 
-  if (!((__eax ^ __ebx) & 0x00200000))
-    return 0;
+    if (!((__eax ^ __ebx) & 0x00200000))
+        return 0;
 #endif
 
-  /* Host supports cpuid.  Return highest supported cpuid input value.  */
-  __cpuid (__ext, __eax, __ebx, __ecx, __edx);
+    /* Host supports cpuid.  Return highest supported cpuid input value.  */
+    __cpuid (__ext, __eax, __ebx, __ecx, __edx);
 
-  if (__sig)
-    *__sig = __ebx;
+    if (__sig)
+        *__sig = __ebx;
 
-  return __eax;
+    return __eax;
 }
 
 /* Return cpuid data for requested cpuid level, as found in returned
@@ -231,14 +230,13 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
 
 static __inline int
 __get_cpuid (unsigned int __level,
-	     unsigned int *__eax, unsigned int *__ebx,
-	     unsigned int *__ecx, unsigned int *__edx)
-{
-  unsigned int __ext = __level & 0x80000000;
+             unsigned int *__eax, unsigned int *__ebx,
+             unsigned int *__ecx, unsigned int *__edx) {
+    unsigned int __ext = __level & 0x80000000;
 
-  if (__get_cpuid_max (__ext, 0) < __level)
-    return 0;
+    if (__get_cpuid_max (__ext, 0) < __level)
+        return 0;
 
-  __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
-  return 1;
+    __cpuid (__level, *__eax, *__ebx, *__ecx, *__edx);
+    return 1;
 }

@@ -35,29 +35,25 @@
 #endif /* __LWP__ */
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__llwpcb (void *pcbAddress)
-{
-  __builtin_ia32_llwpcb (pcbAddress);
+__llwpcb (void *pcbAddress) {
+    __builtin_ia32_llwpcb (pcbAddress);
 }
 
 extern __inline void * __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__slwpcb (void)
-{
-  return __builtin_ia32_slwpcb ();
+__slwpcb (void) {
+    return __builtin_ia32_slwpcb ();
 }
 
 #ifdef __OPTIMIZE__
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpval32 (unsigned int data2, unsigned int data1, unsigned int flags)
-{
-  __builtin_ia32_lwpval32 (data2, data1, flags);
+__lwpval32 (unsigned int data2, unsigned int data1, unsigned int flags) {
+    __builtin_ia32_lwpval32 (data2, data1, flags);
 }
 
 #ifdef __x86_64__
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpval64 (unsigned long long data2, unsigned int data1, unsigned int flags)
-{
-  __builtin_ia32_lwpval64 (data2, data1, flags);
+__lwpval64 (unsigned long long data2, unsigned int data1, unsigned int flags) {
+    __builtin_ia32_lwpval64 (data2, data1, flags);
 }
 #endif
 #else
@@ -74,16 +70,14 @@ __lwpval64 (unsigned long long data2, unsigned int data1, unsigned int flags)
 
 #ifdef __OPTIMIZE__
 extern __inline unsigned char __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpins32 (unsigned int data2, unsigned int data1, unsigned int flags)
-{
-  return __builtin_ia32_lwpins32 (data2, data1, flags);
+__lwpins32 (unsigned int data2, unsigned int data1, unsigned int flags) {
+    return __builtin_ia32_lwpins32 (data2, data1, flags);
 }
 
 #ifdef __x86_64__
 extern __inline unsigned char __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__lwpins64 (unsigned long long data2, unsigned int data1, unsigned int flags)
-{
-  return __builtin_ia32_lwpins64 (data2, data1, flags);
+__lwpins64 (unsigned long long data2, unsigned int data1, unsigned int flags) {
+    return __builtin_ia32_lwpins64 (data2, data1, flags);
 }
 #endif
 #else

@@ -91,16 +91,14 @@
 #endif /* __RDRND__ */
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand16_step (unsigned short *__P)
-{
-  return __builtin_ia32_rdrand16_step (__P);
+_rdrand16_step (unsigned short *__P) {
+    return __builtin_ia32_rdrand16_step (__P);
 }
 
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand32_step (unsigned int *__P)
-{
-  return __builtin_ia32_rdrand32_step (__P);
+_rdrand32_step (unsigned int *__P) {
+    return __builtin_ia32_rdrand32_step (__P);
 }
 #ifdef __DISABLE_RDRND__
 #undef __DISABLE_RDRND__
@@ -116,58 +114,50 @@ _rdrand32_step (unsigned int *__P)
 #endif /* __FSGSBASE__ */
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_readfsbase_u32 (void)
-{
-  return __builtin_ia32_rdfsbase32 ();
+_readfsbase_u32 (void) {
+    return __builtin_ia32_rdfsbase32 ();
 }
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_readfsbase_u64 (void)
-{
-  return __builtin_ia32_rdfsbase64 ();
+_readfsbase_u64 (void) {
+    return __builtin_ia32_rdfsbase64 ();
 }
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_readgsbase_u32 (void)
-{
-  return __builtin_ia32_rdgsbase32 ();
+_readgsbase_u32 (void) {
+    return __builtin_ia32_rdgsbase32 ();
 }
 
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_readgsbase_u64 (void)
-{
-  return __builtin_ia32_rdgsbase64 ();
+_readgsbase_u64 (void) {
+    return __builtin_ia32_rdgsbase64 ();
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_writefsbase_u32 (unsigned int __B)
-{
-  __builtin_ia32_wrfsbase32 (__B);
+_writefsbase_u32 (unsigned int __B) {
+    __builtin_ia32_wrfsbase32 (__B);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_writefsbase_u64 (unsigned long long __B)
-{
-  __builtin_ia32_wrfsbase64 (__B);
+_writefsbase_u64 (unsigned long long __B) {
+    __builtin_ia32_wrfsbase64 (__B);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_writegsbase_u32 (unsigned int __B)
-{
-  __builtin_ia32_wrgsbase32 (__B);
+_writegsbase_u32 (unsigned int __B) {
+    __builtin_ia32_wrgsbase32 (__B);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_writegsbase_u64 (unsigned long long __B)
-{
-  __builtin_ia32_wrgsbase64 (__B);
+_writegsbase_u64 (unsigned long long __B) {
+    __builtin_ia32_wrgsbase64 (__B);
 }
 #ifdef __DISABLE_FSGSBASE__
 #undef __DISABLE_FSGSBASE__
@@ -181,9 +171,8 @@ _writegsbase_u64 (unsigned long long __B)
 #endif /* __RDRND__ */
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdrand64_step (unsigned long long *__P)
-{
-  return __builtin_ia32_rdrand64_step (__P);
+_rdrand64_step (unsigned long long *__P) {
+    return __builtin_ia32_rdrand64_step (__P);
 }
 #ifdef __DISABLE_RDRND__
 #undef __DISABLE_RDRND__

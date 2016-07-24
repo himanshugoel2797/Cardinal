@@ -36,31 +36,27 @@
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xsave (void *__P, long long __M)
-{
-  return __builtin_ia32_xsave (__P, __M);
+_xsave (void *__P, long long __M) {
+    return __builtin_ia32_xsave (__P, __M);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xrstor (void *__P, long long __M)
-{
-  return __builtin_ia32_xrstor (__P, __M);
+_xrstor (void *__P, long long __M) {
+    return __builtin_ia32_xrstor (__P, __M);
 }
 
 #ifdef __x86_64__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xsave64 (void *__P, long long __M)
-{
-  return __builtin_ia32_xsave64 (__P, __M);
+_xsave64 (void *__P, long long __M) {
+    return __builtin_ia32_xsave64 (__P, __M);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_xrstor64 (void *__P, long long __M)
-{
-  return __builtin_ia32_xrstor64 (__P, __M);
+_xrstor64 (void *__P, long long __M) {
+    return __builtin_ia32_xrstor64 (__P, __M);
 }
 #endif
 

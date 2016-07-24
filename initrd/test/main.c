@@ -2,8 +2,8 @@
 
 int main() {
 
-	int k_io = RegisterDriver("PCI", 0, 0);
+    int k_io = RegisterDriver("PCI", 0, 0);
 
-	while(1);
+    while(1);
     return k_io;
 }

@@ -9,28 +9,28 @@ uint64_t
 RegisterDriver_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {
-	if(syscall_num != Syscall_RegisterDriver)
-		return ENOSYS;
+    if(syscall_num != Syscall_RegisterDriver)
+        return ENOSYS;
 
-	SyscallData *data = (SyscallData*)syscall_params;
+    SyscallData *data = (SyscallData*)syscall_params;
 
-	if(data->param_num != 3)
-		return EINVAL;
+    if(data->param_num != 3)
+        return EINVAL;
 
-	ProcessInformation *pInfo;
-	GetProcessReference(GetCurrentProcessUID(), &pInfo);
+    ProcessInformation *pInfo;
+    GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
-	if(pInfo->Permissions & ProcessSyscallFlags_PermissionsLocked)
-		return EPERM;
+    if(pInfo->Permissions & ProcessSyscallFlags_PermissionsLocked)
+        return EPERM;
 
-	if(pInfo->Permissions & ProcessSyscallFlags_DriverPermissions)
-		return ENOSYS;
+    if(pInfo->Permissions & ProcessSyscallFlags_DriverPermissions)
+        return ENOSYS;
 
-	strcpy_s(pInfo->Name, MAX_PROCESS_NAME_LEN,(const char*)data->params[0], MAX_PROCESS_NAME_LEN);
+    strcpy_s(pInfo->Name, MAX_PROCESS_NAME_LEN,(const char*)data->params[0], MAX_PROCESS_NAME_LEN);
 
-	int fds[2];
-	if(CreateAnonPipe(FileDescriptorFlags_CloseOnExec, fds) == 0)
-		return fds[0];
+    int fds[2];
+    if(CreateAnonPipe(FileDescriptorFlags_CloseOnExec, fds) == 0)
+        return fds[0];
 
-	return 0;
+    return 0;
 }

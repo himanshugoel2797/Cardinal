@@ -36,9 +36,8 @@
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_clwb (void *__A)
-{
-  __builtin_ia32_clwb (__A);
+_mm_clwb (void *__A) {
+    __builtin_ia32_clwb (__A);
 }
 
 #ifdef __DISABLE_CLWB__

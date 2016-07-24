@@ -51,22 +51,22 @@
 
 #ifndef __GNUC_SYSV_VA_LIST
 #define __GNUC_SYSV_VA_LIST
-  typedef __builtin_sysv_va_list __gnuc_sysv_va_list;
+typedef __builtin_sysv_va_list __gnuc_sysv_va_list;
 #endif
 
 #ifndef _SYSV_VA_LIST_DEFINED
 #define _SYSV_VA_LIST_DEFINED
-  typedef __gnuc_sysv_va_list sysv_va_list;
+typedef __gnuc_sysv_va_list sysv_va_list;
 #endif
 
 #ifndef __GNUC_MS_VA_LIST
 #define __GNUC_MS_VA_LIST
-  typedef __builtin_ms_va_list __gnuc_ms_va_list;
+typedef __builtin_ms_va_list __gnuc_ms_va_list;
 #endif
 
 #ifndef _MS_VA_LIST_DEFINED
 #define _MS_VA_LIST_DEFINED
-  typedef __gnuc_ms_va_list ms_va_list;
+typedef __gnuc_ms_va_list ms_va_list;
 #endif
 
 #endif /* __CROSS_STDARG_H_INCLUDED */
