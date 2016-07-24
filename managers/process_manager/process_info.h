@@ -32,7 +32,8 @@ typedef enum {
 
 typedef enum {
     ProcessSyscallFlags_None = 0,
-    ProcessSyscallFlags_PermissionsLocked = (1 << 0)
+    ProcessSyscallFlags_PermissionsLocked = (1 << 0),
+    ProcessSyscallFlags_DriverPermissions = (1 << 1),
 } ProcessSyscallFlags;
 
 typedef enum {

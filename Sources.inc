@@ -13,6 +13,7 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/thread.o \
 		managers/syscall_manager/syscalls/memory.o \
 		managers/syscall_manager/syscalls/signal.o \
+		managers/syscall_manager/syscalls/driver.o \
 		managers/file_manager/file_main.o \
 		sys/pipe.o \
 		drivers/usb/controller.o \

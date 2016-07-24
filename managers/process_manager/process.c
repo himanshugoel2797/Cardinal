@@ -30,6 +30,8 @@ ProcessSys_Initialize(void) {
     root->Children = List_Create(CreateSpinlock());
     root->Parent = NULL;
 
+    root->FileDescriptors = List_Create(CreateSpinlock());
+
     root->reference_count = 0;
     root->lock = CreateSpinlock();
 
@@ -62,6 +64,20 @@ ForkProcess(ProcessInformation *src,
     dst->Parent = src;
 
     ForkTable(src->PageTable, dst->PageTable);
+
+    dst->FileDescriptors = List_Create(CreateSpinlock());
+
+    for(uint64_t i = 0; i < List_Length(src->FileDescriptors); i++) {
+        FileDescriptor *desc = (FileDescriptor*)List_EntryAt(src->FileDescriptors, i);
+
+        FileDescriptor *dst_desc = kmalloc(sizeof(FileDescriptor));
+        dst_desc->AccessMode = desc->AccessMode;
+        dst_desc->FileData = desc->FileData;
+        dst_desc->Flags = desc->Flags;
+
+        AtomicIncrement32(&dst_desc->FileData->reference_count);
+        List_AddEntry(dst->FileDescriptors, dst_desc);
+    }
 
     dst->reference_count = 0;
     dst->lock = CreateSpinlock();

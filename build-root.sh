@@ -1,5 +1,6 @@
 #!/bin/sh
 
+SRC_DIR=$(pwd)
 ROOTDIR=$(pwd)/root
 
 mkdir root
@@ -25,6 +26,8 @@ make -j4 all
 make install
 cd ..
 
+cd $ROOTDIR/sys/include
+cp $SRC_DIR/libs/libCardinal/include/* .
 
 cd ..
 cd ..

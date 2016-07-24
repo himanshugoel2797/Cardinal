@@ -16,9 +16,13 @@ typedef enum {
 } FileTreeEntryType;
 
 typedef enum {
-    FileTreeEntryFlags_None,
-    FileTreeEntryFlags_CloseOnExec
+    FileTreeEntryFlags_None
 } FileTreeEntryFlags;
+
+typedef enum {
+    FileDescriptorFlags_None,
+    FileDescriptorFlags_CloseOnExec = (1 << 0)
+} FileDescriptorFlags;
 
 typedef enum {
     FileDescriptorAccessMode_Read,
@@ -45,7 +49,12 @@ typedef struct FileTreeEntry {
 
 typedef struct {
     FileTreeEntry *FileData;
+    FileDescriptorFlags Flags;
     FileDescriptorAccessMode AccessMode;
+    Spinlock    lock;
 } FileDescriptor;
+
+int
+CreateAnonPipe(FileDescriptorFlags flags, int fd[2]);
 
 #endif

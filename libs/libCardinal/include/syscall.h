@@ -154,9 +154,10 @@ typedef enum {
     Syscall_Clone = 56,
     Syscall_Fork = 57,
     Syscall_ArchPrctl = 158,
+    Syscall_IOPL = 172,
     Syscall_SetTidAddress = 218,
-    Syscall_IOPL,
-    Syscall_NumEnd = Syscall_IOPL,
+    Syscall_RegisterDriver = 400,
+    Syscall_NumEnd = Syscall_RegisterDriver,
 } SyscallFunctions;
 
 
@@ -340,6 +341,17 @@ Syscall6(uint32_t syscall_num,
 #endif
 
     return ret_error;
+}
+
+static __inline int
+RegisterDriver(const char* name, uint64_t flags, uint32_t int_cnt) {
+    uint64_t err = Syscall3(Syscall_RegisterDriver,
+                            (uint64_t)name,
+                            flags,
+                            (uint64_t)int_cnt);
+
+    if((int64_t)err >= 0)return err;
+    else return -1;
 }
 
 #endif

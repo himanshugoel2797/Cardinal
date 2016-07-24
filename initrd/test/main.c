@@ -1,11 +1,9 @@
-#include <signal.h>
-
-void sigHandle(int sig) {
-    while(1);
-}
+#include <syscall.h>
 
 int main() {
-    signal(SIGINT, sigHandle);
-    while(1);
-    return 0;
+
+	int k_io = RegisterDriver("PCI", 0, 0);
+
+	while(1);
+    return k_io;
 }
