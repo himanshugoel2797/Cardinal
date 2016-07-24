@@ -16,12 +16,14 @@ typedef enum {
 } FileTreeEntryType;
 
 typedef enum {
-    FileTreeEntryFlags_None
+    FileTreeEntryFlags_None,
+    FileTreeEntryFlags_Locked
 } FileTreeEntryFlags;
 
 typedef enum {
     FileDescriptorFlags_None,
-    FileDescriptorFlags_CloseOnExec = (1 << 0)
+    FileDescriptorFlags_CloseOnExec = 2000000,
+    FileDescriptorFlags_NonBlocking = 4000,
 } FileDescriptorFlags;
 
 typedef enum {
@@ -34,8 +36,10 @@ typedef struct FileTreeEntry {
     uint64_t 				AccessPermissions;
     FileTreeEntryFlags 		Flags;
     FileTreeEntryType 		Type;
+    UID                     FileOwnerUID;
     UID 					FileSystemDriverPID;
     UID						Identifier;
+    UID                     LockSourcePID;
 
     Spinlock				ReadLock;
     Spinlock				WriteLock;

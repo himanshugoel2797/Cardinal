@@ -4,6 +4,6 @@
 #include "types.h"
 
 bool
-IsUTF8(uint8_t* s);
+IsUTF8(uint8_t* s, uint32_t max_len);
 
 #endif

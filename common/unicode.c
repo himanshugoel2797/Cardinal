@@ -40,10 +40,10 @@ decode(uint32_t* state, uint32_t* codep, uint32_t byte) {
 }
 
 bool
-IsUTF8(uint8_t* s) {
+IsUTF8(uint8_t* s, uint32_t max_len) {
     uint32_t codepoint, state = 0;
 
-    while (*s)
+    while (*s && max_len--)
         decode(&state, &codepoint, *s++);
 
     return state == UTF8_ACCEPT;

@@ -70,12 +70,20 @@ ForkProcess(ProcessInformation *src,
     for(uint64_t i = 0; i < List_Length(src->FileDescriptors); i++) {
         FileDescriptor *desc = (FileDescriptor*)List_EntryAt(src->FileDescriptors, i);
 
+        
         FileDescriptor *dst_desc = kmalloc(sizeof(FileDescriptor));
-        dst_desc->AccessMode = desc->AccessMode;
-        dst_desc->FileData = desc->FileData;
-        dst_desc->Flags = desc->Flags;
+        
+        if(desc->Flags & FileDescriptorFlags_CloseOnExec) {
+            dst_desc->AccessMode = 0;
+            dst_desc->FileData = NULL;
+            dst_desc->Flags = 0;
+        }else{
+            dst_desc->AccessMode = desc->AccessMode;
+            dst_desc->FileData = desc->FileData;
+            dst_desc->Flags = desc->Flags;
+            AtomicIncrement32(&dst_desc->FileData->reference_count);
+        }
 
-        AtomicIncrement32(&dst_desc->FileData->reference_count);
         List_AddEntry(dst->FileDescriptors, dst_desc);
     }
 
