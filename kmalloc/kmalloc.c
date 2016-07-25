@@ -228,6 +228,65 @@ void* AllocateMapping(size_t size) {
 
     if(user_stack_base == 0)while(1);
 
+    for(uint64_t vaddr = user_stack_base; 
+        vaddr < user_stack_base + size; 
+        vaddr += PAGE_SIZE) {
+    
+    MapPage(GetActiveVirtualMemoryInstance(),
+            AllocatePhysicalPage(),
+            vaddr,
+            PAGE_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel
+           );
+    }
+
+    return (void*)user_stack_base;
+}
+
+void FreeMapping(void* mem, size_t size) {
+
+    if(size % PAGE_SIZE != 0)return;
+
+    CachingMode cMode = 0;
+    MemoryAllocationFlags cFlags = 0;
+    CheckAddressPermissions(GetActiveVirtualMemoryInstance(),
+                            (uint64_t)mem,
+                            &cMode,
+                            &cFlags);
+
+    if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
+        
+        for(uint64_t vaddr = (uint64_t)mem;
+            vaddr < (uint64_t)mem + size;
+            vaddr += PAGE_SIZE) {
+            
+            uint64_t addr = (uint64_t)GetPhysicalAddress((void*)vaddr);
+            UnmapPage(GetActiveVirtualMemoryInstance(),
+                      vaddr,
+                      PAGE_SIZE);
+
+            FreePhysicalPage(addr);
+        }
+    }
+}
+
+void* AllocateMappingCont(size_t size) {
+    uint64_t user_stack_base = 0;
+
+    if(size % PAGE_SIZE != 0)
+        return NULL;
+
+    FindFreeVirtualAddress(
+        GetActiveVirtualMemoryInstance(),
+        (uint64_t*)&user_stack_base,
+        size,
+        MemoryAllocationType_Heap,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
+
+    if(user_stack_base == 0)while(1);
+
     MapPage(GetActiveVirtualMemoryInstance(),
             AllocatePhysicalPageCont(size/PAGE_SIZE),
             user_stack_base,
@@ -240,7 +299,7 @@ void* AllocateMapping(size_t size) {
     return (void*)user_stack_base;
 }
 
-void FreeMapping(void* mem, size_t size) {
+void FreeMappingCont(void* mem, size_t size) {
 
     if(size % PAGE_SIZE != 0)return;
 

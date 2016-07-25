@@ -38,6 +38,10 @@ void* AllocateMapping(size_t size);
 
 void FreeMapping(void* mem, size_t size);
 
+void* AllocateMappingCont(size_t size);
+
+void FreeMappingCont(void* mem, size_t size);
+
 /**@}*/
 
 #endif /* end of include guard: _K_MALLOC_H_ */

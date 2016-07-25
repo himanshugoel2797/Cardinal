@@ -65,10 +65,12 @@ typedef struct ProcessInformation {
     List                        *PendingSignals;
     List                        *Children;
     List                        *FileDescriptors;
+    FileTreeEntry               *WorkingDirectory;
     struct ProcessInformation   *Parent;
 
     uint32_t                    reference_count;
     Spinlock                    lock;
 } ProcessInformation;
 
+                    
 #endif

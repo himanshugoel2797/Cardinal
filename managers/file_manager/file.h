@@ -5,6 +5,7 @@
 #include "synchronization.h"
 
 #define MAX_FILENAME_LENGTH 256
+#define MAX_PATH_LEN 4096
 
 typedef enum {
     FileTreeEntryType_File,
@@ -31,9 +32,28 @@ typedef enum {
     FileDescriptorAccessMode_Write
 } FileDescriptorAccessMode;
 
+typedef enum {
+    FileAccessPermission_Read = 1,
+    FileAccessPermission_Write = 2,
+    FileAccessPermission_Exec = 4
+} FileAccessPermission;
+
+typedef enum {
+    FilePermissionLevel_World = 0,
+    FilePermissionLevel_Group = 3,
+    FilePermissionLevel_Owner = 6
+} FilePermissionLevel;
+
+static inline uint32_t 
+UpdatePermissionMask(uint32_t mask, 
+                     FilePermissionLevel perm_level, 
+                     FileAccessPermission perms) {
+    return (mask & (0x7 << perm_level)) | (perms << perm_level);
+}
+
 typedef struct FileTreeEntry {
     char    				Name[MAX_FILENAME_LENGTH];
-    uint64_t 				AccessPermissions;
+    uint32_t 				AccessPermissions;
     FileTreeEntryFlags 		Flags;
     FileTreeEntryType 		Type;
     UID                     FileOwnerUID;
@@ -60,5 +80,18 @@ typedef struct {
 
 int
 CreateAnonPipe(FileDescriptorFlags flags, int fd[2]);
+
+void
+FileMan_Initialize(void);
+
+
+bool
+FileMan_CreateEntry(FileTreeEntryType type,
+                    FileTreeEntryFlags flags,
+                    UID identifier,
+                    UID fs_driver,
+                    UID owner_id,
+                    uint32_t access_perms,
+                    const char *path);
 
 #endif

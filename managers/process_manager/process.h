@@ -23,6 +23,9 @@ ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo);
 
+FileTreeEntry*
+GetCurrentProcessWorkingDirectory(void);
+
 ProcessErrors
 SetProcessPermissions(UID pid,
                       ProcessPermissions perms);

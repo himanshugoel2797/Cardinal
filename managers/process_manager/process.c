@@ -176,6 +176,13 @@ GetProcessReference(UID           pid,
     return ProcessErrors_UIDNotFound;
 }
 
+FileTreeEntry*
+GetCurrentProcessWorkingDirectory(void) {
+    ProcessInformation pinfo;
+    GetProcessInformation(GetCurrentProcessUID(), &pinfo);
+
+    return pinfo.WorkingDirectory;
+}
 
 ProcessErrors
 SetProcessPermissions(UID pid,

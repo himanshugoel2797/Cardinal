@@ -65,6 +65,20 @@ strlen(const char *str) {
     return size;
 }
 
+size_t
+strnlen_s(const char *str,
+          size_t strsz) {
+    
+    if(str == NULL)
+        return 0;
+
+    size_t size = 0;
+    for(; size < strsz; size++)
+        if(str[size] == 0)break;
+
+    return size;
+}
+
 int
 strncmp(const char* s1,
         const char* s2,

@@ -28,7 +28,7 @@ RegisterDriver_Syscall(uint64_t UNUSED(instruction_pointer),
         return ENOSYS;
 
     strcpy_s(pInfo->Name, MAX_PROCESS_NAME_LEN,(const char*)data->params[0], MAX_PROCESS_NAME_LEN);
-    if(!IsUTF8(pInfo->Name, MAX_PROCESS_NAME_LEN))
+    if(!IsUTF8((uint8_t*)pInfo->Name, MAX_PROCESS_NAME_LEN))
         strcpy(pInfo->Name, "Unknown Driver");
 
     int fds[2];

@@ -36,6 +36,10 @@ strrev(char *str);
 size_t
 strlen(const char *str);
 
+size_t
+strnlen_s(const char *str, 
+          size_t strsz);
+
 char*
 strcpy ( char * destination,
          const char * source );
