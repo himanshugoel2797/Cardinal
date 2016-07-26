@@ -30,7 +30,7 @@ ProcessSys_Initialize(void) {
     root->Children = List_Create(CreateSpinlock());
     root->Parent = NULL;
 
-    root->FileDescriptors = List_Create(CreateSpinlock());
+    root->Descriptors = List_Create(CreateSpinlock());
 
     root->reference_count = 0;
     root->lock = CreateSpinlock();
@@ -65,26 +65,22 @@ ForkProcess(ProcessInformation *src,
 
     ForkTable(src->PageTable, dst->PageTable);
 
-    dst->FileDescriptors = List_Create(CreateSpinlock());
+    dst->Descriptors = List_Create(CreateSpinlock());
 
-    for(uint64_t i = 0; i < List_Length(src->FileDescriptors); i++) {
-        FileDescriptor *desc = (FileDescriptor*)List_EntryAt(src->FileDescriptors, i);
+    for(uint64_t i = 0; i < List_Length(src->Descriptors); i++) {
+        Descriptor *desc = (Descriptor*)List_EntryAt(src->Descriptors, i);
 
 
-        FileDescriptor *dst_desc = kmalloc(sizeof(FileDescriptor));
+        Descriptor *dst_desc = kmalloc(sizeof(Descriptor));
 
-        if(desc->Flags & FileDescriptorFlags_CloseOnExec) {
-            dst_desc->AccessMode = 0;
-            dst_desc->FileData = NULL;
-            dst_desc->Flags = 0;
+        if(desc->Flags & DescriptorFlags_CloseOnExec) {
+            dst_desc->Flags = DescriptorFlags_Free;
         } else {
-            dst_desc->AccessMode = desc->AccessMode;
-            dst_desc->FileData = desc->FileData;
             dst_desc->Flags = desc->Flags;
-            AtomicIncrement32(&dst_desc->FileData->reference_count);
+            dst_desc->AdditionalData = desc->AdditionalData;
         }
 
-        List_AddEntry(dst->FileDescriptors, dst_desc);
+        List_AddEntry(dst->Descriptors, dst_desc);
     }
 
     dst->reference_count = 0;
@@ -176,7 +172,7 @@ GetProcessReference(UID           pid,
     return ProcessErrors_UIDNotFound;
 }
 
-FileTreeEntry*
+char*
 GetCurrentProcessWorkingDirectory(void) {
     ProcessInformation pinfo;
     GetProcessInformation(GetCurrentProcessUID(), &pinfo);

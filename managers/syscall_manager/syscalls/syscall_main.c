@@ -13,5 +13,4 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_RTSigAction, RTSigAction_Syscall);
     RegisterSyscall(Syscall_Clone, Clone_Syscall);
     RegisterSyscall(Syscall_Fork, Fork_Syscall);
-    RegisterSyscall(Syscall_RegisterDriver, RegisterDriver_Syscall);
 }

@@ -23,7 +23,7 @@ ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo);
 
-FileTreeEntry*
+char*
 GetCurrentProcessWorkingDirectory(void);
 
 ProcessErrors

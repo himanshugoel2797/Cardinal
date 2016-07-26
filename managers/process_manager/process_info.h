@@ -5,7 +5,6 @@
 #include "list.h"
 #include "memory.h"
 #include "synchronization.h"
-#include "file_manager/file.h"
 
 #include "libs/libc/include/signal.h"
 
@@ -42,6 +41,17 @@ typedef enum {
     ProcessErrors_UIDNotFound = (1 << 1)
 } ProcessErrors;
 
+typedef enum {
+    DescriptorFlags_Free = -1,
+    DescriptorFlags_None = 0,
+    DescriptorFlags_CloseOnExec = 1
+} DescriptorFlags;
+
+typedef struct Descriptor {
+    UID AdditionalData;
+    DescriptorFlags Flags;
+} Descriptor;
+
 typedef struct PendingSignalInfo {
     union {
         void (*sa_handler)(int);
@@ -64,8 +74,8 @@ typedef struct ProcessInformation {
     struct sigaction            *SignalHandlers;
     List                        *PendingSignals;
     List                        *Children;
-    List                        *FileDescriptors;
-    FileTreeEntry               *WorkingDirectory;
+    List                        *Descriptors;
+    char                        *WorkingDirectory;
     struct ProcessInformation   *Parent;
 
     uint32_t                    reference_count;
