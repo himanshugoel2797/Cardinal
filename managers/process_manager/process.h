@@ -48,6 +48,12 @@ void
 RaiseSignal(UID pid,
             int sig_no);
 
+bool
+PostMessage(Message *msg);
+
+bool
+GetMessage(Message *msg);
+
 void
 ProcessSys_Initialize(void);
 

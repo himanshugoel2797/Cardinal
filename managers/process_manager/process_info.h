@@ -9,7 +9,8 @@
 #include "libs/libc/include/signal.h"
 
 #define MAX_PROCESS_NAME_LEN (256)
-
+#define MESSAGE_SIZE 1024
+#define MAX_PENDING_MESSAGE_CNT 256
 
 typedef enum {
     ProcessStatus_Stopped,
@@ -52,6 +53,12 @@ typedef struct Descriptor {
     DescriptorFlags Flags;
 } Descriptor;
 
+typedef struct Message {
+    char Content[MESSAGE_SIZE];
+    UID SourcePID;
+    UID DestinationPID;
+} Message;
+
 typedef struct PendingSignalInfo {
     union {
         void (*sa_handler)(int);
@@ -75,6 +82,7 @@ typedef struct ProcessInformation {
     List                        *PendingSignals;
     List                        *Children;
     List                        *Descriptors;
+    List                        *PendingMessages;
     char                        *WorkingDirectory;
     struct ProcessInformation   *Parent;
 

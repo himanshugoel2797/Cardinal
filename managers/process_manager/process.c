@@ -273,3 +273,36 @@ RaiseSignal(UID pid,
     pid = 0;
     sig_no = 0;
 }
+
+
+bool
+PostMessage(Message *msg) {
+    ProcessInformation *pInfo;
+    GetProcessReference(msg->DestinationPID, &pInfo);
+
+    if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return FALSE;
+    
+    Message *m = kmalloc(sizeof(Message));
+    if(m == NULL)return FALSE;
+
+    memcpy(m, msg, sizeof(Message));
+    List_AddEntry(pInfo->PendingMessages, m);
+    return TRUE;
+}
+
+bool
+GetMessage(Message *msg) {
+    ProcessInformation *pInfo;
+    GetProcessReference(GetCurrentProcessUID(), &pInfo);
+
+    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
+
+    Message *tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
+    List_Remove(pInfo->PendingMessages, 0);
+
+    if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
+
+    kfree(tmp);
+
+    return TRUE;
+}

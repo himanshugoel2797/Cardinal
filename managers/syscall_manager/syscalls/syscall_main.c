@@ -13,4 +13,9 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_RTSigAction, RTSigAction_Syscall);
     RegisterSyscall(Syscall_Clone, Clone_Syscall);
     RegisterSyscall(Syscall_Fork, Fork_Syscall);
+
+    RegisterSyscall(Syscall_Open, Open_Syscall);
+    RegisterSyscall(Syscall_Close, Close_Syscall);
+    RegisterSyscall(Syscall_Write, Write_Syscall);
+    RegisterSyscall(Syscall_Read, Read_Syscall);
 }
