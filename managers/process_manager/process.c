@@ -10,7 +10,7 @@ static UID baseID = 0;
 static UID
 new_proc_uid(void) {
     register UID dummy = 1;
-    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"=r"(dummy) : [dummy]"r"(dummy), [bs]"r"(&baseID));
+    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"+r"(dummy) : [bs]"r"(&baseID));
     return (UID)(uint32_t)dummy;
 }
 
@@ -32,6 +32,7 @@ ProcessSys_Initialize(void) {
 
     root->Descriptors = List_Create(CreateSpinlock());
     root->PendingMessages = List_Create(CreateSpinlock());
+    root->MessageLock = CreateSpinlock();
 
     root->reference_count = 0;
     root->lock = CreateSpinlock();
@@ -61,6 +62,8 @@ ForkProcess(ProcessInformation *src,
 
     dst->PendingMessages = List_Create(CreateSpinlock());
     dst->PendingSignals = List_Create(CreateSpinlock());
+    dst->MessageLock = CreateSpinlock();
+
     dst->Children = List_Create(CreateSpinlock());
     List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
     dst->Parent = src;
@@ -287,8 +290,11 @@ PostMessage(Message *msg) {
     Message *m = kmalloc(sizeof(Message));
     if(m == NULL)return FALSE;
 
+    LockSpinlock(pInfo->MessageLock);
     memcpy(m, msg, sizeof(Message));
     List_AddEntry(pInfo->PendingMessages, m);
+    UnlockSpinlock(pInfo->MessageLock);
+
     return TRUE;
 }
 
@@ -299,12 +305,14 @@ GetMessage(Message *msg) {
 
     if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
 
+    LockSpinlock(pInfo->MessageLock);
     Message *tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
     List_Remove(pInfo->PendingMessages, 0);
 
     if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
 
     kfree(tmp);
+    UnlockSpinlock(pInfo->MessageLock);
 
     return TRUE;
 }
@@ -317,6 +325,7 @@ GetMessageFrom(Message *msg,
 
     if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
 
+    LockSpinlock(pInfo->MessageLock);
     Message *tmp = NULL;
 
     for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
@@ -327,9 +336,12 @@ GetMessageFrom(Message *msg,
             List_Remove(pInfo->PendingMessages, 0);
             if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
             kfree(tmp);
+
+            UnlockSpinlock(pInfo->MessageLock);
             return TRUE;
         }
     }
 
+    UnlockSpinlock(pInfo->MessageLock);
     return FALSE;
 }

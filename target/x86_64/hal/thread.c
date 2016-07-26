@@ -4,7 +4,20 @@
 #include "utils/native.h"
 #include "interrupts.h"
 #include "common.h"
+#include "syscall.h"
 #include "synchronization.h"
+
+
+const uint64_t ARCH_SPECIFIC_SPACE_SIZE = 32;
+const uint64_t ARCH_DATA_FS_OFFSET = 0;
+const uint64_t ARCH_DATA_GS_OFFSET = 1;
+const uint64_t ARCH_DATA_FLAGS_OFFSET = 2;
+
+uint64_t
+GetRFLAGS(void);
+
+void
+SetRFLAGS(uint64_t);
 
 void
 SavePreviousThread(ThreadInfo *src) {
@@ -39,7 +52,7 @@ SwitchToThread(ThreadInfo *dst) {
                      "popq %%rbx\n\t"
                      "popq %%rax\n\t"
                      "add $16, %%rsp\n\t"
-                     "iretq\n\t" :: "r"(target_stack)
+                     "iretq\n\t" :: "g"(target_stack)
                     );
 }
 
@@ -69,6 +82,7 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
     data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();
+    data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
 }
 
 void
@@ -77,6 +91,7 @@ SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs) {
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)regs->tls;
     data[ARCH_DATA_GS_OFFSET] = 0;
+    data[ARCH_DATA_FLAGS_OFFSET] = 1 << 9;
 }
 
 void
@@ -85,6 +100,7 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
     SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);
+    SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
 }
 
 void

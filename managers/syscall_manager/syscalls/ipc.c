@@ -17,7 +17,6 @@ GetIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
 	if(data->param_num != 1)
 		return EINVAL;
 
-	__asm__ ("cli\n\thlt" :: "a"(data->params[0]));
 	return GetMessage((Message*)data->params[0]);
 }
 

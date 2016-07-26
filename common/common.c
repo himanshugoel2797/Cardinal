@@ -170,7 +170,7 @@ UID
 new_uid(void) {
 #if defined(x86_64)
     register UID tmp = 1;
-    __asm__ volatile("lock xadd %[tmp], (%[bs])" : [tmp]"=r"(tmp) : [tmp]"r"(tmp), [bs]"r"(&uids_base));
+    __asm__ volatile("lock xadd %[tmp], (%[bs])" : [tmp]"+r"(tmp) : [bs]"r"(&uids_base));
     return tmp & 0xFFFFFFFF;
 #else
     return (++uids_base & 0xFFFFFFFF);

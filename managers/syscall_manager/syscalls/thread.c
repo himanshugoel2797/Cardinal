@@ -24,6 +24,9 @@ SetTidAddress_Syscall(uint64_t UNUSED(instruction_pointer),
     if(data->param_num != 1)
         return EINVAL;
 
+    while(1)
+        YieldThread();
+
     return set_tid_address((void*)data->params[0]);
 }
 

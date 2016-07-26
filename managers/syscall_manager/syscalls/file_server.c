@@ -42,10 +42,8 @@ Open_Syscall(uint64_t UNUSED(instruction_pointer),
 	}
 
 	while(!PostMessage(m));
-	YieldThread();
-
-	while(!GetMessageFrom(m, file_server_pid))
-		YieldThread();
+	do YieldThread();
+	while(!GetMessageFrom(m, file_server_pid));
 
 	uint64_t retVal = ((uint64_t*)m->Content)[0];
 	kfree(m);

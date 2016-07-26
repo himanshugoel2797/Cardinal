@@ -4,10 +4,7 @@
 #include "types.h"
 #include "managers.h"
 
-#define ARCH_SPECIFIC_SPACE_SIZE 16
-
-#define ARCH_DATA_FS_OFFSET 0
-#define ARCH_DATA_GS_OFFSET 1
+extern const uint64_t ARCH_SPECIFIC_SPACE_SIZE;
 
 void
 SwitchAndInitializeThread(ThreadInfo *thd);
