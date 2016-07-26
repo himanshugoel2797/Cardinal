@@ -13,6 +13,9 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_RTSigAction, RTSigAction_Syscall);
     RegisterSyscall(Syscall_Clone, Clone_Syscall);
     RegisterSyscall(Syscall_Fork, Fork_Syscall);
+    RegisterSyscall(Syscall_GetIPCMessage, GetIPCMessage_Syscall);
+    RegisterSyscall(Syscall_GetIPCMessageFrom, GetIPCMessageFrom_Syscall);
+    RegisterSyscall(Syscall_PostIPCMessage, PostIPCMessage_Syscall);
 
     RegisterSyscall(Syscall_Open, Open_Syscall);
     RegisterSyscall(Syscall_Close, Close_Syscall);

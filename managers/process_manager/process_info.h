@@ -7,9 +7,9 @@
 #include "synchronization.h"
 
 #include "libs/libc/include/signal.h"
+#include "libs/libCardinal/include/ipc.h"
 
 #define MAX_PROCESS_NAME_LEN (256)
-#define MESSAGE_SIZE 1024
 #define MAX_PENDING_MESSAGE_CNT 256
 
 typedef enum {
@@ -53,11 +53,6 @@ typedef struct Descriptor {
     DescriptorFlags Flags;
 } Descriptor;
 
-typedef struct Message {
-    char Content[MESSAGE_SIZE];
-    UID SourcePID;
-    UID DestinationPID;
-} Message;
 
 typedef struct PendingSignalInfo {
     union {

@@ -31,6 +31,7 @@ ProcessSys_Initialize(void) {
     root->Parent = NULL;
 
     root->Descriptors = List_Create(CreateSpinlock());
+    root->PendingMessages = List_Create(CreateSpinlock());
 
     root->reference_count = 0;
     root->lock = CreateSpinlock();
@@ -58,6 +59,7 @@ ForkProcess(ProcessInformation *src,
     dst->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
     memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
 
+    dst->PendingMessages = List_Create(CreateSpinlock());
     dst->PendingSignals = List_Create(CreateSpinlock());
     dst->Children = List_Create(CreateSpinlock());
     List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
@@ -305,4 +307,29 @@ GetMessage(Message *msg) {
     kfree(tmp);
 
     return TRUE;
+}
+
+bool
+GetMessageFrom(Message *msg,
+               UID SourcePID) {
+    ProcessInformation *pInfo;
+    GetProcessReference(GetCurrentProcessUID(), &pInfo);
+
+    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
+
+    Message *tmp = NULL;
+
+    for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
+        tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
+
+        if(tmp->SourcePID == SourcePID)
+        {
+            List_Remove(pInfo->PendingMessages, 0);
+            if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
+            kfree(tmp);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }

@@ -54,6 +54,10 @@ PostMessage(Message *msg);
 bool
 GetMessage(Message *msg);
 
+bool
+GetMessageFrom(Message *msg,
+               UID SourcePID);
+
 void
 ProcessSys_Initialize(void);
 

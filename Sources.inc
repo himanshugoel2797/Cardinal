@@ -14,6 +14,7 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/memory.o \
 		managers/syscall_manager/syscalls/signal.o \
 		managers/syscall_manager/syscalls/file_server.o \
+		managers/syscall_manager/syscalls/ipc.o \
 		sys/pipe.o \
 		drivers/usb/controller.o \
 		drivers/usb/uhci/uhci_controller.o \

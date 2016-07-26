@@ -1,4 +1,4 @@
-TARGET=test.elf
+TARGET=fileserver.elf
 SOURCES=main.o
 
 CC=musl-gcc -static 

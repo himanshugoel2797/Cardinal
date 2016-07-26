@@ -14,7 +14,8 @@ LoadAndStartApplication(void *elf_loc,
                         uint32_t argc,
                         const char **envp) {
     ElfInformation elf_info;
-    if(LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &elf_info) != ElfLoaderError_Success)__asm__("cli\n\thlt");
+    ElfLoaderError err = LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &elf_info);
+    if(err != ElfLoaderError_Success)__asm__("cli\n\thlt" :: "a"(err));
 
     uint32_t auxv_cnt = 0;
     AUXVector auxv[7];

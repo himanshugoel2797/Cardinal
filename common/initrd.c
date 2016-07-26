@@ -29,6 +29,7 @@ bool
 Initrd_GetFile(const char *file,
                void **loc,
                uint64_t *size) {
+
     CardinalBootInfo* bootInfo = GetBootInfo();
     if(bootInfo->initrd_start_addr == 0 | bootInfo->initrd_len == 0)return FALSE;
 
@@ -43,8 +44,15 @@ Initrd_GetFile(const char *file,
         if(strlen(file) == len && strncmp(file_entry->filename, file, len) == 0) {
             *loc = (void*)((uint64_t)file_entry + 512);
             *size = getsize(file_entry->size);
+            break;
         }
         file_entry = (TARHeader*)((uint64_t)file_entry + 512 + getsize(file_entry->size));
+        
+        if((uint64_t)file_entry % 512 != 0) {
+            uint64_t tmp_fe = (uint64_t)file_entry;
+            tmp_fe += 512 - (tmp_fe % 512);
+            file_entry = (TARHeader*)tmp_fe;
+        }
     }
 
     if(*loc == NULL)return FALSE;

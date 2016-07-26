@@ -9,6 +9,7 @@
 #include "synchronization.h"
 #include "timer.h"
 #include "thread.h"
+#include "file_server.h"
 
 Spinlock smp_lock;
 
@@ -42,12 +43,12 @@ kernel_main_init(void) {
 }
 
 void
-load_elf(void) {
+load_elf(const char *file) {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
-    Initrd_GetFile("test.elf", &elf_loc, &elf_size);
-    const char *argv[] = {"test.elf"};
+    if(!Initrd_GetFile(file, &elf_loc, &elf_size))__asm__ ("cli\n\thlt");
+    const char *argv[] = {file};
 
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
@@ -83,8 +84,14 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        if(!CreateThread(GetCurrentProcessUID(), ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+        SetFileserverPID(GetCurrentProcessUID());
+        load_elf("fileserver.elf");
         //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    }
+
+    cpid = ForkCurrentProcess();
+    if(cpid == 0) {
+        load_elf("test.elf");
     }
 
     FreeThread(GetCurrentThreadUID());
