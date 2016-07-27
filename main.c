@@ -81,7 +81,6 @@ kernel_main(void) {
     UnlockSpinlock(smp_lock);
     target_device_setup();
 
-
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
         SetFileserverPID(GetCurrentProcessUID());

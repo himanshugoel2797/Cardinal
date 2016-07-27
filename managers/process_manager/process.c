@@ -106,6 +106,10 @@ UID
 ForkCurrentProcess(void) {
 
     CRegisters regs;
+    regs.set_tid = NULL;
+    regs.clear_tid = NULL;
+    regs.p_tid = NULL;
+    regs.tls = NULL;
     regs.rip = (uint64_t)__builtin_return_address(0);
     regs.rbp = *(uint64_t*)__builtin_frame_address(0);
     regs.rsp = (uint64_t)__builtin_frame_address(0);

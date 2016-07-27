@@ -31,8 +31,10 @@ ShadowInterruptHandler(Registers *regs) {
         regs_saved = AllocateAPLSMemory(sizeof(Registers));
     }
 
-    if(int_stack == 0)
+    if(int_stack == 0){
         int_stack = (uint64_t)AllocateAPLSMemory(4096) + 4096;
+        int_stack -= int_stack % 16;
+    }
 
     memcpy((void*)regs_saved, regs, sizeof(Registers));
 

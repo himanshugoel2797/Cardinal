@@ -78,7 +78,10 @@ bootstrap_kernel(void *param,
 
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
-    SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
+
+    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
+    t_addr -= t_addr % 16;
+    SetInterruptStack((void*)t_addr);
     //Setup IST for important exceptions
     GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
     IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault

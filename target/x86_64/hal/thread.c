@@ -33,6 +33,7 @@ void
 SwitchToThread(ThreadInfo *dst) {
     LockSpinlock(dst->lock);
     uint64_t target_stack = dst->current_stack;
+    if(target_stack & 0xf)__asm__ volatile("cli\n\thlt");
     UnlockSpinlock(dst->lock);
 
     __asm__ volatile("movq %0, %%rsp\n\t"
@@ -52,7 +53,7 @@ SwitchToThread(ThreadInfo *dst) {
                      "popq %%rbx\n\t"
                      "popq %%rax\n\t"
                      "add $16, %%rsp\n\t"
-                     "iretq\n\t" :: "g"(target_stack)
+                     "iretq\n\t" :: "r"(target_stack)
                     );
 }
 
