@@ -296,6 +296,7 @@ PostMessage(Message *msg) {
 
     LockSpinlock(pInfo->MessageLock);
     memcpy(m, msg, sizeof(Message));
+    __asm__ volatile("cli\n\thlt" :: "a"(m), "b"(msg), "c"(sizeof(Message)));
     List_AddEntry(pInfo->PendingMessages, m);
     UnlockSpinlock(pInfo->MessageLock);
 

@@ -577,7 +577,7 @@ HandlePageFault(uint64_t virtualAddress,
     LockSpinlock(procInfo->lock);
     MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
     while(map != NULL) {
-        if(virtualAddress >= map->VirtualAddress && virtualAddress <= (map->VirtualAddress + map->Length)) {
+        if(virtualAddress >= map->VirtualAddress && virtualAddress < (map->VirtualAddress + map->Length)) {
             //Found an entry that describes this fault
             if((map->AllocationType & MemoryAllocationType_Fork) && (error & MemoryAllocationFlags_Write)) {
 
@@ -650,6 +650,11 @@ HandlePageFault(uint64_t virtualAddress,
 
         map = tmp_next;
     }
+
+    if(map == NULL) {
+        __asm__ ("cli\n\thlt" :: "a"(instruction_pointer));
+    }
+
     UnlockSpinlock(procInfo->lock);
 }
 

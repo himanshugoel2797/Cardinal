@@ -73,7 +73,7 @@ clean_initrd:
 build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
-	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
+	opt -std-link-opts -O1 tmp.bc -S -o tmp0.bc
 	llc tmp0.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
 	rm tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
