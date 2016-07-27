@@ -73,9 +73,9 @@ clean_initrd:
 build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
-	#opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
-	llc tmp.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
-	#rm tmp0.bc tmp.bc
+	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
+	llc tmp0.bc -mtriple=$(TARGET_TRIPLET) -code-model=kernel -o tmp.S
+	rm tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
 	$(TARGET_ARCH_LD) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
