@@ -83,14 +83,15 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        SetFileserverPID(GetCurrentProcessUID());
-        load_elf("fileserver.elf");
+        Message *msg = kmalloc(sizeof(Message));
+        while(!GetMessage(msg));
+        __asm__("cli\n\thlt");
         //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
-    }
-
-    cpid = ForkCurrentProcess();
-    if(cpid == 0) {
-        load_elf("test.elf");
+    }else{
+        Message *msg = kmalloc(sizeof(Message));
+        msg->SourcePID = 0;
+        msg->DestinationPID = cpid;
+        PostMessage(msg);
     }
 
     FreeThread(GetCurrentThreadUID());

@@ -17,7 +17,7 @@ new_proc_uid(void) {
 void
 ProcessSys_Initialize(void) {
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = baseID++;	//Root process ID is 0
+    root->ID = new_proc_uid();	//Root process ID is 0
     strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
@@ -296,7 +296,6 @@ PostMessage(Message *msg) {
 
     LockSpinlock(pInfo->MessageLock);
     memcpy(m, msg, sizeof(Message));
-    __asm__ volatile("cli\n\thlt" :: "a"(m), "b"(msg), "c"(sizeof(Message)));
     List_AddEntry(pInfo->PendingMessages, m);
     UnlockSpinlock(pInfo->MessageLock);
 

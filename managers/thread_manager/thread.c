@@ -707,10 +707,10 @@ TaskSwitch(uint32_t int_no,
 
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
-    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
     SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_aligned);
     SetKernelStack((void*)coreState->cur_thread->kernel_stack_aligned);
+    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);
 
     if(coreState->cur_thread->state == ThreadState_Initialize) {
