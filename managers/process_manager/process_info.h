@@ -75,6 +75,10 @@ typedef struct ProcessInformation {
     List                        *PendingSignals;
     List                        *Children;
     List                        *Descriptors;
+    List                        *PendingMessages;
+
+    Spinlock                    MessageLock;
+
     char                        *WorkingDirectory;
     struct ProcessInformation   *Parent;
 

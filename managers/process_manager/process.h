@@ -6,7 +6,10 @@
 #include "managers.h"
 #include "list.h"
 #include "process_info.h"
+#include "libs/libCardinal/include/ipc.h"
 
+
+#define MAX_PENDING_MESSAGE_CNT 256
 
 ProcessErrors
 ForkProcess(ProcessInformation *src,
@@ -47,6 +50,21 @@ GetProcessSigaction(UID pid,
 void
 RaiseSignal(UID pid,
             int sig_no);
+
+
+void
+RaiseSignal(UID pid,
+            int sig_no);
+
+bool
+PostMessage(Message *msg);
+
+bool
+GetMessage(Message *msg);
+
+bool
+GetMessageFrom(Message *msg,
+               UID SourcePID);
 
 void
 ProcessSys_Initialize(void);

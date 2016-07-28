@@ -154,6 +154,7 @@ smp_bootstrap(void) {
     //Allocate a new stack for this thread and put it into the scheduler's queue
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
     stack += KiB(16);
+    stack -= stack % 16;
 
     __asm__ volatile("mov %0, %%rsp":: "r"(stack)); //Switch to a new stack
 
