@@ -32,7 +32,7 @@ ShadowInterruptHandler(Registers *regs) {
     }
 
     if(int_stack == 0){
-        int_stack = (uint64_t)AllocateAPLSMemory(4096) + 4096;
+        int_stack = (uint64_t)AllocateAPLSMemory(KiB(16)) + KiB(16);
         int_stack -= int_stack % 16;
     }
 

@@ -9,7 +9,7 @@
 #endif
 #define PAGE_SIZE KiB(4)
 
-#define THREAD_LOCAL_STORAGE_SIZE KiB(8)
+#define THREAD_LOCAL_STORAGE_SIZE KiB(32)
 
 ///Memory Caching Modes
 typedef enum {

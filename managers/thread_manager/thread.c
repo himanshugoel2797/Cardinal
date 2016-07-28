@@ -137,7 +137,7 @@ Thread_Initialize(void) {
     sync_lock = CreateSpinlock();
 }
 
-#define STACK_SIZE KiB(16)
+#define STACK_SIZE KiB(32)
 
 uint64_t
 AllocateStack(UID parentProcess,
@@ -170,7 +170,7 @@ AllocateStack(UID parentProcess,
            );
 
     UnlockSpinlock(pInfo->lock);
-    return user_stack_base + STACK_SIZE - 128;
+    return user_stack_base + STACK_SIZE;
 }
 
 UID
@@ -227,8 +227,8 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
     SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
     SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
-    SET_PROPERTY_VAL(thd, interrupt_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
-    SET_PROPERTY_VAL(thd, kernel_stack_base, (uint64_t)kmalloc(STACK_SIZE) + STACK_SIZE);
+    SET_PROPERTY_VAL(thd, interrupt_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
+    SET_PROPERTY_VAL(thd, kernel_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
     SET_PROPERTY_VAL(thd, clear_child_tid, regs->clear_tid);
     SET_PROPERTY_VAL(thd, set_child_tid, regs->set_tid);
