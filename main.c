@@ -42,12 +42,12 @@ kernel_main_init(void) {
 }
 
 void
-load_elf(void) {
+load_elf(const char *exec) {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
-    Initrd_GetFile("test.elf", &elf_loc, &elf_size);
-    const char *argv[] = {"test.elf"};
+    Initrd_GetFile(exec, &elf_loc, &elf_size);
+    const char *argv[] = {exec};
 
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
@@ -64,7 +64,7 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
-    coreCount++;
+    AtomicIncrement32((uint32_t*)&coreCount);
     SyscallMan_Initialize();
     Syscall_Initialize();
 
@@ -83,17 +83,14 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        Message *msg = kmalloc(sizeof(Message));
-        while(!GetMessage(msg));
-        __asm__("cli\n\thlt");
-        //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
-    }else{
-        Message *msg = kmalloc(sizeof(Message));
-        msg->SourcePID = 0;
-        msg->DestinationPID = cpid;
-        PostMessage(msg);
-}
-
+        load_elf("test.elf");
+    }
+/*
+    cpid = ForkCurrentProcess();
+    if(cpid == 0) {
+        load_elf("test.elf");
+    }
+*/
     FreeThread(GetCurrentThreadUID());
     while(1);
 }
@@ -101,7 +98,7 @@ kernel_main(void) {
 
 void
 smp_main(void) {
-    coreCount++;
+    AtomicIncrement32((uint32_t*)&coreCount);
     UnlockSpinlock(smp_lock);
     while(coreCount != GetCoreCount());
     LockSpinlock(smp_lock);

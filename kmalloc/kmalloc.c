@@ -195,7 +195,7 @@ void kfree(void *addr) {
 
 #if defined(DEBUG)
     uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);
-    if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile("add $0x28, %%rsp\n\tpopq %%rbx\n\tcli\n\thlt" :: "a"(addr));
+    if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile("cli\n\thlt" :: "a"(addr), "b"(__builtin_return_address(0)));
 #endif
 
     kmalloc_info *a_info = allocation_info;

@@ -14,10 +14,6 @@ CPUID_RequestInfo(uint32_t eax,
 uint32_t
 CPUID_GetCacheLineSize(void) {
     if(cache_line_size == 0) {
-        CPUID_RequestInfo(0x80000006, 0);
-        cache_line_size = ecx & 0xFF;
-    }
-    if(cache_line_size == 0) {
         return 64;
     }
     return cache_line_size;

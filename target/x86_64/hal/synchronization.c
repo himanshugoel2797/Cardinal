@@ -44,21 +44,19 @@ LockSpinlock(Spinlock primitive) {
         "je 4f\n\t"
         "shlq $16, %[rcx]\n\t"
         "movw $1, %[cx]\n\t"
-        "lock xaddw %[cx], +2(%[prim])\n\t"
+        "lock xaddw %[cx], +24(%[prim])\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "je 3f\n\t"
         "1:\n\t"
-        "sti\n\t"
         "pause\n\t"
         "cmpw %[cx], (%[prim])\n\t"
         "jne 1b\n\t"
-        "cli\n\t"
         "3:\n\t"
         "btq $25, %[rcx]\n\t"
         "jnc 4f\n\t"
         "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        "lock incw +6(%[prim])\n\t"
+        "lock incw +16(%[prim])\n\t"
         "movq %[rdx], +8(%[prim])"
         :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory", "cc"
@@ -67,7 +65,11 @@ LockSpinlock(Spinlock primitive) {
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
 #else
     register uint64_t dummy1 = 0;
-    register uint64_t dummy2 = 0;
+    uint64_t dummy2 = 0;
+
+    dummy2 = APIC_GetID() + 1;
+    if(dummy2 == 0)
+        dummy2 = -1;
 
     __asm__ volatile
     (
@@ -79,19 +81,21 @@ LockSpinlock(Spinlock primitive) {
         "je 4f\n\t"
         "shlq $16, %[rcx]\n\t"
         //Replace with attempt to acquire lock here
-        "je 3f\n\t"
+        "lock bts $0, (%[prim])\n\t"
+        "jnc 3f\n\t"
         "1:\n\t"
-        "sti\n\t"
         "pause\n\t"
         //Replace with attempt to acquire lock here
-        "jne 1b\n\t"
-        "cli\n\t"
+        "testw $1, (%[prim])\n\t"
+        "jnz 1b\n\t"
+        "lock bts $0, (%[prim])\n\t"
+        "jc 1b\n\t"
         "3:\n\t"
         "btq $25, %[rcx]\n\t"
         "jnc 4f\n\t"
         "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        "lock incw +6(%[prim])\n\t"
+        "lock incw +16(%[prim])\n\t"
         "movq %[rdx], +8(%[prim])"
         :: [prim]"r"(primitive), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
         : "memory", "cc"
@@ -117,7 +121,8 @@ GetSpinlockContenderCount(Spinlock primitive) {
     cnt = ((cnt >> 16) & 0xFFFF) - (cnt & 0xFFFF);
     return cnt;
 #else
-
+    primitive = NULL;
+    return 0;
 #endif
 }
 
@@ -131,7 +136,7 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "lock decw +6(%[prim])\n\t"
+        "lock decw +16(%[prim])\n\t"
         "jnz 1f\n\t"
         "movq $0, +8(%[prim])\n\t"
         "xchgw %[dm0], +4(%[prim])\n\t"
@@ -150,11 +155,12 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "lock decw +6(%[prim])\n\t"
+        "lock decw +16(%[prim])\n\t"
         "jnz 1f\n\t"
         "movq $0, +8(%[prim])\n\t"
         "xchgw %[dm0], +4(%[prim])\n\t"
         //Replace with attempt to free lock here
+        "movw $0, (%[prim])\n\t"
         "btw $0, %[dm0]\n\t"
         "jnc 1f\n\t"
         "sti\n\t"
@@ -162,6 +168,7 @@ UnlockSpinlock(Spinlock primitive) {
         :: [prim]"r"(primitive), [dm0]"r"(dummy0) : "memory", "cc"
     );
 
+    return TRUE;
 #endif
 }
 

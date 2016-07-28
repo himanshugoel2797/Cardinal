@@ -5,7 +5,7 @@
 
 static List *processes;
 static ProcessInformation *root = NULL;
-static UID baseID = 0;
+static volatile UID baseID = 0;
 
 static UID
 new_proc_uid(void) {
@@ -17,7 +17,7 @@ new_proc_uid(void) {
 void
 ProcessSys_Initialize(void) {
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = baseID++;	//Root process ID is 0
+    root->ID = new_proc_uid();	//Root process ID is 0
     strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
@@ -166,6 +166,8 @@ GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        if(List_Length(processes) > 3)__asm__ ("cli\n\thlt");
 
         LockSpinlock(pInf->lock);
         UID pInfID = pInf->ID;

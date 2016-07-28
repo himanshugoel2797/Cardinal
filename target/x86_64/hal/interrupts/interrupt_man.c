@@ -32,7 +32,7 @@ ShadowInterruptHandler(Registers *regs) {
     }
 
     if(int_stack == 0){
-        int_stack = (uint64_t)AllocateAPLSMemory(4096) + 4096;
+        int_stack = (uint64_t)AllocateAPLSMemory(4096) + 4095;
         int_stack -= int_stack % 16;
     }
 
@@ -45,7 +45,7 @@ ShadowInterruptHandler(Registers *regs) {
                          "popq %%rax\n\t"
                          "xchgq %%rax, %%rsp\n\t"
                          :: "a"(int_stack), "b"(intHandlers[regs->int_no]),
-                         "D"(regs->int_no), "S"(regs->err_code) :);
+                         "D"(regs->int_no), "S"(regs->err_code));
     }
 
     memset((void*)regs_saved, 0, sizeof(Registers));
