@@ -83,8 +83,14 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        if(!CreateThread(GetCurrentProcessUID(), ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
+        load_elf();
+        //if(!CreateThread(GetCurrentProcessUID(), ThreadPermissionLevel_Kernel, (ThreadEntryPoint)load_elf, NULL))__asm__("cli\n\thlt");
         //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
+    }
+
+    cpid = ForkCurrentProcess();
+    if(cpid == 0) {
+        load_elf();
     }
 
     FreeThread(GetCurrentThreadUID());
