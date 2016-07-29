@@ -78,6 +78,7 @@ typedef struct ProcessInformation {
     List                        *Children;
     List                        *Descriptors;
     List                        *PendingMessages;
+
     Spinlock                    MessageLock;
 
     char                        *WorkingDirectory;

@@ -170,7 +170,7 @@ AllocateStack(UID parentProcess,
            );
 
     UnlockSpinlock(pInfo->lock);
-    return user_stack_base + STACK_SIZE;
+    return user_stack_base + STACK_SIZE - 16;
 }
 
 UID
@@ -213,6 +213,11 @@ CreateThread(UID parentProcess,
         regs.cs = 0x8;
     }
 
+    regs.set_tid = NULL;
+    regs.clear_tid = NULL;
+    regs.p_tid = NULL;
+    regs.tls = NULL;
+
     return CreateThreadADV(parentProcess, &regs);
 }
 
@@ -235,12 +240,12 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, set_parent_tid, regs->p_tid);
 
     //Setup kernel stack
-    uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base);
+    uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base) - 1;
     kstack -= kstack % 16;
     SET_PROPERTY_VAL(thd, kernel_stack_aligned, kstack);
 
     //Setup interrupt stack
-    uint64_t istack = GET_PROPERTY_VAL(thd, interrupt_stack_base);
+    uint64_t istack = GET_PROPERTY_VAL(thd, interrupt_stack_base) - 1;
     istack -= istack % 16;
     SET_PROPERTY_VAL(thd, interrupt_stack_aligned, istack);
 
@@ -261,6 +266,7 @@ CreateThreadADV(UID parentProcess,
     AtomicIncrement32(&thd->ParentProcess->reference_count);
 
     SetupArchSpecificData(thd, regs);
+
 
 
     uint64_t *cur_stack_frame = (uint64_t*)kstack;
@@ -602,7 +608,9 @@ GetNextThread(ThreadInfo *prevThread) {
     */
 
     if(prevThread != NULL) {
+        LockSpinlock(sync_lock);
         List_AddEntry(neutral, prevThread);
+        UnlockSpinlock(sync_lock);
     }
 
     ThreadInfo *next_thread = NULL;

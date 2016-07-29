@@ -6,7 +6,10 @@
 #include "managers.h"
 #include "list.h"
 #include "process_info.h"
+#include "libs/libCardinal/include/ipc.h"
 
+
+#define MAX_PENDING_MESSAGE_CNT 256
 
 ProcessErrors
 ForkProcess(ProcessInformation *src,

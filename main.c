@@ -11,22 +11,6 @@
 #include "thread.h"
 #include "file_server.h"
 
-Spinlock smp_lock;
-
-void
-sleep_kernel(void) {
-    __asm__("cli\n\thlt" :: "a"(0xDEADB33F));
-}
-
-void
-hlt_kernel(void) {
-    while(1);
-}
-
-void __attribute__((naked))
-hlt2_kernel(void) {
-    __asm__("cli\n\thlt" :: "a"(0xDEADB33F));
-}
 void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
@@ -43,18 +27,16 @@ kernel_main_init(void) {
 }
 
 void
-load_elf(const char *file) {
+load_elf(const char *exec) {
     void *elf_loc = NULL;
     uint64_t elf_size = 0;
 
-    if(!Initrd_GetFile(file, &elf_loc, &elf_size))__asm__ ("cli\n\thlt");
-    const char *argv[] = {file};
+    Initrd_GetFile(exec, &elf_loc, &elf_size);
+    const char *argv[] = {exec};
 
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
 }
-
-volatile int coreCount = 0;
 
 void
 kernel_main(void) {
@@ -65,48 +47,27 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
-    coreCount++;
     SyscallMan_Initialize();
     Syscall_Initialize();
 
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();
-    smp_lock = CreateSpinlock();
     smp_unlock_cores();
 
-    while(coreCount != GetCoreCount());
-    LockSpinlock(smp_lock);
     SetupPreemption();
-    UnlockSpinlock(smp_lock);
     target_device_setup();
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        Message *msg = kmalloc(sizeof(Message));
-        while(!GetMessage(msg));
-        __asm__("cli\n\thlt");
-        //CreateThread(elf_proc->ID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)hlt2_kernel, NULL);
-    }else{
-        Message *msg = kmalloc(sizeof(Message));
-        msg->SourcePID = 0;
-        msg->DestinationPID = cpid;
-        PostMessage(msg);
+        load_elf("test.elf");
     }
 
-    FreeThread(GetCurrentThreadUID());
-    while(1);
-}
+    cpid = ForkCurrentProcess();
+    if(cpid == 0) {
+        load_elf("test.elf");
+    }
 
-
-void
-smp_main(void) {
-    coreCount++;
-    UnlockSpinlock(smp_lock);
-    while(coreCount != GetCoreCount());
-    LockSpinlock(smp_lock);
-    SetupPreemption();
-    UnlockSpinlock(smp_lock);
     FreeThread(GetCurrentThreadUID());
     while(1);
 }
@@ -115,11 +76,11 @@ void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     getCoreData = NULL;
-    LockSpinlock(smp_lock);
+    coreID = 0;
+
+    //Expose additional cores as a service
     Syscall_Initialize();
-    RegisterCore(coreID, getCoreData);
-    CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)smp_main, NULL);
-    CoreUpdate();
+    __asm__ volatile("sti");
     while(1);
     //Start the local timer and set it to call the thread switch handler
 }

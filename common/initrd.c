@@ -48,10 +48,8 @@ Initrd_GetFile(const char *file,
         }
         file_entry = (TARHeader*)((uint64_t)file_entry + 512 + getsize(file_entry->size));
         
-        if((uint64_t)file_entry % 512 != 0) {
-            uint64_t tmp_fe = (uint64_t)file_entry;
-            tmp_fe += 512 - (tmp_fe % 512);
-            file_entry = (TARHeader*)tmp_fe;
+        if((uint64_t)file_entry % 512) {
+            file_entry = (TARHeader*)((uint64_t)file_entry + (512 - (uint64_t)file_entry % 512));
         }
     }
 

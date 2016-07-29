@@ -1,5 +1,6 @@
 #include "types.h"
 #include "smp.h"
+#include "synchronization.h"
 #include "apic/apic.h"
 
 static volatile int smp_coreCount = 0;
@@ -7,7 +8,7 @@ static volatile int smp_lock = 0;
 
 void
 SMP_IncrementCoreCount(void) {
-    smp_coreCount++;
+    AtomicIncrement32((uint32_t*)&smp_coreCount);
 }
 
 int

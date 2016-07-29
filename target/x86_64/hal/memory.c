@@ -410,7 +410,7 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
 }
 
 MemoryAllocationErrors
-ForkTable(ManagedPageTable *src,
+InternalForkTable(ManagedPageTable *src,
           ManagedPageTable *dst) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
@@ -509,6 +509,24 @@ ForkTable(ManagedPageTable *src,
     UnlockSpinlock(src->lock);
 
     return MemoryAllocationErrors_None;
+}
+
+static uint8_t tmp_stack[4096];
+
+MemoryAllocationErrors
+ForkTable(ManagedPageTable *src,
+          ManagedPageTable *dst) {
+    MemoryAllocationErrors err = 0;
+    __asm__ volatile
+    (
+        "xchg %%rax, %%rsp\n\t"
+        "push %%rax\n\t"
+        "call InternalForkTable\n\t"
+        "pop %%rcx\n\t"
+        "mov %%rcx, %%rsp\n\t"
+        :"=a"(err) :"a"(tmp_stack + 4096 - 16), "D"(src), "S"(dst) : "rcx"
+        );
+    return err;
 }
 
 uint64_t
@@ -652,9 +670,8 @@ HandlePageFault(uint64_t virtualAddress,
     }
 
     if(map == NULL) {
-        __asm__ ("cli\n\thlt" :: "a"(instruction_pointer));
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer));
     }
-
     UnlockSpinlock(procInfo->lock);
 }
 
@@ -728,7 +745,7 @@ PerformTLBShootdown(void) {
     APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 34, APIC_DELIVERY_MODE_FIXED);
 
     tlb_core_count = 1;
-    while(tlb_core_count != GetCoreCount());
+    while(tlb_core_count < GetCoreCount());
     tlb_core_count = 1;
     tlb_shootdown = FALSE;
 }
