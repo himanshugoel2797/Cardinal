@@ -209,6 +209,11 @@ CreateThread(UID parentProcess,
         regs.cs = 0x8;
     }
 
+    regs.set_tid = NULL;
+    regs.clear_tid = NULL;
+    regs.p_tid = NULL;
+    regs.tls = NULL;
+
     return CreateThreadADV(parentProcess, &regs);
 }
 

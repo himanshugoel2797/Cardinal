@@ -20,17 +20,12 @@ CreateBootstrapSpinlock(void) {
 }
 
 bool
-LockSpinlock(Spinlock primitive) {
+IntLockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
 #ifdef _TICKETED_SPINLOCK_
     register uint16_t dummy0 = 0;
     register uint64_t dummy1 = 0;
-    uint64_t dummy2 = 0;
-
-    dummy2 = APIC_GetID() + 1;
-    if(dummy2 == 0)
-        dummy2 = -1;
 
     //Test to see if the lock is set on the same core, if so, let it through
     //Else obtain a ticket and spin waiting for your turn
@@ -40,8 +35,6 @@ LockSpinlock(Spinlock primitive) {
         "pushfq\n\t"
         "cli\n\t"
         "popq %[rcx]\n\t"
-        "cmpq %[rdx], +8(%[prim])\n\t"
-        "je 4f\n\t"
         "shlq $16, %[rcx]\n\t"
         "movw $1, %[cx]\n\t"
         "lock xaddw %[cx], +24(%[prim])\n\t"
@@ -56,20 +49,13 @@ LockSpinlock(Spinlock primitive) {
         "jnc 4f\n\t"
         "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        "lock incw +16(%[prim])\n\t"
-        "movq %[rdx], +8(%[prim])"
-        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
+        :: [prim]"r"(primitive), [cx]"r"(dummy0), [rcx]"r"(dummy1)
         : "memory", "cc"
     );
 
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
 #else
     register uint64_t dummy1 = 0;
-    uint64_t dummy2 = 0;
-
-    dummy2 = APIC_GetID() + 1;
-    if(dummy2 == 0)
-        dummy2 = -1;
 
     __asm__ volatile
     (
@@ -77,8 +63,6 @@ LockSpinlock(Spinlock primitive) {
         "pushfq\n\t"
         "cli\n\t"
         "popq %[rcx]\n\t"
-        "cmpq %[rdx], +8(%[prim])\n\t"
-        "je 4f\n\t"
         "shlq $16, %[rcx]\n\t"
         //Replace with attempt to acquire lock here
         "lock bts $0, (%[prim])\n\t"
@@ -95,9 +79,7 @@ LockSpinlock(Spinlock primitive) {
         "jnc 4f\n\t"
         "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        "lock incw +16(%[prim])\n\t"
-        "movq %[rdx], +8(%[prim])"
-        :: [prim]"r"(primitive), [rcx]"r"(dummy1), [rdx]"r"(dummy2)
+        :: [prim]"r"(primitive), [rcx]"r"(dummy1)
         : "memory", "cc"
     );
 
@@ -127,7 +109,7 @@ GetSpinlockContenderCount(Spinlock primitive) {
 }
 
 bool
-UnlockSpinlock(Spinlock primitive) {
+IntUnlockSpinlock(Spinlock primitive) {
     if(primitive == NULL)return FALSE;
 
 #ifdef _TICKETED_SPINLOCK_
@@ -136,9 +118,6 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "lock decw +16(%[prim])\n\t"
-        "jnz 1f\n\t"
-        "movq $0, +8(%[prim])\n\t"
         "xchgw %[dm0], +4(%[prim])\n\t"
         "lock incw (%[prim])\n\t"
         "btw $0, %[dm0]\n\t"
@@ -155,9 +134,6 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "lock decw +16(%[prim])\n\t"
-        "jnz 1f\n\t"
-        "movq $0, +8(%[prim])\n\t"
         "xchgw %[dm0], +4(%[prim])\n\t"
         //Replace with attempt to free lock here
         "movw $0, (%[prim])\n\t"
@@ -171,6 +147,63 @@ UnlockSpinlock(Spinlock primitive) {
     return TRUE;
 #endif
 }
+
+bool
+TryLockSpinlock(Spinlock primitive) {
+    bool locked = FALSE;
+    uint64_t iflag = 0;
+    __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
+
+    IntLockSpinlock(primitive);
+    uint64_t *prim = (uint64_t*)primitive;
+    if(prim[4] == (APIC_GetID() + 1))
+    {
+        locked = TRUE;
+        prim[5]++;
+    }else if(prim[4] == 0 && prim[5] == 0) {
+        prim[5] = 1;
+        prim[4] = APIC_GetID() + 1;
+        locked = TRUE;
+        prim[6] = iflag;
+    }
+    IntUnlockSpinlock(primitive);
+
+    if(!locked)
+        __asm__ volatile("push %0\n\tpopfq" :: "r"(iflag) : "cc");
+
+    return locked;
+}
+
+bool LockSpinlock(Spinlock primitive) {
+    while(!TryLockSpinlock(primitive));
+    return TRUE;
+}
+
+bool
+UnlockSpinlock(Spinlock primitive) {
+    bool locked = FALSE;
+    uint64_t iflag = 0;
+    __asm__ volatile("pushfq\n\tpopq %0" : "=r"(iflag) :: "cc");
+
+    IntLockSpinlock(primitive);
+    uint64_t *prim = (uint64_t*)primitive;
+    if(prim[4] == (APIC_GetID() + 1))
+    {
+        locked = TRUE;
+        prim[5]--;
+        if(prim[5] == 0)
+        {
+            prim[4] = 0;
+            iflag = prim[6];
+        }
+    }
+    IntUnlockSpinlock(primitive);
+
+    __asm__ volatile("pushq %0\n\tpopfq" :: "r"(iflag) : "cc");
+
+    return locked;
+}
+
 
 void
 FreeSpinlock(Spinlock primitive) {

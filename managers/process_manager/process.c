@@ -57,7 +57,7 @@ ForkProcess(ProcessInformation *src,
     dst->Permissions = src->Permissions;
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
     dst->SyscallFlags = ProcessSyscallFlags_None;
-    dst->HeapBreak = 0;
+    dst->HeapBreak = src->HeapBreak;
     dst->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
     memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
 
@@ -113,23 +113,27 @@ ForkCurrentProcess(void) {
     regs.rsp = (uint64_t)__builtin_frame_address(0);
     regs.rsp += 16;
     regs.rax = 0;
-    __asm__ ("movq %%rbx, %%rax" : "=a"(regs.rbx));
-    __asm__ ("movq %%rcx, %%rax" : "=a"(regs.rcx));
-    __asm__ ("movq %%rdx, %%rax" : "=a"(regs.rdx));
-    __asm__ ("movq %%rsi, %%rax" : "=a"(regs.rsi));
-    __asm__ ("movq %%rdi, %%rax" : "=a"(regs.rdi));
-    __asm__ ("movq %%r8, %%rax" : "=a"(regs.r8));
-    __asm__ ("movq %%r9, %%rax" : "=a"(regs.r9));
-    __asm__ ("movq %%r10, %%rax" : "=a"(regs.r10));
-    __asm__ ("movq %%r11, %%rax" : "=a"(regs.r11));
-    __asm__ ("movq %%r12, %%rax" : "=a"(regs.r12));
-    __asm__ ("movq %%r13, %%rax" : "=a"(regs.r13));
-    __asm__ ("movq %%r14, %%rax" : "=a"(regs.r14));
-    __asm__ ("movq %%r15, %%rax" : "=a"(regs.r15));
-    __asm__ ("pushf\n\tpopq %%rax" : "=a"(regs.rflags));
-    __asm__ ("movw %%ss, %%ax" : "=a"(regs.ss));
-    __asm__ ("movw %%cs, %%ax" : "=a"(regs.cs));
+    __asm__ volatile("movq %%rbx, %%rax" : "=a"(regs.rbx));
+    __asm__ volatile("movq %%rcx, %%rax" : "=a"(regs.rcx));
+    __asm__ volatile("movq %%rdx, %%rax" : "=a"(regs.rdx));
+    __asm__ volatile("movq %%rsi, %%rax" : "=a"(regs.rsi));
+    __asm__ volatile("movq %%rdi, %%rax" : "=a"(regs.rdi));
+    __asm__ volatile("movq %%r8, %%rax" : "=a"(regs.r8));
+    __asm__ volatile("movq %%r9, %%rax" : "=a"(regs.r9));
+    __asm__ volatile("movq %%r10, %%rax" : "=a"(regs.r10));
+    __asm__ volatile("movq %%r11, %%rax" : "=a"(regs.r11));
+    __asm__ volatile("movq %%r12, %%rax" : "=a"(regs.r12));
+    __asm__ volatile("movq %%r13, %%rax" : "=a"(regs.r13));
+    __asm__ volatile("movq %%r14, %%rax" : "=a"(regs.r14));
+    __asm__ volatile("movq %%r15, %%rax" : "=a"(regs.r15));
+    __asm__ volatile("pushf\n\tpopq %%rax" : "=a"(regs.rflags));
+    __asm__ volatile("movw %%ss, %%ax" : "=a"(regs.ss));
+    __asm__ volatile("movw %%cs, %%ax" : "=a"(regs.cs));
 
+    regs.set_tid = NULL;
+    regs.clear_tid = NULL;
+    regs.p_tid = NULL;
+    regs.tls = NULL;
 
     ProcessInformation *dst_proc = NULL;
     ProcessInformation *src_proc = NULL;
@@ -143,7 +147,7 @@ ForkCurrentProcess(void) {
 
 ProcessErrors
 GetProcessInformation(UID           pid,
-                      ProcessInformation	*procInfo) {
+                      ProcessInformation    *procInfo) {
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 

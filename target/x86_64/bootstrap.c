@@ -184,6 +184,13 @@ smp_bootstrap(void) {
 
     MemoryHAL_Initialize();
     while(smp_sync_base);
+
+    ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
+    pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
+    pageTable->reference_count = 0;
+    pageTable->lock = CreateBootstrapSpinlock();
+    SetActiveVirtualMemoryInstance(pageTable);
+    
     smp_core_main(coreID, get_perf_counter);
     while(1);
 }

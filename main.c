@@ -10,22 +10,6 @@
 #include "timer.h"
 #include "thread.h"
 
-Spinlock smp_lock;
-
-void
-sleep_kernel(void) {
-    __asm__("cli\n\thlt" :: "a"(0xDEADB33F));
-}
-
-void
-hlt_kernel(void) {
-    while(1);
-}
-
-void __attribute__((naked))
-hlt2_kernel(void) {
-    __asm__("cli\n\thlt" :: "a"(0xDEADB33F));
-}
 void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
@@ -53,8 +37,6 @@ load_elf(const char *exec) {
     while(1);
 }
 
-volatile int coreCount = 0;
-
 void
 kernel_main(void) {
 
@@ -64,20 +46,15 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
-    AtomicIncrement32((uint32_t*)&coreCount);
     SyscallMan_Initialize();
     Syscall_Initialize();
 
     SetupSecurityMonitor();
 
     DeviceManager_Initialize();
-    smp_lock = CreateSpinlock();
     smp_unlock_cores();
 
-    while(coreCount != GetCoreCount());
-    LockSpinlock(smp_lock);
     SetupPreemption();
-    UnlockSpinlock(smp_lock);
     target_device_setup();
 
 
@@ -85,25 +62,12 @@ kernel_main(void) {
     if(cpid == 0) {
         load_elf("test.elf");
     }
-/*
+
     cpid = ForkCurrentProcess();
     if(cpid == 0) {
         load_elf("test.elf");
     }
-*/
-    FreeThread(GetCurrentThreadUID());
-    while(1);
-}
 
-
-void
-smp_main(void) {
-    AtomicIncrement32((uint32_t*)&coreCount);
-    UnlockSpinlock(smp_lock);
-    while(coreCount != GetCoreCount());
-    LockSpinlock(smp_lock);
-    SetupPreemption();
-    UnlockSpinlock(smp_lock);
     FreeThread(GetCurrentThreadUID());
     while(1);
 }
@@ -112,11 +76,11 @@ void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     getCoreData = NULL;
-    LockSpinlock(smp_lock);
+    coreID = 0;
+
+    //Expose additional cores as a service
     Syscall_Initialize();
-    RegisterCore(coreID, getCoreData);
-    CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)smp_main, NULL);
-    CoreUpdate();
+    __asm__ volatile("sti");
     while(1);
     //Start the local timer and set it to call the thread switch handler
 }
