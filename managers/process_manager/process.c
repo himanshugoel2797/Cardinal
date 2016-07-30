@@ -300,7 +300,7 @@ PostMessage(Message *msg) {
     GetProcessReference(msg->DestinationPID, &pInfo);
 
     if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return FALSE;
-    
+
     Message *m = kmalloc(sizeof(Message));
     if(m == NULL)return FALSE;
 
@@ -346,8 +346,7 @@ GetMessageFrom(Message *msg,
     for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
         tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
 
-        if(tmp->SourcePID == SourcePID)
-        {
+        if(tmp->SourcePID == SourcePID) {
             List_Remove(pInfo->PendingMessages, 0);
             if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
             kfree(tmp);
@@ -362,7 +361,7 @@ GetMessageFrom(Message *msg,
 }
 
 ProcessErrors
-GetDescriptor(UID pid, 
+GetDescriptor(UID pid,
               int d_num,
               Descriptors *desc) {
 
@@ -392,7 +391,7 @@ GetDescriptor(UID pid,
         }
     }
     return ProcessErrors_UIDNotFound;
-} 
+}
 
 ProcessErrors
 CreateDescriptor(UID pid,
@@ -421,7 +420,7 @@ CreateDescriptor(UID pid,
                     break;
                 }
             }
-            if(!desc_found){
+            if(!desc_found) {
                 Descriptor *d = kmalloc(sizeof(Descriptor));
                 memcpy(d, desc, sizeof(Descriptor));
                 *d_num = (int)List_Length(pInf->Descriptors);
@@ -431,13 +430,13 @@ CreateDescriptor(UID pid,
             return ProcessErrors_None;
         }
     }
-    return ProcessErrors_UIDNotFound;    
+    return ProcessErrors_UIDNotFound;
 }
 
 ProcessErrors
 CloseDescriptor(UID pid,
                 int d_num) {
-    
+
     if(d_num < 0)return ProcessErrors_Unknown;
 
     for(uint64_t i = 0; i < List_Length(processes); i++) {
@@ -466,6 +465,6 @@ CloseDescriptor(UID pid,
 
         }
     }
-    return ProcessErrors_UIDNotFound;    
+    return ProcessErrors_UIDNotFound;
 
 }

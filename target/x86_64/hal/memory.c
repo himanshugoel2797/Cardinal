@@ -411,7 +411,7 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
 
 MemoryAllocationErrors
 InternalForkTable(ManagedPageTable *src,
-          ManagedPageTable *dst) {
+                  ManagedPageTable *dst) {
     if(dst == NULL)return MemoryAllocationErrors_Unknown;
 
     dst->reference_count = 0;
@@ -525,7 +525,7 @@ ForkTable(ManagedPageTable *src,
         "pop %%rcx\n\t"
         "mov %%rcx, %%rsp\n\t"
         :"=a"(err) :"a"(tmp_stack + 4096 - 16), "D"(src), "S"(dst) : "rcx"
-        );
+    );
     return err;
 }
 
@@ -773,18 +773,18 @@ SetupTemporaryWriteMap(ManagedPageTable *pageTable,
         MemoryAllocationType_Heap,
         MemoryAllocationFlags_Write);
 
-    for(uint64_t i = 0; i < size; i += PAGE_SIZE){
-        
+    for(uint64_t i = 0; i < size; i += PAGE_SIZE) {
+
         uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
         uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
-    MapPage(GetActiveVirtualMemoryInstance(),
-            tmp_loc_phys,
-            tmp_loc_virt + i,
-            PAGE_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write);
+        MapPage(GetActiveVirtualMemoryInstance(),
+                tmp_loc_phys,
+                tmp_loc_virt + i,
+                PAGE_SIZE,
+                CachingModeWriteBack,
+                MemoryAllocationType_Heap,
+                MemoryAllocationFlags_Write);
     }
 
     UnlockSpinlock(vmem_lock);
@@ -800,8 +800,8 @@ UninstallTemporaryWriteMap(uint64_t loc,
 
     loc -= loc % PAGE_SIZE;
     UnmapPage(GetActiveVirtualMemoryInstance(),
-                loc,
-                size);
+              loc,
+              size);
 
     UnlockSpinlock(vmem_lock);
 }

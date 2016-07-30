@@ -47,7 +47,7 @@ Initrd_GetFile(const char *file,
             break;
         }
         file_entry = (TARHeader*)((uint64_t)file_entry + 512 + getsize(file_entry->size));
-        
+
         if((uint64_t)file_entry % 512) {
             file_entry = (TARHeader*)((uint64_t)file_entry + (512 - (uint64_t)file_entry % 512));
         }

@@ -68,7 +68,7 @@ bool
 ProcessSys_IsInitialized(void);
 
 ProcessErrors
-GetDescriptor(UID pid, 
+GetDescriptor(UID pid,
               int d_num,
               Descriptors *desc);
 

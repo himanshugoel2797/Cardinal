@@ -68,7 +68,7 @@ strlen(const char *str) {
 size_t
 strnlen_s(const char *str,
           size_t strsz) {
-    
+
     if(str == NULL)
         return 0;
 

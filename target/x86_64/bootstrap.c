@@ -193,7 +193,7 @@ smp_bootstrap(void) {
     pageTable->reference_count = 0;
     pageTable->lock = CreateBootstrapSpinlock();
     SetActiveVirtualMemoryInstance(pageTable);
-    
+
     smp_core_main(coreID, get_perf_counter);
     while(1);
 }

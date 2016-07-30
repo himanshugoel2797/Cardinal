@@ -37,7 +37,7 @@ size_t
 strlen(const char *str);
 
 size_t
-strnlen_s(const char *str, 
+strnlen_s(const char *str,
           size_t strsz);
 
 char*

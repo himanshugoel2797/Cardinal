@@ -90,5 +90,5 @@ typedef struct ProcessInformation {
     Spinlock                    lock;
 } ProcessInformation;
 
-                    
+
 #endif

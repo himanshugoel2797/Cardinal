@@ -139,11 +139,10 @@ TryLockSpinlock(Spinlock primitive) {
 
     IntLockSpinlock(primitive);
     uint64_t *prim = (uint64_t*)primitive;
-    if(prim[4] == (APIC_GetID() + 1))
-    {
+    if(prim[4] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[5]++;
-    }else if(prim[4] == 0 && prim[5] == 0) {
+    } else if(prim[4] == 0 && prim[5] == 0) {
         prim[5] = 1;
         prim[4] = APIC_GetID() + 1;
         locked = TRUE;
@@ -170,12 +169,10 @@ UnlockSpinlock(Spinlock primitive) {
 
     IntLockSpinlock(primitive);
     uint64_t *prim = (uint64_t*)primitive;
-    if(prim[4] == (APIC_GetID() + 1))
-    {
+    if(prim[4] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[5]--;
-        if(prim[5] == 0)
-        {
+        if(prim[5] == 0) {
             prim[4] = 0;
             iflag = prim[6];
         }

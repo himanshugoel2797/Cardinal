@@ -162,7 +162,7 @@ typedef enum {
     Syscall_SetTidAddress = 218,
     Syscall_GetIPCMessage = 400,
     Syscall_GetIPCMessageFrom = 401,
-    Syscall_PostIPCMessage = 402, 
+    Syscall_PostIPCMessage = 402,
     Syscall_NumEnd = Syscall_PostIPCMessage,
 } SyscallFunctions;
 
