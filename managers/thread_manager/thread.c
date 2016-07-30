@@ -269,7 +269,7 @@ CreateThreadADV(UID parentProcess,
 
 
 
-    uint64_t *cur_stack_frame = (uint64_t*)kstack;
+    uint64_t *cur_stack_frame = (uint64_t*)SetupTemporaryWriteMap(pInfo->PageTable, kstack, PAGE_SIZE);
     int offset = 0;
     cur_stack_frame[--offset] = regs->ss;
     cur_stack_frame[--offset] = regs->rsp;
@@ -293,6 +293,8 @@ CreateThreadADV(UID parentProcess,
     cur_stack_frame[--offset] = regs->r13;
     cur_stack_frame[--offset] = regs->r14;
     cur_stack_frame[--offset] = regs->r15;
+
+    UninstallTemporaryWriteMap((uint64_t)cur_stack_frame, PAGE_SIZE);
     //push ss
     //push rsp
     //push rflags

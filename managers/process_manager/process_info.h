@@ -39,17 +39,19 @@ typedef enum {
 typedef enum {
     ProcessErrors_None = 0,
     ProcessErrors_Unknown = (1 << 0),
-    ProcessErrors_UIDNotFound = (1 << 1)
+    ProcessErrors_UIDNotFound = (1 << 1),
+    ProcessErrors_DescriptorNotFound = (1 << 2)
 } ProcessErrors;
 
 typedef enum {
-    DescriptorFlags_Free = -1,
     DescriptorFlags_None = 0,
-    DescriptorFlags_CloseOnExec = 1
+    DescriptorFlags_Free = (1 << 0),
+    DescriptorFlags_CloseOnExec = (1 << 1)
 } DescriptorFlags;
 
 typedef struct Descriptor {
     UID AdditionalData;
+    UID TargetPID;
     DescriptorFlags Flags;
 } Descriptor;
 

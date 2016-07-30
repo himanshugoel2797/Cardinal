@@ -160,6 +160,17 @@ HandlePageFault(uint64_t virtualAddress,
 void
 PerformTLBShootdown(void);
 
+
+uint64_t
+SetupTemporaryWriteMap(ManagedPageTable *pageTable,
+                       uint64_t addr,
+                       size_t size);
+
+void
+UninstallTemporaryWriteMap(uint64_t loc,
+                           size_t size);
+
+
 void
 CheckAddressPermissions(ManagedPageTable *pageTable,
                         uint64_t addr,

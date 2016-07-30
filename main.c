@@ -60,7 +60,8 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        load_elf("test.elf");
+        SetFileserverPID(GetCurrentProcessUID());
+        load_elf("fileserver.elf");
     }
 
     cpid = ForkCurrentProcess();

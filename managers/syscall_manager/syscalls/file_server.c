@@ -44,6 +44,7 @@ Open_Syscall(uint64_t UNUSED(instruction_pointer),
 	while(!PostMessage(m));
 	do YieldThread();
 	while(!GetMessageFrom(m, file_server_pid));
+	__asm__ volatile("cli\n\thlt");
 
 	uint64_t retVal = ((uint64_t*)m->Content)[0];
 	kfree(m);

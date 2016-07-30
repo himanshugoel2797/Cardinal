@@ -67,4 +67,18 @@ ProcessSys_Initialize(void);
 bool
 ProcessSys_IsInitialized(void);
 
+ProcessErrors
+GetDescriptor(UID pid, 
+              int d_num,
+              Descriptors *desc);
+
+ProcessErrors
+CreateDescriptor(UID pid,
+                 Descriptors *desc,
+                 int *d_num);
+
+ProcessErrors
+CloseDescriptor(UID pid,
+                int d_num);
+
 #endif

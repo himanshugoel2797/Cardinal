@@ -328,6 +328,7 @@ GetMessage(Message *msg) {
     kfree(tmp);
     UnlockSpinlock(pInfo->MessageLock);
 
+    __asm__("cli\n\thlt");
     return TRUE;
 }
 
@@ -358,4 +359,113 @@ GetMessageFrom(Message *msg,
 
     UnlockSpinlock(pInfo->MessageLock);
     return FALSE;
+}
+
+ProcessErrors
+GetDescriptor(UID pid, 
+              int d_num,
+              Descriptors *desc) {
+
+    if(d_num < 0)return ProcessErrors_Unknown;
+
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+
+            LockSpinlock(pInf->lock);
+            if(List_Length(pInf->Descriptors) > (uint64_t)d_num) {
+
+                if(desc != NULL)
+                    memcpy(desc, List_EntryAt(pInf->Descriptors, d_num), sizeof(Descriptor));
+
+                UnlockSpinlock(pInf->lock);
+                return ProcessErrors_None;
+            }
+
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_DescriptorNotFound;
+        }
+    }
+    return ProcessErrors_UIDNotFound;
+} 
+
+ProcessErrors
+CreateDescriptor(UID pid,
+                 Descriptors *desc,
+                 int *d_num) {
+    if(desc == NULL)return ProcessErrors_Unknown;
+    if(d_num == NULL)return ProcessErrors_Unknown;
+
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+
+            LockSpinlock(pInf->lock);
+            bool desc_found = FALSE;
+            for(uint64_t j = 0; j < List_Length(pInf->Descriptors); j++) {
+                Descriptor *d = (Descriptor*)List_EntryAt(pInf->Descriptors, j);
+                if(d->Flags == DescriptorFlags_Free) {
+                    memcpy(d, desc, sizeof(Descriptor));
+                    *d_num = (int)j;
+                    desc_found = TRUE;
+                    break;
+                }
+            }
+            if(!desc_found){
+                Descriptor *d = kmalloc(sizeof(Descriptor));
+                memcpy(d, desc, sizeof(Descriptor));
+                *d_num = (int)List_Length(pInf->Descriptors);
+                List_AddEntry(pInf->Descriptors, d);
+            }
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_None;
+        }
+    }
+    return ProcessErrors_UIDNotFound;    
+}
+
+ProcessErrors
+CloseDescriptor(UID pid,
+                int d_num) {
+    
+    if(d_num < 0)return ProcessErrors_Unknown;
+
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessInformation *pInf = List_EntryAt(processes, i);
+
+        LockSpinlock(pInf->lock);
+        UID pInfID = pInf->ID;
+        UnlockSpinlock(pInf->lock);
+
+        if(pInfID == pid) {
+
+            LockSpinlock(pInf->lock);
+            if(List_Length(pInf->Descriptors) > (uint64_t)d_num) {
+
+                Descriptor *d = (Descriptor*)List_EntryAt(pInf->Descriptors, d_num);
+                d->Flags = DescriptorFlags_Free;
+                d->AdditionalData = 0;
+                d->TargetPID = 0;
+
+                UnlockSpinlock(pInf->lock);
+                return ProcessErrors_None;
+            }
+
+            UnlockSpinlock(pInf->lock);
+            return ProcessErrors_DescriptorNotFound;
+
+        }
+    }
+    return ProcessErrors_UIDNotFound;    
+
 }

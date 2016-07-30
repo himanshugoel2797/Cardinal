@@ -55,15 +55,11 @@ IntLockSpinlock(Spinlock primitive) {
 
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
 #else
-    register uint64_t dummy1 = 0;
+    register uint64_t dummy1 = (uint64_t)__builtin_return_address(2);
 
     __asm__ volatile
     (
         "mfence\n\t"
-        "pushfq\n\t"
-        "cli\n\t"
-        "popq %[rcx]\n\t"
-        "shlq $16, %[rcx]\n\t"
         //Replace with attempt to acquire lock here
         "lock bts $0, (%[prim])\n\t"
         "jnc 3f\n\t"
@@ -75,11 +71,8 @@ IntLockSpinlock(Spinlock primitive) {
         "lock bts $0, (%[prim])\n\t"
         "jc 1b\n\t"
         "3:\n\t"
-        "btq $25, %[rcx]\n\t"
-        "jnc 4f\n\t"
-        "movw $1, +4(%[prim])\n\t"
         "4:\n\t"
-        :: [prim]"r"(primitive), [rcx]"r"(dummy1)
+        :: [prim]"r"(primitive), [rcx]"a"(dummy1)
         : "memory", "cc"
     );
 
@@ -118,12 +111,7 @@ IntUnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "xchgw %[dm0], +4(%[prim])\n\t"
         "lock incw (%[prim])\n\t"
-        "btw $0, %[dm0]\n\t"
-        "jnc 1f\n\t"
-        "sti\n\t"
-        "1:\n\t"
         :: [prim]"r"(primitive), [dm0]"r"(dummy0) : "memory", "cc"
     );
     return TRUE;
@@ -134,13 +122,8 @@ IntUnlockSpinlock(Spinlock primitive) {
     __asm__ volatile
     (
         "mfence\n\t"
-        "xchgw %[dm0], +4(%[prim])\n\t"
         //Replace with attempt to free lock here
         "movw $0, (%[prim])\n\t"
-        "btw $0, %[dm0]\n\t"
-        "jnc 1f\n\t"
-        "sti\n\t"
-        "1:\n\t"
         :: [prim]"r"(primitive), [dm0]"r"(dummy0) : "memory", "cc"
     );
 

@@ -750,6 +750,63 @@ PerformTLBShootdown(void) {
     tlb_shootdown = FALSE;
 }
 
+uint64_t
+SetupTemporaryWriteMap(ManagedPageTable *pageTable,
+                       uint64_t addr,
+                       size_t size) {
+    //align the physical address to a page boundary and map it to the current page table
+    if(size == 0)return 0;
+
+    LockSpinlock(vmem_lock);
+
+    if(size % PAGE_SIZE)size += PAGE_SIZE - size % PAGE_SIZE;
+
+    addr -= addr % PAGE_SIZE;
+
+    uint64_t tmp_loc_virt = 0;
+
+    //First allocate the same amount of memory in another location
+    FindFreeVirtualAddress(
+        GetActiveVirtualMemoryInstance(),
+        &tmp_loc_virt,
+        size,
+        MemoryAllocationType_Heap,
+        MemoryAllocationFlags_Write);
+
+    for(uint64_t i = 0; i < size; i += PAGE_SIZE){
+        
+        uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
+        uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
+
+    MapPage(GetActiveVirtualMemoryInstance(),
+            tmp_loc_phys,
+            tmp_loc_virt + i,
+            PAGE_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Write);
+    }
+
+    UnlockSpinlock(vmem_lock);
+    return tmp_loc_virt;
+}
+
+void
+UninstallTemporaryWriteMap(uint64_t loc,
+                           size_t size) {
+    LockSpinlock(vmem_lock);
+
+    if(size % PAGE_SIZE)size += PAGE_SIZE - size % PAGE_SIZE;
+
+    loc -= loc % PAGE_SIZE;
+    UnmapPage(GetActiveVirtualMemoryInstance(),
+                loc,
+                size);
+
+    UnlockSpinlock(vmem_lock);
+}
+
+
 void
 WriteValueAtAddress64(ManagedPageTable *pageTable,
                       uint64_t *addr,

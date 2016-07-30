@@ -134,6 +134,7 @@ void *kmalloc(size_t size) {
         }
     }
 
+
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
         if(IS_FREE(a_info) && a_info->size >= size) {
@@ -142,6 +143,7 @@ void *kmalloc(size_t size) {
         a_info = a_info->next;
     }
 
+    ASSERT(a_info != NULL);
 
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
