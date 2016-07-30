@@ -363,7 +363,7 @@ GetMessageFrom(Message *msg,
 ProcessErrors
 GetDescriptor(UID pid,
               int d_num,
-              Descriptors *desc) {
+              Descriptor *desc) {
 
     if(d_num < 0)return ProcessErrors_Unknown;
 
@@ -395,7 +395,7 @@ GetDescriptor(UID pid,
 
 ProcessErrors
 CreateDescriptor(UID pid,
-                 Descriptors *desc,
+                 Descriptor *desc,
                  int *d_num) {
     if(desc == NULL)return ProcessErrors_Unknown;
     if(d_num == NULL)return ProcessErrors_Unknown;

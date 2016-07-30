@@ -70,11 +70,11 @@ ProcessSys_IsInitialized(void);
 ProcessErrors
 GetDescriptor(UID pid,
               int d_num,
-              Descriptors *desc);
+              Descriptor *desc);
 
 ProcessErrors
 CreateDescriptor(UID pid,
-                 Descriptors *desc,
+                 Descriptor *desc,
                  int *d_num);
 
 ProcessErrors

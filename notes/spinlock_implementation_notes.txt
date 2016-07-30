@@ -1,6 +1,0 @@
-===Spinlock Implementation===
-
-+2([prim]) is the current 16bit ticket number
-([prim]) is the locked 16bit ticket number
-+4([prim]) is the current interrupt status
-+8([prim]) is the current nested lock number
