@@ -47,8 +47,6 @@ typedef struct ThreadInfo {
 
     ProcessInformation  *ParentProcess;
 
-    sigset_t            SignalMask;
-
     ThreadState         state;
     ThreadWakeCondition wakeCondition;
     ThreadPriority      priority;
@@ -184,13 +182,5 @@ GetCurrentThreadInfo(void);
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code);
-
-void
-SetThreadSigmask(UID id,
-                 const sigset_t *flags);
-
-void
-GetThreadSigmask(UID           id,
-                 sigset_t    *procInfo);
 
 #endif

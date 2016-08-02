@@ -7,20 +7,6 @@
 #include "synchronization.h"
 
 uint64_t
-GetIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
-                      uint64_t syscall_num,
-                      uint64_t *syscall_params) {
-    if(syscall_num != Syscall_GetIPCMessage)
-        return ENOSYS;
-
-    SyscallData *data = (SyscallData*)syscall_params;
-    if(data->param_num != 1)
-        return EINVAL;
-
-    return GetMessage((Message*)data->params[0]);
-}
-
-uint64_t
 GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
                           uint64_t syscall_num,
                           uint64_t *syscall_params) {
@@ -47,3 +33,4 @@ PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
 
     return PostMessage((Message*)data->params[0]);
 }
+

@@ -15,13 +15,12 @@ mkdir proc
 cd sys
 mkdir src
 cd src
-mkdir musl
 
-wget https://github.com/himanshugoel2797/Cardinal-musl/archive/master.zip -O musl.zip
-unzip musl.zip -d .
 
-cd Cardinal-musl-master
-./configure --disable-shared --prefix=$ROOTDIR/sys
+wget https://github.com/himanshugoel2797/Cardinal_directory_server/archive/master.zip -O dir_server.zip
+unzip dir_server.zip -d .
+
+cd Cardinal_directory_server-master
 make -j4 all
 make install
 cd ..

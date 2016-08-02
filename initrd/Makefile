@@ -1,5 +1,5 @@
 
-SUBDIRS := $(wildcard */.)
+INITRD_FILES=
 
 export DEFINES
 export INCLUDES

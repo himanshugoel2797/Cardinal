@@ -37,29 +37,15 @@ ProcessErrors
 SetProcessSyscallStatus(UID pid,
                         ProcessSyscallFlags flags);
 
-ProcessErrors
-SetProcessSigaction(UID pid,
-                    int sig_no,
-                    const struct sigaction *sig);
-
-ProcessErrors
-GetProcessSigaction(UID pid,
-                    int sig_no,
-                    struct sigaction *sig);
-
-void
-RaiseSignal(UID pid,
-            int sig_no);
-
 bool
 PostMessage(Message *msg);
 
 bool
-GetMessage(Message *msg);
-
-bool
 GetMessageFrom(Message *msg,
                UID SourcePID);
+
+bool
+RegisterMessageHandler(void (*MessageHandler)(Message*));
 
 void
 ProcessSys_Initialize(void);

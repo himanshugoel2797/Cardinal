@@ -13,21 +13,6 @@ set_tid_address(void* address) {
 }
 
 uint64_t
-SetTidAddress_Syscall(uint64_t UNUSED(instruction_pointer),
-                      uint64_t syscall_num,
-                      uint64_t *syscall_params) {
-    if(syscall_num != Syscall_SetTidAddress)
-        return ENOSYS;
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 1)
-        return EINVAL;
-
-    return set_tid_address((void*)data->params[0]);
-}
-
-uint64_t
 clone(int (*func)(void*),
       void *child_stack,
       uint64_t flags,

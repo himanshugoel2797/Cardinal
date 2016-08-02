@@ -143,27 +143,20 @@
 
 
 typedef enum {
-    Syscall_NumStart = 0,
-    Syscall_Read = 0,
-    Syscall_Write = 1,
-    Syscall_Open = 2,
-    Syscall_Close = 3,
-    Syscall_RequestIRQPermissions,
-    Syscall_RequestSystemPermissions,
+    Syscall_NumStart = 1,
+    Syscall_MMap = Syscall_NumStart,
+    Syscall_Brk,
     Syscall_Nanosleep,
-    Syscall_MMap = 9,
-    Syscall_Brk = 12,
-    Syscall_RTSigAction = 13,
-    Syscall_RTSigProcMask = 14,
-    Syscall_Clone = 56,
-    Syscall_Fork = 57,
-    Syscall_ArchPrctl = 158,
-    Syscall_IOPL = 172,
-    Syscall_SetTidAddress = 218,
-    Syscall_GetIPCMessage = 400,
-    Syscall_GetIPCMessageFrom = 401,
-    Syscall_PostIPCMessage = 402,
-    Syscall_NumEnd = Syscall_PostIPCMessage,
+    Syscall_Clone,
+    Syscall_Fork,
+
+    Syscall_GetIPCMessageFrom,
+    Syscall_PostIPCMessage,
+    
+    Syscall_SetProperty,
+    Syscall_GetProperty,
+    
+    Syscall_NumEnd = Syscall_GetProperty,
 } SyscallFunctions;
 
 

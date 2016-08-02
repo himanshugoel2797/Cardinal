@@ -6,7 +6,6 @@
 #include "memory.h"
 #include "synchronization.h"
 
-#include "libs/libc/include/signal.h"
 #include "libs/libCardinal/include/ipc.h"
 
 #define MAX_PROCESS_NAME_LEN (256)
@@ -55,17 +54,6 @@ typedef struct Descriptor {
     DescriptorFlags Flags;
 } Descriptor;
 
-
-typedef struct PendingSignalInfo {
-    union {
-        void (*sa_handler)(int);
-        void (*sa_sigaction)(int, siginfo_t*, void*);
-    };
-    int sa_num;
-    int sa_flags;
-    void (*sa_restorer)(void);
-} PendingSignalInfo;
-
 typedef struct ProcessInformation {
     UID                         ID;
 
@@ -75,12 +63,11 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
-    struct sigaction            *SignalHandlers;
-    List                        *PendingSignals;
     List                        *Children;
     List                        *Descriptors;
     List                        *PendingMessages;
 
+    void                        (*MessageHandler)(Message*);
     Spinlock                    MessageLock;
 
     char                        *WorkingDirectory;

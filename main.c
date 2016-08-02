@@ -50,8 +50,6 @@ kernel_main(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
 
-    SetupSecurityMonitor();
-
     DeviceManager_Initialize();
     smp_unlock_cores();
 
@@ -60,7 +58,6 @@ kernel_main(void) {
 
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        SetFileserverPID(GetCurrentProcessUID());
         load_elf("fileserver.elf");
     }
 

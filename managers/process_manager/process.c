@@ -24,13 +24,11 @@ ProcessSys_Initialize(void) {
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->SyscallFlags = ProcessSyscallFlags_PermissionsLocked;
     root->HeapBreak = 0;
-    root->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
-    memset(root->SignalHandlers, 0, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
-    root->PendingSignals = List_Create(CreateSpinlock());
     root->Children = List_Create(CreateSpinlock());
     root->Parent = NULL;
 
     root->PendingMessages = List_Create(CreateSpinlock());
+    root->MessageHandler = NULL;
     root->MessageLock = CreateSpinlock();
 
     root->Descriptors = List_Create(CreateSpinlock());
@@ -60,12 +58,8 @@ ForkProcess(ProcessInformation *src,
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
     dst->SyscallFlags = ProcessSyscallFlags_None;
     dst->HeapBreak = src->HeapBreak;
-    dst->SignalHandlers = kmalloc(sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
-    memcpy(dst->SignalHandlers, src->SignalHandlers, sizeof(struct sigaction) * SUPPORTED_SIGNAL_COUNT);
 
     dst->PendingMessages = List_Create(CreateSpinlock());
-    dst->PendingSignals = List_Create(CreateSpinlock());
-
     dst->MessageLock = CreateSpinlock();
 
     dst->Children = List_Create(CreateSpinlock());
@@ -239,53 +233,6 @@ SetProcessSyscallStatus(UID pid,
     return ProcessErrors_UIDNotFound;
 }
 
-ProcessErrors
-SetProcessSigaction(UID pid,
-                    int sig_no,
-                    const struct sigaction *sig) {
-    if(sig_no >= SUPPORTED_SIGNAL_COUNT)
-        return ProcessErrors_Unknown;
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            memcpy(&pInf->SignalHandlers[sig_no], sig, sizeof(struct sigaction));
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-GetProcessSigaction(UID pid,
-                    int sig_no,
-                    struct sigaction *sig) {
-    if(sig_no >= SUPPORTED_SIGNAL_COUNT)
-        return ProcessErrors_Unknown;
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            if(sig != NULL)
-                memcpy(sig, &pInf->SignalHandlers[sig_no], sizeof(struct sigaction));
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
 void
 RaiseSignal(UID pid,
             int sig_no) {
@@ -309,26 +256,6 @@ PostMessage(Message *msg) {
     List_AddEntry(pInfo->PendingMessages, m);
     UnlockSpinlock(pInfo->MessageLock);
 
-    return TRUE;
-}
-
-bool
-GetMessage(Message *msg) {
-    ProcessInformation *pInfo;
-    GetProcessReference(GetCurrentProcessUID(), &pInfo);
-
-    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
-
-    LockSpinlock(pInfo->MessageLock);
-    Message *tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
-    List_Remove(pInfo->PendingMessages, 0);
-
-    if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
-
-    kfree(tmp);
-    UnlockSpinlock(pInfo->MessageLock);
-
-    __asm__("cli\n\thlt");
     return TRUE;
 }
 
@@ -358,6 +285,15 @@ GetMessageFrom(Message *msg,
 
     UnlockSpinlock(pInfo->MessageLock);
     return FALSE;
+}
+
+bool
+RegisterMessageHandler(void (*MessageHandler)(Message*)) {
+
+    ProcessInformation *pInfo;
+    GetProcessReference(GetCurrentProcessUID(), &pInfo);
+    pInfo->MessageHandler = MessageHandler;
+    return TRUE;    
 }
 
 ProcessErrors

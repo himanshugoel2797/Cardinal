@@ -6,12 +6,13 @@
 #include <syscall.h>
 #include <cardinal_types.h>
 
-#define MESSAGE_SIZE (4096 - 16)
+#define MAX_MESSAGE_SIZE (4096 - 16)
 
 typedef struct Message {
-    char Content[MESSAGE_SIZE];
     UID SourcePID;
     UID DestinationPID;
+    unsigned short Size;
+    char Content[1];
 } Message;
 
 #ifndef _KERNEL_
