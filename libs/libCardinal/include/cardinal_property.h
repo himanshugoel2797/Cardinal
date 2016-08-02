@@ -5,11 +5,11 @@
 #include <stddef.h>
 
 typedef enum {
-	CardinalProperty_SetTidAddress,
-	CardinalProperty_RegisterIPCMessageHandler,
+    CardinalProperty_SetTidAddress,
+    CardinalProperty_RegisterIPCMessageHandler,
 #ifdef x86_64
-	CardinalProperty_ArchPrctl,
-	CardinalProperty_IOPL
+    CardinalProperty_ArchPrctl,
+    CardinalProperty_IOPL
 #endif
 } CardinalProperties;
 

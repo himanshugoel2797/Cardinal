@@ -6,7 +6,7 @@
 #include "libs/libc/include/asm/prctl.h"
 
 uint64_t
-ArchPrctl_Syscall(uint64_t target, 
+ArchPrctl_Syscall(uint64_t target,
                   uint64_t val) {
 
     if(target == ARCH_SET_GS) SetGSBase((void*)val);

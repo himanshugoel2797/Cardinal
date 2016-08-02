@@ -293,7 +293,7 @@ RegisterMessageHandler(void (*MessageHandler)(Message*)) {
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
     pInfo->MessageHandler = MessageHandler;
-    return TRUE;    
+    return TRUE;
 }
 
 ProcessErrors

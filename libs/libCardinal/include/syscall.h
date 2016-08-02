@@ -152,10 +152,10 @@ typedef enum {
 
     Syscall_GetIPCMessageFrom,
     Syscall_PostIPCMessage,
-    
+
     Syscall_SetProperty,
     Syscall_GetProperty,
-    
+
     Syscall_NumEnd = Syscall_GetProperty,
 } SyscallFunctions;
 

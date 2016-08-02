@@ -10,7 +10,7 @@ void
 SetRFLAGS(uint64_t val);
 
 uint64_t
-ArchPrctl_Syscall(uint64_t target, 
+ArchPrctl_Syscall(uint64_t target,
                   uint64_t val);
 
 uint64_t
