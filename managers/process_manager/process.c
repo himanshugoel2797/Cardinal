@@ -243,16 +243,20 @@ RaiseSignal(UID pid,
 
 bool
 PostMessage(Message *msg) {
+
+    if(msg->Size < sizeof(Message))
+        return FALSE;
+
     ProcessInformation *pInfo;
     GetProcessReference(msg->DestinationPID, &pInfo);
 
     if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return FALSE;
 
-    Message *m = kmalloc(sizeof(Message));
+    Message *m = kmalloc(msg->Size);
     if(m == NULL)return FALSE;
 
     LockSpinlock(pInfo->MessageLock);
-    memcpy(m, msg, sizeof(Message));
+    memcpy(m, msg, msg->Size);
     List_AddEntry(pInfo->PendingMessages, m);
     UnlockSpinlock(pInfo->MessageLock);
 
@@ -275,7 +279,7 @@ GetMessageFrom(Message *msg,
 
         if(tmp->SourcePID == SourcePID) {
             List_Remove(pInfo->PendingMessages, 0);
-            if(msg != NULL)memcpy(msg, tmp, sizeof(Message));
+            if(msg != NULL)memcpy(msg, tmp, tmp->Size);
             kfree(tmp);
 
             UnlockSpinlock(pInfo->MessageLock);

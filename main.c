@@ -57,11 +57,11 @@ kernel_main(void) {
     target_device_setup();
 
     UID cpid = ForkCurrentProcess();
-    if(cpid == 0) {
-        load_elf("fileserver.elf");
-    }
+    //if(cpid == 0) {
+    //    load_elf("fileserver.elf");
+    //}
 
-    cpid = ForkCurrentProcess();
+    //cpid = ForkCurrentProcess();
     if(cpid == 0) {
         load_elf("test.elf");
     }

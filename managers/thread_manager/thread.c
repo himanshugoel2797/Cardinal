@@ -74,10 +74,14 @@ new_thd_uid(void) {
 #define SET_PROPERTY_PROC_VAL(t, name, val) set_proc_##name (GET_PROPERTY_VAL(t, ParentProcess), val)
 #define GET_PROPERTY_PROC_VAL(t, name) get_proc_##name (GET_PROPERTY_VAL(t,ParentProcess))
 
+typedef void (*MessageHandlerFunc)(Message*);
+
 PROPERTY_PROC_GET(UID, ID, 0)
 PROPERTY_PROC_GET(ManagedPageTable*, PageTable, 0)
 PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
 PROPERTY_PROC_GET(ProcessInformation*, Parent, NULL)
+PROPERTY_PROC_GET(MessageHandlerFunc, MessageHandler, NULL)
+PROPERTY_PROC_GET(List*, PendingMessages, NULL)
 
 PROPERTY_GET_SET(UID, ID, 0)
 

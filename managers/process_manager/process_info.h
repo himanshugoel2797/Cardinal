@@ -67,6 +67,7 @@ typedef struct ProcessInformation {
     List                        *Descriptors;
     List                        *PendingMessages;
 
+    bool                        HandlingMessage;
     void                        (*MessageHandler)(Message*);
     Spinlock                    MessageLock;
 

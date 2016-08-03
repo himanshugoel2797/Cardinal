@@ -26,6 +26,8 @@ make install
 cd ..
 
 cd $ROOTDIR/sys/include
+mkdir cardinal
+cd cardinal
 cp $SRC_DIR/libs/libCardinal/include/* .
 
 cd ..

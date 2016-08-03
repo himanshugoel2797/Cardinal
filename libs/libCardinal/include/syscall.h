@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "syscall_list.h"
 
 #define MAX_PARAM_COUNT 6
 
@@ -142,22 +143,6 @@
 #define EHWPOISON       133
 
 
-typedef enum {
-    Syscall_NumStart = 1,
-    Syscall_MMap = Syscall_NumStart,
-    Syscall_Brk,
-    Syscall_Nanosleep,
-    Syscall_Clone,
-    Syscall_Fork,
-
-    Syscall_GetIPCMessageFrom,
-    Syscall_PostIPCMessage,
-
-    Syscall_SetProperty,
-    Syscall_GetProperty,
-
-    Syscall_NumEnd = Syscall_GetProperty,
-} SyscallFunctions;
 
 
 
