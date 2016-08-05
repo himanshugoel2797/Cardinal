@@ -10,11 +10,11 @@ Nanosleep_Syscall(uint64_t UNUSED(instruction_pointer),
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(syscall_num != Syscall_Nanosleep)
-        return ENOSYS;
+        return -ENOSYS;
 
-    if(data->param_num != 2)
-        return EINVAL;
+    if(data->param_num != 1)
+        return -EINVAL;
 
-    //SleepThread(GetCurrentThreadUID(), )
+    SleepThread(GetCurrentThreadUID(), data->params[0]);
     return 0;
 }

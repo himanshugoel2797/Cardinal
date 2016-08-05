@@ -32,14 +32,14 @@ SyscallReceived(uint64_t instruction_pointer,
     CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags);
 
     if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
-        return EINVAL;
+        return -EINVAL;
 
     SyscallData k_data;
     k_data.params = syscall_params;
     k_data.param_num = syscall_param_cnt;
 
     if(k_data.param_num > MAX_PARAM_COUNT)
-        return EINVAL;
+        return -EINVAL;
 
     //Create a kernel side copy of the oarameters
     uint64_t k_data_param[MAX_PARAM_COUNT];
@@ -50,7 +50,7 @@ SyscallReceived(uint64_t instruction_pointer,
     uint32_t syscall_baseNum = (uint32_t)syscall_num;
 
     if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
-        return ENOSYS;
+        return -ENOSYS;
 
     if(Syscalls[syscall_baseNum] != NULL) {
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
@@ -60,7 +60,7 @@ SyscallReceived(uint64_t instruction_pointer,
         return retVal;
     } else __asm__ ("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
 
-    return ENOSYS;
+    return -ENOSYS;
 }
 
 uint64_t

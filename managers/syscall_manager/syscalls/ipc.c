@@ -11,13 +11,13 @@ GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
                           uint64_t syscall_num,
                           uint64_t *syscall_params) {
     if(syscall_num != Syscall_GetIPCMessageFrom)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
-    if(data->param_num != 2)
-        return EINVAL;
+    if(data->param_num != 3)
+        return -EINVAL;
 
-    return GetMessageFrom((Message*)data->params[0], (UID)data->params[1]);
+    return GetMessageFrom((Message*)data->params[0], (UID)data->params[1], data->params[2]);
 }
 
 uint64_t
@@ -25,12 +25,12 @@ PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {
     if(syscall_num != Syscall_PostIPCMessage)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
-    if(data->param_num != 1)
-        return EINVAL;
+    if(data->param_num != 2)
+        return -EINVAL;
 
-    return PostMessage((Message*)data->params[0]);
+    return PostMessages((Message**)data->params[0], data->params[1]);
 }
 

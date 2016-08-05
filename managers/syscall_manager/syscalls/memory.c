@@ -11,6 +11,7 @@ mmap(void* addr,
      int flags,
      int UNUSED(fd),
      off_t UNUSED(offset)) {
+
     if((flags & MAP_ANONYMOUS) == 0)
         __asm__ volatile("cli\n\thlt");
 
@@ -49,8 +50,9 @@ mmap(void* addr,
 
         uint64_t target_phys_addr = AllocatePhysicalPageCont(target_len / PAGE_SIZE);
         if(target_phys_addr == 0)
-            return (void*)ENOMEM;
+            return (void*)-ENOMEM;
 
+        
         MapPage(GetActiveVirtualMemoryInstance(),
                 target_phys_addr,
                 (uint64_t)addr,
@@ -60,11 +62,10 @@ mmap(void* addr,
                 allocFlags);
 
 
-
         return (void*)addr;
     }
 
-    return (void*)EINVAL;
+    return (void*)-EINVAL;
 }
 
 uint64_t
@@ -72,12 +73,12 @@ MMap_Syscall(uint64_t UNUSED(instruction_pointer),
              uint64_t syscall_num,
              uint64_t *syscall_params) {
     if(syscall_num != Syscall_MMap)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(data->param_num != 6)
-        return ENOSYS;
+        return -ENOSYS;
 
     void* addr = (void*)data->params[0];
     size_t target_len = data->params[1];
@@ -105,7 +106,9 @@ brk(void* targ_brk_address) {
 
         LockSpinlock(p_info->lock);
         if(p_info->HeapBreak == 0)p_info->HeapBreak = addr;
+        else addr = p_info->HeapBreak;
         UnlockSpinlock(p_info->lock);
+
         return addr;
     }
 
@@ -116,25 +119,30 @@ brk(void* targ_brk_address) {
         //TODO expand the heap by a few pages and return the new heap break
 
         LockSpinlock(p_info->lock);
+        
+        if((uint64_t)targ_brk_address <= p_info->HeapBreak)
+            return UnlockSpinlock(p_info->lock), (uint64_t)targ_brk_address;
+
         uint64_t size = (uint64_t)targ_brk_address - p_info->HeapBreak;
         uint64_t prev_heap_break = p_info->HeapBreak;
-        p_info->HeapBreak += size;
-        UnlockSpinlock(p_info->lock);
 
         if(size % PAGE_SIZE != 0)size += PAGE_SIZE - (size % PAGE_SIZE);
+        p_info->HeapBreak += size;
 
         MapPage(GetActiveVirtualMemoryInstance(),
-                prev_heap_break,
                 AllocatePhysicalPageCont(size/PAGE_SIZE),
+                prev_heap_break,
                 size,
                 CachingModeWriteBack,
                 MemoryAllocationType_Heap,
                 MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+        
+        UnlockSpinlock(p_info->lock);
 
-        return prev_heap_break + size;
+        return (uint64_t)targ_brk_address;
     }
 
-    return ENOMEM;
+    return -ENOMEM;
 
 }
 
@@ -143,13 +151,13 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
             uint64_t syscall_num,
             uint64_t *syscall_params) {
     if(syscall_num != Syscall_Brk)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
 
     if(data->param_num != 1)
-        return ENOSYS;
+        return -ENOSYS;
 
     void* targ_brk_address = (void*)data->params[0];
     return brk(targ_brk_address);

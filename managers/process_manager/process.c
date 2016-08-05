@@ -6,6 +6,8 @@
 static List *processes;
 static ProcessInformation *root = NULL;
 static volatile UID baseID = 0;
+static UID specialDestinationPIDs[CARDINAL_IPCDEST_NUM];
+static Spinlock specialPIDLock = NULL;
 
 static UID
 new_proc_uid(void) {
@@ -16,8 +18,14 @@ new_proc_uid(void) {
 
 void
 ProcessSys_Initialize(void) {
+
+    for(int i = 0; i < CARDINAL_IPCDEST_NUM; i++)
+        specialDestinationPIDs[i] = 0;
+
+    specialPIDLock = CreateSpinlock();
+
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = new_proc_uid();	//Root process ID is 0
+    root->ID = new_proc_uid();  //Root process ID is 0
     strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
@@ -28,10 +36,8 @@ ProcessSys_Initialize(void) {
     root->Parent = NULL;
 
     root->PendingMessages = List_Create(CreateSpinlock());
-    root->MessageHandler = NULL;
     root->MessageLock = CreateSpinlock();
 
-    root->Descriptors = List_Create(CreateSpinlock());
     root->PendingMessages = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
@@ -67,24 +73,6 @@ ForkProcess(ProcessInformation *src,
     dst->Parent = src;
 
     ForkTable(src->PageTable, dst->PageTable);
-
-    dst->Descriptors = List_Create(CreateSpinlock());
-
-    for(uint64_t i = 0; i < List_Length(src->Descriptors); i++) {
-        Descriptor *desc = (Descriptor*)List_EntryAt(src->Descriptors, i);
-
-
-        Descriptor *dst_desc = kmalloc(sizeof(Descriptor));
-
-        if(desc->Flags & DescriptorFlags_CloseOnExec) {
-            dst_desc->Flags = DescriptorFlags_Free;
-        } else {
-            dst_desc->Flags = desc->Flags;
-            dst_desc->AdditionalData = desc->AdditionalData;
-        }
-
-        List_AddEntry(dst->Descriptors, dst_desc);
-    }
 
     dst->reference_count = 0;
     dst->lock = CreateSpinlock();
@@ -178,7 +166,7 @@ GetProcessReference(UID           pid,
         UnlockSpinlock(pInf->lock);
 
         if(pInfID == pid) {
-            *procInfo = pInf;
+            if(procInfo != NULL)*procInfo = pInf;
             return ProcessErrors_None;
         }
     }
@@ -241,31 +229,57 @@ RaiseSignal(UID pid,
 }
 
 
-bool
-PostMessage(Message *msg) {
+uint64_t
+PostMessages(Message **msg, uint64_t cnt) {
 
-    if(msg->Size < sizeof(Message))
-        return FALSE;
+    if(msg == NULL)
+        return -1;
 
-    ProcessInformation *pInfo;
-    GetProcessReference(msg->DestinationPID, &pInfo);
+    for(uint64_t i = 0; i < cnt; i++){
+        
+        ProcessInformation *pInfo;
 
-    if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return FALSE;
 
-    Message *m = kmalloc(msg->Size);
-    if(m == NULL)return FALSE;
+        UID DestinationPID = msg[i]->DestinationPID;
 
-    LockSpinlock(pInfo->MessageLock);
-    memcpy(m, msg, msg->Size);
-    List_AddEntry(pInfo->PendingMessages, m);
-    UnlockSpinlock(pInfo->MessageLock);
+        int index = (int)DestinationPID;
+        if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
+            DestinationPID = specialDestinationPIDs[index];
+
+        GetProcessReference(DestinationPID, &pInfo);
+        if(i == 0 || (msg[i]->DestinationPID != msg[i - 1]->DestinationPID))
+            LockSpinlock(pInfo->MessageLock);
+        
+        if(msg[i] == NULL)
+            return i;
+
+        if(msg[i]->Size < sizeof(Message))
+            return i;
+
+        if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return i;
+
+        Message *m = kmalloc(msg[i]->Size);
+        m->SourcePID = GetCurrentProcessUID();
+        if(m == NULL)return i;
+
+        memcpy(m, msg[i], msg[i]->Size);
+        List_AddEntry(pInfo->PendingMessages, m);
+        
+        if(i == cnt - 1 || msg[i]->DestinationPID != msg[i + 1]->DestinationPID)UnlockSpinlock(pInfo->MessageLock);
+    }
 
     return TRUE;
 }
 
 bool
 GetMessageFrom(Message *msg,
-               UID SourcePID) {
+               UID SourcePID,
+               uint64_t msg_id) {
+
+    int index = (int)SourcePID;
+    if((uint64_t)index != SourcePID && index < CARDINAL_IPCDEST_NUM)
+        SourcePID = specialDestinationPIDs[index];
+
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
@@ -278,11 +292,14 @@ GetMessageFrom(Message *msg,
         tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
 
         if(tmp->SourcePID == SourcePID) {
-            List_Remove(pInfo->PendingMessages, 0);
-            if(msg != NULL)memcpy(msg, tmp, tmp->Size);
-            kfree(tmp);
 
-            UnlockSpinlock(pInfo->MessageLock);
+            if((tmp->MsgID == msg_id) | (msg_id == 0)){
+                List_Remove(pInfo->PendingMessages, 0);
+                if(msg != NULL)memcpy(msg, tmp, tmp->Size);
+                kfree(tmp);
+
+                UnlockSpinlock(pInfo->MessageLock);
+            }
             return TRUE;
         }
     }
@@ -291,120 +308,20 @@ GetMessageFrom(Message *msg,
     return FALSE;
 }
 
+
 bool
-RegisterMessageHandler(void (*MessageHandler)(Message*)) {
+SetSpecialDestinationPID(UID specialID) {
+    int index = (int)specialID;
 
-    ProcessInformation *pInfo;
-    GetProcessReference(GetCurrentProcessUID(), &pInfo);
-    pInfo->MessageHandler = MessageHandler;
+    if(index >= CARDINAL_IPCDEST_NUM)
+        return FALSE;
+
+    LockSpinlock(specialPIDLock);
+
+    if(specialDestinationPIDs[index] != 0 && GetProcessReference(specialDestinationPIDs[index], NULL) == ProcessErrors_None)
+            return UnlockSpinlock(specialPIDLock), FALSE;
+
+    specialDestinationPIDs[index] = GetCurrentProcessUID();
+    UnlockSpinlock(specialPIDLock);
     return TRUE;
-}
-
-ProcessErrors
-GetDescriptor(UID pid,
-              int d_num,
-              Descriptor *desc) {
-
-    if(d_num < 0)return ProcessErrors_Unknown;
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-
-            LockSpinlock(pInf->lock);
-            if(List_Length(pInf->Descriptors) > (uint64_t)d_num) {
-
-                if(desc != NULL)
-                    memcpy(desc, List_EntryAt(pInf->Descriptors, d_num), sizeof(Descriptor));
-
-                UnlockSpinlock(pInf->lock);
-                return ProcessErrors_None;
-            }
-
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_DescriptorNotFound;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-CreateDescriptor(UID pid,
-                 Descriptor *desc,
-                 int *d_num) {
-    if(desc == NULL)return ProcessErrors_Unknown;
-    if(d_num == NULL)return ProcessErrors_Unknown;
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-
-            LockSpinlock(pInf->lock);
-            bool desc_found = FALSE;
-            for(uint64_t j = 0; j < List_Length(pInf->Descriptors); j++) {
-                Descriptor *d = (Descriptor*)List_EntryAt(pInf->Descriptors, j);
-                if(d->Flags == DescriptorFlags_Free) {
-                    memcpy(d, desc, sizeof(Descriptor));
-                    *d_num = (int)j;
-                    desc_found = TRUE;
-                    break;
-                }
-            }
-            if(!desc_found) {
-                Descriptor *d = kmalloc(sizeof(Descriptor));
-                memcpy(d, desc, sizeof(Descriptor));
-                *d_num = (int)List_Length(pInf->Descriptors);
-                List_AddEntry(pInf->Descriptors, d);
-            }
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-CloseDescriptor(UID pid,
-                int d_num) {
-
-    if(d_num < 0)return ProcessErrors_Unknown;
-
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-
-            LockSpinlock(pInf->lock);
-            if(List_Length(pInf->Descriptors) > (uint64_t)d_num) {
-
-                Descriptor *d = (Descriptor*)List_EntryAt(pInf->Descriptors, d_num);
-                d->Flags = DescriptorFlags_Free;
-                d->AdditionalData = 0;
-                d->TargetPID = 0;
-
-                UnlockSpinlock(pInf->lock);
-                return ProcessErrors_None;
-            }
-
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_DescriptorNotFound;
-
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-
 }

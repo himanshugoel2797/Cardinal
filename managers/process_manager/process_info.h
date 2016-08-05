@@ -42,18 +42,6 @@ typedef enum {
     ProcessErrors_DescriptorNotFound = (1 << 2)
 } ProcessErrors;
 
-typedef enum {
-    DescriptorFlags_None = 0,
-    DescriptorFlags_Free = (1 << 0),
-    DescriptorFlags_CloseOnExec = (1 << 1)
-} DescriptorFlags;
-
-typedef struct Descriptor {
-    UID AdditionalData;
-    UID TargetPID;
-    DescriptorFlags Flags;
-} Descriptor;
-
 typedef struct ProcessInformation {
     UID                         ID;
 
@@ -64,11 +52,9 @@ typedef struct ProcessInformation {
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
     List                        *Children;
-    List                        *Descriptors;
     List                        *PendingMessages;
 
     bool                        HandlingMessage;
-    void                        (*MessageHandler)(Message*);
     Spinlock                    MessageLock;
 
     char                        *WorkingDirectory;

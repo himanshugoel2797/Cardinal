@@ -1,7 +1,7 @@
 #include "syscalls_all.h"
 #include "syscalls/arch_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
-#include "libs/libCardinal/include/cardinal_property.h"
+#include "libs/libCardinal/include/syscall_property.h"
 
 #include "libs/libc/include/thread.h"
 #include "libs/libc/include/asm/prctl.h"
@@ -13,19 +13,21 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
     if(syscall_num != Syscall_SetProperty)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
+
+
     if(data->param_num != 3)
-        return EINVAL;
+        return -EINVAL;
 
     switch(data->params[0]) {
     case CardinalProperty_SetTidAddress:
         return set_tid_address((void*)data->params[2]);
         break;
-    case CardinalProperty_RegisterIPCMessageHandler:
-        return RegisterMessageHandler((void (*)(Message*))data->params[2]);
+    case CardinalProperty_SpecialDestination:
+        return (uint64_t)SetSpecialDestinationPID(data->params[1]) - 1;
         break;
 #ifdef x86_64
     case CardinalProperty_ArchPrctl:
@@ -36,7 +38,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
 #endif
     default:
-        return EINVAL;
+        return -EINVAL;
         break;
     }
 }
@@ -46,16 +48,22 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
     if(syscall_num != Syscall_GetProperty)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(data->param_num != 2)
-        return EINVAL;
+        return -EINVAL;
 
     switch(data->params[0]) {
+    case CardinalProperty_PID:
+        return GetCurrentProcessUID();
+        break;
+    case CardinalProperty_TID:
+        return GetCurrentThreadUID();
+        break;
     default:
-        return EINVAL;
+        return -EINVAL;
         break;
     }
 

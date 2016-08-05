@@ -10,8 +10,12 @@
 struct OpenRequest {
     uint64_t flags;
     uint64_t mode;
-    uint64_t path_len;
     char path[1];
+};
+
+struct OpenResponse {
+	uint64_t fd;
+	uint64_t targetPID;
 };
 
 struct CloseRequest {
@@ -20,7 +24,7 @@ struct CloseRequest {
 
 struct ReadWriteRequest {
     uint64_t fd;
-    uint64_t cnt;
+    bool lock;
     uint64_t buf[1];
 };
 

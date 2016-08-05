@@ -37,34 +37,21 @@ ProcessErrors
 SetProcessSyscallStatus(UID pid,
                         ProcessSyscallFlags flags);
 
-bool
-PostMessage(Message *msg);
+uint64_t
+PostMessages(Message **msg, uint64_t msg_cnt);
 
 bool
 GetMessageFrom(Message *msg,
-               UID SourcePID);
+               UID SourcePID,
+               uint64_t msg_id);
 
 bool
-RegisterMessageHandler(void (*MessageHandler)(Message*));
+SetSpecialDestinationPID(UID specialID);
 
 void
 ProcessSys_Initialize(void);
 
 bool
 ProcessSys_IsInitialized(void);
-
-ProcessErrors
-GetDescriptor(UID pid,
-              int d_num,
-              Descriptor *desc);
-
-ProcessErrors
-CreateDescriptor(UID pid,
-                 Descriptor *desc,
-                 int *d_num);
-
-ProcessErrors
-CloseDescriptor(UID pid,
-                int d_num);
 
 #endif

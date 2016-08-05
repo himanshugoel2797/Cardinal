@@ -150,9 +150,9 @@ static __inline uint64_t
 Syscall0(uint32_t syscall_num) {
 
     uint64_t volatile parameters[0];
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -172,9 +172,9 @@ Syscall1(uint32_t syscall_num,
     uint64_t volatile parameters[1];
     parameters[0] = p0;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -196,9 +196,9 @@ Syscall2(uint32_t syscall_num,
     parameters[0] = p0;
     parameters[1] = p1;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -222,9 +222,9 @@ Syscall3(uint32_t syscall_num,
     parameters[1] = p1;
     parameters[2] = p2;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -250,9 +250,9 @@ Syscall4(uint32_t syscall_num,
     parameters[2] = p2;
     parameters[3] = p3;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -280,9 +280,9 @@ Syscall5(uint32_t syscall_num,
     parameters[3] = p3;
     parameters[4] = p4;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"
@@ -312,9 +312,9 @@ Syscall6(uint32_t syscall_num,
     parameters[4] = p4;
     parameters[5] = p5;
 
-    uint64_t ret_error = ENOSYS;
+    uint64_t ret_error = -ENOSYS;
 
-#if defined(x86_64)
+#if defined(__x86_64__)
     __asm__ volatile
     (
         "syscall"

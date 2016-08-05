@@ -101,12 +101,12 @@ Clone_Syscall(uint64_t UNUSED(instruction_pointer),
               uint64_t syscall_num,
               uint64_t *syscall_params) {
     if(syscall_num != Syscall_Clone)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(data->param_num != 1)
-        return EINVAL;
+        return -EINVAL;
 
     uint64_t *params = (uint64_t*)data->params[0];
 
@@ -124,12 +124,12 @@ Fork_Syscall(uint64_t UNUSED(instruction_pointer),
              uint64_t syscall_num,
              uint64_t *syscall_params) {
     if(syscall_num != Syscall_Fork)
-        return ENOSYS;
+        return -ENOSYS;
 
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(data->param_num != 0)
-        return EINVAL;
+        return -EINVAL;
 
     return ForkCurrentProcess();
 }

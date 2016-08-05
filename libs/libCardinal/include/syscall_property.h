@@ -5,9 +5,12 @@
 #include <stddef.h>
 
 typedef enum {
+	CardinalProperty_TID,
+	CardinalProperty_PID,
     CardinalProperty_SetTidAddress,
-    CardinalProperty_RegisterIPCMessageHandler,
-#ifdef x86_64
+    CardinalProperty_Time,
+    CardinalProperty_SpecialDestination,
+#ifdef __x86_64__
     CardinalProperty_ArchPrctl,
     CardinalProperty_IOPL
 #endif
