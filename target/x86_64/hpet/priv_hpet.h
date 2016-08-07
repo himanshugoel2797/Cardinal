@@ -57,7 +57,7 @@ typedef struct {
     uint64_t Rsv1;
     HPET_InterruptStatus InterruptStatus;
     uint64_t Rsv2;
-    uint64_t CounterValue;
+    volatile uint64_t CounterValue;
     uint64_t Rsv3;
     HPET_Timer timer0;
     HPET_Timer timer1;

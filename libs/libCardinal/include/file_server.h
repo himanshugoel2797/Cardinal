@@ -3,29 +3,56 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include "syscall_property.h"
+#include "syscall.h"
+#include "ipc.h"
 
-#define MAX_PATH_LEN 4000
-#define MAX_BUF_LEN 4000
+#define MAX_PATH_LEN ((4096 - sizeof(OpenRequest)))
+#define MAX_BUF_LEN ((UINT16_MAX - sizeof(ReadWriteRequest)))
+
+#define CARDINAL_MSG_TYPE_OPENREQUEST 1
+#define CARDINAL_MSG_TYPE_OPENRESPONSE 2
+#define CARDINAL_MSG_TYPE_CLOSEREQUEST 3
+#define CARDINAL_MSG_TYPE_READREQUEST 4
+#define CARDINAL_MSG_TYPE_WRITEREQUEST 5
 
 struct OpenRequest {
+	Message m;
+	uint64_t msg_type;
     uint64_t flags;
     uint64_t mode;
     char path[1];
 };
 
 struct OpenResponse {
+	Message m;
+	uint64_t msg_type;
 	uint64_t fd;
 	uint64_t targetPID;
 };
 
 struct CloseRequest {
+	Message m;
+	uint64_t msg_type;
     uint64_t fd;
 };
 
 struct ReadWriteRequest {
+	Message m;
+	uint64_t msg_type;
     uint64_t fd;
     bool lock;
     uint64_t buf[1];
 };
+
+#ifndef _KERNEL_
+
+static __inline bool
+RegisterSpecialDestination(uint64_t dst) {
+	return Syscall3(Syscall_SetProperty, CardinalProperty_SpecialDestination, dst, 0);	
+}
+
+#endif
 
 #endif

@@ -13,6 +13,8 @@
 typedef struct APIC_APLS_Data {
     uint32_t volatile *apic_base_addr;
     uint64_t apic_frequency;
+    uint64_t tsc_frequency;
+    uint8_t tsc_useful;
 } APIC_APLS_Data;
 static volatile APIC_APLS_Data* apic_data = NULL;
 
@@ -42,6 +44,7 @@ APIC_LockPIC(void) {
 
 static volatile int32_t pit_ticks;
 static volatile uint32_t apic_timer_value;
+static volatile uint64_t final_tsc_value;
 
 static void
 APIC_TimerCallibrate(uint32_t int_no,
@@ -49,7 +52,10 @@ APIC_TimerCallibrate(uint32_t int_no,
     err_code = 0;
     if(int_no == IRQ(0) && pit_ticks >= 0) {
         pit_ticks++;
-        if(pit_ticks == TICK_CNT)apic_timer_value = APIC_GetTimerValue();
+        if(pit_ticks == TICK_CNT){
+            apic_timer_value = APIC_GetTimerValue();
+            final_tsc_value = APIC_GetTSCValue();
+        }
     }
 }
 
@@ -100,6 +106,10 @@ APIC_CallibrateTimer(void) {
     pit_ticks = -1;
     apic_timer_value = 0;
 
+    apic_data->tsc_useful = 0xff;
+    APIC_IsTSCReliable();
+    APIC_EnableTSC();
+
     RegisterInterruptHandler(IRQ(1), APIC_TimerCallibrateRollover);
     APIC_SetVector(APIC_TIMER, IRQ(1));
     APIC_SetTimerValue(0);
@@ -112,6 +122,8 @@ APIC_CallibrateTimer(void) {
 
     PIT_SetEnableMode(ENABLED);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLED);
+    uint64_t init_tsc_value = APIC_GetTSCValue();
+
     pit_ticks = 0;
 
     while(pit_ticks < TICK_CNT);
@@ -125,12 +137,62 @@ APIC_CallibrateTimer(void) {
     apic_ticks *= PIT_FREQUENCY_HZ;
     apic_ticks /= TICK_CNT;
 
+    uint64_t tsc_ticks = final_tsc_value - init_tsc_value;
+    tsc_ticks *= PIT_FREQUENCY_HZ;
+    tsc_ticks /= TICK_CNT;
+
     apic_data->apic_frequency = apic_ticks;
+    apic_data->tsc_frequency = tsc_ticks;
 }
 
 uint64_t
 APIC_GetTimerFrequency(void) {
     return apic_data->apic_frequency;
+}
+
+void
+APIC_EnableTSC(void) {
+    if(apic_data->tsc_useful) {
+    register uint64_t dummy = 0;
+    __asm__("mov %%cr4, %[dummy]\n\t"
+            "or $4, %[dummy]\n\t"
+            "mov %[dummy], %%cr4\n\t" :: [dummy]"r"(dummy));
+    }
+}
+
+bool
+APIC_IsTSCReliable(void) {
+
+    if(apic_data->tsc_useful == 0xff){
+        //Check for TSC support, then check for invariant TSC support
+        apic_data->tsc_useful = 0;
+
+        CPUID_RequestInfo(1, 0);    //First CPUID page
+        if(CPUID_FeatureIsAvailable(CPUID_EDX, CPUID_FEAT_EDX_TSC)) {
+
+
+            CPUID_RequestInfo(0x80000007, 0);
+            if(CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 8))) {
+                apic_data->tsc_useful = 1;
+            }
+        }
+    }
+
+    return apic_data->tsc_useful;
+}
+
+uint64_t
+APIC_GetTSCFrequency(void) {
+    return apic_data->tsc_frequency;
+}
+
+uint64_t
+APIC_GetTSCValue(void) {
+    uint64_t lo = 0;
+    uint64_t hi = 0;
+    if(apic_data->tsc_useful)__asm__("rdtsc" : "=a"(lo), "=d"(hi));
+
+    return (hi << 32) | lo;
 }
 
 void

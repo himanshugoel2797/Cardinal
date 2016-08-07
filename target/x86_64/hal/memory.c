@@ -657,7 +657,7 @@ HandlePageFault(uint64_t virtualAddress,
             }
 
             if(map->AllocationType & MemoryAllocationType_Application) {
-                __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3));
+                __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
             }
 
 

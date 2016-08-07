@@ -251,16 +251,17 @@ PostMessages(Message **msg, uint64_t cnt) {
             LockSpinlock(pInfo->MessageLock);
         
         if(msg[i] == NULL)
-            return i;
+            return UnlockSpinlock(pInfo->MessageLock), i;
 
         if(msg[i]->Size < sizeof(Message))
-            return i;
+            return UnlockSpinlock(pInfo->MessageLock), i;
 
-        if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)return i;
+        if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)
+            return UnlockSpinlock(pInfo->MessageLock), i;
 
         Message *m = kmalloc(msg[i]->Size);
+        if(m == NULL)return UnlockSpinlock(pInfo->MessageLock), i;
         m->SourcePID = GetCurrentProcessUID();
-        if(m == NULL)return i;
 
         memcpy(m, msg[i], msg[i]->Size);
         List_AddEntry(pInfo->PendingMessages, m);
@@ -291,7 +292,7 @@ GetMessageFrom(Message *msg,
     for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
         tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
 
-        if(tmp->SourcePID == SourcePID) {
+        if((tmp->SourcePID == SourcePID) | (SourcePID == 0)) {
 
             if((tmp->MsgID == msg_id) | (msg_id == 0)){
                 List_Remove(pInfo->PendingMessages, 0);

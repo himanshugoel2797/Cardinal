@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <syscall.h>
+#include "syscall.h"
 #include "cardinal_types.h"
 #include "syscall_list.h"
 
@@ -17,7 +17,6 @@ typedef struct Message {
     UID DestinationPID;
     uint64_t MsgID;
     unsigned short Size;
-    char Content[1];
 } Message;
 
 #ifndef _KERNEL_
@@ -38,6 +37,7 @@ PostIPCMessages(Message **m, uint64_t cnt) {
     uint64_t ans = Syscall2(Syscall_PostIPCMessage, (uint64_t)m, cnt);
     return (int)ans;
 }
+
 #endif
 
 #endif

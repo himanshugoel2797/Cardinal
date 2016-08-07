@@ -51,7 +51,7 @@ struct CardinalFileDescriptor{
 static _Atomic volatile uint8_t __card_allocating_fd = 0;
 static struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
 static UID __card_currentPID = 0;
-static _Atomic uint64_t __card_req_id = 0;
+static _Atomic uint64_t __card_req_id = 1;
 
 static __inline bool
 __card_ValidateFD(int fd, bool is_open) {
@@ -101,36 +101,34 @@ __card_open(const char *path, int flags, int mode) {
 	uint64_t total_size = sizeof(struct OpenRequest) + sizeof(Message);
 	total_size += strnlen(path, MAX_PATH_LEN);
 
-	Message *m = malloc(total_size);
+	struct OpenRequest *m = malloc(total_size);
 	if(m == NULL)
 		return -ENOMEM;
 
-	m->DestinationPID = CARDINAL_IPCDEST_FILESERVER;
-	m->MsgID = __card_req_id++;
-	m->Size = total_size;
+	m->m.DestinationPID = CARDINAL_IPCDEST_FILESERVER;
+	m->m.MsgID = __card_req_id++;
+	m->m.Size = total_size;
 
-	struct OpenRequest *open_req = (struct OpenRequest*)m->Content;
-	open_req->flags = flags;
-	open_req->mode = mode;
+	m->flags = flags;
+	m->mode = mode;
+	m->msg_type = CARDINAL_MSG_TYPE_OPENREQUEST;
 
-	strncpy(open_req->path, path, strnlen(path, MAX_PATH_LEN));
+	strncpy(m->path, path, strnlen(path, MAX_PATH_LEN));
 
-	uint64_t msgID_backup = m->MsgID;
+	uint64_t msgID_backup = m->m.MsgID;
 
-	PostIPCMessages(&m, 1);
+	PostIPCMessages((Message**)&m, 1);
 	free(m);
 
-	m = malloc(sizeof(Message) + sizeof(struct OpenResponse));
-	if(m == NULL)
+	struct OpenResponse *m2 = malloc(sizeof(struct OpenResponse));
+	if(m2 == NULL)
 		return -ENOMEM;
 
-	while(GetIPCMessageFrom(m, CARDINAL_IPCDEST_FILESERVER, msgID_backup) != 1)
+	while(GetIPCMessageFrom((Message*)m2, CARDINAL_IPCDEST_FILESERVER, msgID_backup) != 1)
 		Syscall1(Syscall_Nanosleep, 100);
 
-	struct OpenResponse* response = (struct OpenResponse*)m->Content;
-
-	if(response->fd != -1){
-		int fd = __card_AllocateFD(response, flags);
+	if(m2->fd != -1){
+		int fd = __card_AllocateFD(m2, flags);
 		free(m);
 		return fd;
 	}
@@ -155,29 +153,29 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	for(int i = 0; i < iovec_cnt; i++)
 		total_size += v[i].iov_len;
 
-	uint64_t needed_size = sizeof(struct ReadWriteRequest) + sizeof(Message);
+	uint64_t needed_size = sizeof(struct ReadWriteRequest);
 
 	total_size = v[0].iov_len;
 	if(total_size + needed_size > UINT16_MAX)
 		total_size = UINT16_MAX - needed_size;
 
-	Message *m = malloc(needed_size + total_size);
+	struct ReadWriteRequest *m = malloc(needed_size + total_size);
 	if(m == NULL)
 		return -ENOMEM;
 
-	m->DestinationPID = __card_fds[fd].TargetPID;
-	m->MsgID = 0;
-	m->Size = needed_size + total_size;
+	m->m.DestinationPID = __card_fds[fd].TargetPID;
+	m->m.MsgID = 0;
+	m->m.Size = needed_size + total_size;
 
-	struct ReadWriteRequest *rwq = (struct ReadWriteRequest*)m->Content;
-	rwq->fd = __card_fds[fd].AdditionalData;
-	rwq->lock = 0;
+	m->fd = __card_fds[fd].AdditionalData;
+	m->lock = 0;
+	m->msg_type = CARDINAL_MSG_TYPE_READREQUEST;
 
 	uint8_t* src = (uint8_t*)v[0].iov_base;
-	uint8_t* dst = (uint8_t*)rwq->buf;
+	uint8_t* dst = (uint8_t*)m->buf;
 	memcpy(dst, src, total_size);
 
-	PostIPCMessages(&m, 1);
+	PostIPCMessages((Message**)&m, 1);
 	free(m);
 
 	return total_size;
@@ -288,7 +286,7 @@ SyscallEmu2(uint32_t syscall_num,
     	case Cardinal_EmulatedSyscalls_Nanosleep:
     		{
     			struct timespec *tmp = (struct timespec*)p0;
-    			ret_error = Syscall1(Syscall_Nanosleep, tmp->tv_nsec);
+    			ret_error = Syscall1(Syscall_Nanosleep, tmp->tv_sec * 1000000000ULL + tmp->tv_nsec);
     		}
     	break;
     }

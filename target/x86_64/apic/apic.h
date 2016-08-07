@@ -102,6 +102,18 @@ APIC_SendIPI(uint32_t dest,
              uint8_t vector,
              uint8_t delivery_mode);
 
+void
+APIC_EnableTSC(void);
+
+bool
+APIC_IsTSCReliable(void);
+
+uint64_t
+APIC_GetTSCFrequency(void);
+
+uint64_t
+APIC_GetTSCValue(void);
+
 /**@}*/
 
 #endif /* end of include guard: _APIC_DRIVER_H_ */

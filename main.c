@@ -15,7 +15,6 @@ void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
     InitializeTimer();
-    SetTimerValue(0);
     SetTimerEnableMode(ENABLE);
 
     kmalloc_init ();
@@ -54,14 +53,15 @@ kernel_main(void) {
     smp_unlock_cores();
 
     SetupPreemption();
+
     target_device_setup();
 
     UID cpid = ForkCurrentProcess();
-    //if(cpid == 0) {
-    //    load_elf("fileserver.elf");
-    //}
+    if(cpid == 0) {
+        load_elf("file_server.elf");
+    }
 
-    //cpid = ForkCurrentProcess();
+    cpid = ForkCurrentProcess();
     if(cpid == 0) {
         load_elf("test.elf");
     }
