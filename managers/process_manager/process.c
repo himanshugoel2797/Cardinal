@@ -26,7 +26,7 @@ ProcessSys_Initialize(void) {
     specialPIDLock = CreateSpinlock();
 
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = new_proc_uid();  //Root process ID is 0
+    root->ID = new_proc_uid();  //Root process ID is ROOT_PID
     strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->Permissions = ProcessPermissions_None;
@@ -416,7 +416,6 @@ GetMessageFrom(Message *msg,
 
                 UnlockSpinlock(pInfo->MessageLock);
             }
-            __asm__ ("cli\n\thlt");
             return TRUE;
         }
     }

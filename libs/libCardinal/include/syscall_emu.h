@@ -125,15 +125,16 @@ __card_open(const char *path, int flags, int mode) {
 	if(m2 == NULL)
 		return -ENOMEM;
 
-	while(GetIPCMessageFrom((Message*)m2, CARDINAL_IPCDEST_FILESERVER, msgID_backup) != 1)
+	while(!GetIPCMessageFrom((Message*)m2, CARDINAL_IPCDEST_FILESERVER, msgID_backup))
 		Syscall1(Syscall_Nanosleep, 100);
 
 	if(m2->fd != -1){
 		int fd = __card_AllocateFD(m2, flags);
-		free(m);
+		free(m2);
 		return fd;
 	}
 
+	free(m2);
 	return -1;
 }
 
