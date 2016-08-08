@@ -18,7 +18,7 @@ ForkProcess(ProcessInformation *src,
 void
 TerminateProcess(UID pid, uint32_t exit_code);
 
-void
+uint32_t
 ReapProcess(UID pid);
 
 UID

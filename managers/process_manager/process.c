@@ -37,6 +37,7 @@ ProcessSys_Initialize(void) {
     root->Parent = NULL;
 
     root->PendingMessages = List_Create(CreateSpinlock());
+    root->ThreadIDs = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
     root->PendingMessages = List_Create(CreateSpinlock());
@@ -144,7 +145,7 @@ ReapProcess(UID pid) {
     if(pid != (UID)-1){
         ProcessInformation *pinfo = NULL;
         if(GetProcessReference(pid, &pinfo) == ProcessErrors_UIDNotFound)
-            return;
+            return 0;
 
         LockSpinlock(pinfo->lock);
 
@@ -183,7 +184,7 @@ ReapProcess(UID pid) {
 
     ProcessInformation *pinfo = NULL;
     if(GetProcessReference(GetCurrentProcessUID(), &pinfo) == ProcessErrors_UIDNotFound)
-        return;
+        return 0;
 
     for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
         ProcessInformation *pinf = List_EntryAt(pinfo->Children, i);
@@ -355,7 +356,9 @@ PostMessages(Message **msg, uint64_t cnt) {
         if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
             DestinationPID = specialDestinationPIDs[index];
 
-        GetProcessReference(DestinationPID, &pInfo);
+        if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
+            return -1;
+
         if(pInfo->Status == ProcessStatus_Zombie)
             return -1;
 
@@ -373,9 +376,9 @@ PostMessages(Message **msg, uint64_t cnt) {
 
         Message *m = kmalloc(msg[i]->Size);
         if(m == NULL)return UnlockSpinlock(pInfo->MessageLock), i;
-        m->SourcePID = GetCurrentProcessUID();
-
         memcpy(m, msg[i], msg[i]->Size);
+
+        m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
         
         if(i == cnt - 1 || msg[i]->DestinationPID != msg[i + 1]->DestinationPID)UnlockSpinlock(pInfo->MessageLock);
@@ -413,6 +416,7 @@ GetMessageFrom(Message *msg,
 
                 UnlockSpinlock(pInfo->MessageLock);
             }
+            __asm__ ("cli\n\thlt");
             return TRUE;
         }
     }

@@ -8,8 +8,6 @@
 #include "syscall.h"
 #include "ipc.h"
 
-#define MAX_PATH_LEN ((4096 - sizeof(OpenRequest)))
-#define MAX_BUF_LEN ((UINT16_MAX - sizeof(ReadWriteRequest)))
 
 #define CARDINAL_MSG_TYPE_OPENREQUEST 1
 #define CARDINAL_MSG_TYPE_OPENRESPONSE 2
@@ -45,6 +43,9 @@ struct ReadWriteRequest {
     bool lock;
     uint64_t buf[1];
 };
+
+#define MAX_PATH_LEN ((4096 - sizeof(struct OpenRequest)))
+#define MAX_BUF_LEN ((UINT16_MAX - sizeof(struct ReadWriteRequest)))
 
 #ifndef _KERNEL_
 

@@ -10,6 +10,7 @@ typedef enum {
     CardinalProperty_SetTidAddress,
     CardinalProperty_Time,
     CardinalProperty_SpecialDestination,
+    CardinalProperty_Exit,
 #ifdef __x86_64__
     CardinalProperty_ArchPrctl,
     CardinalProperty_IOPL

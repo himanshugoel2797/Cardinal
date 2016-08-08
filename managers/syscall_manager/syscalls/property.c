@@ -29,6 +29,11 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     case CardinalProperty_SpecialDestination:
         return (uint64_t)SetSpecialDestinationPID(data->params[1]) - 1;
         break;
+    case CardinalProperty_Exit:
+        __asm__ volatile("cli\n\thlt");
+        TerminateProcess(GetCurrentProcessUID(), data->params[1]);
+        return 0;
+        break;
 #ifdef x86_64
     case CardinalProperty_ArchPrctl:
         return ArchPrctl_Syscall(data->params[1], data->params[2]);

@@ -29,6 +29,7 @@ typedef enum {
 	Cardinal_EmulatedSyscalls_Nanosleep = 35,
 	Cardinal_EmulatedSyscalls_GetPID = 39,
 	Cardinal_EmulatedSyscalls_Fork = 57,
+	Cardinal_EmulatedSyscalls_Exit = 60,
 	Cardinal_EmulatedSyscalls_ArchPrctl = 158,
 	Cardinal_EmulatedSyscalls_GetTID = 186,
 	Cardinal_EmulatedSyscalls_Time = 201,
@@ -98,7 +99,7 @@ __card_AllocateFD(struct OpenResponse *resp, int flags) {
 static __inline uint64_t
 __card_open(const char *path, int flags, int mode) {
 
-	uint64_t total_size = sizeof(struct OpenRequest) + sizeof(Message);
+	uint64_t total_size = sizeof(struct OpenRequest);
 	total_size += strnlen(path, MAX_PATH_LEN);
 
 	struct OpenRequest *m = malloc(total_size);
@@ -265,6 +266,9 @@ SyscallEmu1(uint32_t syscall_num,
     	break;
     	case Cardinal_EmulatedSyscalls_SetTidAddress:
     		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_SetTidAddress, 0, p0);
+    	break;
+    	case Cardinal_EmulatedSyscalls_Exit:
+    		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
     	break;
     }
 

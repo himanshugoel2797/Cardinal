@@ -21,7 +21,7 @@ kernel_main_init(void) {
     ProcessSys_Initialize();
     Thread_Initialize();
     RegisterCore(0, NULL);
-    CreateThread(0, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
+    CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
     CoreUpdate();  //BSP is core 0
 }
 
@@ -60,6 +60,7 @@ kernel_main(void) {
     if(cpid == 0) {
         load_elf("file_server.elf");
     }
+
 
     cpid = ForkCurrentProcess();
     if(cpid == 0) {
