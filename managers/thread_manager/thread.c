@@ -81,6 +81,7 @@ PROPERTY_PROC_GET(ManagedPageTable*, PageTable, 0)
 PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
 PROPERTY_PROC_GET(ProcessInformation*, Parent, NULL)
 PROPERTY_PROC_GET(List*, PendingMessages, NULL)
+PROPERTY_PROC_GET(List*, ThreadIDs, NULL)
 
 PROPERTY_GET_SET(UID, ID, 0)
 
@@ -326,6 +327,7 @@ CreateThreadADV(UID parentProcess,
 
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
+    List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadIDs), (void*)GET_PROPERTY_VAL(thd, ID));
     List_AddEntry(thds, thd);
     List_AddEntry(neutral, thd);
 
@@ -660,12 +662,18 @@ GetNextThread(ThreadInfo *prevThread) {
                     }
                 }
 
+                for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)); i++) {
+                    UID id = (UID)List_EntryAt(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs), i);
+
+                    if(id == next_thread->ID) {
+                        List_Remove(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs), i);
+                        break;
+                    }
+                }
+
                 LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-                if(next_thread->ParentProcess->reference_count == 0) {
-                    //TODO Free process memory
-                }
 
                 UnlockSpinlock(next_thread->ParentProcess->lock);
                 FreeSpinlock(next_thread->lock);

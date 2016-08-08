@@ -3,9 +3,10 @@
 #include "memory.h"
 #include "common.h"
 
+
 static List *processes;
 static ProcessInformation *root = NULL;
-static volatile UID baseID = 0;
+static volatile UID baseID = ROOT_PID;
 static UID specialDestinationPIDs[CARDINAL_IPCDEST_NUM];
 static Spinlock specialPIDLock = NULL;
 
@@ -65,6 +66,7 @@ ForkProcess(ProcessInformation *src,
     dst->SyscallFlags = ProcessSyscallFlags_None;
     dst->HeapBreak = src->HeapBreak;
 
+    dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
     dst->MessageLock = CreateSpinlock();
 
@@ -74,7 +76,7 @@ ForkProcess(ProcessInformation *src,
 
     ForkTable(src->PageTable, dst->PageTable);
 
-    dst->reference_count = 0;
+    dst->reference_count = 1;   //The parent process has a reference to the child
     dst->lock = CreateSpinlock();
 
     src->reference_count++;
@@ -86,6 +88,111 @@ ForkProcess(ProcessInformation *src,
     *dest = dst;
 
     return ProcessErrors_None;
+}
+
+void
+TerminateProcess(UID pid, uint32_t exit_code) {
+    ProcessInformation *pinfo = NULL;
+    if(GetProcessReference(pid, &pinfo) == ProcessErrors_UIDNotFound)
+        return;
+
+    //Make this process a zombie
+    pinfo->Status = ProcessStatus_Zombie;
+    pinfo->ExitStatus = exit_code;
+
+    //Kill all the threads
+    for(uint64_t i = 0; i < List_Length(pinfo->ThreadIDs); i++) {
+        UID tid = (UID)List_EntryAt(pinfo->ThreadIDs, i);
+
+        FreeThread(tid);
+    }
+
+    //Wait for all threads to terminate
+    while(List_Length(pinfo->ThreadIDs) != 0)YieldThread();
+
+    //Move children to root process
+    ProcessInformation *root_p = NULL;
+    GetProcessReference(ROOT_PID, &root_p);   
+    for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
+        List_AddEntry(root_p->Children, List_EntryAt(pinfo->Children, i));
+    }
+
+    List_Free(pinfo->Children);
+
+    //Now free all the memory related to this process
+    LockSpinlock(pinfo->lock);
+    LockSpinlock(pinfo->MessageLock);
+    for(uint64_t i = 0; i < List_Length(pinfo->PendingMessages); i++) {
+        void *message = List_EntryAt(pinfo->PendingMessages, i);
+        List_Remove(pinfo->PendingMessages, i);
+
+        kfree(message);
+    }
+    List_Free(pinfo->PendingMessages);
+    List_Free(pinfo->ThreadIDs);
+    FreeSpinlock(pinfo->MessageLock);
+
+    FreeVirtualMemoryInstance(pinfo->PageTable);
+
+}
+
+uint32_t
+ReapProcess(UID pid) {
+
+    uint32_t exit_code = 0;
+
+    if(pid != (UID)-1){
+        ProcessInformation *pinfo = NULL;
+        if(GetProcessReference(pid, &pinfo) == ProcessErrors_UIDNotFound)
+            return;
+
+        LockSpinlock(pinfo->lock);
+
+        if(pinfo->Status == ProcessStatus_Zombie){
+
+            for(uint64_t i = 0; i < List_Length(processes); i++) {
+                ProcessInformation *tmp_procInfo = List_EntryAt(processes, i);
+
+                if(tmp_procInfo->ID == pid){
+                    List_Remove(processes, i);
+                    break;
+                }
+            }
+
+            if(pinfo->Parent != NULL && pinfo->Parent->ID == GetCurrentProcessUID()){
+                for(uint64_t i = 0; i < List_Length(pinfo->Parent->Children); i++) {
+                    ProcessInformation *inf = List_EntryAt(pinfo->Parent->Children, i);
+
+                    if(inf->ID == pid) {
+                        List_Remove(pinfo->Parent->Children, i);
+                        break;
+                    }
+                }
+
+                //Post a sigchld message
+            }
+
+            exit_code = pinfo->ExitStatus;
+            FreeSpinlock(pinfo->lock);
+            kfree(pinfo);
+            return exit_code;
+        }
+
+        UnlockSpinlock(pinfo->lock);
+    }
+
+    ProcessInformation *pinfo = NULL;
+    if(GetProcessReference(GetCurrentProcessUID(), &pinfo) == ProcessErrors_UIDNotFound)
+        return;
+
+    for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
+        ProcessInformation *pinf = List_EntryAt(pinfo->Children, i);
+        if(pinf->Status == ProcessStatus_Zombie) {
+            exit_code = ReapProcess(pinf->ID);
+            break;
+        }
+    }
+    return exit_code;
 }
 
 UID
@@ -132,6 +239,8 @@ ForkCurrentProcess(void) {
 
     return dst_proc->ID;
 }
+
+
 
 ProcessErrors
 GetProcessInformation(UID           pid,
@@ -247,6 +356,9 @@ PostMessages(Message **msg, uint64_t cnt) {
             DestinationPID = specialDestinationPIDs[index];
 
         GetProcessReference(DestinationPID, &pInfo);
+        if(pInfo->Status == ProcessStatus_Zombie)
+            return -1;
+
         if(i == 0 || (msg[i]->DestinationPID != msg[i - 1]->DestinationPID))
             LockSpinlock(pInfo->MessageLock);
         

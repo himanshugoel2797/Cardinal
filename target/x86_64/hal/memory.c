@@ -79,11 +79,16 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
                 uint64_t phys_addr = m->PhysicalAddress;
                 uint64_t len = m->Length;
                 MemoryAllocationType allocType = m->AllocationType;
+                ForkedMemoryData *fork_data = (ForkedMemoryData*)m->AdditionalData;
+
+                if(allocType & MemoryAllocationType_Fork) {
+                    AtomicDecrement32(&fork_data->NetReferenceCount);
+                }
 
                 UnmapPage(inst,
                           m->VirtualAddress,
                           m->Length);
-                if(!(allocType & MemoryAllocationType_Global)) {
+                if(!(allocType & MemoryAllocationType_Global) && ((allocType & MemoryAllocationType_Fork) && fork_data->NetReferenceCount == 0)) {
 
                     //TODO make this function check shared memory status first before releasing its memory
                     FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);

@@ -11,11 +11,14 @@
 #define MAX_PROCESS_NAME_LEN (256)
 #define MAX_PENDING_MESSAGE_CNT 256
 
+#define ROOT_PID 1
+
 typedef enum {
     ProcessStatus_Stopped,
     ProcessStatus_Sleeping,
     ProcessStatus_Terminating,
-    ProcessStatus_Executing
+    ProcessStatus_Executing,
+    ProcessStatus_Zombie
 } ProcessStatus;
 
 typedef enum {
@@ -51,7 +54,9 @@ typedef struct ProcessInformation {
     ManagedPageTable            *PageTable;
     ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
+    uint32_t                    ExitStatus;
     List                        *Children;
+    List                        *ThreadIDs;
     List                        *PendingMessages;
 
     bool                        HandlingMessage;

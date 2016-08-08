@@ -15,6 +15,12 @@ ProcessErrors
 ForkProcess(ProcessInformation *src,
             ProcessInformation **dst);
 
+void
+TerminateProcess(UID pid, uint32_t exit_code);
+
+void
+ReapProcess(UID pid);
+
 UID
 ForkCurrentProcess(void);
 
