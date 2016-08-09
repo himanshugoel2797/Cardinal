@@ -18,13 +18,11 @@ static List* cores;
 static volatile CoreThreadState *coreState = NULL;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
-static volatile UID base_thread_ID = 0;
+static volatile _Atomic UID base_thread_ID = 1;
 
 static UID
 new_thd_uid(void) {
-    register UID dummy = 1;
-    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"+r"(dummy) : [bs]"r"(&base_thread_ID));
-    return (UID)(uint32_t)dummy;
+    return (UID)(uint32_t)base_thread_ID++;
 }
 
 #define PROPERTY_GET(type, name, default_val) type get_thread_##name (ThreadInfo *t) \

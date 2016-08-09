@@ -9,15 +9,18 @@ mmap(void* addr,
      size_t target_len,
      int prot,
      int flags,
-     int UNUSED(fd),
+     int fd,
      off_t UNUSED(offset)) {
 
     if((flags & MAP_ANONYMOUS) == 0)
-        __asm__ volatile("cli\n\thlt");
+        return (void*)(-EBADF);
 
     if(flags & MAP_FIXED)
         __asm__ volatile("cli\n\thlt");
 
+    //Don't allow mapping files
+    if(fd != -1)
+        return (void*)(-EBADF);
 
     MemoryAllocationFlags allocFlags = MemoryAllocationFlags_User;
 

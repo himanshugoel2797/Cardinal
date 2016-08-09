@@ -15,4 +15,7 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_SetProperty, SetProperty_Syscall);
     RegisterSyscall(Syscall_GetProperty, GetProperty_Syscall);
+
+    RegisterSyscall(Syscall_ManageSharedMemoryKey, ManageSharedMemoryKey_Syscall);
+    RegisterSyscall(Syscall_SharedMemoryKeyAction, SharedMemoryKeyAction_Syscall);
 }

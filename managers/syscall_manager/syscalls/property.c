@@ -30,7 +30,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return (uint64_t)SetSpecialDestinationPID(data->params[1]) - 1;
         break;
     case CardinalProperty_Exit:
-        __asm__ volatile("cli\n\thlt");
+        __asm__ volatile("cli\n\thlt" :: "a"(data->params[1]));
         TerminateProcess(GetCurrentProcessUID(), data->params[1]);
         return 0;
         break;

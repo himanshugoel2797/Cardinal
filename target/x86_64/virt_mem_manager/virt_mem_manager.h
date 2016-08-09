@@ -5,6 +5,7 @@
 #include "memory.h"
 
 #define APLS_SIZE THREAD_LOCAL_STORAGE_SIZE
+#define SHMEM_VADDR_BASE (30ULL << 39)
 
 typedef uint64_t* PML_Instance;
 

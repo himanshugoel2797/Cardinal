@@ -6,15 +6,15 @@
 
 static List *processes;
 static ProcessInformation *root = NULL;
-static volatile UID baseID = ROOT_PID;
+static volatile _Atomic UID baseID = ROOT_PID;
 static UID specialDestinationPIDs[CARDINAL_IPCDEST_NUM];
 static Spinlock specialPIDLock = NULL;
 
 static UID
 new_proc_uid(void) {
-    register UID dummy = 1;
-    __asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"+r"(dummy) : [bs]"r"(&baseID));
-    return (UID)(uint32_t)dummy;
+    //register UID dummy = 1;
+    //__asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"+r"(dummy) : [bs]"r"(&baseID));
+    return (UID)(uint32_t)baseID++;
 }
 
 void

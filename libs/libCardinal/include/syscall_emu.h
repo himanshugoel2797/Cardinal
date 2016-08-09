@@ -155,13 +155,13 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	for(int i = 0; i < iovec_cnt; i++)
 		total_size += v[i].iov_len;
 
-	uint64_t needed_size = sizeof(struct ReadWriteRequest);
+	uint64_t needed_size = sizeof(struct WriteRequest);
 
 	total_size = v[0].iov_len;
 	if(total_size + needed_size > UINT16_MAX)
 		total_size = UINT16_MAX - needed_size;
 
-	struct ReadWriteRequest *m = malloc(needed_size + total_size);
+	struct WriteRequest *m = malloc(needed_size + total_size);
 	if(m == NULL)
 		return -ENOMEM;
 
@@ -214,6 +214,51 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 		if()
 
 	}*/
+}
+
+static __inline uint64_t
+__card_readv(int fd, uint64_t vecs, int iovec_cnt) {
+
+	typedef struct {
+		void *iov_base;
+		size_t iov_len;
+	} iovec;
+
+	if(!__card_ValidateFD(fd, 1))
+		return -EINVAL;
+
+	iovec *v = (iovec*)vecs;
+
+	uint64_t total_size = 0;
+	for(int i = 0; i < iovec_cnt; i++)
+		total_size += v[i].iov_len;
+
+	uint64_t needed_size = sizeof(struct ReadWriteRequest);
+
+	total_size = v[0].iov_len;
+	if(total_size + needed_size > UINT16_MAX)
+		total_size = UINT16_MAX - needed_size;
+
+	struct ReadWriteRequest *m = malloc(needed_size + total_size);
+	if(m == NULL)
+		return -ENOMEM;
+
+	m->m.DestinationPID = __card_fds[fd].TargetPID;
+	m->m.MsgID = 0;
+	m->m.Size = needed_size + total_size;
+
+	m->fd = __card_fds[fd].AdditionalData;
+	m->lock = 0;
+	m->msg_type = CARDINAL_MSG_TYPE_READREQUEST;
+
+	uint8_t* src = (uint8_t*)v[0].iov_base;
+	uint8_t* dst = (uint8_t*)m->buf;
+	memcpy(dst, src, total_size);
+
+	PostIPCMessages((Message**)&m, 1);
+	free(m);
+
+	return total_size;
 }
 
 static __inline void

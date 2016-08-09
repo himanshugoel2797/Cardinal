@@ -9,10 +9,12 @@
 #include "interrupts.h"
 #include "managers.h"
 #include "target/x86_64/apic/apic.h"
+#include "libs/libCardinal/include/shared_memory.h"
 
 static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
-
+static List *SharedMemoryUnits = NULL;
+static volatile _Atomic uint64_t shmem_id_base = 1;
 
 void
 HandleTLBShootdown(uint32_t UNUSED(int_no),
@@ -80,19 +82,55 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
                 uint64_t len = m->Length;
                 MemoryAllocationType allocType = m->AllocationType;
                 ForkedMemoryData *fork_data = (ForkedMemoryData*)m->AdditionalData;
+                SharedMemoryData *share_data = (SharedMemoryData*)m->AdditionalData;
 
                 if(allocType & MemoryAllocationType_Fork) {
+                    LockSpinlock(fork_data->Lock);
                     AtomicDecrement32(&fork_data->NetReferenceCount);
+                }else if(allocType == MemoryAllocationType_Shared) {
+                    LockSpinlock(share_data->Lock);
+                    AtomicDecrement32(&share_data->NetReferenceCount);
                 }
 
                 UnmapPage(inst,
                           m->VirtualAddress,
                           m->Length);
-                if(!(allocType & MemoryAllocationType_Global) && ((allocType & MemoryAllocationType_Fork) && fork_data->NetReferenceCount == 0)) {
+                bool toFree = !(allocType & MemoryAllocationType_Global);
+                bool forkFree = (allocType & MemoryAllocationType_Fork);
+                forkFree = forkFree && (fork_data->NetReferenceCount == 0);
 
-                    //TODO make this function check shared memory status first before releasing its memory
+                bool shmemFree = (allocType == MemoryAllocationType_Shared);
+                shmemFree = shmemFree && (share_data->NetReferenceCount == 0);
+
+                if(toFree && (forkFree || shmemFree)) {
                     FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);
                 }
+
+                if(forkFree) {
+                    FreeSpinlock(fork_data->Lock);
+                    kfree(fork_data);
+                } else if(shmemFree) {
+
+                    for(uint64_t i = 0; i < List_Length(SharedMemoryUnits); i++) {
+                        if((uint64_t)share_data == (uint64_t)List_EntryAt(SharedMemoryUnits, i))
+                            List_Remove(SharedMemoryUnits, i);
+                    }
+
+                    for(uint64_t i = 0; i < List_Length(share_data->Keys); i++) {
+                        kfree(List_EntryAt(share_data->Keys, i));
+                    }
+
+                    List_Free(share_data->Keys);
+                    FreeSpinlock(share_data->Lock);
+                    kfree(share_data);
+                }
+
+                if(!forkFree && (allocType & MemoryAllocationType_Fork))
+                    UnlockSpinlock(fork_data->Lock);
+
+                if(!shmemFree && (allocType == MemoryAllocationType_Shared))
+                    UnlockSpinlock(share_data->Lock);
+
                 m = n;
             }
 
@@ -432,6 +470,8 @@ InternalForkTable(ManagedPageTable *src,
 
     //TODO review this code to make sure it works
     while(c != NULL) {
+
+        if(c->AllocationType != MemoryAllocationType_Shared){
         MapPage(dst,
                 c->PhysicalAddress,
                 c->VirtualAddress,
@@ -440,6 +480,7 @@ InternalForkTable(ManagedPageTable *src,
                 c->AllocationType | MemoryAllocationType_Fork,
                 c->Flags
                );
+        }
 
         c = c->next;
     }
@@ -465,8 +506,12 @@ InternalForkTable(ManagedPageTable *src,
 
     while(src_map != NULL && dst_map != NULL) {
 
+        while(src_map != NULL && src_map->AllocationType == MemoryAllocationType_Shared)src_map = src_map->next;
+        if(src_map == NULL)
+            HaltProcessor();
+
         if(src_map->VirtualAddress != dst_map->VirtualAddress)
-            __asm__ ("cli\n\thlt");
+            HaltProcessor();
 
         if(src_map->AllocationType & MemoryAllocationType_Fork)
             dst_map->AdditionalData = src_map->AdditionalData;
@@ -654,8 +699,10 @@ HandlePageFault(uint64_t virtualAddress,
                 PerformTLBShootdown();
 
                 UnlockSpinlock(fork_data->Lock);
-                if(fork_data->NetReferenceCount == 0)
+                if(fork_data->NetReferenceCount == 0){
+                    FreeSpinlock(fork_data->Lock);
                     kfree(fork_data);
+                }
 
                 break;
 
@@ -900,4 +947,163 @@ WriteValueAtAddress32(ManagedPageTable *pageTable,
 
 
     UnlockSpinlock(vmem_lock);
+}
+
+static MemoryAllocationFlags 
+TranslateSharedMemoryFlags(uint64_t flags) {
+    MemoryAllocationFlags f = MemoryAllocationFlags_User | MemoryAllocationFlags_NoExec;
+
+    if(flags & SharedMemoryFlags_Write)
+        f |= MemoryAllocationFlags_Write;
+
+    if(flags & SharedMemoryFlags_Read)
+        f |= MemoryAllocationFlags_Read;
+
+    if(flags & SharedMemoryFlags_Exec)
+        f |= MemoryAllocationFlags_Exec;
+
+    return f;
+}
+
+uint64_t
+ManageSharedMemoryKey(size_t size, uint64_t flags, uint64_t key) {
+    
+    if(SharedMemoryUnits == NULL)
+        SharedMemoryUnits = List_Create(CreateSpinlock());
+    
+    if(size % PAGE_SIZE)
+        size += PAGE_SIZE - (size % PAGE_SIZE);
+
+    if(flags & SharedMemoryFlags_Allocate) {
+        static uint64_t shmem_addr_base = SHMEM_VADDR_BASE;
+
+        SharedMemoryData *shmem_data = kmalloc(sizeof(SharedMemoryData));
+        shmem_data->Keys = List_Create(CreateSpinlock());
+        shmem_data->Permissions = TranslateSharedMemoryFlags(flags);
+        shmem_data->MasterProcess = GetCurrentProcessUID();
+        shmem_data->VirtualAddress = shmem_addr_base;
+        shmem_data->PhysicalAddress = AllocatePhysicalPageCont(size/PAGE_SIZE);
+        shmem_data->Length = size;
+        shmem_data->MasterKey = (uint32_t)shmem_id_base++;
+        shmem_data->NetReferenceCount = 0;
+
+        shmem_addr_base += size;
+
+        List_AddEntry(SharedMemoryUnits, shmem_data);
+        return (uint64_t)shmem_data->MasterKey << 32;
+
+    } else if(flags & SharedMemoryFlags_Free) {
+
+    }else {
+
+        for(uint64_t i = 0; i < List_Length(SharedMemoryUnits); i++) {
+            SharedMemoryData *shmem_data = List_EntryAt(SharedMemoryUnits, i);
+
+            if(shmem_data->MasterKey == (uint32_t)(key >> 32)) {
+
+                //Make sure the current flags are a subset of the master flags
+                //If they are, allocate a new key with the master key applied as metadata
+
+                if(shmem_data->MasterProcess != GetCurrentProcessUID())
+                    return -EPERM;
+
+                MemoryAllocationFlags tmpFlags = TranslateSharedMemoryFlags(flags);
+
+                if(~shmem_data->Permissions & tmpFlags)
+                    return -EPERM;
+
+                SharedMemoryKey *key_data = kmalloc(sizeof(SharedMemoryKey));
+                key_data->Key = (uint32_t)shmem_id_base++;
+                key_data->Permissions = tmpFlags;
+
+                List_AddEntry(shmem_data->Keys, key_data);
+
+                return key_data->Key | ((uint64_t)shmem_data->MasterKey << 32);
+            }
+        }
+
+        return -EINVAL;
+    }
+
+    return -EINVAL;
+}
+
+uint64_t
+SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
+
+    //Search the shared memory table and apply the mapping
+    SharedMemoryData *memData = NULL;
+    for(uint64_t i = 0; i < List_Length(SharedMemoryUnits); i++) {
+        SharedMemoryData *tmpData = List_EntryAt(SharedMemoryUnits, i);
+
+        LockSpinlock(tmpData->Lock);
+
+        if(tmpData->MasterKey == (key >> 32)){
+            memData = tmpData;
+            break;
+        }
+
+        UnlockSpinlock(tmpData->Lock);
+    }
+
+    if(memData == NULL)
+        return -EINVAL;
+
+    MemoryAllocationFlags aFlags = memData->Permissions;
+    uint32_t skey = (uint32_t)key;
+
+    if(skey != 0) {
+        uint64_t i = 0;
+        for(i = 0; i < List_Length(memData->Keys); i++) {
+            SharedMemoryKey *key_data = List_EntryAt(memData->Keys, i);
+
+            if(key_data->Key == skey) {
+                aFlags = key_data->Permissions;
+                break;
+            }
+        }
+        if(i == List_Length(memData->Keys))
+            return UnlockSpinlock(memData->Lock), -EINVAL;
+    }
+
+    if((flags & SharedMemoryFlags_Map) == SharedMemoryFlags_Map){
+
+        MapPage(GetActiveVirtualMemoryInstance(),
+                memData->PhysicalAddress,
+                memData->VirtualAddress,
+                memData->Length,
+                (flags & SharedMemoryFlags_Uncached)?CachingModeUncachable : CachingModeWriteBack,
+                MemoryAllocationType_Shared,
+                aFlags
+                );
+        ManagedPageTable* act = GetActiveVirtualMemoryInstance();
+        LockSpinlock(act->lock);
+
+        MemoryAllocationsMap *c = act->AllocationMap;
+        while(c != NULL) {
+
+            if(c->VirtualAddress == memData->VirtualAddress){
+                c->AdditionalData = memData;
+                break;
+            }
+
+            c = c->next;
+        }
+
+        memData->NetReferenceCount++;
+        UnlockSpinlock(memData->Lock);
+        return memData->VirtualAddress;
+
+    }else if((flags & SharedMemoryFlags_Unmap) == SharedMemoryFlags_Unmap){
+
+        UnmapPage(GetActiveVirtualMemoryInstance(),
+                  memData->VirtualAddress,
+                  memData->Length);
+
+        memData->NetReferenceCount--;
+        UnlockSpinlock(memData->Lock);
+        return 0;
+    }
+
+    return -EINVAL;
 }

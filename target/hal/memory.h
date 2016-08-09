@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "synchronization.h"
+#include "list.h"
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
@@ -33,7 +34,7 @@ typedef enum {
 
 ///Memory Allocation Flags
 typedef enum {
-    MemoryAllocationFlags_NoExec = (1 << 0),  ///<Execute Disable
+    MemoryAllocationFlags_NoExec = (0 << 1),  ///<Execute Disable
     MemoryAllocationFlags_Exec = (1 << 1),    ///<Execute Enable
     MemoryAllocationFlags_Read = 0,
     MemoryAllocationFlags_Write = (1 << 2),   ///<Write Enabled
@@ -79,6 +80,23 @@ typedef struct ForkedMemoryData {
     MemoryAllocationType AllocationType;
     Spinlock Lock;
 } ForkedMemoryData;
+
+typedef struct SharedMemoryKey {
+    uint64_t Key;
+    MemoryAllocationFlags Permissions;
+}SharedMemoryKey;
+
+typedef struct SharedMemoryData {
+    List *Keys;
+    MemoryAllocationFlags Permissions;
+    UID MasterProcess;
+    uint64_t VirtualAddress;
+    uint64_t PhysicalAddress;
+    uint64_t Length;
+    uint32_t MasterKey;
+    uint32_t NetReferenceCount;
+    Spinlock Lock;
+} SharedMemoryData;
 
 typedef struct ManagedPageTable {
     UID                   PageTable;
@@ -208,5 +226,11 @@ GetCoreCount(void);
 
 void
 HaltProcessor(void);
+
+uint64_t
+ManageSharedMemoryKey(size_t size, uint64_t flags, uint64_t key);
+
+uint64_t
+SharedMemoryKeyAction(uint64_t key, uint64_t flags);
 
 #endif

@@ -36,7 +36,7 @@ struct CloseRequest {
     uint64_t fd;
 };
 
-struct ReadWriteRequest {
+struct WriteRequest {
 	Message m;
 	uint64_t msg_type;
     uint64_t fd;
@@ -44,8 +44,15 @@ struct ReadWriteRequest {
     uint64_t buf[1];
 };
 
+struct ReadRequest {
+	Message m;
+	uint64_t msg_type;
+	uint64_t fd;
+	
+};
+
 #define MAX_PATH_LEN ((4096 - sizeof(struct OpenRequest)))
-#define MAX_BUF_LEN ((UINT16_MAX - sizeof(struct ReadWriteRequest)))
+#define MAX_BUF_LEN ((UINT16_MAX - sizeof(struct WriteRequest)))
 
 #ifndef _KERNEL_
 
