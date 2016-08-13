@@ -47,6 +47,8 @@ typedef enum {
 
 typedef struct ProcessInformation {
     UID                         ID;
+    UID                         UserID;
+    UID                         GroupID;    //GroupIDs are used to control filesystem namespace levels
 
     char                        Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus               Status;

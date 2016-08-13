@@ -166,11 +166,10 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 		return -ENOMEM;
 
 	m->m.DestinationPID = __card_fds[fd].TargetPID;
-	m->m.MsgID = 0;
+	m->m.MsgID = __card_req_id++;
 	m->m.Size = needed_size + total_size;
 
 	m->fd = __card_fds[fd].AdditionalData;
-	m->lock = 0;
 	m->msg_type = CARDINAL_MSG_TYPE_READREQUEST;
 
 	uint8_t* src = (uint8_t*)v[0].iov_base;
@@ -178,9 +177,13 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	memcpy(dst, src, total_size);
 
 	PostIPCMessages((Message**)&m, 1);
-	free(m);
 
-	return total_size;
+	struct WriteResponse response;
+	while(!GetIPCMessageFrom((Message*)&response, __card_fds[fd].TargetPID, m->m.MsgID))
+		Syscall1(Syscall_Nanosleep, 100);
+
+	free(m);
+	return response.write_size;
 
 	/*
 	int num_requests = total_size / (UINT16_MAX - needed_size) + 1;
@@ -229,36 +232,40 @@ __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 
 	iovec *v = (iovec*)vecs;
 
-	uint64_t total_size = 0;
-	for(int i = 0; i < iovec_cnt; i++)
-		total_size += v[i].iov_len;
+	uint64_t total_size = v[0].iov_len;
+	uint64_t needed_size = sizeof(struct ReadRequest);
 
-	uint64_t needed_size = sizeof(struct ReadWriteRequest);
-
-	total_size = v[0].iov_len;
 	if(total_size + needed_size > UINT16_MAX)
 		total_size = UINT16_MAX - needed_size;
+	
+	struct ReadRequest read_req;
+	read_req.m.DestinationPID = __card_fds[fd].TargetPID;
+	read_req.m.MsgID = __card_req_id++;
+	read_req.m.Size = sizeof(struct ReadRequest);
+	read_req.msg_type = CARDINAL_MSG_TYPE_READREQUEST;
+	read_req.fd = __card_fds[fd].AdditionalData;
+	read_req.read_size = total_size;
+	
+	Message *m = (Message*)&read_req;
+	PostIPCMessages(&m, 1);
 
-	struct ReadWriteRequest *m = malloc(needed_size + total_size);
-	if(m == NULL)
-		return -ENOMEM;
+	struct ReadResponse *read_resp = malloc(UINT16_MAX);
+	if(read_resp == NULL)
+		return ENOMEM;
 
-	m->m.DestinationPID = __card_fds[fd].TargetPID;
-	m->m.MsgID = 0;
-	m->m.Size = needed_size + total_size;
+	while(!GetIPCMessageFrom(read_resp, __card_fds[fd].TargetPID, read_req.m.MsgID))
+		Syscall1(Syscall_Nanosleep, 100);
 
-	m->fd = __card_fds[fd].AdditionalData;
-	m->lock = 0;
-	m->msg_type = CARDINAL_MSG_TYPE_READREQUEST;
+	if(read_resp->msg_type != CARDINAL_MSG_TYPE_READRESPONSE)
+		return EIO;
 
-	uint8_t* src = (uint8_t*)v[0].iov_base;
-	uint8_t* dst = (uint8_t*)m->buf;
-	memcpy(dst, src, total_size);
+	uint64_t ret_val = read_resp->code;
 
-	PostIPCMessages((Message**)&m, 1);
-	free(m);
+	if((int64_t)ret_val >= 0)memcpy(v[0].iov_base, read_resp->data, ret_val);
 
-	return total_size;
+	free(read_resp);
+
+	return ret_val;
 }
 
 static __inline void
@@ -377,6 +384,17 @@ SyscallEmu3(uint32_t syscall_num,
     		__card_Initialize();
     		{
 
+			typedef struct {
+				void *iov_base;
+				size_t iov_len;
+			} iovec;
+
+				iovec tmp;
+				tmp.iov_base = (void*)p1;
+				tmp.iov_len = (size_t)p2;
+
+    			ret_error = __card_readv((int)p0, (uint64_t)&tmp, 1);
+
     		}
     	break;
     	case Cardinal_EmulatedSyscalls_Writev:
@@ -388,7 +406,7 @@ SyscallEmu3(uint32_t syscall_num,
     	case Cardinal_EmulatedSyscalls_Readv:
     		__card_Initialize();
     		{
-
+    			ret_error = __card_readv((int)p0, p1, (int)p2);
     		}
     	break;
     }

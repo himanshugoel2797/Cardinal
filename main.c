@@ -61,7 +61,6 @@ kernel_main(void) {
         load_elf("file_server.elf");
     }
 
-
     cpid = ForkCurrentProcess();
     if(cpid == 0) {
         load_elf("test.elf");

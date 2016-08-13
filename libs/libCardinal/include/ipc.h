@@ -11,6 +11,7 @@
 
 #define CARDINAL_IPCDEST_NUM 32
 #define CARDINAL_IPCDEST_FILESERVER ((1ull << 32) | 1) 
+#define CARDINAL_IPCDEST_DISPLAYSERVER ((1ull << 32) | 2)
 
 typedef struct Message {
     UID SourcePID;
