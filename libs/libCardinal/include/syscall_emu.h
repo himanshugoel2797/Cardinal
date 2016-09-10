@@ -170,7 +170,7 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	m->m.Size = needed_size + total_size;
 
 	m->fd = __card_fds[fd].AdditionalData;
-	m->msg_type = CARDINAL_MSG_TYPE_READREQUEST;
+	m->msg_type = CARDINAL_MSG_TYPE_WRITEREQUEST;
 
 	uint8_t* src = (uint8_t*)v[0].iov_base;
 	uint8_t* dst = (uint8_t*)m->buf;
@@ -253,7 +253,7 @@ __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 	if(read_resp == NULL)
 		return ENOMEM;
 
-	while(!GetIPCMessageFrom(read_resp, __card_fds[fd].TargetPID, read_req.m.MsgID))
+	while(!GetIPCMessageFrom((Message*)read_resp, __card_fds[fd].TargetPID, read_req.m.MsgID))
 		Syscall1(Syscall_Nanosleep, 100);
 
 	if(read_resp->msg_type != CARDINAL_MSG_TYPE_READRESPONSE)
@@ -274,7 +274,11 @@ __card_Initialize(void) {
 	if(!inited) {
 		inited = 1;
 
-		for(int i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
+		__card_fds[0].Flags = DescriptorFlags_None;
+		__card_fds[0].TargetPID = CARDINAL_IPCDEST_FILESERVER;
+		__card_fds[0].AdditionalData = 0;
+
+		for(int i = 1; i < MAX_FILE_DESCRIPTORS; i++) {
 			__card_fds[i].Flags = DescriptorFlags_Free;
 			__card_fds[i].TargetPID = 0;
 			__card_fds[i].AdditionalData = 0;
@@ -297,6 +301,9 @@ SyscallEmu0(uint32_t syscall_num) {
     	break;
     	case Cardinal_EmulatedSyscalls_GetTID:
     		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_TID, 0);
+    	break;
+    	default:
+    		__asm__("hlt" :: "a"(syscall_num));
     	break;
     }
 
@@ -323,6 +330,9 @@ SyscallEmu1(uint32_t syscall_num,
     	case Cardinal_EmulatedSyscalls_Exit:
     		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
     	break;
+    	default:
+    		__asm__("hlt" :: "a"(syscall_num));
+    	break;
     }
 
     return ret_error;
@@ -345,6 +355,13 @@ SyscallEmu2(uint32_t syscall_num,
     			struct timespec *tmp = (struct timespec*)p0;
     			ret_error = Syscall1(Syscall_Nanosleep, tmp->tv_sec * 1000000000ULL + tmp->tv_nsec);
     		}
+    	break;
+    	case Cardinal_EmulatedSyscalls_Open:
+    		__card_Initialize();
+    		ret_error = __card_open((const char*)p0, (int)p1, (int)0);
+    	break;
+    	default:
+    		__asm__("hlt" :: "a"(syscall_num));
     	break;
     }
 
@@ -409,6 +426,9 @@ SyscallEmu3(uint32_t syscall_num,
     			ret_error = __card_readv((int)p0, p1, (int)p2);
     		}
     	break;
+    	default:
+    		__asm__("hlt" :: "a"(syscall_num));
+    	break;
     }
 
     return ret_error;
@@ -466,6 +486,9 @@ SyscallEmu6(uint32_t syscall_num,
     switch(syscall_num) {
     	case Cardinal_EmulatedSyscalls_MMap:
     		ret_error = Syscall6(Syscall_MMap, p0, p1, p2, p3, p4, p5);
+    	break;
+    	default:
+    		__asm__("hlt" :: "a"(syscall_num));
     	break;
     }
 
