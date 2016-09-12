@@ -1113,4 +1113,19 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
                         MemoryAllocationType type)
 {
     //Walk the page table, unmapping anything that has the same allocation type
+    LockSpinlock(pageTable->lock);
+
+    MemoryAllocationsMap *map = pageTable->AllocationMap;
+    while(map != NULL){
+
+        MemoryAllocationsMap *n = map->next;
+        if(map->AllocationType == type){
+            UnmapPage(pageTable,
+                      n->VirtualAddress,
+                      n->Length);
+        }
+        map = n;
+    }
+
+    UnlockSpinlock(pageTable->lock);
 }

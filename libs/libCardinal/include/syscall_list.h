@@ -18,7 +18,9 @@ typedef enum {
     Syscall_ManageSharedMemoryKey, //region size, flags, existing key, return key/error
     Syscall_SharedMemoryKeyAction, //key to apply, flag to apply/remove, return virtual address
 
-    Syscall_NumEnd = Syscall_GetProperty,
+    Syscall_Execve,
+
+    Syscall_NumEnd = Syscall_Execve,
 } SyscallFunctions;
 
 #endif

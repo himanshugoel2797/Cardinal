@@ -63,6 +63,7 @@ typedef struct ProcessInformation {
     List                        *PendingMessages;
 
     void                        *PLS;
+    size_t                      PLSSize;
 
     bool                        HandlingMessage;
     Spinlock                    MessageLock;

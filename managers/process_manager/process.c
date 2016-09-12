@@ -66,6 +66,7 @@ ForkProcess(ProcessInformation *src,
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
     dst->SyscallFlags = ProcessSyscallFlags_None;
     dst->HeapBreak = src->HeapBreak;
+    dst->PLS = src->PLS;
 
     dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
@@ -447,5 +448,19 @@ void*
 GetProcessLocalStorage(UID pid,
                        size_t minSize)
 {
-    
+    //Allocate the PLS if it hasn't been allocated, or if it's too small, allocate a new PLS of the appropriate size and copy over the data
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return NULL;
+
+    //Align the allocation size to the page size
+    if(minSize % PAGE_SIZE)
+        minSize += PAGE_SIZE - (minSize % PAGE_SIZE);
+
+    if(info->PLSSize != minSize | info->PLS == NULL)
+    {
+        //Free the previous allocation, and create a new one that's the right size
+    }
+
+    return info->PLS;
 }

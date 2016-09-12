@@ -54,10 +54,11 @@ struct CardinalFileDescriptor{
 
 typedef struct {
 	_Atomic volatile uint8_t __card_allocating_fd;
-	struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
 	UID __card_currentPID;
 	_Atomic uint64_t __card_req_id;
 	bool inited;
+	uint64_t rsvd[16];
+	struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
 } CardinalSyscallEmulationData;
 
 
