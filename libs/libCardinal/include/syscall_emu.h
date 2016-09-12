@@ -24,12 +24,14 @@ typedef enum {
 	Cardinal_EmulatedSyscalls_Close = 3,
 	Cardinal_EmulatedSyscalls_MMap = 9,
 	Cardinal_EmulatedSyscalls_Brk = 12,
+	Cardinal_EmulatedSyscalls_Ioctl = 16, 	//TODO: Implement a temporary wrapper for this, we don't want to actually translate ioctls
 	Cardinal_EmulatedSyscalls_Readv = 19,
 	Cardinal_EmulatedSyscalls_Writev = 20,
 	Cardinal_EmulatedSyscalls_Nanosleep = 35,
 	Cardinal_EmulatedSyscalls_GetPID = 39,
 	Cardinal_EmulatedSyscalls_Fork = 57,
 	Cardinal_EmulatedSyscalls_Exit = 60,
+	Cardinal_EmulatedSyscalls_Fcntl = 72,
 	Cardinal_EmulatedSyscalls_ArchPrctl = 158,
 	Cardinal_EmulatedSyscalls_GetTID = 186,
 	Cardinal_EmulatedSyscalls_Time = 201,
@@ -268,6 +270,12 @@ __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 	return ret_val;
 }
 
+static __inline int
+__card_fcntl(int fd, int cmd, int arg){
+
+	return 0;
+}
+
 static __inline void
 __card_Initialize(void) {
 	static bool inited = 0;
@@ -360,6 +368,10 @@ SyscallEmu2(uint32_t syscall_num,
     		__card_Initialize();
     		ret_error = __card_open((const char*)p0, (int)p1, (int)0);
     	break;
+    	case Cardinal_EmulatedSyscalls_Fcntl:
+    		__card_Initialize();
+    		ret_error = __card_fcntl((int)p0, (int)p1, 0);
+    	break;
     	default:
     		__asm__("hlt" :: "a"(syscall_num));
     	break;
@@ -425,6 +437,10 @@ SyscallEmu3(uint32_t syscall_num,
     		{
     			ret_error = __card_readv((int)p0, p1, (int)p2);
     		}
+    	break;
+    	case Cardinal_EmulatedSyscalls_Fcntl:
+    		__card_Initialize();
+    		ret_error = __card_fcntl((int)p0, (int)p1, (int)p2);
     	break;
     	default:
     		__asm__("hlt" :: "a"(syscall_num));
