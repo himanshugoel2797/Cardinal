@@ -216,7 +216,7 @@ void kfree(void *addr) {
     UnlockSpinlock(alloc_sync);
 }
 
-void* AllocateMapping(size_t size) {
+void* AllocateMapping(MemoryAllocationType t, MemoryAllocationFlags flags, size_t size) {
     uint64_t user_stack_base = 0;
 
     if(size % PAGE_SIZE != 0)
@@ -226,7 +226,7 @@ void* AllocateMapping(size_t size) {
         GetActiveVirtualMemoryInstance(),
         (uint64_t*)&user_stack_base,
         size,
-        MemoryAllocationType_Heap,
+        t,
         MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
     if(user_stack_base == 0)while(1);
@@ -240,8 +240,8 @@ void* AllocateMapping(size_t size) {
                 vaddr,
                 PAGE_SIZE,
                 CachingModeWriteBack,
-                MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel
+                t,
+                flags
                );
     }
 
@@ -275,7 +275,7 @@ void FreeMapping(void* mem, size_t size) {
     }
 }
 
-void* AllocateMappingCont(size_t size) {
+void* AllocateMappingCont(AllocationType t, MemoryAllocationFlags flags, size_t size) {
     uint64_t user_stack_base = 0;
 
     if(size % PAGE_SIZE != 0)
@@ -285,7 +285,7 @@ void* AllocateMappingCont(size_t size) {
         GetActiveVirtualMemoryInstance(),
         (uint64_t*)&user_stack_base,
         size,
-        MemoryAllocationType_Heap,
+        t,
         MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
 
     if(user_stack_base == 0)while(1);
@@ -295,8 +295,8 @@ void* AllocateMappingCont(size_t size) {
             user_stack_base,
             size,
             CachingModeWriteBack,
-            MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel
+            t,
+            flags
            );
 
     return (void*)user_stack_base;

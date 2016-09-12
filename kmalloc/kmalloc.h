@@ -34,11 +34,11 @@ void kfree(void* addr);
 //! \sa kmalloc(), kfree()
 void kcompact();
 
-void* AllocateMapping(size_t size);
+void* AllocateMapping(AllocationType t, MemoryAllocationFlags flags, size_t size);
 
 void FreeMapping(void* mem, size_t size);
 
-void* AllocateMappingCont(size_t size);
+void* AllocateMappingCont(AllocationType t, MemoryAllocationFlags flags, size_t size);
 
 void FreeMappingCont(void* mem, size_t size);
 

@@ -460,6 +460,17 @@ GetProcessLocalStorage(UID pid,
     if(info->PLSSize != minSize | info->PLS == NULL)
     {
         //Free the previous allocation, and create a new one that's the right size
+
+        if(info->PLS != NULL)
+        {
+            FreeMappingCont(info->PLS, info->PLSSize);
+        }
+
+
+        info->PLSSize = minSize;
+        info->PLS = AllocateMappingCont(AllocationType_ApplicationProtected, 
+                                        MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User, 
+                                        info->PLSSize);
     }
 
     return info->PLS;
