@@ -10,6 +10,7 @@
 
 #define MAX_PROCESS_NAME_LEN (256)
 #define MAX_PENDING_MESSAGE_CNT 256
+#define MAX_PLS_SIZE KiB(64)
 
 #define ROOT_PID 1
 
@@ -60,6 +61,8 @@ typedef struct ProcessInformation {
     List                        *Children;
     List                        *ThreadIDs;
     List                        *PendingMessages;
+
+    void                        *PLS;
 
     bool                        HandlingMessage;
     Spinlock                    MessageLock;

@@ -67,6 +67,9 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     case CardinalProperty_TID:
         return GetCurrentThreadUID();
         break;
+    case CardinalProperty_PLS:
+        return GetProcessLocalStorage(GetCurrentProcessUID(), syscall_params[1]);
+        break;
     default:
         return -EINVAL;
         break;

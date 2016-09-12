@@ -24,12 +24,13 @@ typedef enum {
 	Cardinal_EmulatedSyscalls_Close = 3,
 	Cardinal_EmulatedSyscalls_MMap = 9,
 	Cardinal_EmulatedSyscalls_Brk = 12,
-	Cardinal_EmulatedSyscalls_Ioctl = 16, 	//TODO: Implement a temporary wrapper for this, we don't want to actually translate ioctls
+	Cardinal_EmulatedSyscalls_Ioctl = 16, 	//TODO: Implement a temporary wrapper for this, we don't want to actually pass ioctls to file servers
 	Cardinal_EmulatedSyscalls_Readv = 19,
 	Cardinal_EmulatedSyscalls_Writev = 20,
 	Cardinal_EmulatedSyscalls_Nanosleep = 35,
 	Cardinal_EmulatedSyscalls_GetPID = 39,
 	Cardinal_EmulatedSyscalls_Fork = 57,
+	Cardinal_EmulatedSyscalls_Execve = 59,
 	Cardinal_EmulatedSyscalls_Exit = 60,
 	Cardinal_EmulatedSyscalls_Fcntl = 72,
 	Cardinal_EmulatedSyscalls_ArchPrctl = 158,
@@ -51,20 +52,26 @@ struct CardinalFileDescriptor{
 	DescriptorFlags Flags;
 };
 
-static _Atomic volatile uint8_t __card_allocating_fd = 0;
-static struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
-static UID __card_currentPID = 0;
-static _Atomic uint64_t __card_req_id = 1;
+typedef struct {
+	_Atomic volatile uint8_t __card_allocating_fd;
+	struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
+	UID __card_currentPID;
+	_Atomic uint64_t __card_req_id;
+	bool inited;
+} CardinalSyscallEmulationData;
+
+
+static CardinalSyscallEmulationData *data = NULL;
 
 static __inline bool
 __card_ValidateFD(int fd, bool is_open) {
-	if(__card_currentPID == 0)
-		__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
+	if(data->__card_currentPID == 0)
+		data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
 
 	if(fd >= MAX_FILE_DESCRIPTORS)
 		return 0;
 
-	if(__card_fds[fd].Flags == DescriptorFlags_Free)
+	if(data->__card_fds[fd].Flags == DescriptorFlags_Free)
 		return !is_open;
 
 	return 1;
@@ -73,28 +80,28 @@ __card_ValidateFD(int fd, bool is_open) {
 static __inline int
 __card_AllocateFD(struct OpenResponse *resp, int flags) {
 
-	while(__card_allocating_fd);
+	while(data->__card_allocating_fd);
 
 	int fd = 0;
 
-	__card_allocating_fd = 1;
+	data->__card_allocating_fd = 1;
 
 	for(int i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
 		
-		if(__card_fds[i].Flags == DescriptorFlags_Free) {
-			__card_fds[i].TargetPID = resp->targetPID;
-			__card_fds[i].AdditionalData = resp->fd;
-			__card_fds[i].Flags = DescriptorFlags_None;
+		if(data->__card_fds[i].Flags == DescriptorFlags_Free) {
+			data->__card_fds[i].TargetPID = resp->targetPID;
+			data->__card_fds[i].AdditionalData = resp->fd;
+			data->__card_fds[i].Flags = DescriptorFlags_None;
 
 			if(flags & O_CLOEXEC)
-				__card_fds[i].Flags |= DescriptorFlags_CloseOnExec;
+				data->__card_fds[i].Flags |= DescriptorFlags_CloseOnExec;
 
 			fd = i;
 			break;
 		}
 	}
 
-	__card_allocating_fd = 0;
+	data->__card_allocating_fd = 0;
 	return fd;
 }
 
@@ -109,7 +116,7 @@ __card_open(const char *path, int flags, int mode) {
 		return -ENOMEM;
 
 	m->m.DestinationPID = CARDINAL_IPCDEST_FILESERVER;
-	m->m.MsgID = __card_req_id++;
+	m->m.MsgID = data->__card_req_id++;
 	m->m.Size = total_size;
 
 	m->flags = flags;
@@ -167,11 +174,11 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	if(m == NULL)
 		return -ENOMEM;
 
-	m->m.DestinationPID = __card_fds[fd].TargetPID;
-	m->m.MsgID = __card_req_id++;
+	m->m.DestinationPID = data->__card_fds[fd].TargetPID;
+	m->m.MsgID = data->__card_req_id++;
 	m->m.Size = needed_size + total_size;
 
-	m->fd = __card_fds[fd].AdditionalData;
+	m->fd = data->__card_fds[fd].AdditionalData;
 	m->msg_type = CARDINAL_MSG_TYPE_WRITEREQUEST;
 
 	uint8_t* src = (uint8_t*)v[0].iov_base;
@@ -181,7 +188,7 @@ __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 	PostIPCMessages((Message**)&m, 1);
 
 	struct WriteResponse response;
-	while(!GetIPCMessageFrom((Message*)&response, __card_fds[fd].TargetPID, m->m.MsgID))
+	while(!GetIPCMessageFrom((Message*)&response, data->__card_fds[fd].TargetPID, m->m.MsgID))
 		Syscall1(Syscall_Nanosleep, 100);
 
 	free(m);
@@ -241,11 +248,11 @@ __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 		total_size = UINT16_MAX - needed_size;
 	
 	struct ReadRequest read_req;
-	read_req.m.DestinationPID = __card_fds[fd].TargetPID;
-	read_req.m.MsgID = __card_req_id++;
+	read_req.m.DestinationPID = data->__card_fds[fd].TargetPID;
+	read_req.m.MsgID = data->__card_req_id++;
 	read_req.m.Size = sizeof(struct ReadRequest);
 	read_req.msg_type = CARDINAL_MSG_TYPE_READREQUEST;
-	read_req.fd = __card_fds[fd].AdditionalData;
+	read_req.fd = data->__card_fds[fd].AdditionalData;
 	read_req.read_size = total_size;
 	
 	Message *m = (Message*)&read_req;
@@ -255,7 +262,7 @@ __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 	if(read_resp == NULL)
 		return ENOMEM;
 
-	while(!GetIPCMessageFrom((Message*)read_resp, __card_fds[fd].TargetPID, read_req.m.MsgID))
+	while(!GetIPCMessageFrom((Message*)read_resp, data->__card_fds[fd].TargetPID, read_req.m.MsgID))
 		Syscall1(Syscall_Nanosleep, 100);
 
 	if(read_resp->msg_type != CARDINAL_MSG_TYPE_READRESPONSE)
@@ -278,18 +285,22 @@ __card_fcntl(int fd, int cmd, int arg){
 
 static __inline void
 __card_Initialize(void) {
-	static bool inited = 0;
-	if(!inited) {
-		inited = 1;
 
-		__card_fds[0].Flags = DescriptorFlags_None;
-		__card_fds[0].TargetPID = CARDINAL_IPCDEST_FILESERVER;
-		__card_fds[0].AdditionalData = 0;
+	if(data == NULL){
+		data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
+	}
+
+	if(!data->inited) {
+		data->inited = 1;
+
+		data->__card_fds[0].Flags = DescriptorFlags_None;
+		data->__card_fds[0].TargetPID = CARDINAL_IPCDEST_FILESERVER;
+		data->__card_fds[0].AdditionalData = 0;
 
 		for(int i = 1; i < MAX_FILE_DESCRIPTORS; i++) {
-			__card_fds[i].Flags = DescriptorFlags_Free;
-			__card_fds[i].TargetPID = 0;
-			__card_fds[i].AdditionalData = 0;
+			data->__card_fds[i].Flags = DescriptorFlags_Free;
+			data->__card_fds[i].TargetPID = 0;
+			data->__card_fds[i].AdditionalData = 0;
 		}
 	}
 }
@@ -301,11 +312,15 @@ SyscallEmu0(uint32_t syscall_num) {
     switch(syscall_num) {
     	case Cardinal_EmulatedSyscalls_GetPID:
     		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
-    		__card_currentPID = ret_error;
+    		data->__card_currentPID = ret_error;
     	break;
     	case Cardinal_EmulatedSyscalls_Fork:
     		ret_error = Syscall0(Syscall_Fork);
-    		__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
+
+			data->__card_allocating_fd = 0;
+	 		data->__card_currentPID = 0;
+	    	data->__card_req_id = 1;
+    		data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
     	break;
     	case Cardinal_EmulatedSyscalls_GetTID:
     		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_TID, 0);
@@ -353,7 +368,6 @@ SyscallEmu2(uint32_t syscall_num,
 
     uint64_t ret_error = -ENOSYS;
 
-    //TODO Correct arch_prctl behavior, update newlib inline asm call for it
     switch(syscall_num) {
     	case Cardinal_EmulatedSyscalls_ArchPrctl:
     		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_ArchPrctl, p0, p1);
@@ -367,6 +381,9 @@ SyscallEmu2(uint32_t syscall_num,
     	case Cardinal_EmulatedSyscalls_Open:
     		__card_Initialize();
     		ret_error = __card_open((const char*)p0, (int)p1, (int)0);
+    	break;
+    	case Cardinal_EmulatedSyscalls_Ioctl:
+    		return -1;
     	break;
     	case Cardinal_EmulatedSyscalls_Fcntl:
     		__card_Initialize();
@@ -438,9 +455,18 @@ SyscallEmu3(uint32_t syscall_num,
     			ret_error = __card_readv((int)p0, p1, (int)p2);
     		}
     	break;
+    	case Cardinal_EmulatedSyscalls_Ioctl:
+    		return -1;
+    	break;
     	case Cardinal_EmulatedSyscalls_Fcntl:
     		__card_Initialize();
     		ret_error = __card_fcntl((int)p0, (int)p1, (int)p2);
+    	break;
+    	case Cardinal_EmulatedSyscalls_Execve:
+
+    		//TODO Perform the actual syscall
+
+			data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
     	break;
     	default:
     		__asm__("hlt" :: "a"(syscall_num));

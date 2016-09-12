@@ -7,6 +7,7 @@
 typedef enum {
 	CardinalProperty_TID,
 	CardinalProperty_PID,
+	CardinalProperty_PLS, /*Process Local Storage*/
     CardinalProperty_SetTidAddress,
     CardinalProperty_Time,
     CardinalProperty_SpecialDestination,

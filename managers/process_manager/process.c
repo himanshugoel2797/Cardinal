@@ -441,3 +441,11 @@ SetSpecialDestinationPID(UID specialID) {
     UnlockSpinlock(specialPIDLock);
     return TRUE;
 }
+
+
+void*
+GetProcessLocalStorage(UID pid,
+                       size_t minSize)
+{
+    
+}

@@ -32,6 +32,10 @@ ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo);
 
+void*
+GetProcessLocalStorage(UID pid,
+					   size_t minSize);
+
 char*
 GetCurrentProcessWorkingDirectory(void);
 

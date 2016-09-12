@@ -233,4 +233,8 @@ ManageSharedMemoryKey(size_t size, uint64_t flags, uint64_t key);
 uint64_t
 SharedMemoryKeyAction(uint64_t key, uint64_t flags);
 
+void
+WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
+                        MemoryAllocationType type);
+
 #endif

@@ -1107,3 +1107,10 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
 
     return -EINVAL;
 }
+
+void
+WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
+                        MemoryAllocationType type)
+{
+    //Walk the page table, unmapping anything that has the same allocation type
+}
