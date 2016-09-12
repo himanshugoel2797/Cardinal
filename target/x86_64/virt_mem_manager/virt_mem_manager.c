@@ -771,113 +771,9 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
     return NULL;
 }
 
-uint64_t
-VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
-                            MEM_SECURITY_PERMS sec_perms) {
-    uint64_t pml_base = 256;
-    uint64_t pdpt_base = 0;
-
-
-    allocType = allocType & ~MemoryAllocationType_Global;
-
-    switch(allocType) {
-    case MemoryAllocationType_Heap:
-        pml_base = 511;
-        break;
-    default:
-        pml_base = 256;
-        break;
-    }
-
-    if(sec_perms & MEM_USER) {
-
-        switch(allocType) {
-        case MemoryAllocationType_Heap:
-            pml_base = 1;
-            break;
-        case MemoryAllocationType_Application:
-            pml_base = 20;
-            break;
-        case MemoryAllocationType_Stack:
-            pml_base = 2;
-            break;
-        case MemoryAllocationType_MMap:
-            pml_base = 3;
-            break;
-        case MemoryAllocationType_MMapLo:
-            pml_base = 0;
-            pdpt_base = 1;
-            break;
-        default:
-            pml_base = 0;
-            break;
-        }
-    }
-
-    return pml_base << 39;
-}
-
-uint64_t
-VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
-                           MEM_SECURITY_PERMS sec_perms) {
-    uint64_t pml_base = 256;
-    uint64_t pdpt_base = 0;
-
-    allocType = allocType & ~MemoryAllocationType_Global;
-
-    switch(allocType) {
-    case MemoryAllocationType_Heap:
-        pml_base = 511;
-        break;
-    default:
-        pml_base = 256;
-        break;
-    }
-
-    if(sec_perms & MEM_USER) {
-
-        switch(allocType) {
-        case MemoryAllocationType_Heap:
-            pml_base = 1;
-            break;
-        case MemoryAllocationType_Application:
-            pml_base = 20;
-            break;
-        case MemoryAllocationType_Stack:
-            pml_base = 2;
-            break;
-        case MemoryAllocationType_MMap:
-            pml_base = 3;
-            break;
-        case MemoryAllocationType_MMapLo:
-            pml_base = 0;
-            pdpt_base = 1;
-            break;
-        default:
-            pml_base = 0;
-            break;
-        }
-    }
-    return (pml_base + 1) << 39;
-}
-
-void*
-VirtMemMan_FindFreeAddress(PML_Instance       inst,
-                           uint64_t           size,
-                           MemoryAllocationType allocType,
-                           MEM_SECURITY_PERMS sec_perms) {
-    if(size % KiB(4) != 0)
-        size = (size/KiB(4) + 1) * KiB(4);	//Align the size to higher 4KiB
-
-    uint64_t needed_score = size;
-    uint64_t cur_score = 0;
-
-    uint64_t prev_val = 0;
-
-    allocType = allocType & ~MemoryAllocationType_Global;
-
-    uint64_t addr = 0;
-#define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
+static void
+VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocType, MEM_SECURITY_PERMS sec_perms)
+{
 
     int pml_base = 256;
     int pdpt_base = 0;
@@ -910,12 +806,69 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
             pml_base = 0;
             pdpt_base = 1;
             break;
+        case MemoryAllocationType_ApplicationProtected:
+            pml_base = 21;
+            break;
         default:
             pml_base = 0;
             pdpt_base = 1;
             break;
         }
     }
+
+    if(pml != NULL)*pml = pml_base;
+    if(pdpt != NULL)*pdpt = pdpt_base;
+}
+
+uint64_t
+VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
+                            MEM_SECURITY_PERMS sec_perms) {
+    uint64_t pml_base = 256;
+    uint64_t pdpt_base = 0;
+
+
+    allocType = allocType & ~MemoryAllocationType_Global;
+
+    VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
+
+    return pml_base << 39 + pdpt_base << 30;
+}
+
+uint64_t
+VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms) {
+    uint64_t pml_base = 256;
+    uint64_t pdpt_base = 0;
+
+    allocType = allocType & ~MemoryAllocationType_Global;
+
+    VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
+
+    return (pml_base + 1) << 39;
+}
+
+void*
+VirtMemMan_FindFreeAddress(PML_Instance       inst,
+                           uint64_t           size,
+                           MemoryAllocationType allocType,
+                           MEM_SECURITY_PERMS sec_perms) {
+    if(size % KiB(4) != 0)
+        size = (size/KiB(4) + 1) * KiB(4);	//Align the size to higher 4KiB
+
+    uint64_t needed_score = size;
+    uint64_t cur_score = 0;
+
+    uint64_t prev_val = 0;
+
+    allocType = allocType & ~MemoryAllocationType_Global;
+
+    uint64_t addr = 0;
+#define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
+
+    int pml_base = 256;
+    int pdpt_base = 0;
+
+    VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
 
 
     for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && pml_i < 512 && cur_score < needed_score; ++pml_i) {

@@ -468,7 +468,6 @@ InternalForkTable(ManagedPageTable *src,
     LockSpinlock(src->lock);
     MemoryAllocationsMap *c = src->AllocationMap;
 
-    //TODO review this code to make sure it works
     while(c != NULL) {
 
         if(c->AllocationType != MemoryAllocationType_Shared){

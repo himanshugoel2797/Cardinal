@@ -135,10 +135,6 @@ void GDT_Initialize() {
         "popq %rax\n\t"
     );
 
-
-    //__asm__ ("mov %0, %%rax\n\thlt"::"ra"(sizeof(tss_struct)));
-    //TODO setup a 64bit TSS
-
     return; //Don't enable interrupts yet
 }
 
