@@ -22,13 +22,21 @@ typedef struct Message {
 
 #ifndef _KERNEL_
 
-int
-GetIPCMessage(Message *m);
-int
-GetIPCMessageFrom(Message *m, UID sourcePID, uint64_t msg_id);
 
 int
-PostIPCMessages(Message **m, uint64_t cnt);
+GetIPCMessageFrom(Message *m, UID sourcePID, uint64_t msg_id) { 
+	return (int)Syscall3(Syscall_GetIPCMessageFrom, (uint64_t)m, (uint64_t)sourcePID, msg_id);
+}
+
+int
+GetIPCMessage(Message *m){ 
+	return GetIPCMessageFrom(m, 0, 0);
+}
+
+int
+PostIPCMessages(Message **m, uint64_t cnt){ 
+	return (int)Syscall2(Syscall_PostIPCMessage, (uint64_t)m, cnt);
+}
 
 #endif
 

@@ -18,7 +18,21 @@ typedef enum {
     Syscall_ManageSharedMemoryKey, //region size, flags, existing key, return key/error
     Syscall_SharedMemoryKeyAction, //key to apply, flag to apply/remove, return virtual address
 
-    Syscall_NumEnd = Syscall_GetProperty,
+    Syscall_Execve,
+
+
+    Syscall_R0_MemoryMap,               //Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions
+    Syscall_R0_Fork,                    //Forks the process
+    Syscall_R0_GetProcessInfo,          //Get the kernel's process information
+    Syscall_R0_SetProcessInfo,          //Set the kernel's process information
+    Syscall_R0_CreateThread,            //Create a new thread
+    Syscall_R0_WipeMemoryMap,           //Wipe the memory map of a process
+    Syscall_R0_GetInitrd,               //Map the initrd as readonly into the requesting process
+    Syscall_R0_FreeInitrd,              //Free the initrd's memory
+
+    Syscall_R1_PowerManagementEvent,    //Send or receive power management events
+
+    Syscall_NumEnd = Syscall_Execve,
 } SyscallFunctions;
 
 #endif
