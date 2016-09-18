@@ -27,4 +27,13 @@ Execve_Syscall(uint64_t UNUSED(instruction_pointer),
 
     //Copy the elf data into the kernel, clear the user mode mappings
     //Load the elf and jump to its entry point
+
+    void *elf_src = (void*)data->params[0];
+    uint64_t elf_src_sz = data->params[1];
+    char **args = (char**)data->params[2];
+    char **envp = (char**)data->params[3];
+
+    
+
+    return -ENOSYS;
 }

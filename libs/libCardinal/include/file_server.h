@@ -35,137 +35,152 @@
 #define CARDINAL_MSG_TYPE_STATREQUEST 16
 #define CARDINAL_MSG_TYPE_STATRESPONSE 17
 
+#define CARDINAL_MSG_TYPE_FD2PATHREQUEST 18
+#define CARDINAL_MSG_TYPE_FD2PATHRESPONSE 19
+
 struct OpenRequest {
-	Message m;
-	uint64_t msg_type;
+    Message m;
+    uint64_t msg_type;
     uint64_t flags;
     uint64_t mode;
     char path[1];
 };
 
 struct OpenResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t fd;
-	uint64_t targetPID;
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
+    uint64_t targetPID;
 };
 
 struct CloseRequest {
-	Message m;
-	uint64_t msg_type;
+    Message m;
+    uint64_t msg_type;
     uint64_t fd;
 };
 
 struct WriteRequest {
-	Message m;
-	uint64_t msg_type;
+    Message m;
+    uint64_t msg_type;
     uint64_t fd;
     uint64_t buf[1];
 };
 
 struct WriteResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t write_size;
+    Message m;
+    uint64_t msg_type;
+    uint64_t write_size;
 };
 
 struct ReadRequest {
-	Message m;
-	uint64_t msg_type;
-	uint64_t fd;
-	uint64_t read_size;
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
+    uint64_t read_size;
 };
 
 struct ReadResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
-	char data[1];
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+    char data[1];
 };
 
 struct MountRequest {
-	Message m;
-	uint64_t msg_type;
-	char path[1];
+    Message m;
+    uint64_t msg_type;
+    char path[1];
 };
 
 struct MountResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
 };
 
 struct DirEntryRequest {
-	Message m;
-	uint64_t fd;
-	uint64_t msg_type;
-	uint32_t num;
+    Message m;
+    uint64_t fd;
+    uint64_t msg_type;
+    uint32_t num;
 };
 
 struct DirEntryResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
-	char data[1];
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+    char data[1];
 };
 
 struct LinkRequest {
-	Message m;
-	uint64_t msg_type;
-	char *from;
-	char *to;
-	char data[1];
+    Message m;
+    uint64_t msg_type;
+    char *from;
+    char *to;
+    char data[1];
 };
 
 struct LinkResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
 };
 
 struct UnlinkRequest {
-	Message m;
-	uint64_t msg_type;
-	char data[1];
+    Message m;
+    uint64_t msg_type;
+    char data[1];
 };
 
 struct UnlinkResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
 };
 
 struct StatRequest {
-	Message m;
-	uint64_t msg_type;
-	uint64_t fd;
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
 };
 
 struct StatResponse {
-	Message m;
-	uint64_t msg_type;
-	uint64_t code;
-	char data[1];
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+    char data[1];
 };
-	
-#define MAX_PATH_LEN ((4096 - sizeof(struct OpenRequest)))
-#define MAX_BUF_LEN ((UINT16_MAX - sizeof(struct WriteRequest)))
+
+struct Fd2PathRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
+};
+
+struct Fd2PathResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
+};
+
+#define MAX_PATH_LEN ((MAX_MESSAGE_SIZE - sizeof(struct OpenRequest)))
+#define MAX_BUF_LEN ((MAX_MESSAGE_SIZE - sizeof(struct WriteRequest)))
 
 #ifndef _KERNEL_
 
 static __inline uint64_t
 GetProperty(CardinalProperties prop, uint64_t type) {
-	return Syscall2(Syscall_GetProperty, prop, type);
+    return Syscall2(Syscall_GetProperty, prop, type);
 }
 
 static __inline bool
 SetProperty(CardinalProperties prop, uint64_t type, uint64_t val) {
-	return Syscall3(Syscall_SetProperty, prop, type, val);
+    return Syscall3(Syscall_SetProperty, prop, type, val);
 }
 
 static __inline bool
 RegisterSpecialDestination(uint64_t dst) {
-	return SetProperty(CardinalProperty_SpecialDestination, dst, 0);	
+    return 1;
 }
 
 #endif

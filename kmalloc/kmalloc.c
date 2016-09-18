@@ -275,7 +275,7 @@ void FreeMapping(void* mem, size_t size) {
     }
 }
 
-void* AllocateMappingCont(AllocationType t, MemoryAllocationFlags flags, size_t size) {
+void* AllocateMappingCont(MemoryAllocationType t, MemoryAllocationFlags flags, size_t size) {
     uint64_t user_stack_base = 0;
 
     if(size % PAGE_SIZE != 0)

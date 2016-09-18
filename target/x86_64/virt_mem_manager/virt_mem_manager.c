@@ -831,7 +831,7 @@ VirtMemMan_GetAllocTypeBase(MemoryAllocationType allocType,
 
     VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
 
-    return pml_base << 39 + pdpt_base << 30;
+    return (pml_base << 39) + (pdpt_base << 30);
 }
 
 uint64_t
@@ -865,8 +865,8 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
     uint64_t addr = 0;
 #define BUILD_ADDR(pml, pdpt, pd, pt) if(cur_score == 0)(addr = pml << 39 | pdpt << 30 | pd << 21 | pt << 12)
 
-    int pml_base = 256;
-    int pdpt_base = 0;
+    uint64_t pml_base = 256;
+    uint64_t pdpt_base = 0;
 
     VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
 

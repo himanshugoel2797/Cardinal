@@ -357,6 +357,11 @@ PostMessages(Message **msg, uint64_t cnt) {
         if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
             DestinationPID = specialDestinationPIDs[index];
 
+        //Don't allow sending messages to self to influence process priority
+        if(DestinationPID != GetCurrentProcessUID()){
+            //Raise the process's immediate execution priority, this should allow processes to execute in a manner that optimizes for IPC throughput
+        }
+
         if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
             return -1;
 
@@ -468,7 +473,7 @@ GetProcessLocalStorage(UID pid,
 
 
         info->PLSSize = minSize;
-        info->PLS = AllocateMappingCont(AllocationType_ApplicationProtected, 
+        info->PLS = AllocateMappingCont(MemoryAllocationType_ApplicationProtected, 
                                         MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User, 
                                         info->PLSSize);
     }
