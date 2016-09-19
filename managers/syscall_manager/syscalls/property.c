@@ -70,13 +70,12 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     case CardinalProperty_TID:
         return GetCurrentThreadUID();
         break;
-    case CardinalProperty_GroupID:
-        { 
-            uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
-            if(rVal == (uint64_t)-1)return -EPERM;
-            else return rVal;
-        }
-        break;
+    case CardinalProperty_GroupID: {
+        uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
+        if(rVal == (uint64_t)-1)return -EPERM;
+        else return rVal;
+    }
+    break;
     case CardinalProperty_PLS:
         return (uint64_t)GetProcessLocalStorage(GetCurrentProcessUID(), syscall_params[1]);
         break;

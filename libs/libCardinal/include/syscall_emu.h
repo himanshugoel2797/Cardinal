@@ -18,25 +18,25 @@
 #define MAX_FILE_DESCRIPTORS 1024
 
 typedef enum {
-	Cardinal_EmulatedSyscalls_Read = 0,
-	Cardinal_EmulatedSyscalls_Write = 1,
-	Cardinal_EmulatedSyscalls_Open = 2,
-	Cardinal_EmulatedSyscalls_Close = 3,
-	Cardinal_EmulatedSyscalls_MMap = 9,
-	Cardinal_EmulatedSyscalls_Brk = 12,
-	Cardinal_EmulatedSyscalls_Ioctl = 16, 	//TODO: Implement a temporary wrapper for this, we don't want to actually pass ioctls to file servers
-	Cardinal_EmulatedSyscalls_Readv = 19,
-	Cardinal_EmulatedSyscalls_Writev = 20,
-	Cardinal_EmulatedSyscalls_Nanosleep = 35,
-	Cardinal_EmulatedSyscalls_GetPID = 39,
-	Cardinal_EmulatedSyscalls_Fork = 57,
-	Cardinal_EmulatedSyscalls_Execve = 59,
-	Cardinal_EmulatedSyscalls_Exit = 60,
-	Cardinal_EmulatedSyscalls_Fcntl = 72,
-	Cardinal_EmulatedSyscalls_ArchPrctl = 158,
-	Cardinal_EmulatedSyscalls_GetTID = 186,
-	Cardinal_EmulatedSyscalls_Time = 201,
-	Cardinal_EmulatedSyscalls_SetTidAddress = 218,
+    Cardinal_EmulatedSyscalls_Read = 0,
+    Cardinal_EmulatedSyscalls_Write = 1,
+    Cardinal_EmulatedSyscalls_Open = 2,
+    Cardinal_EmulatedSyscalls_Close = 3,
+    Cardinal_EmulatedSyscalls_MMap = 9,
+    Cardinal_EmulatedSyscalls_Brk = 12,
+    Cardinal_EmulatedSyscalls_Ioctl = 16, 	//TODO: Implement a temporary wrapper for this, we don't want to actually pass ioctls to file servers
+    Cardinal_EmulatedSyscalls_Readv = 19,
+    Cardinal_EmulatedSyscalls_Writev = 20,
+    Cardinal_EmulatedSyscalls_Nanosleep = 35,
+    Cardinal_EmulatedSyscalls_GetPID = 39,
+    Cardinal_EmulatedSyscalls_Fork = 57,
+    Cardinal_EmulatedSyscalls_Execve = 59,
+    Cardinal_EmulatedSyscalls_Exit = 60,
+    Cardinal_EmulatedSyscalls_Fcntl = 72,
+    Cardinal_EmulatedSyscalls_ArchPrctl = 158,
+    Cardinal_EmulatedSyscalls_GetTID = 186,
+    Cardinal_EmulatedSyscalls_Time = 201,
+    Cardinal_EmulatedSyscalls_SetTidAddress = 218,
 } Cardinal_EmulatedSyscalls;
 
 
@@ -46,18 +46,18 @@ typedef enum {
     DescriptorFlags_CloseOnExec = (1 << 1)
 } DescriptorFlags;
 
-struct CardinalFileDescriptor{
-	uint64_t AdditionalData;
-	uint64_t TargetPID;
-	DescriptorFlags Flags;
+struct CardinalFileDescriptor {
+    uint64_t AdditionalData;
+    uint64_t TargetPID;
+    DescriptorFlags Flags;
 };
 
 typedef struct {
-	_Atomic volatile uint8_t __card_allocating_fd;
-	struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
-	UID __card_currentPID;
-	_Atomic uint64_t __card_req_id;
-	bool inited;
+    _Atomic volatile uint8_t __card_allocating_fd;
+    struct CardinalFileDescriptor __card_fds[MAX_FILE_DESCRIPTORS];
+    UID __card_currentPID;
+    _Atomic uint64_t __card_req_id;
+    bool inited;
 } CardinalSyscallEmulationData;
 
 
@@ -65,244 +65,244 @@ static CardinalSyscallEmulationData *data = NULL;
 
 static __inline bool
 __card_ValidateFD(int fd, bool is_open) {
-	if(data->__card_currentPID == 0)
-		data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
+    if(data->__card_currentPID == 0)
+        data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
 
-	if(fd >= MAX_FILE_DESCRIPTORS)
-		return 0;
+    if(fd >= MAX_FILE_DESCRIPTORS)
+        return 0;
 
-	if(data->__card_fds[fd].Flags == DescriptorFlags_Free)
-		return !is_open;
+    if(data->__card_fds[fd].Flags == DescriptorFlags_Free)
+        return !is_open;
 
-	return 1;
+    return 1;
 }
 
 static __inline int
 __card_AllocateFD(struct OpenResponse *resp, int flags) {
 
-	while(data->__card_allocating_fd);
+    while(data->__card_allocating_fd);
 
-	int fd = 0;
+    int fd = 0;
 
-	data->__card_allocating_fd = 1;
+    data->__card_allocating_fd = 1;
 
-	for(int i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
-		
-		if(data->__card_fds[i].Flags == DescriptorFlags_Free) {
-			data->__card_fds[i].TargetPID = resp->targetPID;
-			data->__card_fds[i].AdditionalData = resp->fd;
-			data->__card_fds[i].Flags = DescriptorFlags_None;
+    for(int i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
 
-			if(flags & O_CLOEXEC)
-				data->__card_fds[i].Flags |= DescriptorFlags_CloseOnExec;
+        if(data->__card_fds[i].Flags == DescriptorFlags_Free) {
+            data->__card_fds[i].TargetPID = resp->targetPID;
+            data->__card_fds[i].AdditionalData = resp->fd;
+            data->__card_fds[i].Flags = DescriptorFlags_None;
 
-			fd = i;
-			break;
-		}
-	}
+            if(flags & O_CLOEXEC)
+                data->__card_fds[i].Flags |= DescriptorFlags_CloseOnExec;
 
-	data->__card_allocating_fd = 0;
-	return fd;
+            fd = i;
+            break;
+        }
+    }
+
+    data->__card_allocating_fd = 0;
+    return fd;
 }
 
 static __inline uint64_t
 __card_open(const char *path, int flags, int mode) {
 
-	uint64_t total_size = sizeof(struct OpenRequest);
-	total_size += strnlen(path, MAX_PATH_LEN);
+    uint64_t total_size = sizeof(struct OpenRequest);
+    total_size += strnlen(path, MAX_PATH_LEN);
 
-	struct OpenRequest *m = malloc(total_size);
-	if(m == NULL)
-		return -ENOMEM;
+    struct OpenRequest *m = malloc(total_size);
+    if(m == NULL)
+        return -ENOMEM;
 
-	m->m.DestinationPID = CARDINAL_IPCDEST_FILESERVER;
-	m->m.MsgID = data->__card_req_id++;
-	m->m.Size = total_size;
+    m->m.DestinationPID = CARDINAL_IPCDEST_FILESERVER;
+    m->m.MsgID = data->__card_req_id++;
+    m->m.Size = total_size;
 
-	m->flags = flags;
-	m->mode = mode;
-	m->msg_type = CARDINAL_MSG_TYPE_OPENREQUEST;
+    m->flags = flags;
+    m->mode = mode;
+    m->msg_type = CARDINAL_MSG_TYPE_OPENREQUEST;
 
-	strncpy(m->path, path, strnlen(path, MAX_PATH_LEN));
+    strncpy(m->path, path, strnlen(path, MAX_PATH_LEN));
 
-	uint64_t msgID_backup = m->m.MsgID;
+    uint64_t msgID_backup = m->m.MsgID;
 
-	PostIPCMessages((Message**)&m, 1);
-	free(m);
+    PostIPCMessages((Message**)&m, 1);
+    free(m);
 
-	struct OpenResponse *m2 = malloc(sizeof(struct OpenResponse));
-	if(m2 == NULL)
-		return -ENOMEM;
+    struct OpenResponse *m2 = malloc(sizeof(struct OpenResponse));
+    if(m2 == NULL)
+        return -ENOMEM;
 
-	while(!GetIPCMessageFrom((Message*)m2, CARDINAL_IPCDEST_FILESERVER, msgID_backup))
-		Syscall1(Syscall_Nanosleep, 100);
+    while(!GetIPCMessageFrom((Message*)m2, CARDINAL_IPCDEST_FILESERVER, msgID_backup))
+        Syscall1(Syscall_Nanosleep, 100);
 
-	if(m2->fd != -1){
-		int fd = __card_AllocateFD(m2, flags);
-		free(m2);
-		return fd;
-	}
+    if(m2->fd != -1) {
+        int fd = __card_AllocateFD(m2, flags);
+        free(m2);
+        return fd;
+    }
 
-	free(m2);
-	return -1;
+    free(m2);
+    return -1;
 }
 
 static __inline uint64_t
 __card_writev(int fd, uint64_t vecs, int iovec_cnt) {
 
-	typedef struct {
-		void *iov_base;
-		size_t iov_len;
-	} iovec;
+    typedef struct {
+        void *iov_base;
+        size_t iov_len;
+    } iovec;
 
-	if(!__card_ValidateFD(fd, 1))
-		return -EINVAL;
+    if(!__card_ValidateFD(fd, 1))
+        return -EINVAL;
 
-	iovec *v = (iovec*)vecs;
+    iovec *v = (iovec*)vecs;
 
-	uint64_t total_size = 0;
-	for(int i = 0; i < iovec_cnt; i++)
-		total_size += v[i].iov_len;
+    uint64_t total_size = 0;
+    for(int i = 0; i < iovec_cnt; i++)
+        total_size += v[i].iov_len;
 
-	uint64_t needed_size = sizeof(struct WriteRequest);
+    uint64_t needed_size = sizeof(struct WriteRequest);
 
-	total_size = v[0].iov_len;
-	if(total_size + needed_size > UINT16_MAX)
-		total_size = UINT16_MAX - needed_size;
+    total_size = v[0].iov_len;
+    if(total_size + needed_size > UINT16_MAX)
+        total_size = UINT16_MAX - needed_size;
 
-	struct WriteRequest *m = malloc(needed_size + total_size);
-	if(m == NULL)
-		return -ENOMEM;
+    struct WriteRequest *m = malloc(needed_size + total_size);
+    if(m == NULL)
+        return -ENOMEM;
 
-	m->m.DestinationPID = data->__card_fds[fd].TargetPID;
-	m->m.MsgID = data->__card_req_id++;
-	m->m.Size = needed_size + total_size;
+    m->m.DestinationPID = data->__card_fds[fd].TargetPID;
+    m->m.MsgID = data->__card_req_id++;
+    m->m.Size = needed_size + total_size;
 
-	m->fd = data->__card_fds[fd].AdditionalData;
-	m->msg_type = CARDINAL_MSG_TYPE_WRITEREQUEST;
+    m->fd = data->__card_fds[fd].AdditionalData;
+    m->msg_type = CARDINAL_MSG_TYPE_WRITEREQUEST;
 
-	uint8_t* src = (uint8_t*)v[0].iov_base;
-	uint8_t* dst = (uint8_t*)m->buf;
-	memcpy(dst, src, total_size);
+    uint8_t* src = (uint8_t*)v[0].iov_base;
+    uint8_t* dst = (uint8_t*)m->buf;
+    memcpy(dst, src, total_size);
 
-	PostIPCMessages((Message**)&m, 1);
+    PostIPCMessages((Message**)&m, 1);
 
-	struct WriteResponse response;
-	while(!GetIPCMessageFrom((Message*)&response, data->__card_fds[fd].TargetPID, m->m.MsgID))
-		Syscall1(Syscall_Nanosleep, 100);
+    struct WriteResponse response;
+    while(!GetIPCMessageFrom((Message*)&response, data->__card_fds[fd].TargetPID, m->m.MsgID))
+        Syscall1(Syscall_Nanosleep, 100);
 
-	free(m);
-	return response.write_size;
+    free(m);
+    return response.write_size;
 
-	/*
-	int num_requests = total_size / (UINT16_MAX - needed_size) + 1;
-	Message **m = malloc(num_requests);
-	if(m == NULL)
-		return -ENOMEM;
+    /*
+    int num_requests = total_size / (UINT16_MAX - needed_size) + 1;
+    Message **m = malloc(num_requests);
+    if(m == NULL)
+    	return -ENOMEM;
 
-	int io_index = 0;
-	for(int i = 0; i < num_requests; i++) {
-		m[i] = malloc((needed_size + total_size) / num_requests);
-		if(m[i] == NULL)
-		{
-			for(int j = 0; j < i; j++)
-				free(m[j]);
+    int io_index = 0;
+    for(int i = 0; i < num_requests; i++) {
+    	m[i] = malloc((needed_size + total_size) / num_requests);
+    	if(m[i] == NULL)
+    	{
+    		for(int j = 0; j < i; j++)
+    			free(m[j]);
 
-			free(m);
-			return -ENOMEM;
-		}
+    		free(m);
+    		return -ENOMEM;
+    	}
 
-		m[i]->SourcePID = currentPID;
-		m[i]->DestinationPID = __card_fds[fd].TargetPID;
-		m[i]->Size = (unsigned short)(needed_size + total_size) / num_requests;
+    	m[i]->SourcePID = currentPID;
+    	m[i]->DestinationPID = __card_fds[fd].TargetPID;
+    	m[i]->Size = (unsigned short)(needed_size + total_size) / num_requests;
 
-		struct ReadWriteRequest *rwq = (struct ReadWriteRequest*)m[i]->Content;
-		rwq->fd = __card_fds[fd].AdditionalData;
-		if(i != num_requests - 1) rwq->lock = 1;
+    	struct ReadWriteRequest *rwq = (struct ReadWriteRequest*)m[i]->Content;
+    	rwq->fd = __card_fds[fd].AdditionalData;
+    	if(i != num_requests - 1) rwq->lock = 1;
 
-		uint8_t* src = (uint8_t*)v[io_index].iov_base;
-		uint8_t* dst = (uint8_t*)rwq->buf;
+    	uint8_t* src = (uint8_t*)v[io_index].iov_base;
+    	uint8_t* dst = (uint8_t*)rwq->buf;
 
-		if()
+    	if()
 
-	}*/
+    }*/
 }
 
 static __inline uint64_t
 __card_readv(int fd, uint64_t vecs, int iovec_cnt) {
 
-	typedef struct {
-		void *iov_base;
-		size_t iov_len;
-	} iovec;
+    typedef struct {
+        void *iov_base;
+        size_t iov_len;
+    } iovec;
 
-	if(!__card_ValidateFD(fd, 1))
-		return -EINVAL;
+    if(!__card_ValidateFD(fd, 1))
+        return -EINVAL;
 
-	iovec *v = (iovec*)vecs;
+    iovec *v = (iovec*)vecs;
 
-	uint64_t total_size = v[0].iov_len;
-	uint64_t needed_size = sizeof(struct ReadRequest);
+    uint64_t total_size = v[0].iov_len;
+    uint64_t needed_size = sizeof(struct ReadRequest);
 
-	if(total_size + needed_size > UINT16_MAX)
-		total_size = UINT16_MAX - needed_size;
-	
-	struct ReadRequest read_req;
-	read_req.m.DestinationPID = data->__card_fds[fd].TargetPID;
-	read_req.m.MsgID = data->__card_req_id++;
-	read_req.m.Size = sizeof(struct ReadRequest);
-	read_req.msg_type = CARDINAL_MSG_TYPE_READREQUEST;
-	read_req.fd = data->__card_fds[fd].AdditionalData;
-	read_req.read_size = total_size;
-	
-	Message *m = (Message*)&read_req;
-	PostIPCMessages(&m, 1);
+    if(total_size + needed_size > UINT16_MAX)
+        total_size = UINT16_MAX - needed_size;
 
-	struct ReadResponse *read_resp = malloc(UINT16_MAX);
-	if(read_resp == NULL)
-		return ENOMEM;
+    struct ReadRequest read_req;
+    read_req.m.DestinationPID = data->__card_fds[fd].TargetPID;
+    read_req.m.MsgID = data->__card_req_id++;
+    read_req.m.Size = sizeof(struct ReadRequest);
+    read_req.msg_type = CARDINAL_MSG_TYPE_READREQUEST;
+    read_req.fd = data->__card_fds[fd].AdditionalData;
+    read_req.read_size = total_size;
 
-	while(!GetIPCMessageFrom((Message*)read_resp, data->__card_fds[fd].TargetPID, read_req.m.MsgID))
-		Syscall1(Syscall_Nanosleep, 100);
+    Message *m = (Message*)&read_req;
+    PostIPCMessages(&m, 1);
 
-	if(read_resp->msg_type != CARDINAL_MSG_TYPE_READRESPONSE)
-		return EIO;
+    struct ReadResponse *read_resp = malloc(UINT16_MAX);
+    if(read_resp == NULL)
+        return ENOMEM;
 
-	uint64_t ret_val = read_resp->code;
+    while(!GetIPCMessageFrom((Message*)read_resp, data->__card_fds[fd].TargetPID, read_req.m.MsgID))
+        Syscall1(Syscall_Nanosleep, 100);
 
-	if((int64_t)ret_val >= 0)memcpy(v[0].iov_base, read_resp->data, ret_val);
+    if(read_resp->msg_type != CARDINAL_MSG_TYPE_READRESPONSE)
+        return EIO;
 
-	free(read_resp);
+    uint64_t ret_val = read_resp->code;
 
-	return ret_val;
+    if((int64_t)ret_val >= 0)memcpy(v[0].iov_base, read_resp->data, ret_val);
+
+    free(read_resp);
+
+    return ret_val;
 }
 
 static __inline int
-__card_fcntl(int fd, int cmd, int arg){
+__card_fcntl(int fd, int cmd, int arg) {
 
-	return 0;
+    return 0;
 }
 
 static __inline void
 __card_Initialize(void) {
 
-	if(data == NULL){
-		data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
-	}
+    if(data == NULL) {
+        data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
+    }
 
-	if(!data->inited) {
-		data->inited = 1;
+    if(!data->inited) {
+        data->inited = 1;
 
-		data->__card_fds[0].Flags = DescriptorFlags_None;
-		data->__card_fds[0].TargetPID = CARDINAL_IPCDEST_FILESERVER;
-		data->__card_fds[0].AdditionalData = 0;
+        data->__card_fds[0].Flags = DescriptorFlags_None;
+        data->__card_fds[0].TargetPID = CARDINAL_IPCDEST_FILESERVER;
+        data->__card_fds[0].AdditionalData = 0;
 
-		for(int i = 1; i < MAX_FILE_DESCRIPTORS; i++) {
-			data->__card_fds[i].Flags = DescriptorFlags_Free;
-			data->__card_fds[i].TargetPID = 0;
-			data->__card_fds[i].AdditionalData = 0;
-		}
-	}
+        for(int i = 1; i < MAX_FILE_DESCRIPTORS; i++) {
+            data->__card_fds[i].Flags = DescriptorFlags_Free;
+            data->__card_fds[i].TargetPID = 0;
+            data->__card_fds[i].AdditionalData = 0;
+        }
+    }
 }
 
 static __inline uint64_t
@@ -310,24 +310,24 @@ SyscallEmu0(uint32_t syscall_num) {
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    	case Cardinal_EmulatedSyscalls_GetPID:
-    		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
-    		data->__card_currentPID = ret_error;
-    	break;
-    	case Cardinal_EmulatedSyscalls_Fork:
-    		ret_error = Syscall0(Syscall_Fork);
+    case Cardinal_EmulatedSyscalls_GetPID:
+        ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
+        data->__card_currentPID = ret_error;
+        break;
+    case Cardinal_EmulatedSyscalls_Fork:
+        ret_error = Syscall0(Syscall_Fork);
 
-			data->__card_allocating_fd = 0;
-	 		data->__card_currentPID = 0;
-	    	data->__card_req_id = 1;
-    		data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
-    	break;
-    	case Cardinal_EmulatedSyscalls_GetTID:
-    		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_TID, 0);
-    	break;
-    	default:
-    		__asm__("hlt" :: "a"(syscall_num));
-    	break;
+        data->__card_allocating_fd = 0;
+        data->__card_currentPID = 0;
+        data->__card_req_id = 1;
+        data->__card_currentPID = Syscall2(Syscall_GetProperty, CardinalProperty_PID, 0);
+        break;
+    case Cardinal_EmulatedSyscalls_GetTID:
+        ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_TID, 0);
+        break;
+    default:
+        __asm__("hlt" :: "a"(syscall_num));
+        break;
     }
 
     return ret_error;
@@ -335,27 +335,27 @@ SyscallEmu0(uint32_t syscall_num) {
 
 static __inline uint64_t
 SyscallEmu1(uint32_t syscall_num,
-         uint64_t p0) {
+            uint64_t p0) {
 
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    	case Cardinal_EmulatedSyscalls_Brk:
-    		ret_error = Syscall1(Syscall_Brk, p0);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Time:
-    		ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_Time, 0);
-    		if(p0 != 0)*(long*)p0 = (long)ret_error;
-    	break;
-    	case Cardinal_EmulatedSyscalls_SetTidAddress:
-    		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_SetTidAddress, 0, p0);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Exit:
-    		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
-    	break;
-    	default:
-    		__asm__("hlt" :: "a"(syscall_num));
-    	break;
+    case Cardinal_EmulatedSyscalls_Brk:
+        ret_error = Syscall1(Syscall_Brk, p0);
+        break;
+    case Cardinal_EmulatedSyscalls_Time:
+        ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_Time, 0);
+        if(p0 != 0)*(long*)p0 = (long)ret_error;
+        break;
+    case Cardinal_EmulatedSyscalls_SetTidAddress:
+        ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_SetTidAddress, 0, p0);
+        break;
+    case Cardinal_EmulatedSyscalls_Exit:
+        ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
+        break;
+    default:
+        __asm__("hlt" :: "a"(syscall_num));
+        break;
     }
 
     return ret_error;
@@ -363,35 +363,34 @@ SyscallEmu1(uint32_t syscall_num,
 
 static __inline uint64_t
 SyscallEmu2(uint32_t syscall_num,
-         uint64_t p0,
-         uint64_t p1) {
+            uint64_t p0,
+            uint64_t p1) {
 
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    	case Cardinal_EmulatedSyscalls_ArchPrctl:
-    		ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_ArchPrctl, p0, p1);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Nanosleep:
-    		{
-    			struct timespec *tmp = (struct timespec*)p0;
-    			ret_error = Syscall1(Syscall_Nanosleep, tmp->tv_sec * 1000000000ULL + tmp->tv_nsec);
-    		}
-    	break;
-    	case Cardinal_EmulatedSyscalls_Open:
-    		__card_Initialize();
-    		ret_error = __card_open((const char*)p0, (int)p1, (int)0);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Ioctl:
-    		return -1;
-    	break;
-    	case Cardinal_EmulatedSyscalls_Fcntl:
-    		__card_Initialize();
-    		ret_error = __card_fcntl((int)p0, (int)p1, 0);
-    	break;
-    	default:
-    		__asm__("hlt" :: "a"(syscall_num));
-    	break;
+    case Cardinal_EmulatedSyscalls_ArchPrctl:
+        ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_ArchPrctl, p0, p1);
+        break;
+    case Cardinal_EmulatedSyscalls_Nanosleep: {
+        struct timespec *tmp = (struct timespec*)p0;
+        ret_error = Syscall1(Syscall_Nanosleep, tmp->tv_sec * 1000000000ULL + tmp->tv_nsec);
+    }
+    break;
+    case Cardinal_EmulatedSyscalls_Open:
+        __card_Initialize();
+        ret_error = __card_open((const char*)p0, (int)p1, (int)0);
+        break;
+    case Cardinal_EmulatedSyscalls_Ioctl:
+        return -1;
+        break;
+    case Cardinal_EmulatedSyscalls_Fcntl:
+        __card_Initialize();
+        ret_error = __card_fcntl((int)p0, (int)p1, 0);
+        break;
+    default:
+        __asm__("hlt" :: "a"(syscall_num));
+        break;
     }
 
     return ret_error;
@@ -399,78 +398,78 @@ SyscallEmu2(uint32_t syscall_num,
 
 static __inline uint64_t
 SyscallEmu3(uint32_t syscall_num,
-         uint64_t p0,
-         uint64_t p1,
-         uint64_t p2) {
+            uint64_t p0,
+            uint64_t p1,
+            uint64_t p2) {
 
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    	case Cardinal_EmulatedSyscalls_Open:
-    		__card_Initialize();
-    		ret_error = __card_open((const char*)p0, (int)p1, (int)p2);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Write:
-    		__card_Initialize();
-    		{
+    case Cardinal_EmulatedSyscalls_Open:
+        __card_Initialize();
+        ret_error = __card_open((const char*)p0, (int)p1, (int)p2);
+        break;
+    case Cardinal_EmulatedSyscalls_Write:
+        __card_Initialize();
+        {
 
-			typedef struct {
-				void *iov_base;
-				size_t iov_len;
-			} iovec;
+            typedef struct {
+                void *iov_base;
+                size_t iov_len;
+            } iovec;
 
-				iovec tmp;
-				tmp.iov_base = (void*)p1;
-				tmp.iov_len = (size_t)p2;
+            iovec tmp;
+            tmp.iov_base = (void*)p1;
+            tmp.iov_len = (size_t)p2;
 
-    			ret_error = __card_writev((int)p0, (uint64_t)&tmp, 1);
-    		}
-    	break;
-    	case Cardinal_EmulatedSyscalls_Read:
-    		__card_Initialize();
-    		{
+            ret_error = __card_writev((int)p0, (uint64_t)&tmp, 1);
+        }
+        break;
+    case Cardinal_EmulatedSyscalls_Read:
+        __card_Initialize();
+        {
 
-			typedef struct {
-				void *iov_base;
-				size_t iov_len;
-			} iovec;
+            typedef struct {
+                void *iov_base;
+                size_t iov_len;
+            } iovec;
 
-				iovec tmp;
-				tmp.iov_base = (void*)p1;
-				tmp.iov_len = (size_t)p2;
+            iovec tmp;
+            tmp.iov_base = (void*)p1;
+            tmp.iov_len = (size_t)p2;
 
-    			ret_error = __card_readv((int)p0, (uint64_t)&tmp, 1);
+            ret_error = __card_readv((int)p0, (uint64_t)&tmp, 1);
 
-    		}
-    	break;
-    	case Cardinal_EmulatedSyscalls_Writev:
-    		__card_Initialize();
-    		{
-    			ret_error = __card_writev((int)p0, p1, (int)p2);
-    		}
-    	break;
-    	case Cardinal_EmulatedSyscalls_Readv:
-    		__card_Initialize();
-    		{
-    			ret_error = __card_readv((int)p0, p1, (int)p2);
-    		}
-    	break;
-    	case Cardinal_EmulatedSyscalls_Ioctl:
-    		return -1;
-    	break;
-    	case Cardinal_EmulatedSyscalls_Fcntl:
-    		__card_Initialize();
-    		ret_error = __card_fcntl((int)p0, (int)p1, (int)p2);
-    	break;
-    	case Cardinal_EmulatedSyscalls_Execve:
+        }
+        break;
+    case Cardinal_EmulatedSyscalls_Writev:
+        __card_Initialize();
+        {
+            ret_error = __card_writev((int)p0, p1, (int)p2);
+        }
+        break;
+    case Cardinal_EmulatedSyscalls_Readv:
+        __card_Initialize();
+        {
+            ret_error = __card_readv((int)p0, p1, (int)p2);
+        }
+        break;
+    case Cardinal_EmulatedSyscalls_Ioctl:
+        return -1;
+        break;
+    case Cardinal_EmulatedSyscalls_Fcntl:
+        __card_Initialize();
+        ret_error = __card_fcntl((int)p0, (int)p1, (int)p2);
+        break;
+    case Cardinal_EmulatedSyscalls_Execve:
 
-    		//TODO Perform the actual syscall
+        //TODO Perform the actual syscall
 
-			data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
-    	break;
-    	default:
-    		__asm__("hlt" :: "a"(syscall_num));
-    	break;
+        data = (CardinalSyscallEmulationData*)Syscall2(Syscall_GetProperty, CardinalProperty_PLS, sizeof(CardinalSyscallEmulationData));
+        break;
+    default:
+        __asm__("hlt" :: "a"(syscall_num));
+        break;
     }
 
     return ret_error;
@@ -478,10 +477,10 @@ SyscallEmu3(uint32_t syscall_num,
 
 static __inline uint64_t
 SyscallEmu4(uint32_t syscall_num,
-         uint64_t p0,
-         uint64_t p1,
-         uint64_t p2,
-         uint64_t p3) {
+            uint64_t p0,
+            uint64_t p1,
+            uint64_t p2,
+            uint64_t p3) {
 
     uint64_t volatile parameters[4];
     parameters[0] = p0;
@@ -496,11 +495,11 @@ SyscallEmu4(uint32_t syscall_num,
 
 static __inline uint64_t
 SyscallEmu5(uint32_t syscall_num,
-         uint64_t p0,
-         uint64_t p1,
-         uint64_t p2,
-         uint64_t p3,
-         uint64_t p4) {
+            uint64_t p0,
+            uint64_t p1,
+            uint64_t p2,
+            uint64_t p3,
+            uint64_t p4) {
 
     uint64_t volatile parameters[5];
     parameters[0] = p0;
@@ -516,22 +515,22 @@ SyscallEmu5(uint32_t syscall_num,
 
 static __inline uint64_t
 SyscallEmu6(uint32_t syscall_num,
-         uint64_t p0,
-         uint64_t p1,
-         uint64_t p2,
-         uint64_t p3,
-         uint64_t p4,
-         uint64_t p5) {
+            uint64_t p0,
+            uint64_t p1,
+            uint64_t p2,
+            uint64_t p3,
+            uint64_t p4,
+            uint64_t p5) {
 
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    	case Cardinal_EmulatedSyscalls_MMap:
-    		ret_error = Syscall6(Syscall_MMap, p0, p1, p2, p3, p4, p5);
-    	break;
-    	default:
-    		__asm__("hlt" :: "a"(syscall_num));
-    	break;
+    case Cardinal_EmulatedSyscalls_MMap:
+        ret_error = Syscall6(Syscall_MMap, p0, p1, p2, p3, p4, p5);
+        break;
+    default:
+        __asm__("hlt" :: "a"(syscall_num));
+        break;
     }
 
     return ret_error;

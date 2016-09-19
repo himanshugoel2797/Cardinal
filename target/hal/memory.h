@@ -41,7 +41,7 @@ typedef struct ForkedMemoryData {
 typedef struct SharedMemoryKey {
     uint64_t Key;
     MemoryAllocationFlags Permissions;
-}SharedMemoryKey;
+} SharedMemoryKey;
 
 typedef struct SharedMemoryData {
     List *Keys;

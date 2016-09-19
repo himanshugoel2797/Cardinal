@@ -46,7 +46,7 @@ typedef enum {
     MemoryAllocationErrors_Unknown = (1 << 6)                 ///<Unknown Error
 } MemoryAllocationErrors;
 
-struct MemoryMapParams{ 
+struct MemoryMapParams {
     uint64_t PhysicalAddress;
     uint64_t VirtualAddress;
     uint64_t TargetPID;

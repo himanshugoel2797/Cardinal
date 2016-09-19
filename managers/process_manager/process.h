@@ -34,7 +34,7 @@ GetProcessReference(UID           pid,
 
 void*
 GetProcessLocalStorage(UID pid,
-					   size_t minSize);
+                       size_t minSize);
 
 char*
 GetCurrentProcessWorkingDirectory(void);

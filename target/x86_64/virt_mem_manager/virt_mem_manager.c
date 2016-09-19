@@ -772,8 +772,7 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
 }
 
 static void
-VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocType, MEM_SECURITY_PERMS sec_perms)
-{
+VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocType, MEM_SECURITY_PERMS sec_perms) {
 
     int pml_base = 256;
     int pdpt_base = 0;

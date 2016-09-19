@@ -55,13 +55,13 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 ManageSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params);
+                              uint64_t syscall_num,
+                              uint64_t *syscall_params);
 
 uint64_t
 SharedMemoryKeyAction_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params);
+                              uint64_t syscall_num,
+                              uint64_t *syscall_params);
 
 uint64_t
 R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),

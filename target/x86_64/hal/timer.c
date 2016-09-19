@@ -4,7 +4,7 @@
 
 void
 InitializeTimer(void) {
-	if(APIC_IsTSCReliable())return;
+    if(APIC_IsTSCReliable())return;
     if(HPET_Initialize() == HPETError_NotPresent) {
         __asm__ volatile("cli\n\thlt");
     }
@@ -12,7 +12,7 @@ InitializeTimer(void) {
 
 uint64_t
 GetTimerValue(void) {
-	if(APIC_IsTSCReliable())return APIC_GetTSCValue();
+    if(APIC_IsTSCReliable())return APIC_GetTSCValue();
     return HPET_GetCounterValue();
 }
 
@@ -23,6 +23,6 @@ SetTimerEnableMode(bool enabled) {
 
 uint64_t
 GetTimerInterval_NS(uint64_t diff) {
-	if(APIC_IsTSCReliable())return (diff * 100000000ULL) / APIC_GetTSCFrequency();
+    if(APIC_IsTSCReliable())return (diff * 100000000ULL) / APIC_GetTSCFrequency();
     return HPET_GetElapsedTime(diff);
 }

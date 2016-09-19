@@ -114,7 +114,7 @@ TerminateProcess(UID pid, uint32_t exit_code) {
 
     //Move children to root process
     ProcessInformation *root_p = NULL;
-    GetProcessReference(ROOT_PID, &root_p);   
+    GetProcessReference(ROOT_PID, &root_p);
     for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
         List_AddEntry(root_p->Children, List_EntryAt(pinfo->Children, i));
     }
@@ -143,25 +143,25 @@ ReapProcess(UID pid) {
 
     uint32_t exit_code = 0;
 
-    if(pid != (UID)-1){
+    if(pid != (UID)-1) {
         ProcessInformation *pinfo = NULL;
         if(GetProcessReference(pid, &pinfo) == ProcessErrors_UIDNotFound)
             return 0;
 
         LockSpinlock(pinfo->lock);
 
-        if(pinfo->Status == ProcessStatus_Zombie){
+        if(pinfo->Status == ProcessStatus_Zombie) {
 
             for(uint64_t i = 0; i < List_Length(processes); i++) {
                 ProcessInformation *tmp_procInfo = List_EntryAt(processes, i);
 
-                if(tmp_procInfo->ID == pid){
+                if(tmp_procInfo->ID == pid) {
                     List_Remove(processes, i);
                     break;
                 }
             }
 
-            if(pinfo->Parent != NULL && pinfo->Parent->ID == GetCurrentProcessUID()){
+            if(pinfo->Parent != NULL && pinfo->Parent->ID == GetCurrentProcessUID()) {
                 for(uint64_t i = 0; i < List_Length(pinfo->Parent->Children); i++) {
                     ProcessInformation *inf = List_EntryAt(pinfo->Parent->Children, i);
 
@@ -346,8 +346,8 @@ PostMessages(Message **msg, uint64_t cnt) {
     if(msg == NULL)
         return -1;
 
-    for(uint64_t i = 0; i < cnt; i++){
-        
+    for(uint64_t i = 0; i < cnt; i++) {
+
         ProcessInformation *pInfo;
 
 
@@ -358,7 +358,7 @@ PostMessages(Message **msg, uint64_t cnt) {
             DestinationPID = specialDestinationPIDs[index];
 
         //Don't allow sending messages to self to influence process priority
-        if(DestinationPID != GetCurrentProcessUID()){
+        if(DestinationPID != GetCurrentProcessUID()) {
             //Raise the process's immediate execution priority, this should allow processes to execute in a manner that optimizes for IPC throughput
         }
 
@@ -370,7 +370,7 @@ PostMessages(Message **msg, uint64_t cnt) {
 
         if(i == 0 || (msg[i]->DestinationPID != msg[i - 1]->DestinationPID))
             LockSpinlock(pInfo->MessageLock);
-        
+
         if(msg[i] == NULL)
             return UnlockSpinlock(pInfo->MessageLock), i;
 
@@ -386,7 +386,7 @@ PostMessages(Message **msg, uint64_t cnt) {
 
         m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
-        
+
         if(i == cnt - 1 || msg[i]->DestinationPID != msg[i + 1]->DestinationPID)UnlockSpinlock(pInfo->MessageLock);
     }
 
@@ -415,7 +415,7 @@ GetMessageFrom(Message *msg,
 
         if((tmp->SourcePID == SourcePID) | (SourcePID == 0)) {
 
-            if((tmp->MsgID == msg_id) | (msg_id == 0)){
+            if((tmp->MsgID == msg_id) | (msg_id == 0)) {
                 List_Remove(pInfo->PendingMessages, 0);
                 if(msg != NULL)memcpy(msg, tmp, tmp->Size);
                 kfree(tmp);
@@ -441,7 +441,7 @@ SetSpecialDestinationPID(UID specialID) {
     LockSpinlock(specialPIDLock);
 
     if(specialDestinationPIDs[index] != 0 && GetProcessReference(specialDestinationPIDs[index], NULL) == ProcessErrors_None)
-            return UnlockSpinlock(specialPIDLock), FALSE;
+        return UnlockSpinlock(specialPIDLock), FALSE;
 
     specialDestinationPIDs[index] = GetCurrentProcessUID();
     UnlockSpinlock(specialPIDLock);
@@ -451,8 +451,7 @@ SetSpecialDestinationPID(UID specialID) {
 
 void*
 GetProcessLocalStorage(UID pid,
-                       size_t minSize)
-{
+                       size_t minSize) {
     //Allocate the PLS if it hasn't been allocated, or if it's too small, allocate a new PLS of the appropriate size and copy over the data
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
@@ -462,19 +461,17 @@ GetProcessLocalStorage(UID pid,
     if(minSize % PAGE_SIZE)
         minSize += PAGE_SIZE - (minSize % PAGE_SIZE);
 
-    if(info->PLSSize != minSize | info->PLS == NULL)
-    {
+    if(info->PLSSize != minSize | info->PLS == NULL) {
         //Free the previous allocation, and create a new one that's the right size
 
-        if(info->PLS != NULL)
-        {
+        if(info->PLS != NULL) {
             FreeMappingCont(info->PLS, info->PLSSize);
         }
 
 
         info->PLSSize = minSize;
-        info->PLS = AllocateMappingCont(MemoryAllocationType_ApplicationProtected, 
-                                        MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User, 
+        info->PLS = AllocateMappingCont(MemoryAllocationType_ApplicationProtected,
+                                        MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User,
                                         info->PLSSize);
     }
 
@@ -483,8 +480,7 @@ GetProcessLocalStorage(UID pid,
 
 
 uint64_t
-GetProcessGroupID(UID pid)
-{ 
+GetProcessGroupID(UID pid) {
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return -1;
@@ -493,8 +489,7 @@ GetProcessGroupID(UID pid)
 }
 
 uint64_t
-SetProcessGroupID(UID pid, uint64_t id)
-{ 
+SetProcessGroupID(UID pid, uint64_t id) {
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return -1;

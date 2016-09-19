@@ -52,7 +52,7 @@ APIC_TimerCallibrate(uint32_t int_no,
     err_code = 0;
     if(int_no == IRQ(0) && pit_ticks >= 0) {
         pit_ticks++;
-        if(pit_ticks == TICK_CNT){
+        if(pit_ticks == TICK_CNT) {
             apic_timer_value = APIC_GetTimerValue();
             final_tsc_value = APIC_GetTSCValue();
         }
@@ -153,17 +153,17 @@ APIC_GetTimerFrequency(void) {
 void
 APIC_EnableTSC(void) {
     if(apic_data->tsc_useful) {
-    register uint64_t dummy = 0;
-    __asm__("mov %%cr4, %[dummy]\n\t"
-            "or $4, %[dummy]\n\t"
-            "mov %[dummy], %%cr4\n\t" :: [dummy]"r"(dummy));
+        register uint64_t dummy = 0;
+        __asm__("mov %%cr4, %[dummy]\n\t"
+                "or $4, %[dummy]\n\t"
+                "mov %[dummy], %%cr4\n\t" :: [dummy]"r"(dummy));
     }
 }
 
 bool
 APIC_IsTSCReliable(void) {
 
-    if(apic_data->tsc_useful == 0xff){
+    if(apic_data->tsc_useful == 0xff) {
         //Check for TSC support, then check for invariant TSC support
         apic_data->tsc_useful = 0;
 

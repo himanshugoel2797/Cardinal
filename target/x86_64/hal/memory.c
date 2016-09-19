@@ -87,7 +87,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
                 if(allocType & MemoryAllocationType_Fork) {
                     LockSpinlock(fork_data->Lock);
                     AtomicDecrement32(&fork_data->NetReferenceCount);
-                }else if(allocType == MemoryAllocationType_Shared) {
+                } else if(allocType == MemoryAllocationType_Shared) {
                     LockSpinlock(share_data->Lock);
                     AtomicDecrement32(&share_data->NetReferenceCount);
                 }
@@ -470,15 +470,15 @@ InternalForkTable(ManagedPageTable *src,
 
     while(c != NULL) {
 
-        if(c->AllocationType != MemoryAllocationType_Shared){
-        MapPage(dst,
-                c->PhysicalAddress,
-                c->VirtualAddress,
-                c->Length,
-                c->CacheMode,
-                c->AllocationType | MemoryAllocationType_Fork,
-                c->Flags
-               );
+        if(c->AllocationType != MemoryAllocationType_Shared) {
+            MapPage(dst,
+                    c->PhysicalAddress,
+                    c->VirtualAddress,
+                    c->Length,
+                    c->CacheMode,
+                    c->AllocationType | MemoryAllocationType_Fork,
+                    c->Flags
+                   );
         }
 
         c = c->next;
@@ -698,7 +698,7 @@ HandlePageFault(uint64_t virtualAddress,
                 PerformTLBShootdown();
 
                 UnlockSpinlock(fork_data->Lock);
-                if(fork_data->NetReferenceCount == 0){
+                if(fork_data->NetReferenceCount == 0) {
                     FreeSpinlock(fork_data->Lock);
                     kfree(fork_data);
                 }
@@ -948,7 +948,7 @@ WriteValueAtAddress32(ManagedPageTable *pageTable,
     UnlockSpinlock(vmem_lock);
 }
 
-static MemoryAllocationFlags 
+static MemoryAllocationFlags
 TranslateSharedMemoryFlags(uint64_t flags) {
     MemoryAllocationFlags f = MemoryAllocationFlags_User | MemoryAllocationFlags_NoExec;
 
@@ -966,10 +966,10 @@ TranslateSharedMemoryFlags(uint64_t flags) {
 
 uint64_t
 ManageSharedMemoryKey(size_t size, uint64_t flags, uint64_t key) {
-    
+
     if(SharedMemoryUnits == NULL)
         SharedMemoryUnits = List_Create(CreateSpinlock());
-    
+
     if(size % PAGE_SIZE)
         size += PAGE_SIZE - (size % PAGE_SIZE);
 
@@ -993,7 +993,7 @@ ManageSharedMemoryKey(size_t size, uint64_t flags, uint64_t key) {
 
     } else if(flags & SharedMemoryFlags_Free) {
 
-    }else {
+    } else {
 
         for(uint64_t i = 0; i < List_Length(SharedMemoryUnits); i++) {
             SharedMemoryData *shmem_data = List_EntryAt(SharedMemoryUnits, i);
@@ -1037,7 +1037,7 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
 
         LockSpinlock(tmpData->Lock);
 
-        if(tmpData->MasterKey == (key >> 32)){
+        if(tmpData->MasterKey == (key >> 32)) {
             memData = tmpData;
             break;
         }
@@ -1065,7 +1065,7 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
             return UnlockSpinlock(memData->Lock), -EINVAL;
     }
 
-    if((flags & SharedMemoryFlags_Map) == SharedMemoryFlags_Map){
+    if((flags & SharedMemoryFlags_Map) == SharedMemoryFlags_Map) {
 
         MapPage(GetActiveVirtualMemoryInstance(),
                 memData->PhysicalAddress,
@@ -1074,14 +1074,14 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
                 (flags & SharedMemoryFlags_Uncached)?CachingModeUncachable : CachingModeWriteBack,
                 MemoryAllocationType_Shared,
                 aFlags
-                );
+               );
         ManagedPageTable* act = GetActiveVirtualMemoryInstance();
         LockSpinlock(act->lock);
 
         MemoryAllocationsMap *c = act->AllocationMap;
         while(c != NULL) {
 
-            if(c->VirtualAddress == memData->VirtualAddress){
+            if(c->VirtualAddress == memData->VirtualAddress) {
                 c->AdditionalData = memData;
                 break;
             }
@@ -1093,7 +1093,7 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
         UnlockSpinlock(memData->Lock);
         return memData->VirtualAddress;
 
-    }else if((flags & SharedMemoryFlags_Unmap) == SharedMemoryFlags_Unmap){
+    } else if((flags & SharedMemoryFlags_Unmap) == SharedMemoryFlags_Unmap) {
 
         UnmapPage(GetActiveVirtualMemoryInstance(),
                   memData->VirtualAddress,
@@ -1109,16 +1109,15 @@ SharedMemoryKeyAction(uint64_t key, uint64_t flags) {
 
 void
 WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
-                        MemoryAllocationType type)
-{
+                        MemoryAllocationType type) {
     //Walk the page table, unmapping anything that has the same allocation type
     LockSpinlock(pageTable->lock);
 
     MemoryAllocationsMap *map = pageTable->AllocationMap;
-    while(map != NULL){
+    while(map != NULL) {
 
         MemoryAllocationsMap *n = map->next;
-        if(map->AllocationType == type){
+        if(map->AllocationType == type) {
             UnmapPage(pageTable,
                       n->VirtualAddress,
                       n->Length);

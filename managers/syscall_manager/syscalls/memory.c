@@ -55,7 +55,7 @@ mmap(void* addr,
         if(target_phys_addr == 0)
             return (void*)-ENOMEM;
 
-        
+
         MapPage(GetActiveVirtualMemoryInstance(),
                 target_phys_addr,
                 (uint64_t)addr,
@@ -122,7 +122,7 @@ brk(void* targ_brk_address) {
         //TODO expand the heap by a few pages and return the new heap break
 
         LockSpinlock(p_info->lock);
-        
+
         if((uint64_t)targ_brk_address <= p_info->HeapBreak)
             return UnlockSpinlock(p_info->lock), (uint64_t)targ_brk_address;
 
@@ -139,7 +139,7 @@ brk(void* targ_brk_address) {
                 CachingModeWriteBack,
                 MemoryAllocationType_Heap,
                 MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
-        
+
         UnlockSpinlock(p_info->lock);
 
         return (uint64_t)targ_brk_address;
@@ -169,7 +169,7 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 uint64_t
 R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
-                    uint64_t *syscall_params) { 
+                    uint64_t *syscall_params) {
     if(syscall_num != Syscall_R0_MemoryMap)
         return -ENOSYS;
 
@@ -188,10 +188,10 @@ R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
         return -EINVAL;
 
     return MapPage(p_info->PageTable,
-            mmap_params->PhysicalAddress,
-            mmap_params->VirtualAddress,
-            mmap_params->Length,
-            mmap_params->CacheMode,
-            mmap_params->AllocationType,
-            mmap_params->AllocationFlags);
+                   mmap_params->PhysicalAddress,
+                   mmap_params->VirtualAddress,
+                   mmap_params->Length,
+                   mmap_params->CacheMode,
+                   mmap_params->AllocationType,
+                   mmap_params->AllocationFlags);
 }
