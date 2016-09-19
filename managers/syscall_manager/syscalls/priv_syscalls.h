@@ -9,11 +9,6 @@ Nanosleep_Syscall(uint64_t instruction_pointer,
                   uint64_t *syscall_params);
 
 uint64_t
-MMap_Syscall(uint64_t instruction_pointer,
-             uint64_t syscall_num,
-             uint64_t *syscall_params);
-
-uint64_t
 Brk_Syscall(uint64_t instruction_pointer,
             uint64_t syscall_num,
             uint64_t *syscall_params);
@@ -24,7 +19,7 @@ Clone_Syscall(uint64_t UNUSED(instruction_pointer),
               uint64_t *syscall_params);
 
 uint64_t
-Fork_Syscall(uint64_t UNUSED(instruction_pointer),
+R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
              uint64_t syscall_num,
              uint64_t *syscall_params);
 
@@ -52,16 +47,6 @@ uint64_t
 GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params);
-
-uint64_t
-ManageSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params);
-
-uint64_t
-SharedMemoryKeyAction_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params);
 
 uint64_t
 R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),

@@ -315,7 +315,7 @@ SyscallEmu0(uint32_t syscall_num) {
         data->__card_currentPID = ret_error;
         break;
     case Cardinal_EmulatedSyscalls_Fork:
-        ret_error = Syscall0(Syscall_Fork);
+    	//TODO Implement the IPC path
 
         data->__card_allocating_fd = 0;
         data->__card_currentPID = 0;
@@ -526,7 +526,7 @@ SyscallEmu6(uint32_t syscall_num,
 
     switch(syscall_num) {
     case Cardinal_EmulatedSyscalls_MMap:
-        ret_error = Syscall6(Syscall_MMap, p0, p1, p2, p3, p4, p5);
+    	//TODO Implement IPC path
         break;
     default:
         __asm__("hlt" :: "a"(syscall_num));

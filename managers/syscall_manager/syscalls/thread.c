@@ -120,11 +120,14 @@ Clone_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-Fork_Syscall(uint64_t UNUSED(instruction_pointer),
+R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
              uint64_t syscall_num,
              uint64_t *syscall_params) {
     if(syscall_num != Syscall_Fork)
         return -ENOSYS;
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
+        return -EPERM;
 
     SyscallData *data = (SyscallData*)syscall_params;
 

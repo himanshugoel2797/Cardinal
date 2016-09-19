@@ -3,20 +3,15 @@
 
 typedef enum {
     Syscall_NumStart = 1,
-    Syscall_MMap = Syscall_NumStart,
-    Syscall_Brk,
+    Syscall_Brk = Syscall_NumStart,
     Syscall_Nanosleep,
     Syscall_Clone,
-    Syscall_Fork,
 
     Syscall_GetIPCMessageFrom,
     Syscall_PostIPCMessage,
 
     Syscall_SetProperty,
     Syscall_GetProperty,
-
-    Syscall_ManageSharedMemoryKey, //region size, flags, existing key, return key/error
-    Syscall_SharedMemoryKeyAction, //key to apply, flag to apply/remove, return virtual address
 
     Syscall_R0_MemoryMap,               //Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions
     Syscall_R0_Fork,                    //Forks the process
