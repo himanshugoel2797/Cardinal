@@ -13,6 +13,7 @@ typedef enum {
     CardinalProperty_SpecialDestination,
     CardinalProperty_Exit,
     CardinalProperty_GroupID,
+    CardinalProperty_R0_BootInfo,
 #ifdef __x86_64__
     CardinalProperty_ArchPrctl,
     CardinalProperty_IOPL

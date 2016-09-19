@@ -123,7 +123,7 @@ uint64_t
 R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
              uint64_t syscall_num,
              uint64_t *syscall_params) {
-    if(syscall_num != Syscall_Fork)
+    if(syscall_num != Syscall_R0_Fork)
         return -ENOSYS;
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0)

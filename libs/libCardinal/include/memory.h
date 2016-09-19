@@ -1,6 +1,11 @@
 #ifndef _CARDINAL_MEMORY_ENUMS_H_
 #define _CARDINAL_MEMORY_ENUMS_H_
 
+#include "cardinal_types.h"
+#include "syscall.h"
+#include "bootinfo.h"
+#include "ipc.h"
+
 ///Memory Caching Modes
 typedef enum {
     CachingModeWriteBack = 0,   ///<Write Back
@@ -47,13 +52,45 @@ typedef enum {
 } MemoryAllocationErrors;
 
 struct MemoryMapParams {
+    UID TargetPID;
     uint64_t PhysicalAddress;
     uint64_t VirtualAddress;
-    uint64_t TargetPID;
     uint64_t Length;
     CachingMode CacheMode;
     MemoryAllocationType AllocationType;
     MemoryAllocationFlags AllocationFlags;
 };
+
+
+#ifndef _KERNEL_
+
+static __inline int
+R0_MemoryMap(UID pid, 
+             uint64_t phys, 
+             uint64_t virt, 
+             uint64_t len, 
+             CachingMode cacheMode, 
+             MemoryAllocationType type, 
+             MemoryAllocationFlags flags){ 
+    struct MemoryMapParams p;
+
+
+    p.pid = TargetPID;
+    p.PhysicalAddress = phys;
+    p.VirtualAddress = virt;
+    p.Length = len;
+    p.CacheMode = cacheMode;
+    p.AllocationType = type;
+    p.AllocationFlags = flags;
+
+    return (int)Syscall1(Syscall_R0_MemoryMap, &p);
+}
+
+static __inline int
+R0_GetBootInfo(CardinalBootInfo *bInfo) {
+    return (int)GetProperty(CardinalProperty_BootInfo, (uint64_t)bInfo);
+}
+
+#endif
 
 #endif

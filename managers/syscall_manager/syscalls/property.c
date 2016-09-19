@@ -1,5 +1,8 @@
 #include "syscalls_all.h"
 #include "syscalls/arch_syscalls.h"
+#include "boot_information/boot_information.h"
+#include "common/common.h"
+
 #include "libs/libCardinal/include/syscall.h"
 #include "libs/libCardinal/include/syscall_property.h"
 
@@ -74,6 +77,17 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
         if(rVal == (uint64_t)-1)return -EPERM;
         else return rVal;
+    }
+    break;
+    case CardinalProperty_R0_BootInfo: {
+        if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
+            return -EPERM;
+
+        //TODO ensure this address is valid
+        CardinalBootInfo *info = GetBootInfo();
+        memcpy((CardinalBootInfo*)data->params[1], info, sizeof(CardinalBootInfo));
+
+        return 0;
     }
     break;
     case CardinalProperty_PLS:
