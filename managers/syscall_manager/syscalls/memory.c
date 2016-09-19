@@ -165,3 +165,33 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     void* targ_brk_address = (void*)data->params[0];
     return brk(targ_brk_address);
 }
+
+uint64_t
+R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
+                    uint64_t syscall_num,
+                    uint64_t *syscall_params) { 
+    if(syscall_num != Syscall_R0_MemoryMap)
+        return -ENOSYS;
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
+        return -EPERM;
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 1)
+        return -ENOSYS;
+
+    struct MemoryMapParams *mmap_params = (struct MemoryMapParams*)data->params[0];
+
+    ProcessInformation *p_info;
+    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None)
+        return -EINVAL;
+
+    return MapPage(p_info->PageTable,
+            mmap_params->PhysicalAddress,
+            mmap_params->VirtualAddress,
+            mmap_params->Length,
+            mmap_params->CacheMode,
+            mmap_params->AllocationType,
+            mmap_params->AllocationFlags);
+}

@@ -64,8 +64,8 @@ SharedMemoryKeyAction_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t *syscall_params);
 
 uint64_t
-Execve_Syscall(uint64_t UNUSED(instruction_pointer),
-               uint64_t syscall_num,
-               uint64_t *syscall_params);
+R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
+                    uint64_t syscall_num,
+                    uint64_t *syscall_params);
 
 #endif

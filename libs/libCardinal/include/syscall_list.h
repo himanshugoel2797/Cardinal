@@ -18,9 +18,6 @@ typedef enum {
     Syscall_ManageSharedMemoryKey, //region size, flags, existing key, return key/error
     Syscall_SharedMemoryKeyAction, //key to apply, flag to apply/remove, return virtual address
 
-    Syscall_Execve,
-
-
     Syscall_R0_MemoryMap,               //Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions
     Syscall_R0_Fork,                    //Forks the process
     Syscall_R0_GetProcessInfo,          //Get the kernel's process information
@@ -32,7 +29,7 @@ typedef enum {
 
     Syscall_R1_PowerManagementEvent,    //Send or receive power management events
 
-    Syscall_NumEnd = Syscall_Execve,
+    Syscall_NumEnd = Syscall_R1_PowerManagementEvent,
 } SyscallFunctions;
 
 #endif

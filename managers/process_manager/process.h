@@ -64,4 +64,10 @@ ProcessSys_Initialize(void);
 bool
 ProcessSys_IsInitialized(void);
 
+uint64_t
+GetProcessGroupID(UID pid);
+
+uint64_t
+SetProcessGroupID(UID pid, uint64_t id);
+
 #endif

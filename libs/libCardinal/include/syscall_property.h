@@ -12,6 +12,7 @@ typedef enum {
     CardinalProperty_Time,
     CardinalProperty_SpecialDestination,
     CardinalProperty_Exit,
+    CardinalProperty_GroupID,
 #ifdef __x86_64__
     CardinalProperty_ArchPrctl,
     CardinalProperty_IOPL

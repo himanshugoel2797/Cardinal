@@ -34,6 +34,9 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         TerminateProcess(GetCurrentProcessUID(), data->params[1]);
         return 0;
         break;
+    case CardinalProperty_GroupID:
+        return (uint64_t)SetProcessGroupID(GetCurrentProcessUID(), data->params[2]);
+        break;
 #ifdef x86_64
     case CardinalProperty_ArchPrctl:
         return ArchPrctl_Syscall(data->params[1], data->params[2]);
@@ -66,6 +69,13 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
     case CardinalProperty_TID:
         return GetCurrentThreadUID();
+        break;
+    case CardinalProperty_GroupID:
+        { 
+            uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
+            if(rVal == (uint64_t)-1)return -EPERM;
+            else return rVal;
+        }
         break;
     case CardinalProperty_PLS:
         return (uint64_t)GetProcessLocalStorage(GetCurrentProcessUID(), syscall_params[1]);

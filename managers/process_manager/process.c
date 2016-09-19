@@ -480,3 +480,29 @@ GetProcessLocalStorage(UID pid,
 
     return info->PLS;
 }
+
+
+uint64_t
+GetProcessGroupID(UID pid)
+{ 
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return -1;
+
+    return info->GroupID;
+}
+
+uint64_t
+SetProcessGroupID(UID pid, uint64_t id)
+{ 
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return -1;
+
+    if(id < info->GroupID)
+        return -1;
+
+    info->GroupID = id;
+
+    return info->GroupID;
+}
