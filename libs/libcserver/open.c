@@ -7,7 +7,7 @@
 #include "mount_db.h"
 
 void
-HandleOpenRequest(Message *m) {
+HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const char *file, int flags, int mode)) {
 	struct OpenRequest *open_req = (struct OpenRequest*)m;
 	struct OpenResponse response;
 

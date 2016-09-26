@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <time.h>
 #include <cardinal/file_server.h>
@@ -7,8 +8,6 @@
 #include "mount_db.h"
 
 void
-HandleMountRequest(Message *m, int (*MountHandler)(const char*, UID)) {
-	struct MountRequest *mnt_req = (struct MountRequest*)m;
+HandleSeekRequest(Message *m, int (*seek)(FileSystemObject *handlers, uint64_t fd, int64_t offset, int whence)) {
 
-	
 }

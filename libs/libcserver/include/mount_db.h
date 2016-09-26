@@ -57,9 +57,6 @@ GetFileDescriptor(uint64_t fd, int *flags, int *mode, uint64_t *hash, FileSystem
 void
 FreeFileDescriptor(uint64_t fd);
 
-void
-InitializeDB(void);
-
 FileSystemError
 CreateDirectory(char *path);
 
@@ -71,5 +68,17 @@ RegisterMount(char *path, uint64_t pid);
 
 FileSystemObject*
 ParsePath(char *path);
+
+#ifdef _MOUNT_DB_PRIV_H_
+void
+InitializeDB(void);
+
+void
+SetMountLocation(char *loc);
+#endif
+
+void
+GetMountLocation(char *loc, size_t sz);
+
 
 #endif

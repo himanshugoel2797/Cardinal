@@ -8,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleReadRequest(Message *m) {
+HandleReadRequest(Message *m, int (*read)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt)) {
 	struct ReadRequest *read_req = (struct ReadRequest*)m;
 	
 	//Error out if the request read is too large

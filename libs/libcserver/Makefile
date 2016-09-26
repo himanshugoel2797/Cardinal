@@ -3,9 +3,9 @@ TARGET=libcserver.a
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-OBJS=open.o read.o write.o close.o direntry.o mount_db.o interface_provider.o link.o mount.o list.o stat.o unlink.o cserver.o
+OBJS=open.o read.o write.o close.o direntry.o mount_db.o interface_provider.o link.o mount.o list.o stat.o unlink.o cserver.o seek.o
 
-CFLAGS=-std=c11 -Iinclude -I.
+CFLAGS=-std=c11 -Iinclude -I. -D_MOUNT_DB_PRIV_H_
 
 all:$(OBJS)
 	$(AR) rcs $(TARGET) $(OBJS)

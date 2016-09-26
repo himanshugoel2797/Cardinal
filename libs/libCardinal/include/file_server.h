@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "cardinal_io.h"
 #include "syscall_property.h"
 #include "syscall.h"
 #include "ipc.h"
@@ -37,6 +38,11 @@
 
 #define CARDINAL_MSG_TYPE_FD2PATHREQUEST 18
 #define CARDINAL_MSG_TYPE_FD2PATHRESPONSE 19
+
+#define CARDINAL_MSG_TYPE_LSEEKREQUEST 20
+#define CARDINAL_MSG_TYPE_LSEEKRESPONSE 21
+
+#define CARDINAL_MSG_TYPE_MOUNTEVENT 22
 
 struct OpenRequest {
     Message m;
@@ -148,7 +154,21 @@ struct StatResponse {
     Message m;
     uint64_t msg_type;
     uint64_t code;
-    char data[1];
+    struct StatData data;
+};
+
+struct LSeekRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t fd;
+    int64_t offset;
+    uint64_t whence;
+};
+
+struct LSeekResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t cur_pos;
 };
 
 struct Fd2PathRequest {
@@ -163,7 +183,13 @@ struct Fd2PathResponse {
     uint64_t fd;
 };
 
-#define MAX_PATH_LEN ((MAX_MESSAGE_SIZE - sizeof(struct OpenRequest)))
+struct MountEvent {
+    Message m;
+    uint64_t msg_type;
+    char path[1];
+};
+
+#define MAX_PATH_LEN ((4096))
 #define MAX_BUF_LEN ((MAX_MESSAGE_SIZE - sizeof(struct WriteRequest)))
 
 #ifndef _KERNEL_
@@ -180,7 +206,7 @@ SetProperty(CardinalProperties prop, uint64_t type, uint64_t val) {
 
 static __inline bool
 RegisterSpecialDestination(uint64_t dst) {
-    return 1;
+    return SetProperty(CardinalProperty_SpecialDestination, dst, 0);
 }
 
 #endif

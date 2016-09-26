@@ -8,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleWriteRequest(Message *m) {
+HandleWriteRequest(Message *m, int (*write)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt)) {
 	struct WriteRequest *write_req = (struct WriteRequest*)m;
 
 	struct WriteResponse write_resp;

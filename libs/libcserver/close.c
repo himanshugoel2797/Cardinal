@@ -7,7 +7,7 @@
 #include "mount_db.h"
 
 void
-HandleCloseRequest(Message *m) {
+HandleCloseRequest(Message *m, int (*close)(FileSystemObject *handlers, uint64_t fd)) {
 	struct CloseRequest *close_req = (struct CloseRequest*)m;
 
 	uint64_t fd = close_req->fd;

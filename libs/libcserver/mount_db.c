@@ -16,6 +16,7 @@ static List *fds;
 static uint64_t fd_base = 0;
 
 static FileSystemObject *root;
+static char root_path[PATH_MAX];
 
 int
 strcmp_path(const char *a, const char *b) {
@@ -196,6 +197,27 @@ RegisterMount(char *path, uint64_t pid) {
 		return free(dir), FileSystemError_AllocationFailed;
 
 	return FileSystemError_None;
+}
+
+FileSystemError
+ConstructPathFromSystemObject(FileSystemObject *obj, char *buf, size_t buf_len)
+{
+	//Construct a path to the root of the filesystem
+
+}
+
+
+void
+SetMountLocation(char *loc) {
+	strcpy(root_path, loc);
+}
+
+void
+GetMountLocation(char *loc, size_t sz) {
+	if(sz < strlen(root_path))
+		return, *loc = '\0';
+
+	strcpy(loc, root_path);
 }
 
 uint64_t
