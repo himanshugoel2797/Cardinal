@@ -20,8 +20,8 @@ Clone_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
-             uint64_t syscall_num,
-             uint64_t *syscall_params);
+               uint64_t syscall_num,
+               uint64_t *syscall_params);
 
 uint64_t
 GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),

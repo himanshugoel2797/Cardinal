@@ -7,6 +7,6 @@
 #include "mount_db.h"
 
 void
-HandleStatRequest(Message *m, int (*stat)(FileSystemObject *handlers, uint64_t fd, struct StatData *data)){
-	
+HandleStatRequest(Message *m, int (*stat)(FileSystemObject *handlers, uint64_t fd, struct StatData *data)) {
+
 }

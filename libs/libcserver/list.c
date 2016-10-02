@@ -70,8 +70,7 @@ List_Find(List *a,
 
     while(checked_vals != a->entry_count) {
 
-        if(finder(List_EntryAt(a, n), s_val))
-        {
+        if(finder(List_EntryAt(a, n), s_val)) {
             return n;
         }
 

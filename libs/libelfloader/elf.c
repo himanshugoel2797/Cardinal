@@ -6,7 +6,6 @@ LoadElf(void *loc,
         ElfLimitations limits,
         ManagedPageTable *pageTable,
         ElfInformation *elfData
-       )
-{ 
+       ) {
 
 }

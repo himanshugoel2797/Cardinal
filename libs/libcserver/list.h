@@ -29,8 +29,8 @@ List_Remove(List *a,
 
 uint64_t
 List_Find(List *a,
-		  bool (*finder)(void *val, void *s_val),
-		  void *s_val);
+          bool (*finder)(void *val, void *s_val),
+          void *s_val);
 
 void
 List_Free(List *a);

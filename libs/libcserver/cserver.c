@@ -9,103 +9,91 @@
 #include "interface_provider.h"
 #include "file_request_handlers.h"
 
-int cserver_main(uint64_t destCode, 
-				 int (*MountHandler)(const char*, UID), 
-				 int (*Mounted)(const char *parent),
-				 struct cserver_handlers *handlers) {
-    
-	if(destCode != 0 && !RegisterSpecialDestination(destCode))
-		return -1;
+int cserver_main(uint64_t destCode,
+                 int (*MountHandler)(const char*, UID),
+                 int (*Mounted)(const char *parent),
+                 struct cserver_handlers *handlers) {
 
-	InitializeDB();
-	InitializeInterface();
+    if(destCode != 0 && !RegisterSpecialDestination(destCode))
+        return -1;
+
+    InitializeDB();
+    InitializeInterface();
 
 
-	struct timespec t;
-	t.tv_sec = 0;
-	t.tv_nsec = 100;
+    struct timespec t;
+    t.tv_sec = 0;
+    t.tv_nsec = 100;
 
-	Message *m = malloc(MAX_MESSAGE_SIZE + 1);
-	
-	char *tmp_m = (char*)m;
-	tmp_m[MAX_MESSAGE_SIZE] = 0;	//Force null termination
+    Message *m = malloc(MAX_MESSAGE_SIZE + 1);
 
-	while(true) {
-		while(!GetIPCMessageFrom(m, 0, 0))
-			nanosleep(&t, NULL);
+    char *tmp_m = (char*)m;
+    tmp_m[MAX_MESSAGE_SIZE] = 0;	//Force null termination
 
-		struct OpenRequest * test_req = (struct OpenRequest*) m;
+    while(true) {
+        while(!GetIPCMessageFrom(m, 0, 0))
+            nanosleep(&t, NULL);
 
-		switch(test_req->msg_type) {
-			case CARDINAL_MSG_TYPE_OPENREQUEST:
-			{
-				HandleOpenRequest(m, handlers->open);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_CLOSEREQUEST:
-			{
-				HandleCloseRequest(m, handlers->close);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_READREQUEST:
-			{
-				HandleReadRequest(m, handlers->read);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_WRITEREQUEST:
-			{
-				HandleWriteRequest(m, handlers->write);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_LSEEKREQUEST:
-			{
-				HandleSeekRequest(m, handlers->seek);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_MOUNTREQUEST:
-			{
-				HandleMountRequest(m, MountHandler);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_DIRENTRYREQUEST:
-			{
-				HandleDirentryRequest(m, handlers->direntry);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_LINKREQUEST:
-			{
-				HandleLinkRequest(m, handlers->link);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_UNLINKREQUEST:
-			{
-				HandleUnlinkRequest(m, handlers->unlink);
-			}
-			break;
-			case CARDINAL_MSG_TYPE_STATREQUEST:
-			{
-				HandleStatRequest(m, handlers->stat);
-			}
-			break;
-            case CARDINAL_MSG_TYPE_FD2PATHREQUEST:
-            {
+        struct OpenRequest * test_req = (struct OpenRequest*) m;
 
-            }
-            break;
-            case CARDINAL_MSG_TYPE_MOUNTEVENT:
-			{
-				struct MountEvent *mnt_event_data = (struct MountEvent*)m;
-				SetMountLocation(mnt_event_data->path);
+        switch(test_req->msg_type) {
+        case CARDINAL_MSG_TYPE_OPENREQUEST: {
+            HandleOpenRequest(m, handlers->open);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_CLOSEREQUEST: {
+            HandleCloseRequest(m, handlers->close);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_READREQUEST: {
+            HandleReadRequest(m, handlers->read);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_WRITEREQUEST: {
+            HandleWriteRequest(m, handlers->write);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_LSEEKREQUEST: {
+            HandleSeekRequest(m, handlers->seek);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_MOUNTREQUEST: {
+            HandleMountRequest(m, MountHandler);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_DIRENTRYREQUEST: {
+            HandleDirentryRequest(m, handlers->direntry);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_LINKREQUEST: {
+            HandleLinkRequest(m, handlers->link);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_UNLINKREQUEST: {
+            HandleUnlinkRequest(m, handlers->unlink);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_STATREQUEST: {
+            HandleStatRequest(m, handlers->stat);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_FD2PATHREQUEST: {
 
-				char path[PATH_MAX];
-				GetMountLocation(path, PATH_MAX);
+        }
+        break;
+        case CARDINAL_MSG_TYPE_MOUNTEVENT: {
+            struct MountEvent *mnt_event_data = (struct MountEvent*)m;
+            SetMountLocation(mnt_event_data->path);
 
-				if(Mounted != NULL)Mounted(path);
-			}
-            break;
-		}
+            char path[PATH_MAX];
+            GetMountLocation(path, PATH_MAX);
 
-	}
-	
-	free(m);
+            if(Mounted != NULL)Mounted(path);
+        }
+        break;
+        }
+
+    }
+
+    free(m);
 }

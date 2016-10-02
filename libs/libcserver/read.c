@@ -9,47 +9,45 @@
 
 void
 HandleReadRequest(Message *m, int (*read)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt)) {
-	struct ReadRequest *read_req = (struct ReadRequest*)m;
-	
-	//Error out if the request read is too large
-	if(read_req->read_size >= MAX_BUF_LEN)
-	{
-		struct ReadResponse read_resp;
-		FILL_RESPONSE(&read_resp, read_req)
-		read_resp.m.Size = sizeof(struct ReadResponse);
-		read_resp.msg_type = CARDINAL_MSG_TYPE_READRESPONSE;
-		read_resp.code = -1;
+    struct ReadRequest *read_req = (struct ReadRequest*)m;
 
-		Message *m = (Message*)&read_resp;
-		PostIPCMessages(&m, 1);
-		return;
-	}
+    //Error out if the request read is too large
+    if(read_req->read_size >= MAX_BUF_LEN) {
+        struct ReadResponse read_resp;
+        FILL_RESPONSE(&read_resp, read_req)
+        read_resp.m.Size = sizeof(struct ReadResponse);
+        read_resp.msg_type = CARDINAL_MSG_TYPE_READRESPONSE;
+        read_resp.code = -1;
 
-	struct ReadResponse *read_resp = malloc(read_req->read_size + sizeof(struct ReadResponse));
-	FILL_RESPONSE(read_resp, read_req)
-	read_resp->m.Size = sizeof(struct ReadResponse) + read_req->read_size;
-	read_resp->msg_type = CARDINAL_MSG_TYPE_READRESPONSE;
+        Message *m = (Message*)&read_resp;
+        PostIPCMessages(&m, 1);
+        return;
+    }
 
-	uint64_t fd = read_req->fd;
-	int flags = 0;
-	int mode = 0;
-	uint64_t hash = 0;
-	FileSystemObject *fs_obj = NULL;
+    struct ReadResponse *read_resp = malloc(read_req->read_size + sizeof(struct ReadResponse));
+    FILL_RESPONSE(read_resp, read_req)
+    read_resp->m.Size = sizeof(struct ReadResponse) + read_req->read_size;
+    read_resp->msg_type = CARDINAL_MSG_TYPE_READRESPONSE;
 
-	if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj))
-	{
-		read_resp->code = -1;
+    uint64_t fd = read_req->fd;
+    int flags = 0;
+    int mode = 0;
+    uint64_t hash = 0;
+    FileSystemObject *fs_obj = NULL;
 
-		PostIPCMessages((Message**)&read_resp, 1);
-		return;
-	}
+    if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj)) {
+        read_resp->code = -1;
 
-	if(fs_obj->ObjectType == FileSystemObjectType_File) {
-		read_resp->code = fs_obj->handlers->read(fs_obj, fd, read_resp->data, read_req->read_size);
-	}else {
-		read_resp->code = -1;
-	}
+        PostIPCMessages((Message**)&read_resp, 1);
+        return;
+    }
 
-	PostIPCMessages((Message**)&read_resp, 1);
-	return;
+    if(fs_obj->ObjectType == FileSystemObjectType_File) {
+        read_resp->code = fs_obj->handlers->read(fs_obj, fd, read_resp->data, read_req->read_size);
+    } else {
+        read_resp->code = -1;
+    }
+
+    PostIPCMessages((Message**)&read_resp, 1);
+    return;
 }

@@ -65,13 +65,13 @@ struct MemoryMapParams {
 #ifndef _KERNEL_
 
 static __inline int
-R0_MemoryMap(UID pid, 
-             uint64_t phys, 
-             uint64_t virt, 
-             uint64_t len, 
-             CachingMode cacheMode, 
-             MemoryAllocationType type, 
-             MemoryAllocationFlags flags){ 
+R0_MemoryMap(UID pid,
+             uint64_t phys,
+             uint64_t virt,
+             uint64_t len,
+             CachingMode cacheMode,
+             MemoryAllocationType type,
+             MemoryAllocationFlags flags) {
     struct MemoryMapParams p;
 
 
