@@ -85,6 +85,10 @@ ParsePath(char *path) {
         }
         if(i == List_Length(b->Children))
             return NULL;
+
+        //Only paths that traverse mount points can be incomplete
+        if(r->ObjectType == FileSystemObjectType_MountPoint)
+        	break;
     }
 
     return r;
@@ -244,6 +248,10 @@ HashPath(const char *str) {
 
 uint64_t
 AllocateFileDescriptor(int flags, int mode, uint64_t hash, FileSystemObject *m) {
+
+	if(List_Length(fds) >= fd_cnt_limit)
+		return false;
+
     uint64_t fd = ++fd_base;
 
     FileDescriptor *desc = malloc(sizeof(FileDescriptor));

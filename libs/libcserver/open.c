@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <time.h>
 #include <cardinal/file_server.h>
@@ -7,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const char *file, int flags, int mode)) {
+HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, int mode)) {
     struct OpenRequest *open_req = (struct OpenRequest*)m;
     struct OpenResponse response;
 
@@ -19,13 +20,16 @@ HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const
     FILL_RESPONSE(&response, open_req)
     response.m.Size = sizeof(struct OpenResponse);
 
-    bool skip_open_handler = FALSE;
+    bool skip_open_handler = false;
 
     if(fs_obj != NULL) {
         if(fs_obj->ObjectType == FileSystemObjectType_File) {
+            
             fd = fs_obj->handlers->open(fs_obj, open_req->path, (int)open_req->flags, (int)open_req->mode);
+            skip_open_handler = true;
+
         } else if(fs_obj->ObjectType == FileSystemObjectType_MountPoint) {
-            //Direct request to mount point service and return the PID returned by it
+            //Direct request to the server handling the mount request
             uint64_t src = open_req->m.SourcePID;
 
             open_req->m.SourcePID = CARDINAL_IPCDEST_FILESERVER;
@@ -37,29 +41,36 @@ HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const
             t.tv_sec = 0;
             t.tv_nsec = 100;
 
+            //Wait for the server to respond
             while(GetIPCMessageFrom((Message*)&response, fs_obj->TargetPID, open_req->m.MsgID) != 1)
                 nanosleep(&t, NULL);
 
+            //Forward the response to the source
             response.m.SourcePID = CARDINAL_IPCDEST_FILESERVER;
             response.m.DestinationPID = src;
 
             Message *ma = (Message*)&response;
             PostIPCMessages(&ma, 1);
-            return;
-        } else if(fs_obj->ObjectType == FileSystemObjectType_Directory) {
-            //If it can be determined that the goal was a directory, open the directory, else defer to the open handler
-        } else if(open != NULL) {
-            //Call the open handler provided by the application to handle this situation
-        }
-    } else if(open != NULL) {
 
+            return;
+        } else if(fs_obj->ObjectType == FileSystemObjectType_Directory && open_req->flags & O_DIRECTORY) {
+        	//Open the directory
+
+        	uint64_t dir_hash = HashPath(open_req->path);
+        	fd = AllocateFileDescriptor(open_req->flags, open_req->mode, dir_hash, fs_obj);
+
+        	skip_open_handler = true;
+        }
+    }
+
+    if(!skip_open_handler && open_c != NULL){
+    	fd = open_c(open_req->path, (int)open_reg->flags, (int)open_req->mode);
     }
 
     response.msg_type = CARDINAL_MSG_TYPE_OPENRESPONSE;
     response.fd = fd;
     response.targetPID = CARDINAL_IPCDEST_FILESERVER;
 
-    if(fd == -1)__asm__("hlt");
     Message *ma = (Message*)&response;
     PostIPCMessages(&ma, 1);
     return;

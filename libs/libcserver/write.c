@@ -8,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleWriteRequest(Message *m, int (*write)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt)) {
+HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, size_t cnt)) {
     struct WriteRequest *write_req = (struct WriteRequest*)m;
 
     struct WriteResponse write_resp;
@@ -24,6 +24,9 @@ HandleWriteRequest(Message *m, int (*write)(FileSystemObject *handlers, uint64_t
 
     if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj)) {
         write_resp.write_size = -1;
+
+        if(write != NULL)
+        	write_resp.write_size = write(fd, write_req->buf, write_req->m.Size - sizeof(struct WriteRequest));
 
         Message *m2 = (Message*)&write_resp;
         PostIPCMessages((Message**)&m2, 1);

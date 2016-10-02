@@ -7,7 +7,7 @@
 #include "mount_db.h"
 
 void
-HandleCloseRequest(Message *m, int (*close)(FileSystemObject *handlers, uint64_t fd)) {
+HandleCloseRequest(Message *m, int (*close)(uint64_t fd)) {
     struct CloseRequest *close_req = (struct CloseRequest*)m;
 
     uint64_t fd = close_req->fd;
@@ -17,10 +17,17 @@ HandleCloseRequest(Message *m, int (*close)(FileSystemObject *handlers, uint64_t
     FileSystemObject *fs_obj = NULL;
 
     if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj))
-        return;
+    {
+    	if(close != NULL)
+    		close(fd);
+    	
+    	return;
+    }
 
     if(fs_obj->ObjectType == FileSystemObjectType_File) {
         fs_obj->handlers->close(fs_obj, close_req->fd);
+    }else if(fs_obj->ObjectType == FileSystemObjectType_Directory) {
+    	//Free the descriptor
     }
 
     return;

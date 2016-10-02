@@ -9,10 +9,10 @@
 #include "mount_db.h"
 
 typedef struct cserver_handlers {
-    uint64_t (*open)(FileSystemObject *handlers, const char *file, int flags, int mode);
-    int (*close)(FileSystemObject *handlers, uint64_t fd);
-    int (*read)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt);
-    int (*write)(FileSystemObject *handlers, uint64_t fd, void *buf, size_t cnt);
+    uint64_t (*open)(const char *file, int flags, int mode);
+    int (*close)(uint64_t fd);
+    int (*read)(uint64_t fd, void *buf, size_t cnt);
+    int (*write)(uint64_t fd, void *buf, size_t cnt);
     int (*link)(FileSystemObject *handlers, char *from, char *to);
     int (*unlink)(FileSystemObject *handlers, char *file);
     int (*stat)(FileSystemObject *handlers, uint64_t fd, struct StatData *data);
