@@ -7,6 +7,8 @@
 
 #include "list.h"
 
+#define FD_DEFAULT_LIMIT 16384
+
 typedef enum {
 	FileSystemError_None,
 	FileSystemError_AllocationFailed,
@@ -80,5 +82,10 @@ SetMountLocation(char *loc);
 void
 GetMountLocation(char *loc, size_t sz);
 
+void
+SetFDLimit(uint32_t limit);
+
+uint32_t
+GetFDLimit(void);
 
 #endif

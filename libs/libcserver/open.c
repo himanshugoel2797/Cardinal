@@ -19,13 +19,13 @@ HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const
 	FILL_RESPONSE(&response, open_req)
 	response.m.Size = sizeof(struct OpenResponse);
 
+	bool skip_open_handler = FALSE;
+
 	if(fs_obj != NULL){
-		if(fs_obj->ObjectType == FileSystemObjectType_File)
-		{
+		if(fs_obj->ObjectType == FileSystemObjectType_File) {
 			fd = fs_obj->handlers->open(fs_obj, open_req->path, (int)open_req->flags, (int)open_req->mode);	
 		}
-		else if(fs_obj->ObjectType == FileSystemObjectType_MountPoint)
-		{
+		else if(fs_obj->ObjectType == FileSystemObjectType_MountPoint) {
 			//Direct request to mount point service and return the PID returned by it
 			uint64_t src = open_req->m.SourcePID;
 
@@ -48,6 +48,14 @@ HandleOpenRequest(Message *m, uint64_t (*open)(FileSystemObject *handlers, const
 			PostIPCMessages(&ma, 1);
 			return;
 		}
+		else if(fs_obj->ObjectType == FileSystemObjectType_Directory) {
+			//If it can be determined that the goal was a directory, open the directory, else defer to the open handler
+		}
+		else if(open != NULL) {
+			//Call the open handler provided by the application to handle this situation
+		}
+	} else if(open != NULL) {
+
 	}
 
 	response.msg_type = CARDINAL_MSG_TYPE_OPENRESPONSE;

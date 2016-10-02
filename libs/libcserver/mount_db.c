@@ -14,6 +14,7 @@ typedef struct {
 
 static List *fds;
 static uint64_t fd_base = 0;
+static uint32_t fd_cnt_limit = FD_DEFAULT_LIMIT;
 
 static FileSystemObject *root;
 static char root_path[PATH_MAX];
@@ -30,6 +31,18 @@ strcmp_path(const char *a, const char *b) {
 	}
 
 	return 1;
+}
+
+
+void
+SetFDLimit(uint32_t limit) {
+	if(limit == 0)limit = FD_DEFAULT_LIMIT;
+	fd_cnt_limit = limit;
+}
+
+uint32_t
+GetFDLimit(void) {
+	return fd_cnt_limit;
 }
 
 void
@@ -56,9 +69,9 @@ ParsePath(char *path) {
 
 
 	while(path[0] != 0) {
-	path++;
+		path++;
 
-            FileSystemObject *b = r;
+        FileSystemObject *b = r;
 		uint64_t i = 0;
 		for(; i < List_Length(r->Children); i++) {
 
@@ -72,9 +85,6 @@ ParsePath(char *path) {
 		}
 		if(i == List_Length(b->Children))
 			return NULL;
-
-		if(r->ObjectType == FileSystemObjectType_MountPoint || r->ObjectType == FileSystemObjectType_File)
-			break;
 	}
 
 	return r;
