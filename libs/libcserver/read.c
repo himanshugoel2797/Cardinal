@@ -8,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleReadRequest(Message *m, int (*read)(uint64_t fd, void *buf, size_t cnt)) {
+HandleReadRequest(Message *m, int (*read)(uint64_t fd, void *buf, int64_t offset, uint64_t whence, size_t cnt)) {
     struct ReadRequest *read_req = (struct ReadRequest*)m;
 
     //Error out if the request read is too large
@@ -40,14 +40,14 @@ HandleReadRequest(Message *m, int (*read)(uint64_t fd, void *buf, size_t cnt)) {
         read_resp->code = -1;
 
         if(read != NULL)
-        	read_resp->code = read(fd, read_resp->data, read_req->read_size);
+        	read_resp->code = read(fd, read_resp->data, read_req->offset, read_req->whence, read_req->read_size);
 
         PostIPCMessages((Message**)&read_resp, 1);
         return;
     }
 
     if(fs_obj->ObjectType == FileSystemObjectType_File) {
-        read_resp->code = fs_obj->handlers->read(fs_obj, fd, read_resp->data, read_req->read_size);
+        read_resp->code = fs_obj->handlers->read(fs_obj, fd, read_resp->data, read_req->offset, read_req->whence, read_req->read_size);
     } else {
         read_resp->code = -1;
     }

@@ -11,14 +11,24 @@
 typedef struct cserver_handlers {
     uint64_t (*open)(const char *file, int flags, int mode);
     int (*close)(uint64_t fd);
-    int (*read)(uint64_t fd, void *buf, size_t cnt);
-    int (*write)(uint64_t fd, void *buf, size_t cnt);
-    int (*link)(FileSystemObject *handlers, char *from, char *to);
-    int (*unlink)(FileSystemObject *handlers, char *file);
-    int (*stat)(FileSystemObject *handlers, uint64_t fd, struct StatData *data);
-    int (*direntry)(FileSystemObject *handlers, uint64_t fd, struct DirentryData *data, size_t data_size);
-    int (*seek)(FileSystemObject *handlers, uint64_t fd, int64_t offset, int whence);
+    int (*read)(uint64_t fd, void *buf, int64_t off, uint64_t whence, size_t cnt);
+    int (*write)(uint64_t fd, void *buf, int64_t off, uint64_t whence, size_t cnt);
+    int (*link)(char *from, char *to);
+    int (*unlink)(char *file);
+    int (*stat)(uint64_t fd, struct StatData *data);
+    int (*direntry)(uint64_t fd, struct DirentryData *data, size_t data_size);
+    int (*rename)(char *from, char *to);
+    int (*mkdir)(char *name);
+    int (*chmod)();
+    int (*truncate)();
+    int (*statfs)();
+    int (*flush)();
+    int (*utimens)();
+    int (*lock)();
+    int (*unlock)();
 };
+
+//TODO: chmod, truncate, rename, mkdir, statfs, flush, access and write time change, lock, unlock
 
 int
 cserver_main(uint64_t destCode,

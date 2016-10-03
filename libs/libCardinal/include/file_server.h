@@ -39,10 +39,7 @@
 #define CARDINAL_MSG_TYPE_FD2PATHREQUEST 18
 #define CARDINAL_MSG_TYPE_FD2PATHRESPONSE 19
 
-#define CARDINAL_MSG_TYPE_LSEEKREQUEST 20
-#define CARDINAL_MSG_TYPE_LSEEKRESPONSE 21
-
-#define CARDINAL_MSG_TYPE_MOUNTEVENT 22
+#define CARDINAL_MSG_TYPE_MOUNTEVENT 20
 
 struct OpenRequest {
     Message m;
@@ -69,6 +66,8 @@ struct WriteRequest {
     Message m;
     uint64_t msg_type;
     uint64_t fd;
+    int64_t offset;
+    uint64_t whence;
     uint64_t buf[1];
 };
 
@@ -82,6 +81,8 @@ struct ReadRequest {
     Message m;
     uint64_t msg_type;
     uint64_t fd;
+    int64_t offset;
+    uint64_t whence;
     uint64_t read_size;
 };
 
@@ -155,20 +156,6 @@ struct StatResponse {
     uint64_t msg_type;
     uint64_t code;
     struct StatData data;
-};
-
-struct LSeekRequest {
-    Message m;
-    uint64_t msg_type;
-    uint64_t fd;
-    int64_t offset;
-    uint64_t whence;
-};
-
-struct LSeekResponse {
-    Message m;
-    uint64_t msg_type;
-    uint64_t cur_pos;
 };
 
 struct Fd2PathRequest {

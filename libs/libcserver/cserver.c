@@ -53,10 +53,6 @@ int cserver_main(uint64_t destCode,
             HandleWriteRequest(m, handlers->write);
         }
         break;
-        case CARDINAL_MSG_TYPE_LSEEKREQUEST: {
-            HandleSeekRequest(m, handlers->seek);
-        }
-        break;
         case CARDINAL_MSG_TYPE_MOUNTREQUEST: {
             HandleMountRequest(m, MountHandler);
         }

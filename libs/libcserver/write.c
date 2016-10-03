@@ -8,7 +8,7 @@
 #include "mount_db.h"
 
 void
-HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, size_t cnt)) {
+HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, int64_t offset, uint64_t whence, size_t cnt)) {
     struct WriteRequest *write_req = (struct WriteRequest*)m;
 
     struct WriteResponse write_resp;
@@ -26,7 +26,7 @@ HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, size_t cnt))
         write_resp.write_size = -1;
 
         if(write != NULL)
-        	write_resp.write_size = write(fd, write_req->buf, write_req->m.Size - sizeof(struct WriteRequest));
+        	write_resp.write_size = write(fd, write_req->buf, write_req->offset, write_req->whence, write_req->m.Size - sizeof(struct WriteRequest));
 
         Message *m2 = (Message*)&write_resp;
         PostIPCMessages((Message**)&m2, 1);
@@ -34,7 +34,7 @@ HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, size_t cnt))
     }
 
     if(fs_obj->ObjectType == FileSystemObjectType_File) {
-        write_resp.write_size = fs_obj->handlers->write(fs_obj, fd, write_req->buf, write_req->m.Size - sizeof(struct WriteRequest));
+        write_resp.write_size = fs_obj->handlers->write(fs_obj, fd, write_req->buf, write_req->offset, write_req->whence, write_req->m.Size - sizeof(struct WriteRequest));
     } else {
         write_resp.write_size = -1;
     }

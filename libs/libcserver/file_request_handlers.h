@@ -8,16 +8,16 @@
 #define FILL_RESPONSE(a, b) (a)->m.MsgID = (b)->m.MsgID; (a)->m.SourcePID = (b)->m.DestinationPID; (a)->m.DestinationPID = (b)->m.SourcePID;
 
 void
-HandleOpenRequest(Message *m);
+HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, int mode));
 
 void
-HandleCloseRequest(Message *m);
+HandleCloseRequest(Message *m, int (*close)(uint64_t fd));
 
 void
-HandleReadRequest(Message *m);
+HandleReadRequest(Message *m, int (*read)(uint64_t fd, void *buf, int64_t offset, uint64_t whence, size_t cnt));
 
 void
-HandleWriteRequest(Message *m);
+HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, int64_t offset, uint64_t whence, size_t cnt));
 
 void
 HandleMountRequest(Message *m);
