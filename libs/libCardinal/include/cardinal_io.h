@@ -18,6 +18,10 @@ struct StatData {
     uint32_t pref_block_size;
 };
 
+struct FS_StatData {
+	uint64_t rsv[32];
+};
+
 struct DirEntryData {
     uint64_t unique_id;
     uint64_t offset;

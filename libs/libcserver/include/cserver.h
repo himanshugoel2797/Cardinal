@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 #include <cardinal/cardinal_types.h>
 #include <cardinal/cardinal_io.h>
 
@@ -19,13 +20,13 @@ typedef struct cserver_handlers {
     int (*direntry)(uint64_t fd, struct DirentryData *data, size_t data_size);
     int (*rename)(char *from, char *to);
     int (*mkdir)(char *name);
-    int (*chmod)();
-    int (*truncate)();
-    int (*statfs)();
+    int (*chmod)(char *name, int mode);
+    int (*truncate)(char *name, uint64_t len);
+    int (*statfs)(struct FS_StatData *data);
     int (*flush)();
-    int (*utimens)();
-    int (*lock)();
-    int (*unlock)();
+    int (*utimens)(char *name, struct timespec times[2], int flags);
+    int (*lock)(uint64_t fd, int flags);
+    int (*unlock)(uint64_t fd, int flags);
 };
 
 //TODO: chmod, truncate, rename, mkdir, statfs, flush, access and write time change, lock, unlock
