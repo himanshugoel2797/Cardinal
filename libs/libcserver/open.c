@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <fcntl.h>
 #include <time.h>
 #include <cardinal/file_server.h>
 
@@ -64,7 +65,7 @@ HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, in
     }
 
     if(!skip_open_handler && open_c != NULL){
-    	fd = open_c(open_req->path, (int)open_reg->flags, (int)open_req->mode);
+    	fd = open_c(open_req->path, (int)open_req->flags, (int)open_req->mode);
     }
 
     response.msg_type = CARDINAL_MSG_TYPE_OPENRESPONSE;

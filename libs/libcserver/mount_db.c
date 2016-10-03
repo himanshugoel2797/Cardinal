@@ -228,8 +228,11 @@ SetMountLocation(char *loc) {
 void
 GetMountLocation(char *loc, size_t sz) {
     if(sz < strlen(root_path))
-        return, *loc = '\0';
-
+    {
+        	*loc = '\0';
+        	return;
+	}
+    
     strcpy(loc, root_path);
 }
 

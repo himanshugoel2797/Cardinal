@@ -2,6 +2,7 @@
 
 #include <time.h>
 #include <cardinal/file_server.h>
+#include <string.h>
 
 #include "file_request_handlers.h"
 #include "mount_db.h"
@@ -12,12 +13,12 @@ HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data)) {
 	struct StatResponse stat_resp;
 
 	uint64_t fd = stat_req->fd;
-	uint64_t flags = 0;
-	uint64_t mode = 0;
+	int flags = 0;
+	int mode = 0;
 	uint64_t hash = 0;
 	FileSystemObject *fs_obj = NULL;
 
-	FILL_RESPONSE(stat_resp, stat_req)
+	FILL_RESPONSE(&stat_resp, stat_req)
     stat_resp.m.Size = sizeof(struct StatResponse);
     stat_resp.msg_type = CARDINAL_MSG_TYPE_STATRESPONSE;
 
@@ -26,7 +27,7 @@ HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data)) {
         stat_resp.code = -1;
 
         if(stat != NULL)
-        	stat_resp->code = stat(fd, &stat_resp.data);
+        	stat_resp.code = stat(fd, &stat_resp.data);
 
         Message *m_resp = (Message*)&stat_resp;
         PostIPCMessages(&m_resp, 1);
@@ -34,7 +35,7 @@ HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data)) {
     }
 
     //Get the file info and put it into the response
- 	memcpy(&stat_resp.data, fs_obj->statData, sizeof(struct StatData));
+ 	memcpy(&stat_resp.data, &fs_obj->statData, sizeof(struct StatData));
 
     Message *m_resp = (Message*)&stat_resp;
     PostIPCMessages(&m_resp, 1);

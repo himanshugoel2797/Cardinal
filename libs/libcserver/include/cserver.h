@@ -9,7 +9,7 @@
 
 #include "mount_db.h"
 
-typedef struct cserver_handlers {
+struct cserver_handlers {
     uint64_t (*open)(const char *file, int flags, int mode);
     int (*close)(uint64_t fd);
     int (*read)(uint64_t fd, void *buf, int64_t off, uint64_t whence, size_t cnt);
@@ -17,7 +17,7 @@ typedef struct cserver_handlers {
     int (*link)(char *from, char *to);
     int (*unlink)(char *file);
     int (*stat)(uint64_t fd, struct StatData *data);
-    int (*direntry)(uint64_t fd, struct DirentryData *data, size_t data_size);
+    int (*direntry)(uint64_t fd, struct DirEntryData *data, size_t data_size);
     int (*rename)(char *from, char *to);
     int (*mkdir)(char *name);
     int (*chmod)(char *name, int mode);

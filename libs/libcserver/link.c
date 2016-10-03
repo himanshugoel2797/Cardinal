@@ -7,6 +7,6 @@
 #include "mount_db.h"
 
 void
-HandleLinkRequest(Message *m, int (*link)(FileSystemObject *handlers, char *from, char *to)) {
+HandleLinkRequest(Message *m, int (*link)(char *from, char *to)) {
 
 }

@@ -5,6 +5,8 @@
 #include <cardinal/ipc.h>
 #include <cardinal/file_server.h>
 
+#include "cserver.h"
+
 #include "mount_db.h"
 #include "interface_provider.h"
 #include "file_request_handlers.h"

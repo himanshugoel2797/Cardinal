@@ -7,6 +7,6 @@
 #include "mount_db.h"
 
 void
-HandleDirentryRequest(Message *m, int (*direntry)(FileSystemObject *handlers, uint64_t fd, struct DirentryData *data, size_t data_size)) {
+HandleDirentryRequest(Message *m, int (*direntry)(uint64_t fd, struct DirEntryData *data, size_t data_size)) {
 
 }

@@ -20,18 +20,18 @@ void
 HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, int64_t offset, uint64_t whence, size_t cnt));
 
 void
-HandleMountRequest(Message *m);
+HandleMountRequest(Message *m, int (*MountHandler)(const char*, UID));
 
 void
-HandleDirentryRequest(Message *m);
+HandleDirentryRequest(Message *m, int (*direntry)(uint64_t fd, struct DirEntryData *data, size_t data_size));
 
 void
-HandleLinkRequest(Message *m);
+HandleLinkRequest(Message *m, int (*link)(char *from, char *to));
 
 void
-HandleUnlinkRequest(Message *m);
+HandleUnlinkRequest(Message *m, int (*unlink)(char *file));
 
 void
-HandleStatRequest(Message *m);
+HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data));
 
 #endif
