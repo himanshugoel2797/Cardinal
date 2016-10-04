@@ -15,10 +15,15 @@
 #define CARDINAL_IPCDEST_DISPLAYSERVER ((CARDINAL_IPCDEST_SPECIAL) | 2)
 #define CARDINAL_IPCDEST_MEMORYSERVER ((CARDINAL_IPCDEST_SPECIAL) | 3)
 
+#define CARDINAL_MSGTYPE_NONE 0
+#define CARDINAL_MSGTYPE_FWD 1
+
 typedef struct Message {
     UID SourcePID;
     UID DestinationPID;
     uint64_t MsgID;
+    uint64_t MsgType;
+    uint64_t MsgTypePID;	//If forwarded, this contains the initial source of the message, file servers implementing secure operations through this mechanism must ensure that the SourcePID field has the necessary permissions in order to be confident that this field is valid
     unsigned short Size;
 } Message;
 

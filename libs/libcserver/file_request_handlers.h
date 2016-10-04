@@ -31,24 +31,31 @@ HandleRemoveRequest(Message *m, int (*remove)(char *file));
 void
 HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data));
 
+//TODO forward requests at mount point
 void
 HandleRenameRequest(Message *m, int (*rename)(char *from, char *to));
 
+//TODO forward requests at mount point
 void
 HandleMkdirRequest(Message *m, int (*mkdir)(char *name));
 
+//TODO forward requests at mount point
 void
 HandleChmodRequest(Message *m, int (*chmod)(char *name, int mode));
-    
+
+//TODO forward requests at mount point    
 void
 HandleTruncateRequest(Message *m, int (*truncate)(char *name, uint64_t len));
 
+//TODO forward requests at mount point
 void
 HandleStatFsRequest(Message *m, int (*statfs)(struct FS_StatData *data));
 
+//TODO forward requests at mount point
 void
 HandleFlushRequest(Message *m, int (*flush)());
 
+//TODO forward requests at mount point
 void
 HandleUtimeNSRequest(Message *m, int (*utimens)(char *name, struct timespec times[2], int flags));
 

@@ -365,6 +365,24 @@ DeleteFileSystemObject(FileSystemObject *obj)
     if(obj == NULL)
         return FileSystemError_PathInvalid;
 
+    //Can't delete the root
+    if(obj == root)
+        return FileSystemError_ReferencesExist;
+
     //If there is more than 1 reference to the object, it can't be deleted, removing from the tree isn't possible until all file descriptors have been closed,
     //else resolving paths will break, which is still needed.
+
+    if(obj->ReferenceCount != 1)
+        return FileSystemError_ReferencesExist;
+    
+    //Find the entry in the parent
+
+
+    //Remove the entry
+
+
+    //Delete the entry
+
+    
+    return
 }
