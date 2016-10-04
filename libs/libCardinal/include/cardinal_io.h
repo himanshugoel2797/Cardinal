@@ -19,7 +19,7 @@ struct StatData {
 };
 
 struct FS_StatData {
-	uint64_t rsv[32];
+    uint64_t rsv[32];
 };
 
 struct DirEntryData {

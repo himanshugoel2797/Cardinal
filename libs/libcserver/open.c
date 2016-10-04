@@ -25,7 +25,7 @@ HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, in
 
     if(fs_obj != NULL) {
         if(fs_obj->ObjectType == FileSystemObjectType_File) {
-            
+
             fd = fs_obj->handlers->open(fs_obj, open_req->path, (int)open_req->flags, (int)open_req->mode);
             skip_open_handler = true;
 
@@ -55,17 +55,17 @@ HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, in
 
             return;
         } else if(fs_obj->ObjectType == FileSystemObjectType_Directory && open_req->flags & O_DIRECTORY) {
-        	//Open the directory
+            //Open the directory
 
-        	uint64_t dir_hash = HashPath(open_req->path);
-        	fd = AllocateFileDescriptor(open_req->flags, open_req->mode, dir_hash, fs_obj);
+            uint64_t dir_hash = HashPath(open_req->path);
+            fd = AllocateFileDescriptor(open_req->flags, open_req->mode, dir_hash, fs_obj);
 
-        	skip_open_handler = true;
+            skip_open_handler = true;
         }
     }
 
-    if(!skip_open_handler && open_c != NULL){
-    	fd = open_c(open_req->path, (int)open_req->flags, (int)open_req->mode);
+    if(!skip_open_handler && open_c != NULL) {
+        fd = open_c(open_req->path, (int)open_req->flags, (int)open_req->mode);
     }
 
     response.msg_type = CARDINAL_MSG_TYPE_OPENRESPONSE;

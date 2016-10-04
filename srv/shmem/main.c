@@ -2,6 +2,6 @@
 #include <cserver/cserver.h>
 
 
-int main(){
-	return cserver_main(0, NULL, NULL);
+int main() {
+    return cserver_main(0, NULL, NULL);
 }

@@ -40,7 +40,7 @@ HandleReadRequest(Message *m, int (*read)(uint64_t fd, void *buf, int64_t offset
         read_resp->code = -1;
 
         if(read != NULL)
-        	read_resp->code = read(fd, read_resp->data, read_req->offset, read_req->whence, read_req->read_size);
+            read_resp->code = read(fd, read_resp->data, read_req->offset, read_req->whence, read_req->read_size);
 
         PostIPCMessages((Message**)&read_resp, 1);
         return;

@@ -16,18 +16,17 @@ HandleCloseRequest(Message *m, int (*close)(uint64_t fd)) {
     uint64_t hash = 0;
     FileSystemObject *fs_obj = NULL;
 
-    if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj))
-    {
-    	if(close != NULL)
-    		close(fd);
-    	
-    	return;
+    if(!GetFileDescriptor(fd, &flags, &mode, &hash, &fs_obj)) {
+        if(close != NULL)
+            close(fd);
+
+        return;
     }
 
     if(fs_obj->ObjectType == FileSystemObjectType_File) {
         fs_obj->handlers->close(fs_obj, close_req->fd);
-    }else if(fs_obj->ObjectType == FileSystemObjectType_Directory) {
-    	//Free the descriptor
+    } else if(fs_obj->ObjectType == FileSystemObjectType_Directory) {
+        //Free the descriptor
     }
 
     return;

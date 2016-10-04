@@ -26,7 +26,7 @@ HandleWriteRequest(Message *m, int (*write)(uint64_t fd, void *buf, int64_t offs
         write_resp.write_size = -1;
 
         if(write != NULL)
-        	write_resp.write_size = write(fd, write_req->buf, write_req->offset, write_req->whence, write_req->m.Size - sizeof(struct WriteRequest));
+            write_resp.write_size = write(fd, write_req->buf, write_req->offset, write_req->whence, write_req->m.Size - sizeof(struct WriteRequest));
 
         Message *m2 = (Message*)&write_resp;
         PostIPCMessages((Message**)&m2, 1);

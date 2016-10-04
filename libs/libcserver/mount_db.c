@@ -90,7 +90,7 @@ ParsePath(char *path) {
 
         //Only paths that traverse mount points can be incomplete
         if(r->ObjectType == FileSystemObjectType_MountPoint)
-        	break;
+            break;
     }
 
     return r;
@@ -227,30 +227,30 @@ RegisterMount(char *path, uint64_t pid) {
 FileSystemError
 ConstructPathFromSystemObject(FileSystemObject *obj, char *buf, size_t buf_len) {
     //Construct a path to the root of the filesystem
-	if(obj == NULL)
-		return FileSystemError_PathInvalid;
+    if(obj == NULL)
+        return FileSystemError_PathInvalid;
 
-	FileSystemObject *tmp = obj;
+    FileSystemObject *tmp = obj;
 
-	memset(buf, 0, buf_len);
+    memset(buf, 0, buf_len);
 
-	int pos = 0;
-	do{
-		memmove(buf + pos, buf, strlen(buf));
-		buf[0] = '/';
-		strcpy(buf + 1, tmp->Name);
-		pos += strlen(tmp->Name) + 1;
+    int pos = 0;
+    do {
+        memmove(buf + pos, buf, strlen(buf));
+        buf[0] = '/';
+        strcpy(buf + 1, tmp->Name);
+        pos += strlen(tmp->Name) + 1;
 
-		if(tmp->Parent == NULL)		//Shouln't ever trigger
-			return FileSystemError_PathInvalid;
+        if(tmp->Parent == NULL)		//Shouln't ever trigger
+            return FileSystemError_PathInvalid;
 
-		tmp = tmp->Parent;
-	}while(tmp != root && pos <= buf_len);
+        tmp = tmp->Parent;
+    } while(tmp != root && pos <= buf_len);
 
-	if(pos > buf_len)
-		return FileSystemError_PathTooLong;
+    if(pos > buf_len)
+        return FileSystemError_PathTooLong;
 
-	return FileSystemError_None;
+    return FileSystemError_None;
 }
 
 
@@ -261,12 +261,11 @@ SetMountLocation(char *loc) {
 
 void
 GetMountLocation(char *loc, size_t sz) {
-    if(sz < strlen(root_path))
-    {
-        	*loc = '\0';
-        	return;
-	}
-    
+    if(sz < strlen(root_path)) {
+        *loc = '\0';
+        return;
+    }
+
     strcpy(loc, root_path);
 }
 
@@ -286,8 +285,8 @@ HashPath(const char *str) {
 uint64_t
 AllocateFileDescriptor(int flags, int mode, uint64_t hash, FileSystemObject *m) {
 
-	if(List_Length(fds) >= fd_cnt_limit)
-		return false;
+    if(List_Length(fds) >= fd_cnt_limit)
+        return false;
 
     uint64_t fd = ++fd_base;
 
@@ -348,9 +347,9 @@ FreeFileDescriptor(uint64_t fd) {
 
     FileDescriptor *f_desc = List_EntryAt(fds, index);
     List_Remove(fds, index);
-    
+
     if(desc->obj)desc->obj->ReferenceCount--;
-    
+
     if(desc->obj->ReferenceCount == 0)
         free(desc->obj);
 
@@ -360,8 +359,7 @@ FreeFileDescriptor(uint64_t fd) {
 }
 
 FileSystemError
-DeleteFileSystemObject(FileSystemObject *obj)
-{
+DeleteFileSystemObject(FileSystemObject *obj) {
     if(obj == NULL)
         return FileSystemError_PathInvalid;
 
@@ -374,7 +372,7 @@ DeleteFileSystemObject(FileSystemObject *obj)
 
     if(obj->ReferenceCount != 1)
         return FileSystemError_ReferencesExist;
-    
+
     //Find the entry in the parent
 
 
@@ -383,6 +381,6 @@ DeleteFileSystemObject(FileSystemObject *obj)
 
     //Delete the entry
 
-    
+
     return
 }

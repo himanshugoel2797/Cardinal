@@ -43,7 +43,7 @@ HandleMkdirRequest(Message *m, int (*mkdir)(char *name));
 void
 HandleChmodRequest(Message *m, int (*chmod)(char *name, int mode));
 
-//TODO forward requests at mount point    
+//TODO forward requests at mount point
 void
 HandleTruncateRequest(Message *m, int (*truncate)(char *name, uint64_t len));
 
