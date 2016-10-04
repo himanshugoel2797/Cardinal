@@ -73,6 +73,9 @@ RegisterMount(char *path, uint64_t pid);
 FileSystemObject*
 ParsePath(char *path);
 
+FileSystemError
+ConstructPathFromSystemObject(FileSystemObject *obj, char *buf, size_t buf_len);
+
 #ifdef _MOUNT_DB_PRIV_H_
 void
 InitializeDB(void);

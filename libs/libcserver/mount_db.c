@@ -216,7 +216,30 @@ RegisterMount(char *path, uint64_t pid) {
 FileSystemError
 ConstructPathFromSystemObject(FileSystemObject *obj, char *buf, size_t buf_len) {
     //Construct a path to the root of the filesystem
+	if(obj == NULL)
+		return FileSystemError_PathInvalid;
 
+	FileSystemObject *tmp = obj;
+
+	memset(buf, 0, buf_len);
+
+	int pos = 0;
+	do{
+		memmove(buf + pos, buf, strlen(buf));
+		buf[0] = '/';
+		strcpy(buf + 1, tmp->Name);
+		pos += strlen(tmp->Name) + 1;
+
+		if(tmp->Parent == NULL)		//Shouln't ever trigger
+			return FileSystemError_PathInvalid;
+
+		tmp = tmp->Parent;
+	}while(tmp != root && pos <= buf_len);
+
+	if(pos > buf_len)
+		return FileSystemError_PathTooLong;
+
+	return FileSystemError_None;
 }
 
 
