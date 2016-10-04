@@ -12,7 +12,6 @@
 #include "file_request_handlers.h"
 
 int cserver_main(uint64_t destCode,
-                 int (*MountHandler)(const char*, UID),
                  int (*Mounted)(const char *parent),
                  struct cserver_handlers *handlers) {
 
@@ -56,7 +55,7 @@ int cserver_main(uint64_t destCode,
         }
         break;
         case CARDINAL_MSG_TYPE_MOUNTREQUEST: {
-            HandleMountRequest(m, MountHandler);
+            HandleMountRequest(m, handlers->MountHandler);
         }
         break;
         case CARDINAL_MSG_TYPE_DIRENTRYREQUEST: {

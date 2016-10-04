@@ -7,6 +7,6 @@
 #include "mount_db.h"
 
 void
-HandleUnlinkRequest(Message *m, int (*unlink)(char *file)) {
+HandleRemoveRequest(Message *m, int (*remove_c)(char *file)) {
 
 }

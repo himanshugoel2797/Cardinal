@@ -3,5 +3,5 @@
 
 
 int main(){
-	return cserver_main(0, NULL, NULL);
+	return cserver_main(CARDINAL_IPCDEST_FILESERVER, NULL, NULL);
 }

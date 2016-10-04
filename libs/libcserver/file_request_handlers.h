@@ -26,12 +26,36 @@ void
 HandleDirentryRequest(Message *m, int (*direntry)(uint64_t fd, struct DirEntryData *data, size_t data_size));
 
 void
-HandleLinkRequest(Message *m, int (*link)(char *from, char *to));
-
-void
-HandleUnlinkRequest(Message *m, int (*unlink)(char *file));
+HandleRemoveRequest(Message *m, int (*remove)(char *file));
 
 void
 HandleStatRequest(Message *m, int (*stat)(uint64_t fd, struct StatData *data));
+
+void
+HandleRenameRequest(Message *m, int (*rename)(char *from, char *to));
+
+void
+HandleMkdirRequest(Message *m, int (*mkdir)(char *name));
+
+void
+HandleChmodRequest(Message *m, int (*chmod)(char *name, int mode));
+    
+void
+HandleTruncateRequest(Message *m, int (*truncate)(char *name, uint64_t len));
+
+void
+HandleStatFsRequest(Message *m, int (*statfs)(struct FS_StatData *data));
+
+void
+HandleFlushRequest(Message *m, int (*flush)());
+
+void
+HandleUtimeNSRequest(Message *m, int (*utimens)(char *name, struct timespec times[2], int flags));
+
+void
+HandleLockRequest(Message *m, int (*lock)(uint64_t fd, int flags));
+
+void
+HandleUnlockRequest(Message *m, int (*unlock)(uint64_t fd, int flags));
 
 #endif

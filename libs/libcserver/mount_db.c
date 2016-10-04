@@ -61,6 +61,8 @@ FileSystemObject*
 ParsePath(char *path) {
     FileSystemObject *r = root;
 
+    path += strlen(root_path);
+
     if(strlen(path) == 0)
         return r;
 
@@ -153,6 +155,9 @@ CreateDirectory(char *path) {
     dir->Children = List_Create();
     dir->Parent = r;
 
+    dir->ReferenceCount = 1;
+    r->ReferenceCount++;
+
     if(List_AddEntry(r->Children, dir) != ListError_None)
         return free(dir), FileSystemError_AllocationFailed;
 
@@ -180,6 +185,9 @@ CreateFile(char *path, FileHandlers *handlers) {
     dir->handlers = handlers;
     dir->Parent = r;
 
+    dir->ReferenceCount = 1;
+    r->ReferenceCount++;
+
     if(List_AddEntry(r->Children, dir) != ListError_None)
         return free(dir), FileSystemError_AllocationFailed;
 
@@ -206,6 +214,9 @@ RegisterMount(char *path, uint64_t pid) {
     strcpy(dir->Name, offset);
     dir->TargetPID = pid;
     dir->Parent = r;
+
+    dir->ReferenceCount = 1;
+    r->ReferenceCount++;
 
     if(List_AddEntry(r->Children, dir) != ListError_None)
         return free(dir), FileSystemError_AllocationFailed;
@@ -290,6 +301,9 @@ AllocateFileDescriptor(int flags, int mode, uint64_t hash, FileSystemObject *m) 
     desc->hash = hash;
     desc->obj = m;
 
+    if(m)m->ReferenceCount++;
+
+
     if(List_AddEntry(fds, desc) != ListError_None)
         return free(desc), -1;
 
@@ -334,8 +348,23 @@ FreeFileDescriptor(uint64_t fd) {
 
     FileDescriptor *f_desc = List_EntryAt(fds, index);
     List_Remove(fds, index);
+    
+    if(desc->obj)desc->obj->ReferenceCount--;
+    
+    if(desc->obj->ReferenceCount == 0)
+        free(desc->obj);
+
     free(f_desc);
 
     return;
 }
 
+FileSystemError
+DeleteFileSystemObject(FileSystemObject *obj)
+{
+    if(obj == NULL)
+        return FileSystemError_PathInvalid;
+
+    //If there is more than 1 reference to the object, it can't be deleted, removing from the tree isn't possible until all file descriptors have been closed,
+    //else resolving paths will break, which is still needed.
+}

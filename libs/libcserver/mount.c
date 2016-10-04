@@ -10,5 +10,5 @@ void
 HandleMountRequest(Message *m, int (*MountHandler)(const char*, UID)) {
     struct MountRequest *mnt_req = (struct MountRequest*)m;
 
-
+    //Add the mount point if the path is valid
 }

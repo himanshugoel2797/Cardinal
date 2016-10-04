@@ -14,8 +14,7 @@ struct cserver_handlers {
     int (*close)(uint64_t fd);
     int (*read)(uint64_t fd, void *buf, int64_t off, uint64_t whence, size_t cnt);
     int (*write)(uint64_t fd, void *buf, int64_t off, uint64_t whence, size_t cnt);
-    int (*link)(char *from, char *to);
-    int (*unlink)(char *file);
+    int (*remove)(char *file);
     int (*stat)(uint64_t fd, struct StatData *data);
     int (*direntry)(uint64_t fd, struct DirEntryData *data, size_t data_size);
     int (*rename)(char *from, char *to);
@@ -27,13 +26,13 @@ struct cserver_handlers {
     int (*utimens)(char *name, struct timespec times[2], int flags);
     int (*lock)(uint64_t fd, int flags);
     int (*unlock)(uint64_t fd, int flags);
+    int (*MountHandler)(const char* path, UID pid);
 };
 
 //TODO: chmod, truncate, rename, mkdir, statfs, flush, access and write time change, lock, unlock
 
 int
 cserver_main(uint64_t destCode,
-             int (*MountHandler)(const char*, UID),
              int (*Mounted)(const char *parent),
              struct cserver_handlers *handlers);
 

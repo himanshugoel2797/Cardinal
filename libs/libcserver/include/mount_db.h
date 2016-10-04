@@ -16,7 +16,8 @@ typedef enum {
     FileSystemError_PathDoesNotExist,
     FileSystemError_PathInvalid,
     FileSystemError_NameTooLong,
-    FileSystemError_PathTooLong
+    FileSystemError_PathTooLong,
+    FileSystemError_ReferencesExist,
 } FileSystemError;
 
 typedef enum {
@@ -33,6 +34,7 @@ struct FileSystemObject {
     FileSystemObjectType ObjectType;
     char Name[NAME_MAX];
     void *additionalData;
+    uint32_t ReferenceCount;
     struct StatData statData;
 
     union {
