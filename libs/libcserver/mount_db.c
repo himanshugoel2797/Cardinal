@@ -358,6 +358,13 @@ FreeFileDescriptor(uint64_t fd) {
     return;
 }
 
+static bool fsobj_finder(void *val, void *s_val) {
+    FileSystemObject *f_desc = (FileSystemObject*)val;
+    if((uint64_t)s_val == f_desc)
+        return true;
+    return false;
+}
+
 FileSystemError
 DeleteFileSystemObject(FileSystemObject *obj) {
     if(obj == NULL)
@@ -373,14 +380,17 @@ DeleteFileSystemObject(FileSystemObject *obj) {
     if(obj->ReferenceCount != 1)
         return FileSystemError_ReferencesExist;
 
-    //Find the entry in the parent
+    if(obj->ObjectType == FileSystemObjectType_Directory && List_Length(obj->Children) != 0)
+        return FileSystemError_ReferencesExist;
 
+    //Find the entry in the parent
+    uint64_t index = List_Find(obj->Parent->Children, fsobj_finder, obj);
 
     //Remove the entry
-
+    List_Remove(obj->Parent->Children, index);
 
     //Delete the entry
-
+    free(obj);
 
     return
 }

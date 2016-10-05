@@ -78,6 +78,9 @@ ParsePath(char *path);
 FileSystemError
 ConstructPathFromSystemObject(FileSystemObject *obj, char *buf, size_t buf_len);
 
+FileSystemError
+DeleteFileSystemObject(FileSystemObject *obj);
+
 #ifdef _MOUNT_DB_PRIV_H_
 void
 InitializeDB(void);

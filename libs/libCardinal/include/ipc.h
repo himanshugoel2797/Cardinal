@@ -24,6 +24,7 @@ typedef struct Message {
     uint64_t MsgID;
     uint64_t MsgType;
     uint64_t MsgTypePID;	//If forwarded, this contains the initial source of the message, file servers implementing secure operations through this mechanism must ensure that the SourcePID field has the necessary permissions in order to be confident that this field is valid
+    uint64_t rsv[4];	//Reserved for future use
     unsigned short Size;
 } Message;
 

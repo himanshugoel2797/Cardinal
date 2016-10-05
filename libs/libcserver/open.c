@@ -36,6 +36,12 @@ HandleOpenRequest(Message *m, uint64_t (*open_c)(const char *file, int flags, in
             open_req->m.SourcePID = CARDINAL_IPCDEST_FILESERVER;
             open_req->m.DestinationPID = fs_obj->TargetPID;
 
+            //If the message hadn't been forwarded, set it up so it is being forwarded
+            if(open_req->m.MsgType != CARDINAL_MSGTYPE_FWD) {
+                open_req->m.MsgType = CARDINAL_MSGTYPE_FWD;
+                open_req->m.MsgTypePID = src;
+            }
+
             PostIPCMessages((Message**)&open_req, 1);
 
             struct timespec t;
