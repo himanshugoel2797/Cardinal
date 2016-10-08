@@ -65,4 +65,7 @@ HandleLockRequest(Message *m, int (*lock)(uint64_t fd, int flags));
 void
 HandleUnlockRequest(Message *m, int (*unlock)(uint64_t fd, int flags));
 
+void
+HandleFd2PathRequest(Message *m, int (*fd2path)(uint64_t fd, char *path, size_t *path_len));
+
 #endif

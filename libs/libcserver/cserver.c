@@ -75,17 +75,18 @@ int cserver_main(uint64_t destCode,
         }
         break;
         case CARDINAL_MSG_TYPE_FD2PATHREQUEST: {
-
+            HandleFd2PathRequest(m, handlers->fd2path);
         }
         break;
         case CARDINAL_MSG_TYPE_MOUNTEVENT: {
             struct MountEvent *mnt_event_data = (struct MountEvent*)m;
             SetMountLocation(mnt_event_data->path);
 
-            char path[PATH_MAX];
-            GetMountLocation(path, PATH_MAX);
-
-            if(Mounted != NULL)Mounted(path);
+            if(Mounted != NULL){
+                char path[PATH_MAX];
+                GetMountLocation(path, PATH_MAX);
+                Mounted(path);
+            }
         }
         break;
         }

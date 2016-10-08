@@ -10,36 +10,59 @@
 #include "ipc.h"
 
 
-#define CARDINAL_MSG_TYPE_OPENREQUEST 1
-#define CARDINAL_MSG_TYPE_OPENRESPONSE 2
+#define CARDINAL_msg_type_OPENREQUEST 1
+#define CARDINAL_msg_type_OPENRESPONSE 2
 
-#define CARDINAL_MSG_TYPE_CLOSEREQUEST 3
+#define CARDINAL_msg_type_CLOSEREQUEST 3
 
-#define CARDINAL_MSG_TYPE_READREQUEST 4
-#define CARDINAL_MSG_TYPE_READRESPONSE 5
+#define CARDINAL_msg_type_READREQUEST 4
+#define CARDINAL_msg_type_READRESPONSE 5
 
-#define CARDINAL_MSG_TYPE_WRITEREQUEST 6
-#define CARDINAL_MSG_TYPE_WRITERESPONSE 7
+#define CARDINAL_msg_type_WRITEREQUEST 6
+#define CARDINAL_msg_type_WRITERESPONSE 7
 
-#define CARDINAL_MSG_TYPE_MOUNTREQUEST 8
-#define CARDINAL_MSG_TYPE_MOUNTRESPONSE 9
+#define CARDINAL_msg_type_MOUNTREQUEST 8
+#define CARDINAL_msg_type_MOUNTRESPONSE 9
 
-#define CARDINAL_MSG_TYPE_DIRENTRYREQUEST 10
-#define CARDINAL_MSG_TYPE_DIRENTRYRESPONSE 11
+#define CARDINAL_msg_type_DIRENTRYREQUEST 10
+#define CARDINAL_msg_type_DIRENTRYRESPONSE 11
 
-#define CARDINAL_MSG_TYPE_LINKREQUEST 12
-#define CARDINAL_MSG_TYPE_LINKRESPONSE 13
+#define CARDINAL_msg_type_REMOVEREQUEST 14
+#define CARDINAL_msg_type_REMOVERESPONSE 15
 
-#define CARDINAL_MSG_TYPE_UNLINKREQUEST 14
-#define CARDINAL_MSG_TYPE_UNLINKRESPONSE 15
+#define CARDINAL_msg_type_STATREQUEST 16
+#define CARDINAL_msg_type_STATRESPONSE 17
 
-#define CARDINAL_MSG_TYPE_STATREQUEST 16
-#define CARDINAL_MSG_TYPE_STATRESPONSE 17
+#define CARDINAL_msg_type_FD2PATHREQUEST 18
+#define CARDINAL_msg_type_FD2PATHRESPONSE 19
 
-#define CARDINAL_MSG_TYPE_FD2PATHREQUEST 18
-#define CARDINAL_MSG_TYPE_FD2PATHRESPONSE 19
+#define CARDINAL_msg_type_MOUNTEVENT 20
 
-#define CARDINAL_MSG_TYPE_MOUNTEVENT 20
+#define CARDINAL_msg_type_RENAMEREQUEST 21
+#define CARDINAL_msg_type_RENAMERESPONSE 22
+
+#define CARDINAL_msg_type_MKDIRREQUEST 23
+#define CARDINAL_msg_type_MKDIRRESPONSE 24
+
+#define CARDINAL_msg_type_CHMODREQUEST 25
+#define CARDINAL_msg_type_CHMODRESPONSE 26
+
+#define CARDINAL_msg_type_TRUNCATEREQUEST 27
+#define CARDINAL_msg_type_TRUNCATERESPONSE 28
+
+#define CARDINAL_msg_type_STATFSREQUEST 29
+#define CARDINAL_msg_type_STATFSRESPONSE 30
+
+#define CARDINAL_msg_type_FLUSHREQUEST 31
+
+#define CARDINAL_msg_type_UTIMENSREQUEST 32
+#define CARDINAL_msg_type_UTIMENSRESPONSE 33
+
+#define CARDINAL_msg_type_LOCKREQUEST 34
+#define CARDINAL_msg_type_LOCKRESPONSE 35
+
+#define CARDINAL_msg_type_UNLOCKREQUEST 36
+#define CARDINAL_msg_type_UNLOCKRESPONSE 37
 
 struct OpenRequest {
     Message m;
@@ -119,27 +142,13 @@ struct DirEntryResponse {
     char data[1];
 };
 
-struct LinkRequest {
-    Message m;
-    uint64_t msg_type;
-    char *from;
-    char *to;
-    char data[1];
-};
-
-struct LinkResponse {
-    Message m;
-    uint64_t msg_type;
-    uint64_t code;
-};
-
-struct UnlinkRequest {
+struct RemoveRequest {
     Message m;
     uint64_t msg_type;
     char data[1];
 };
 
-struct UnlinkResponse {
+struct RemoveResponse {
     Message m;
     uint64_t msg_type;
     uint64_t code;
@@ -167,13 +176,123 @@ struct Fd2PathRequest {
 struct Fd2PathResponse {
     Message m;
     uint64_t msg_type;
-    uint64_t fd;
+    uint64_t code;
+    char path[1];
 };
 
 struct MountEvent {
     Message m;
     uint64_t msg_type;
     char path[1];
+};
+
+struct RenameRequest {
+    Message m;
+    uint64_t msg_type;
+    uint16_t from_offset;
+    uint16_t to_offset;
+    char data[1];
+};
+
+struct RenameResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+};
+
+struct MkdirRequest {
+    Message m;
+    uint64_t msg_type;
+    char path[1];
+};
+
+struct MkdirResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+};
+
+struct ChmodRequest {
+    Message m;
+    uint64_t msg_type;
+    int mode;
+    char path[1];
+};
+
+struct ChmodResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+};
+
+struct TruncateRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t len;
+    char path[1];
+};
+
+struct TruncateResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+};
+
+struct StatfsRequest {
+    Message m;
+    uint64_t msg_type;
+};
+
+struct StatfsResponse {
+    Message m;
+    uint64_t msg_type;
+    struct FS_StatData data;
+};
+
+struct FlushRequest {
+    Message m;
+    uint64_t msg_type;
+};
+
+struct UtimensRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t flags;
+    char path[1];
+};
+
+struct UtimensResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+    uint64_t ns_0;
+    uint64_t ns_1;
+};
+
+struct LockRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t flags;
+    char path[1];
+};
+
+struct LockResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
+};
+
+struct UnlockRequest {
+    Message m;
+    uint64_t msg_type;
+    uint64_t flags;
+    char path[1];
+};
+
+struct UnlockResponse {
+    Message m;
+    uint64_t msg_type;
+    uint64_t code;
 };
 
 #define MAX_PATH_LEN ((4096))

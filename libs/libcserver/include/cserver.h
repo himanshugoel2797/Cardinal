@@ -26,6 +26,7 @@ struct cserver_handlers {
     int (*utimens)(char *name, struct timespec times[2], int flags);
     int (*lock)(uint64_t fd, int flags);
     int (*unlock)(uint64_t fd, int flags);
+    int (*fd2path)(uint64_t fd, char *path, size_t *path_len);
     int (*MountHandler)(const char* path, UID pid);
 };
 

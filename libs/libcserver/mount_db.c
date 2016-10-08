@@ -33,6 +33,41 @@ strcmp_path(const char *a, const char *b) {
     return 1;
 }
 
+int canonicalize_path(const char *src_path, int src_len, char *dst_path, int dst_len)
+{
+    char *s_p = src_path;
+    char *d_p = dst_path;
+    
+    if(*s_p != '/')
+        return -1;
+    
+    while(s_p < src_path + src_len && d_p < dst_path + dst_len)
+    {
+            if(strlen(s_p) >= 2 && (!strncmp(s_p, "//", 2) | (s_p > src_path && !strncmp(s_p - 1, "//", 2))))
+            {
+                s_p++;
+            }
+            
+            if(strlen(s_p) >= 2 && (!strncmp(s_p - 1, "/./", 3))){
+                s_p += 1;
+            }else if(strlen(s_p) >= 3 && (!strncmp(s_p - 1, "/../", 4)))
+            {
+                d_p-=2;
+                while(d_p >= dst_path && *d_p != '/')d_p--;
+                if(d_p < dst_path)return -1;
+                d_p++;
+                s_p += 2;
+            }else{
+                *d_p = *s_p;
+                d_p++;
+            }
+  
+        s_p++;
+    }
+    
+    if(s_p < src_path + src_len)return -1;
+    return 0;
+}
 
 void
 SetFDLimit(uint32_t limit) {
@@ -58,8 +93,13 @@ InitializeDB(void) {
 }
 
 FileSystemObject*
-ParsePath(char *path) {
+ParsePath(char *path_arg) {
     FileSystemObject *r = root;
+
+    char path[PATH_MAX];
+    
+    if(canonicalize_path(path_arg, path, PATH_MAX) != 0)
+        return NULL;
 
     path += strlen(root_path);
 
