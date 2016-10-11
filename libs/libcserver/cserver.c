@@ -78,6 +78,42 @@ int cserver_main(uint64_t destCode,
             HandleFd2PathRequest(m, handlers->fd2path);
         }
         break;
+        case CARDINAL_MSG_TYPE_RENAMEREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_MKDIRREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_CHMODREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_TRUNCATEREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_STATFSREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_FLUSHREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_UTIMENSREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_LOCKREQUEST: {
+
+        }
+        break;
+        case CARDINAL_MSG_TYPE_UNLOCKREQUEST: {
+
+        }
+        break;
         case CARDINAL_MSG_TYPE_MOUNTEVENT: {
             struct MountEvent *mnt_event_data = (struct MountEvent*)m;
             SetMountLocation(mnt_event_data->path);
