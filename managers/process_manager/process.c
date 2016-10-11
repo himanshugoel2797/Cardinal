@@ -333,9 +333,12 @@ PostMessages(Message **msg, uint64_t cnt) {
     if(msg == NULL)
         return -1;
 
+    ProcessInformation *cur_procInfo = NULL;
+    GetProcessReference(GetCurrentProcessUID(), &cur_procInfo);
+
     for(uint64_t i = 0; i < cnt; i++) {
 
-        ProcessInformation *pInfo;
+        ProcessInformation *pInfo = NULL;
 
 
         UID DestinationPID = msg[i]->DestinationPID;
@@ -344,13 +347,12 @@ PostMessages(Message **msg, uint64_t cnt) {
         if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
             DestinationPID = specialDestinationPIDs[index];
 
-        //Don't allow sending messages to self to influence process priority
-        if(DestinationPID != GetCurrentProcessUID()) {
-            //Raise the process's immediate execution priority, this should allow processes to execute in a manner that optimizes for IPC throughput
-        }
-
         if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
-            return -1;
+            return -(i + 1);
+
+        //Check to ensure that the destination ID is of the same user ID, and if not, if it belongs to the lowest group ID, if not, fail
+        if(cur_procInfo->UserID != pInfo->UserID && (cur_procInfo->GroupID != 0 | pInfo->GroupID != 0))
+            return -(i + 1);
 
         if(i == 0 || (msg[i]->DestinationPID != msg[i - 1]->DestinationPID))
             LockSpinlock(pInfo->MessageLock);
