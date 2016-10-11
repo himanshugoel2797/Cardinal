@@ -7,7 +7,7 @@
 #include "list.h"
 #include "process_info.h"
 #include "libs/libCardinal/include/ipc.h"
-
+#include "libs/libCardinal/include/signal.h"
 
 #define MAX_PENDING_MESSAGE_CNT 256
 
