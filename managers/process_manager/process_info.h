@@ -18,8 +18,7 @@ typedef enum {
     ProcessStatus_Stopped,
     ProcessStatus_Sleeping,
     ProcessStatus_Terminating,
-    ProcessStatus_Executing,
-    ProcessStatus_Zombie
+    ProcessStatus_Executing
 } ProcessStatus;
 
 typedef enum {
