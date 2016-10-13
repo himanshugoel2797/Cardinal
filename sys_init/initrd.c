@@ -95,6 +95,10 @@ ImportInitrd(void) {
                &boot_screen_loc,
                &boot_screen_size);
 	
+	if(boot_screen_loc != NULL)
+	{
+		memset(fb_addr, 0xff, fb_len);
+	}else 
 	memcpy(fb_addr, boot_screen_loc, fb_len);
 
 }

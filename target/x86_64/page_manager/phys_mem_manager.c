@@ -55,6 +55,8 @@ MemMan_Initialize(void) {
     //Mark important regions that have been preallocated
     MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr), info->framebuffer_pitch * info->framebuffer_height);
 
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->initrd_start_addr), info->initrd_len);
+
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
 
