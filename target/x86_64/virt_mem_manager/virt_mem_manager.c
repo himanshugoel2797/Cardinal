@@ -96,6 +96,7 @@ VirtMemMan_Initialize(void) {
         kernel_pdpt_paddr = (uint64_t*)pdpt_0;
 
         kernel_pdpt = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, pdpt_0);
+
         pml[511] = (uint64_t)pdpt_0;    //Keep the top 512GiB of memory mapped into all address spaces
         MARK_PRESENT(pml[511]);
         MARK_WRITE(pml[511]);
@@ -480,7 +481,6 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
     uint64_t *pdpt = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(inst[pml_off]));
     uint64_t *pd = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)GET_ADDR_4KB(pdpt[pdpt_off]));
-
 
     pd[pd_off] = phys_addr;
     if(present)MARK_PRESENT(pd[pd_off]);

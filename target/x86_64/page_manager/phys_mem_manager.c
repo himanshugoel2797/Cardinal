@@ -116,6 +116,7 @@ MemMan_Alloc(void) {
         if((block >> i) & 1) {
             uint64_t addr = lastNonFullPage * block_size + i * PAGE_SIZE;
             MemMan_SetPageUsed(addr);
+            memset(VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)addr), 0, PAGE_SIZE);
             return addr;
         }
     }
@@ -160,7 +161,8 @@ MemMan_Alloc4KiBPageCont(int pageCount) {
 
     if(score != pageCount)return 0;
     else {
-        MemMan_MarkUsed(addr, pageCount * KiB(4));
+        MemMan_MarkUsed(addr, pageCount * PAGE_SIZE);
+        memset(VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)addr), 0, pageCount * PAGE_SIZE);
         return addr;
     }
 }
