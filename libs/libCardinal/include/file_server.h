@@ -300,16 +300,6 @@ struct UnlockResponse {
 
 #ifndef _KERNEL_
 
-static __inline uint64_t
-GetProperty(CardinalProperties prop, uint64_t type) {
-    return Syscall2(Syscall_GetProperty, prop, type);
-}
-
-static __inline bool
-SetProperty(CardinalProperties prop, uint64_t type, uint64_t val) {
-    return Syscall3(Syscall_SetProperty, prop, type, val);
-}
-
 static __inline bool
 RegisterSpecialDestination(uint64_t dst) {
     return SetProperty(CardinalProperty_SpecialDestination, dst, 0);

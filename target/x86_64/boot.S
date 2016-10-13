@@ -107,7 +107,6 @@ multiboot_end:
                                mov %eax, (temp_stor_magic)
                                mov %ebx, (temp_stor_info)	#Backup EBX
 
-                        #Drop back to real mode and set the desired video mode
 
 
                                mov $0x80000001, %eax

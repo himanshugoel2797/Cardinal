@@ -97,11 +97,28 @@ R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
     if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None)
         return -EINVAL;
 
-    return MapPage(p_info->PageTable,
+    //Prevent any attempts to map into kernel space
+    mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
+
+    if(mmap_params->VirtualAddress == 0)
+    {
+        if(FindFreeVirtualAddress(p_info->PageTable,
+                       &mmap_params->VirtualAddress,
+                       mmap_params->Length,
+                       mmap_params->AllocationType,
+                       mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
+
+            return -ENOMEM;
+    }
+
+    if(MapPage(p_info->PageTable,
                    mmap_params->PhysicalAddress,
                    mmap_params->VirtualAddress,
                    mmap_params->Length,
                    mmap_params->CacheMode,
                    mmap_params->AllocationType,
-                   mmap_params->AllocationFlags);
+                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
+        return -ENOMEM;
+    else
+        return mmap_params->VirtualAddress;
 }

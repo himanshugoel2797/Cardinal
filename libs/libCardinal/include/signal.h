@@ -1,5 +1,5 @@
-#ifndef _CARDINAL_SIGNAL_H_
-#define _CARDINAL_SIGNAL_H_
+#ifndef _LIBCARDINAL_SIGNAL_H_
+#define _LIBCARDINAL_SIGNAL_H_
 
 #include <stdint.h>
 

@@ -1,7 +1,7 @@
 #ifndef _CARDINAL_BOOT_INFO_H_
 #define _CARDINAL_BOOT_INFO_H_
 
-#include "types.h"
+#include "cardinal_types.h"
 
 //! Defines the boot information format for Cardinal
 typedef struct {

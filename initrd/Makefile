@@ -5,7 +5,7 @@ export DEFINES
 export INCLUDES
 
 all: $(SUBDIRS)
-	tar cvf initrd *.elf 
+	tar cvf initrd *.*
 
 $(SUBDIRS):
 	cd $@ && $(MAKE) all INCLUDES="$(INCLUDES)"

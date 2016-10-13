@@ -33,8 +33,8 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return (uint64_t)SetSpecialDestinationPID(data->params[1]) - 1;
         break;
     case CardinalProperty_Exit:
-        __asm__ volatile("cli\n\thlt" :: "a"(data->params[1]));
         TerminateProcess(GetCurrentProcessUID(), data->params[1]);
+        YieldThread();
         return 0;
         break;
     case CardinalProperty_GroupID:
@@ -88,6 +88,13 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         memcpy((CardinalBootInfo*)data->params[1], info, sizeof(CardinalBootInfo));
 
         return 0;
+    }
+    break;
+    case CardinalProperty_R0_PhysicalAddress: {
+        if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
+            return -EPERM;
+
+        return (uint64_t)GetPhysicalAddress((void*)(uint64_t*)data->params[1]);
     }
     break;
     case CardinalProperty_PLS:

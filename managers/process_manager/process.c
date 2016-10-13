@@ -139,7 +139,7 @@ TerminateProcess(UID pid, uint32_t exit_code) {
         exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
         exit_msg->exit_code = exit_code;
 
-        PostMessages(&exit_msg, 1);
+        PostMessages((Message**)&exit_msg, 1);
     }
 
 

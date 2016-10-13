@@ -56,16 +56,9 @@ kernel_main(void) {
 
     target_device_setup();
 
-    while(1);
-
     UID cpid = ForkCurrentProcess();
     if(cpid == 0) {
-        load_elf("file_server.elf");
-    }
-
-    cpid = ForkCurrentProcess();
-    if(cpid == 0) {
-        load_elf("test.elf");
+        load_elf("sys_init.elf");
     }
 
     FreeThread(GetCurrentThreadUID());

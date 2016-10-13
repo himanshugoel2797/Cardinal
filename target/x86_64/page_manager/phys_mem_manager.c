@@ -58,8 +58,6 @@ MemMan_Initialize(void) {
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);
 
-    MemMan_MarkUsed(info->initrd_start_addr, info->initrd_len);
-
     MemMan_MarkUsed(0, MiB(2));
 
     return 0;

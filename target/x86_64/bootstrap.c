@@ -1,3 +1,4 @@
+#include "common.h"
 #include "main.h"
 #include "types.h"
 #include "GDT/gdt.h"
@@ -60,6 +61,12 @@ bootstrap_kernel(void *param,
 
     info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
 
+    //Copy the initrd into the bootstrap memory pool
+    info->initrd_start_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
+    void* tmp_initrd_addr = bootstrap_malloc(info->initrd_len);
+    memcpy(tmp_initrd_addr, (void*)info->initrd_start_addr, info->initrd_len);
+    info->initrd_start_addr = (uint64_t)tmp_initrd_addr;
+
     if(magic != MULTIBOOT_MAGIC) {
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
     }
@@ -75,6 +82,7 @@ bootstrap_kernel(void *param,
     MemMan_Initialize ();
     VirtMemMan_Initialize ();
     MemoryHAL_Initialize ();
+
 
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
@@ -97,7 +105,6 @@ bootstrap_kernel(void *param,
     //Convert framebuffer address to writethrough caching
     info->framebuffer_addr = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr);
     info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
-    info->initrd_start_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
 
     smp_sync_base = 1;
     APIC_Initialize();

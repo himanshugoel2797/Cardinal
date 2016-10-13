@@ -3,6 +3,7 @@
 
 #include "cardinal_types.h"
 #include "syscall.h"
+#include "syscall_property.h"
 #include "bootinfo.h"
 #include "ipc.h"
 
@@ -64,7 +65,7 @@ struct MemoryMapParams {
 
 #ifndef _KERNEL_
 
-static __inline int
+static __inline uint64_t
 R0_MemoryMap(UID pid,
              uint64_t phys,
              uint64_t virt,
@@ -75,7 +76,7 @@ R0_MemoryMap(UID pid,
     struct MemoryMapParams p;
 
 
-    p.pid = TargetPID;
+    p.TargetPID = pid;
     p.PhysicalAddress = phys;
     p.VirtualAddress = virt;
     p.Length = len;
@@ -83,12 +84,17 @@ R0_MemoryMap(UID pid,
     p.AllocationType = type;
     p.AllocationFlags = flags;
 
-    return (int)Syscall1(Syscall_R0_MemoryMap, &p);
+    return Syscall1(Syscall_R0_MemoryMap, &p);
 }
 
 static __inline int
 R0_GetBootInfo(CardinalBootInfo *bInfo) {
-    return (int)GetProperty(CardinalProperty_BootInfo, (uint64_t)bInfo);
+    return (int)GetProperty(CardinalProperty_R0_BootInfo, (uint64_t)bInfo);
+}
+
+static __inline uint64_t
+R0_GetPhysicalAddress(uint64_t v_addr) {
+    return GetProperty(CardinalProperty_R0_PhysicalAddress, v_addr);
 }
 
 #endif

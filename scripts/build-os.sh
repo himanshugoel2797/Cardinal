@@ -13,11 +13,12 @@ export PATH="$ROOTDIR/sys/bin":$PATH
 
 ./build-utils.sh
 
-./build-servers.sh
-
 ./build-initrd.sh
 
 ./build-utils-native.sh
 
+
 #Build the kernel
+
+cd $SRC_DIR
 make all
