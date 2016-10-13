@@ -65,7 +65,7 @@ ImportInitrd(void) {
 	if(R0_GetBootInfo(&b_info) != 0)
 		return;
 
-	uint64_t initrd_addr = b_info.initrd_start_addr;
+	uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.initrd_start_addr);
 	uint64_t initrd_len = b_info.initrd_len;
 
 	initrd_start_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0), 
@@ -95,11 +95,25 @@ ImportInitrd(void) {
                &boot_screen_loc,
                &boot_screen_size);
 	
-	if(boot_screen_loc != NULL)
+	if(boot_screen_loc == NULL)
 	{
 		memset(fb_addr, 0xff, fb_len);
-	}else 
-	memcpy(fb_addr, boot_screen_loc, fb_len);
+	}else {
+
+		uint8_t * fb = (uint8_t*)fb_addr;
+		uint8_t * bs = (uint8_t*)boot_screen_loc;
+
+		for(int i = 0; i < b_info.framebuffer_height; i++){
+			for(int j = 0; j < b_info.framebuffer_width; j++){
+				fb[0] = *(bs++);
+				fb[1] = *(bs++);
+				fb[2] = *(bs++);
+				fb[3] = 0xff;
+				fb +=  b_info.framebuffer_bpp/8;
+			}
+//			fb += b_info.framebuffer_pitch - (b_info.framebuffer_width * b_info.framebuffer_bpp);
+		}
+	}
 
 }
 

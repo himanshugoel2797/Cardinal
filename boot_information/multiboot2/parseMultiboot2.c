@@ -50,6 +50,13 @@ ParseAndSaveBootInformation(void *boot_info) {
             bootInfo.framebuffer_width = framebuffer->common.framebuffer_width;
             bootInfo.framebuffer_height = framebuffer->common.framebuffer_height;
             bootInfo.framebuffer_bpp = framebuffer->common.framebuffer_bpp;
+            
+            bootInfo.framebuffer_red_field_position = framebuffer->framebuffer_red_field_position;
+            bootInfo.framebuffer_red_mask_size = framebuffer->framebuffer_red_mask_size;
+            bootInfo.framebuffer_green_field_position = framebuffer->framebuffer_green_field_position;
+            bootInfo.framebuffer_green_mask_size = framebuffer->framebuffer_green_mask_size;
+            bootInfo.framebuffer_blue_field_position = framebuffer->framebuffer_blue_field_position;
+            bootInfo.framebuffer_blue_mask_size = framebuffer->framebuffer_blue_mask_size;
         }
         break;
         case MULTIBOOT_TAG_TYPE_ELF_SECTIONS: {
