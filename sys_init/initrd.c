@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "initrd.h"
 
@@ -32,9 +33,9 @@ unsigned int getsize(const char *in) {
 }
 
 bool
-Initrd_GetFile(const char *file,
-               void **loc,
-               uint64_t *size) {
+GetFile(const char *file,
+        void **loc,
+        size_t *size) {
     *loc = NULL;
     *size = 0;
 
@@ -76,7 +77,7 @@ ImportInitrd(void) {
                                      MemoryAllocationType_MMap,
                                      MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
 
-
+/*
     uint64_t fb_addr = R0_GetPhysicalAddress(b_info.framebuffer_addr);
     uint64_t fb_len = b_info.framebuffer_pitch * b_info.framebuffer_height;
 
@@ -91,7 +92,7 @@ ImportInitrd(void) {
     void *boot_screen_loc = NULL;
     uint64_t boot_screen_size = 0;
 
-    Initrd_GetFile("boot_screen.data",
+    GetFile("boot_screen.data",
                    &boot_screen_loc,
                    &boot_screen_size);
 
@@ -121,12 +122,5 @@ ImportInitrd(void) {
             fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
         }
     }
-
-}
-
-int
-GetFile(const char *file,
-        void **data,
-        size_t *len) {
-
+	*/
 }

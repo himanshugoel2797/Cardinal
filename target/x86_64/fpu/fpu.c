@@ -93,6 +93,10 @@ GetFPUStateSize(void) {
 
 void
 SaveFPUState(void *target) {
+
+    if((uint64_t)target % 64)
+        __asm__("cli\n\thlt");
+
     if(xsave_available)
         __asm__ volatile("xsaveq (%0)" :: "r"(target) : "memory");
     else
@@ -101,6 +105,10 @@ SaveFPUState(void *target) {
 
 void
 RestoreFPUState(void *source) {
+
+    if((uint64_t)source % 64)
+        __asm__("cli\n\thlt");
+
     if(xsave_available)
         __asm__ volatile("xrstorq (%0)" :: "r"(source) : "memory");
     else

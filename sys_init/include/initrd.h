@@ -3,11 +3,12 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 void
 ImportInitrd(void);
 
-int
+bool
 GetFile(const char *file,
         void **data,
         size_t *len);

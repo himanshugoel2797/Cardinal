@@ -233,7 +233,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
     SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
-    SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 16));
+    SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 64));
     SET_PROPERTY_VAL(thd, interrupt_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, kernel_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
@@ -253,8 +253,8 @@ CreateThreadADV(UID parentProcess,
 
     //Setup FPU state
     uint64_t fpu_state_tmp = (uint64_t)GET_PROPERTY_VAL(thd,fpu_state);
-    if(fpu_state_tmp % 16 != 0)
-        fpu_state_tmp += 16 - fpu_state_tmp % 16;
+    if(fpu_state_tmp % 64 != 0)
+        fpu_state_tmp += 64 - fpu_state_tmp % 64;
 
     SET_PROPERTY_VAL(thd, fpu_state, (void*)fpu_state_tmp);
     SaveFPUState(GET_PROPERTY_VAL(thd, fpu_state));
