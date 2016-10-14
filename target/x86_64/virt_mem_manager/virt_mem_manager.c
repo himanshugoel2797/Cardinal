@@ -472,7 +472,7 @@ VirtMemMan_MapLPage(PML_Instance       inst,
                     MEM_TYPES          cache,
                     MEM_ACCESS_PERMS   access_perm,
                     MEM_SECURITY_PERMS sec_perms) {
-    
+
     if(phys_addr % MiB(2) | virt_addr % MiB(2))
         __asm__ ("cli\n\thlt");
 
@@ -630,17 +630,17 @@ VirtMemMan_Unmap(PML_Instance inst,
         } else if(size >= GiB(1) && virt_addr % GiB(1) == 0) {
             size -= GiB(1);
             VirtMemMan_UnmapHPage(inst,
-                             virt_addr);
+                                  virt_addr);
             virt_addr += GiB(1);
         } else if(size >= MiB(2) && virt_addr % MiB(2) == 0) {
             size -= MiB(2);
             VirtMemMan_UnmapLPage(inst,
-                             virt_addr);
+                                  virt_addr);
             virt_addr += MiB(2);
         } else if(size >= KiB(4) && virt_addr % KiB(4) == 0) {
             size -= KiB(4);
             VirtMemMan_UnmapSPage(inst,
-                             virt_addr);
+                                  virt_addr);
             virt_addr += KiB(4);
         } else break;   //Can't determine a mapping, just stop
     }
@@ -693,34 +693,34 @@ VirtMemMan_Map(PML_Instance       inst,
         } else if(size >= GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0) {
             size -= GiB(1);
             VirtMemMan_MapHPage(inst,
-                           virt_addr,
-                           phys_addr,
-                           present,
-                           cache,
-                           access_perm,
-                           sec_perms);
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
             virt_addr += GiB(1);
             phys_addr += GiB(1);
         } else if(size >= MiB(2) && virt_addr % MiB(2) == 0 && phys_addr % MiB(2) == 0) {
             size -= MiB(2);
             VirtMemMan_MapLPage(inst,
-                           virt_addr,
-                           phys_addr,
-                           present,
-                           cache,
-                           access_perm,
-                           sec_perms);
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
             virt_addr += MiB(2);
             phys_addr += MiB(2);
         } else if(size >= KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0) {
             size -= KiB(4);
             VirtMemMan_MapSPage(inst,
-                           virt_addr,
-                           phys_addr,
-                           present,
-                           cache,
-                           access_perm,
-                           sec_perms);
+                                virt_addr,
+                                phys_addr,
+                                present,
+                                cache,
+                                access_perm,
+                                sec_perms);
             virt_addr += KiB(4);
             phys_addr += KiB(4);
         } else break;	//Can't determine a mapping, just stop

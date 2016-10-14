@@ -180,7 +180,7 @@ MapPage(ManagedPageTable *pageTable,
     if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
 
     if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
-    
+
 
     MEM_TYPES cache = 0;
     if(cacheMode == CachingModeUncachable)cache = MEM_TYPE_UC;

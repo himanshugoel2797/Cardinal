@@ -30,8 +30,8 @@ typedef struct Message {
 } Message;
 
 struct ErrorMessage {
-	Message m;
-	uint64_t code;
+    Message m;
+    uint64_t code;
 };
 
 #ifndef _KERNEL_

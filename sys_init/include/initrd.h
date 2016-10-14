@@ -8,8 +8,8 @@ void
 ImportInitrd(void);
 
 int
-GetFile(const char *file, 
-		void **data, 
-		size_t *len);
+GetFile(const char *file,
+        void **data,
+        size_t *len);
 
 #endif

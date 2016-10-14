@@ -118,7 +118,7 @@ int cserver_main(uint64_t destCode,
             struct MountEvent *mnt_event_data = (struct MountEvent*)m;
             SetMountLocation(mnt_event_data->path);
 
-            if(Mounted != NULL){
+            if(Mounted != NULL) {
                 char path[PATH_MAX];
                 GetMountLocation(path, PATH_MAX);
                 Mounted(path);

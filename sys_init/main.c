@@ -1,13 +1,13 @@
 #include "initrd.h"
 
-int _start(){
+int _start() {
 
-	//First map in the initrd
-	ImportInitrd();
+    //First map in the initrd
+    ImportInitrd();
 
-	//Use it along with the linked in elf loader to load the initial system processes
+    //Use it along with the linked in elf loader to load the initial system processes
 
 
-	//Wait until exit requested on power off
-	while(1);
+    //Wait until exit requested on power off
+    while(1);
 }

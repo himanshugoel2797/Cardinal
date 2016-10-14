@@ -47,9 +47,9 @@ load_elf(const char *exec) {
 
     Initrd_GetFile(exec, &elf_loc, &elf_size);
     const char *argv[] = {exec};
-    
 
-    
+
+
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
 }
@@ -71,7 +71,7 @@ kernel_main(void) {
     smp_unlock_cores();
 
     SetupPreemption();
-    
+
     {
         CardinalBootInfo *info = GetBootInfo();
         for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {

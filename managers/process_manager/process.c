@@ -128,13 +128,13 @@ TerminateProcess(UID pid, uint32_t exit_code) {
 
     //Post a message to the parent process with the exit code
     struct SigChild *exit_msg = kmalloc(sizeof(struct SigChild));
-    if(exit_msg != NULL){
+    if(exit_msg != NULL) {
         memset(exit_msg, 0, sizeof(struct SigChild));
         exit_msg->m.SourcePID = pid;
         exit_msg->m.DestinationPID = pinfo->Parent->ID;
         exit_msg->m.MsgID = 0;
         exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
-        
+
         exit_msg->m.Size = sizeof(struct SigChild);
         exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
         exit_msg->exit_code = exit_code;

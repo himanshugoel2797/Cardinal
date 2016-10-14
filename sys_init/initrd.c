@@ -61,73 +61,72 @@ Initrd_GetFile(const char *file,
 
 void
 ImportInitrd(void) {
-	CardinalBootInfo b_info;
-	if(R0_GetBootInfo(&b_info) != 0)
-		return;
+    CardinalBootInfo b_info;
+    if(R0_GetBootInfo(&b_info) != 0)
+        return;
 
-	uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.initrd_start_addr);
-	uint64_t initrd_len = b_info.initrd_len;
+    uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.initrd_start_addr);
+    uint64_t initrd_len = b_info.initrd_len;
 
-	initrd_start_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0), 
-							   initrd_addr,
-							   0,
-							   initrd_len,
-							   CachingModeWriteBack,
-							   MemoryAllocationType_MMap,
-							   MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
+    initrd_start_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
+                                     initrd_addr,
+                                     0,
+                                     initrd_len,
+                                     CachingModeWriteBack,
+                                     MemoryAllocationType_MMap,
+                                     MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
 
 
-	uint64_t fb_addr = R0_GetPhysicalAddress(b_info.framebuffer_addr);
-	uint64_t fb_len = b_info.framebuffer_pitch * b_info.framebuffer_height;
+    uint64_t fb_addr = R0_GetPhysicalAddress(b_info.framebuffer_addr);
+    uint64_t fb_len = b_info.framebuffer_pitch * b_info.framebuffer_height;
 
-	fb_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0), 
-							   fb_addr,
-							   0,
-							   fb_len,
-							   CachingModeWriteThrough,
-							   MemoryAllocationType_MMap,
-							   MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
+    fb_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
+                           fb_addr,
+                           0,
+                           fb_len,
+                           CachingModeWriteThrough,
+                           MemoryAllocationType_MMap,
+                           MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
 
-	void *boot_screen_loc = NULL;
-	uint64_t boot_screen_size = 0;
+    void *boot_screen_loc = NULL;
+    uint64_t boot_screen_size = 0;
 
-	Initrd_GetFile("boot_screen.data",
-               &boot_screen_loc,
-               &boot_screen_size);
-	
-	memset(fb_addr, 0xff, fb_len);
-	
-	if(boot_screen_loc != NULL)
-	{
+    Initrd_GetFile("boot_screen.data",
+                   &boot_screen_loc,
+                   &boot_screen_size);
 
-		uint32_t * fb = (uint32_t*)fb_addr;
-		uint8_t * bs = (uint8_t*)boot_screen_loc;
+    memset(fb_addr, 0xff, fb_len);
 
-		uint32_t red_mask = ((-1 >> (32 - b_info.framebuffer_red_mask_size)) << b_info.framebuffer_red_field_position);
-		uint32_t green_mask = ((-1 >> (32 - b_info.framebuffer_green_mask_size)) << b_info.framebuffer_green_field_position);
-		uint32_t blue_mask = ((-1 >> (32 - b_info.framebuffer_blue_mask_size)) << b_info.framebuffer_blue_field_position);
+    if(boot_screen_loc != NULL) {
 
-		for(int i = 0; i < b_info.framebuffer_height; i++){
-			for(int j = 0; j < b_info.framebuffer_width; j++){
+        uint32_t * fb = (uint32_t*)fb_addr;
+        uint8_t * bs = (uint8_t*)boot_screen_loc;
 
-				fb[j] = ((uint32_t)*bs << b_info.framebuffer_red_field_position) | ((uint32_t)*(bs + 1) << b_info.framebuffer_green_field_position) | ((uint32_t)*(bs + 2) << b_info.framebuffer_blue_field_position); 
+        uint32_t red_mask = ((-1 >> (32 - b_info.framebuffer_red_mask_size)) << b_info.framebuffer_red_field_position);
+        uint32_t green_mask = ((-1 >> (32 - b_info.framebuffer_green_mask_size)) << b_info.framebuffer_green_field_position);
+        uint32_t blue_mask = ((-1 >> (32 - b_info.framebuffer_blue_mask_size)) << b_info.framebuffer_blue_field_position);
 
-				//*(uint32_t*)(fb + j * 4) = 0;
-				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_red_field_position / 8] = *(bs);
-				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_green_field_position / 8] = *(bs+1);
-				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_blue_field_position / 8] = *(bs+2);
+        for(int i = 0; i < b_info.framebuffer_height; i++) {
+            for(int j = 0; j < b_info.framebuffer_width; j++) {
 
-				bs += 3;
-			}
-			fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
-		}
-	}
+                fb[j] = ((uint32_t)*bs << b_info.framebuffer_red_field_position) | ((uint32_t)*(bs + 1) << b_info.framebuffer_green_field_position) | ((uint32_t)*(bs + 2) << b_info.framebuffer_blue_field_position);
+
+                //*(uint32_t*)(fb + j * 4) = 0;
+                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_red_field_position / 8] = *(bs);
+                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_green_field_position / 8] = *(bs+1);
+                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_blue_field_position / 8] = *(bs+2);
+
+                bs += 3;
+            }
+            fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
+        }
+    }
 
 }
 
 int
-GetFile(const char *file, 
-		void **data, 
-		size_t *len) {
+GetFile(const char *file,
+        void **data,
+        size_t *len) {
 
 }
