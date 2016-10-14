@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "thread.h"
 #include "file_server.h"
+#include "boot_information/boot_information.h"
 
 void
 kernel_main_init(void) {
@@ -17,11 +18,25 @@ kernel_main_init(void) {
     InitializeTimer();
     SetTimerEnableMode(ENABLE);
 
+    {
+        CardinalBootInfo *info = GetBootInfo();
+        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
+            *(uint32_t*)(info->framebuffer_addr + y) = -1;  //ARGB
+        }
+    }
     kmalloc_init ();
     ProcessSys_Initialize();
     Thread_Initialize();
     RegisterCore(0, NULL);
     CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
+
+    {
+        CardinalBootInfo *info = GetBootInfo();
+        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
+            *(uint32_t*)(info->framebuffer_addr + y) = (uint32_t)(-1) << 8;  //ARGB
+        }
+    }
+
     CoreUpdate();  //BSP is core 0
 }
 
@@ -32,7 +47,9 @@ load_elf(const char *exec) {
 
     Initrd_GetFile(exec, &elf_loc, &elf_size);
     const char *argv[] = {exec};
+    
 
+    
     LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
     while(1);
 }
@@ -49,10 +66,18 @@ kernel_main(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
 
+
     DeviceManager_Initialize();
     smp_unlock_cores();
 
     SetupPreemption();
+    
+    {
+        CardinalBootInfo *info = GetBootInfo();
+        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
+            *(uint32_t*)(info->framebuffer_addr + y) = (uint32_t)(-1) << 12;  //ARGB
+        }
+    }
 
     target_device_setup();
 

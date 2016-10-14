@@ -95,23 +95,31 @@ ImportInitrd(void) {
                &boot_screen_loc,
                &boot_screen_size);
 	
-	if(boot_screen_loc == NULL)
+	memset(fb_addr, 0xff, fb_len);
+	
+	if(boot_screen_loc != NULL)
 	{
-		memset(fb_addr, 0xff, fb_len);
-	}else {
 
-		uint8_t * fb = (uint8_t*)fb_addr;
+		uint32_t * fb = (uint32_t*)fb_addr;
 		uint8_t * bs = (uint8_t*)boot_screen_loc;
+
+		uint32_t red_mask = ((-1 >> (32 - b_info.framebuffer_red_mask_size)) << b_info.framebuffer_red_field_position);
+		uint32_t green_mask = ((-1 >> (32 - b_info.framebuffer_green_mask_size)) << b_info.framebuffer_green_field_position);
+		uint32_t blue_mask = ((-1 >> (32 - b_info.framebuffer_blue_mask_size)) << b_info.framebuffer_blue_field_position);
 
 		for(int i = 0; i < b_info.framebuffer_height; i++){
 			for(int j = 0; j < b_info.framebuffer_width; j++){
-				fb[0] = *(bs++);
-				fb[1] = *(bs++);
-				fb[2] = *(bs++);
-				fb[3] = 0xff;
-				fb +=  b_info.framebuffer_bpp/8;
+
+				fb[j] = ((uint32_t)*bs << b_info.framebuffer_red_field_position) | ((uint32_t)*(bs + 1) << b_info.framebuffer_green_field_position) | ((uint32_t)*(bs + 2) << b_info.framebuffer_blue_field_position); 
+
+				//*(uint32_t*)(fb + j * 4) = 0;
+				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_red_field_position / 8] = *(bs);
+				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_green_field_position / 8] = *(bs+1);
+				//fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_blue_field_position / 8] = *(bs+2);
+
+				bs += 3;
 			}
-//			fb += b_info.framebuffer_pitch - (b_info.framebuffer_width * b_info.framebuffer_bpp);
+			fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
 		}
 	}
 

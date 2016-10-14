@@ -111,7 +111,7 @@ LoadElf64(void *loc,
             p_addr = AllocatePhysicalPage();
             MapPage(pageTable,
                     p_addr,
-                    p_vaddr,
+                    p_vaddr - p_vaddr % PAGE_SIZE,
                     PAGE_SIZE,
                     CachingModeWriteBack,
                     MemoryAllocationType_Application,

@@ -424,7 +424,8 @@ VirtMemMan_MapHPage(PML_Instance       inst,
                     MEM_TYPES          cache,
                     MEM_ACCESS_PERMS   access_perm,
                     MEM_SECURITY_PERMS sec_perms) {
-    phys_addr = phys_addr/GiB(1) * GiB(1);  //Align the physical address
+    if(phys_addr % GiB(1) | virt_addr % GiB(1))
+        __asm__ ("cli\n\thlt");
 
     if(!virtMemData->hugePageSupport) {
         for(uint64_t i = 0; i < 512; i++) {
@@ -471,7 +472,9 @@ VirtMemMan_MapLPage(PML_Instance       inst,
                     MEM_TYPES          cache,
                     MEM_ACCESS_PERMS   access_perm,
                     MEM_SECURITY_PERMS sec_perms) {
-    phys_addr = phys_addr/MiB(2) * MiB(2);	//Align the physical address
+    
+    if(phys_addr % MiB(2) | virt_addr % MiB(2))
+        __asm__ ("cli\n\thlt");
 
     uint32_t pml_off = (virt_addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (virt_addr >> 30) & 0x1FF;
@@ -510,7 +513,9 @@ VirtMemMan_MapSPage(PML_Instance       inst,
                     MEM_TYPES          cache,
                     MEM_ACCESS_PERMS   access_perm,
                     MEM_SECURITY_PERMS sec_perms) {
-    phys_addr = phys_addr/KiB(4) * KiB(4);	//Align the physical address
+
+    if(phys_addr % KiB(4) | virt_addr % KiB(4))
+        __asm__ ("cli\n\thlt");
 
     uint32_t pml_off = (virt_addr >> 39) & 0x1FF;
     uint32_t pdpt_off = (virt_addr >> 30) & 0x1FF;
@@ -606,36 +611,36 @@ void
 VirtMemMan_Unmap(PML_Instance inst,
                  uint64_t virt_addr,
                  uint64_t size) {
+    if(size % KiB(4))
+        size += KiB(4) - (size % KiB(4));
+
     while(size > 0) {
-        if(size == KiB(4)) {
+        if(size == KiB(4) && virt_addr % KiB(4) == 0) {
             size -= KiB(4);
             VirtMemMan_UnmapSPage(inst,
                                   virt_addr);
-        } else if(size == MiB(2)) {
+        } else if(size == MiB(2) && virt_addr % MiB(2) == 0) {
             size -= MiB(2);
             VirtMemMan_UnmapLPage(inst,
                                   virt_addr);
-        } else if(size == GiB(1)) {
+        } else if(size == GiB(1) && virt_addr % GiB(1) == 0) {
             size -= GiB(1);
             VirtMemMan_UnmapHPage(inst,
                                   virt_addr);
         } else if(size >= GiB(1) && virt_addr % GiB(1) == 0) {
             size -= GiB(1);
-            VirtMemMan_Unmap(inst,
-                             virt_addr,
-                             GiB(1));
+            VirtMemMan_UnmapHPage(inst,
+                             virt_addr);
             virt_addr += GiB(1);
         } else if(size >= MiB(2) && virt_addr % MiB(2) == 0) {
             size -= MiB(2);
-            VirtMemMan_Unmap(inst,
-                             virt_addr,
-                             MiB(2));
+            VirtMemMan_UnmapLPage(inst,
+                             virt_addr);
             virt_addr += MiB(2);
         } else if(size >= KiB(4) && virt_addr % KiB(4) == 0) {
             size -= KiB(4);
-            VirtMemMan_Unmap(inst,
-                             virt_addr,
-                             KiB(4));
+            VirtMemMan_UnmapSPage(inst,
+                             virt_addr);
             virt_addr += KiB(4);
         } else break;   //Can't determine a mapping, just stop
     }
@@ -651,9 +656,14 @@ VirtMemMan_Map(PML_Instance       inst,
                MEM_ACCESS_PERMS   access_perm,
                MEM_SECURITY_PERMS sec_perms) {
     //Determine the generally best mapping for the given size
+    if(size % KiB(4) != 0)
+        size += KiB(4) - (size % KiB(4));
+
+    if(phys_addr % KiB(4) != 0 | virt_addr % KiB(4) != 0)
+        __asm__ volatile("cli\n\thlt" :: "a"(phys_addr), "b"(virt_addr));
 
     while(size > 0) {
-        if(size == KiB(4)) {
+        if(size == KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0) {
             size -= KiB(4);
             VirtMemMan_MapSPage(inst,
                                 virt_addr,
@@ -662,7 +672,7 @@ VirtMemMan_Map(PML_Instance       inst,
                                 cache,
                                 access_perm,
                                 sec_perms);
-        } else if(size == MiB(2)) {
+        } else if(size == MiB(2) && virt_addr % MiB(2) == 0 && phys_addr % MiB(2) == 0) {
             size -= MiB(2);
             VirtMemMan_MapLPage(inst,
                                 virt_addr,
@@ -671,7 +681,7 @@ VirtMemMan_Map(PML_Instance       inst,
                                 cache,
                                 access_perm,
                                 sec_perms);
-        } else if(size == GiB(1)) {
+        } else if(size == GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0) {
             size -= GiB(1);
             VirtMemMan_MapHPage(inst,
                                 virt_addr,
@@ -682,10 +692,9 @@ VirtMemMan_Map(PML_Instance       inst,
                                 sec_perms);
         } else if(size >= GiB(1) && virt_addr % GiB(1) == 0 && phys_addr % GiB(1) == 0) {
             size -= GiB(1);
-            VirtMemMan_Map(inst,
+            VirtMemMan_MapHPage(inst,
                            virt_addr,
                            phys_addr,
-                           GiB(1),
                            present,
                            cache,
                            access_perm,
@@ -694,10 +703,9 @@ VirtMemMan_Map(PML_Instance       inst,
             phys_addr += GiB(1);
         } else if(size >= MiB(2) && virt_addr % MiB(2) == 0 && phys_addr % MiB(2) == 0) {
             size -= MiB(2);
-            VirtMemMan_Map(inst,
+            VirtMemMan_MapLPage(inst,
                            virt_addr,
                            phys_addr,
-                           MiB(2),
                            present,
                            cache,
                            access_perm,
@@ -706,10 +714,9 @@ VirtMemMan_Map(PML_Instance       inst,
             phys_addr += MiB(2);
         } else if(size >= KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0) {
             size -= KiB(4);
-            VirtMemMan_Map(inst,
+            VirtMemMan_MapSPage(inst,
                            virt_addr,
                            phys_addr,
-                           KiB(4),
                            present,
                            cache,
                            access_perm,

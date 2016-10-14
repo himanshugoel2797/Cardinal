@@ -39,7 +39,7 @@ void
 bootstrap_pagefault_handler(Registers *regs) {
     regs->int_no *= 16;
     bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));
-    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentThreadUID()), "S"(regs->useresp), "D"(regs->rdx));
+    __asm__ volatile("cli\n\thlt" :: "a"(regs->rip), "b"(regs->int_no / 16), "c"(regs->err_code), "d"(GetCurrentThreadUID()), "S"(regs->useresp), "D"(regs->rax));
 }
 
 void
@@ -74,7 +74,7 @@ bootstrap_kernel(void *param,
     memset((void*)info->initrd_start_addr, 0, info->initrd_len);
     info->initrd_start_addr = (uint64_t)tmp_initrd_addr;
 */
-    
+
     if(magic != MULTIBOOT_MAGIC) {
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
     }
