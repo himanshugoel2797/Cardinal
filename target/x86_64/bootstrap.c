@@ -30,8 +30,8 @@ static volatile int smp_sync_base;
 void
 bootstrap_render(uint32_t color) {
     CardinalBootInfo *info = GetBootInfo();
-    for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
-        *(uint32_t*)(info->framebuffer_addr + y) = color;  //ARGB
+    for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
+        *(uint32_t*)(info->FramebufferAddress + y) = color;  //ARGB
     }
 }
 
@@ -59,20 +59,20 @@ bootstrap_kernel(void *param,
     ParseAndSaveBootInformation(param);
     CardinalBootInfo *info = GetBootInfo();
 
-    info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->framebuffer_addr);  //Virtualize bootinfo addresses
+    info->FramebufferAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->FramebufferAddress);  //Virtualize bootinfo addresses
 
     //Copy the initrd into the bootstrap memory pool
-    info->initrd_start_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->initrd_start_addr);
-    void* tmp_initrd_addr = bootstrap_malloc(info->initrd_len + PAGE_SIZE);
+    info->InitrdStartAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->InitrdStartAddress);
+    void* tmp_initrd_addr = bootstrap_malloc(info->InitrdLength + PAGE_SIZE);
 
         uint64_t tmp_initrd_addr_u64 = (uint64_t)tmp_initrd_addr;
         if(tmp_initrd_addr_u64 % PAGE_SIZE != 0)tmp_initrd_addr_u64 += (PAGE_SIZE - tmp_initrd_addr_u64 % PAGE_SIZE);
 
         tmp_initrd_addr = (void*)tmp_initrd_addr_u64;
 
-        memcpy(tmp_initrd_addr, (void*)info->initrd_start_addr, info->initrd_len);
-        memset((void*)info->initrd_start_addr, 0, info->initrd_len);
-        info->initrd_start_addr = (uint64_t)tmp_initrd_addr;
+        memcpy(tmp_initrd_addr, (void*)info->InitrdStartAddress, info->InitrdLength);
+        memset((void*)info->InitrdStartAddress, 0, info->InitrdLength);
+        info->InitrdStartAddress = (uint64_t)tmp_initrd_addr;
 
     if(magic != MULTIBOOT_MAGIC) {
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment
@@ -110,8 +110,8 @@ bootstrap_kernel(void *param,
     RTC_Initialize ();
 
     //Convert framebuffer address to writethrough caching
-    info->framebuffer_addr = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr);
-    info->framebuffer_addr = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->framebuffer_addr);
+    info->FramebufferAddress = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress);
+    info->FramebufferAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->FramebufferAddress);
 
     smp_sync_base = 1;
     APIC_Initialize();

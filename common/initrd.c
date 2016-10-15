@@ -31,12 +31,12 @@ Initrd_GetFile(const char *file,
                uint64_t *size) {
 
     CardinalBootInfo* bootInfo = GetBootInfo();
-    if(bootInfo->initrd_start_addr == 0 | bootInfo->initrd_len == 0)return FALSE;
+    if(bootInfo->InitrdStartAddress == 0 | bootInfo->InitrdLength == 0)return FALSE;
 
     *loc = NULL;
     *size = 0;
 
-    TARHeader *file_entry = (TARHeader*)bootInfo->initrd_start_addr;
+    TARHeader *file_entry = (TARHeader*)bootInfo->InitrdStartAddress;
 
     while(file_entry->filename[0] != 0) {
         uint32_t len = strlen(file_entry->filename);

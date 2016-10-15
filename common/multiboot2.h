@@ -234,11 +234,11 @@ struct multiboot_tag_framebuffer_common {
     multiboot_uint32_t type;
     multiboot_uint32_t size;
 
-    multiboot_uint64_t framebuffer_addr;
-    multiboot_uint32_t framebuffer_pitch;
-    multiboot_uint32_t framebuffer_width;
-    multiboot_uint32_t framebuffer_height;
-    multiboot_uint8_t framebuffer_bpp;
+    multiboot_uint64_t FramebufferAddress;
+    multiboot_uint32_t FramebufferPitch;
+    multiboot_uint32_t FramebufferWidth;
+    multiboot_uint32_t FramebufferHeight;
+    multiboot_uint8_t FramebufferBPP;
 #define MULTIBOOT_FRAMEBUFFER_TYPE_INDEXED 0
 #define MULTIBOOT_FRAMEBUFFER_TYPE_RGB     1
 #define MULTIBOOT_FRAMEBUFFER_TYPE_EGA_TEXT	2
@@ -255,12 +255,12 @@ struct multiboot_tag_framebuffer {
             struct multiboot_color framebuffer_palette[0];
         };
         struct {
-            multiboot_uint8_t framebuffer_red_field_position;
-            multiboot_uint8_t framebuffer_red_mask_size;
-            multiboot_uint8_t framebuffer_green_field_position;
-            multiboot_uint8_t framebuffer_green_mask_size;
-            multiboot_uint8_t framebuffer_blue_field_position;
-            multiboot_uint8_t framebuffer_blue_mask_size;
+            multiboot_uint8_t FramebufferRedFieldPosition;
+            multiboot_uint8_t FramebufferRedMaskSize;
+            multiboot_uint8_t FramebufferGreenFieldPosition;
+            multiboot_uint8_t FramebufferGreenMaskSize;
+            multiboot_uint8_t FramebufferBlueFieldPosition;
+            multiboot_uint8_t FramebufferBlueMaskSize;
         };
     };
 };

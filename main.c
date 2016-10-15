@@ -54,16 +54,16 @@ kernel_main(void) {
 
     {
         CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
-            *(uint32_t*)(info->framebuffer_addr + y) = (uint32_t)(-1) << 0;  //ARGB
+        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
+            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 0;  //ARGB
         }
     }
     SetupPreemption();
 
     {
         CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
-            *(uint32_t*)(info->framebuffer_addr + y) = (uint32_t)(-1) << 8;  //ARGB
+        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
+            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 8;  //ARGB
         }
     }
 
@@ -73,8 +73,8 @@ kernel_main(void) {
 
     {
         CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->framebuffer_height * info->framebuffer_pitch; y+=4) {
-            *(uint32_t*)(info->framebuffer_addr + y) = (uint32_t)(-1) << 16;  //ARGB
+        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
+            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 16;  //ARGB
         }
     }
 

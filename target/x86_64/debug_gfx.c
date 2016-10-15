@@ -20,9 +20,9 @@ debug_gfx_writeLine(const char *fmt, ...) {
     CardinalBootInfo *b = GetBootInfo();
 
     int yOff = yPos, xOff = xPos;
-    int pitch = b->framebuffer_pitch;
+    int pitch = b->FramebufferPitch;
 
-    uint32_t *backBuffer = (uint32_t*)b->framebuffer_addr;
+    uint32_t *backBuffer = (uint32_t*)b->FramebufferAddress;
 
     for (int i = 0; str[i] != 0; i++)
         for (int b = 0; b < 8; b++) {

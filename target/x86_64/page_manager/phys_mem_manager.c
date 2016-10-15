@@ -25,7 +25,7 @@ MemMan_Initialize(void) {
     // Determine which parts of memory are already in use by the kernel by reading
     // the symbol table
     CardinalBootInfo *info = GetBootInfo();
-    memory_size = info->mem_size;
+    memory_size = info->MemorySize;
     memory_size -= memory_size % PAGE_SIZE;
 
     // Determine the total number of pages
@@ -41,20 +41,20 @@ MemMan_Initialize(void) {
     memset(KB4_Blocks_Bitmap, 0xFFFFFFFF, KB4_Blocks_Count * sizeof(uint32_t));
 
     //Unmark all the regions specified as being free
-    for(uint32_t j = 0; j < info->cardinalMemMap_len/sizeof(CardinalMemMap); j++) {
-        uint64_t addr = info->cardinalMemMap[j].addr;
+    for(uint32_t j = 0; j < info->CardinalMemoryMapLength/sizeof(CardinalMemMap); j++) {
+        uint64_t addr = info->CardinalMemoryMap[j].addr;
         addr = addr/PAGE_SIZE * PAGE_SIZE;
 
-        uint64_t len = info->cardinalMemMap[j].len;
+        uint64_t len = info->CardinalMemoryMap[j].len;
         if(len % PAGE_SIZE != 0)len = (len/PAGE_SIZE + 1) * PAGE_SIZE;
 
-        if(info->cardinalMemMap[j].type == 1)MemMan_MarkFree(addr, len);
+        if(info->CardinalMemoryMap[j].type == 1)MemMan_MarkFree(addr, len);
     }
 
     //Mark important regions that have been preallocated
-    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->framebuffer_addr), info->framebuffer_pitch * info->framebuffer_height);
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress), info->FramebufferPitch * info->FramebufferHeight);
 
-    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->initrd_start_addr), info->initrd_len);
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->InitrdStartAddress), info->InitrdLength);
 
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
                     (uint64_t)&_region_kernel_end_ - (uint64_t)&_region_kernel_start_ + PAGE_SIZE);

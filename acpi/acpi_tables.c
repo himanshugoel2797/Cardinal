@@ -10,7 +10,7 @@ uint8_t
 ACPITables_Initialize(void) {
     rsdp = NULL;
     //Find the RSDP table
-    uint8_t *rsdp_sig = (uint8_t*)GetBootInfo()->rsdp_addr;
+    uint8_t *rsdp_sig = (uint8_t*)GetBootInfo()->RSDPAddress;
 
     if (rsdp_sig[0] == RSDP_EXPECTED_SIG[0]) {
         //Check the full signature

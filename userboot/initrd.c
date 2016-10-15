@@ -8,7 +8,7 @@
 #include <cardinal/memory.h>
 #include <cardinal/syscall_property.h>
 
-static uint64_t initrd_start_addr = 0;
+static uint64_t InitrdStartAddress = 0;
 
 typedef struct TARHeader {
     char filename[100];
@@ -40,7 +40,7 @@ GetFile(const char *file,
     *loc = NULL;
     *size = 0;
 
-    TARHeader *file_entry = (TARHeader*)initrd_start_addr;
+    TARHeader *file_entry = (TARHeader*)InitrdStartAddress;
 
     while(file_entry->filename[0] != 0) {
         uint32_t len = strlen(file_entry->filename);
@@ -67,20 +67,20 @@ ImportInitrd(void) {
     if(R0_GetBootInfo(&b_info) != 0)
         return;
 
-    uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.initrd_start_addr);
-    uint64_t initrd_len = b_info.initrd_len;
+    uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.InitrdStartAddress);
+    uint64_t InitrdLength = b_info.InitrdLength;
 
-    initrd_start_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
+    InitrdStartAddress = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
                                      initrd_addr,
                                      0,
-                                     initrd_len,
+                                     InitrdLength,
                                      CachingModeWriteBack,
                                      MemoryAllocationType_MMap,
                                      MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
 
 /*
-    uint64_t fb_addr = R0_GetPhysicalAddress(b_info.framebuffer_addr);
-    uint64_t fb_len = b_info.framebuffer_pitch * b_info.framebuffer_height;
+    uint64_t fb_addr = R0_GetPhysicalAddress(b_info.FramebufferAddress);
+    uint64_t fb_len = b_info.FramebufferPitch * b_info.FramebufferHeight;
 
     fb_addr = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
                            fb_addr,
@@ -104,23 +104,23 @@ ImportInitrd(void) {
         uint32_t * fb = (uint32_t*)fb_addr;
         uint8_t * bs = (uint8_t*)boot_screen_loc;
 
-        uint32_t red_mask = ((-1 >> (32 - b_info.framebuffer_red_mask_size)) << b_info.framebuffer_red_field_position);
-        uint32_t green_mask = ((-1 >> (32 - b_info.framebuffer_green_mask_size)) << b_info.framebuffer_green_field_position);
-        uint32_t blue_mask = ((-1 >> (32 - b_info.framebuffer_blue_mask_size)) << b_info.framebuffer_blue_field_position);
+        uint32_t red_mask = ((-1 >> (32 - b_info.FramebufferRedMaskSize)) << b_info.FramebufferRedFieldPosition);
+        uint32_t green_mask = ((-1 >> (32 - b_info.FramebufferGreenMaskSize)) << b_info.FramebufferGreenFieldPosition);
+        uint32_t blue_mask = ((-1 >> (32 - b_info.FramebufferBlueMaskSize)) << b_info.FramebufferBlueFieldPosition);
 
-        for(int i = 0; i < b_info.framebuffer_height; i++) {
-            for(int j = 0; j < b_info.framebuffer_width; j++) {
+        for(int i = 0; i < b_info.FramebufferHeight; i++) {
+            for(int j = 0; j < b_info.FramebufferWidth; j++) {
 
-                fb[j] = ((uint32_t)*bs << b_info.framebuffer_red_field_position) | ((uint32_t)*(bs + 1) << b_info.framebuffer_green_field_position) | ((uint32_t)*(bs + 2) << b_info.framebuffer_blue_field_position);
+                fb[j] = ((uint32_t)*bs << b_info.FramebufferRedFieldPosition) | ((uint32_t)*(bs + 1) << b_info.FramebufferGreenFieldPosition) | ((uint32_t)*(bs + 2) << b_info.FramebufferBlueFieldPosition);
 
                 //*(uint32_t*)(fb + j * 4) = 0;
-                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_red_field_position / 8] = *(bs);
-                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_green_field_position / 8] = *(bs+1);
-                //fb[j * b_info.framebuffer_bpp/8 + b_info.framebuffer_blue_field_position / 8] = *(bs+2);
+                //fb[j * b_info.FramebufferBPP/8 + b_info.FramebufferRedFieldPosition / 8] = *(bs);
+                //fb[j * b_info.FramebufferBPP/8 + b_info.FramebufferGreenFieldPosition / 8] = *(bs+1);
+                //fb[j * b_info.FramebufferBPP/8 + b_info.FramebufferBlueFieldPosition / 8] = *(bs+2);
 
                 bs += 3;
             }
-            fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
+            fb += b_info.FramebufferPitch * 8/b_info.FramebufferBPP;
         }
     }
     */

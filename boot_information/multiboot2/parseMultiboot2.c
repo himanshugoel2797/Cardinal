@@ -32,31 +32,31 @@ ParseAndSaveBootInformation(void *boot_info) {
 
             for(uint32_t j = 0; j < (mmap->size - 16); j+= mmap->entry_size) {
                 multiboot_memory_map_t *mmap_e = (multiboot_memory_map_t*)((uint8_t*)mmap->entries + j);
-                bootInfo.mem_size = mmap_e->addr + mmap_e->len;
+                bootInfo.MemorySize = mmap_e->addr + mmap_e->len;
 
                 map[j/mmap->entry_size].addr = mmap_e->addr;
                 map[j/mmap->entry_size].len = mmap_e->len;
                 map[j/mmap->entry_size].type = mmap_e->type;
             }
 
-            bootInfo.cardinalMemMap = map;
-            bootInfo.cardinalMemMap_len = sizeof(CardinalMemMap) * entryCount;
+            bootInfo.CardinalMemoryMap = map;
+            bootInfo.CardinalMemoryMapLength = sizeof(CardinalMemMap) * entryCount;
         }
         break;
         case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
             multiboot_tag_framebuffer *framebuffer = (multiboot_tag_framebuffer*)&hdr_8[i];
-            bootInfo.framebuffer_addr = framebuffer->common.framebuffer_addr;
-            bootInfo.framebuffer_pitch = framebuffer->common.framebuffer_pitch;
-            bootInfo.framebuffer_width = framebuffer->common.framebuffer_width;
-            bootInfo.framebuffer_height = framebuffer->common.framebuffer_height;
-            bootInfo.framebuffer_bpp = framebuffer->common.framebuffer_bpp;
+            bootInfo.FramebufferAddress = framebuffer->common.FramebufferAddress;
+            bootInfo.FramebufferPitch = framebuffer->common.FramebufferPitch;
+            bootInfo.FramebufferWidth = framebuffer->common.FramebufferWidth;
+            bootInfo.FramebufferHeight = framebuffer->common.FramebufferHeight;
+            bootInfo.FramebufferBPP = framebuffer->common.FramebufferBPP;
 
-            bootInfo.framebuffer_red_field_position = framebuffer->framebuffer_red_field_position;
-            bootInfo.framebuffer_red_mask_size = framebuffer->framebuffer_red_mask_size;
-            bootInfo.framebuffer_green_field_position = framebuffer->framebuffer_green_field_position;
-            bootInfo.framebuffer_green_mask_size = framebuffer->framebuffer_green_mask_size;
-            bootInfo.framebuffer_blue_field_position = framebuffer->framebuffer_blue_field_position;
-            bootInfo.framebuffer_blue_mask_size = framebuffer->framebuffer_blue_mask_size;
+            bootInfo.FramebufferRedFieldPosition = framebuffer->FramebufferRedFieldPosition;
+            bootInfo.FramebufferRedMaskSize = framebuffer->FramebufferRedMaskSize;
+            bootInfo.FramebufferGreenFieldPosition = framebuffer->FramebufferGreenFieldPosition;
+            bootInfo.FramebufferGreenMaskSize = framebuffer->FramebufferGreenMaskSize;
+            bootInfo.FramebufferBlueFieldPosition = framebuffer->FramebufferBlueFieldPosition;
+            bootInfo.FramebufferBlueMaskSize = framebuffer->FramebufferBlueMaskSize;
         }
         break;
         case MULTIBOOT_TAG_TYPE_ELF_SECTIONS: {
@@ -73,13 +73,13 @@ ParseAndSaveBootInformation(void *boot_info) {
         case MULTIBOOT_TAG_TYPE_ACPI_OLD:
         case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
             multiboot_tag_new_acpi *acpi = (multiboot_tag_new_acpi*)&hdr_8[i];
-            bootInfo.rsdp_addr = (uint64_t)acpi->rsdp;
+            bootInfo.RSDPAddress = (uint64_t)acpi->rsdp;
         }
         break;
         case MULTIBOOT_TAG_TYPE_MODULE: {
             multiboot_tag_module *module = (multiboot_tag_module*)&hdr_8[i];
-            bootInfo.initrd_start_addr = (uint64_t)module->mod_start;
-            bootInfo.initrd_len = (uint64_t)(module->mod_end - module->mod_start);
+            bootInfo.InitrdStartAddress = (uint64_t)module->mod_start;
+            bootInfo.InitrdLength = (uint64_t)(module->mod_end - module->mod_start);
         }
         break;
         case MULTIBOOT_TAG_TYPE_END:
