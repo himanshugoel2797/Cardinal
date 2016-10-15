@@ -26,7 +26,6 @@ tmp.S
 disk.img
 build/*
 root/*
-doc/*
 # Executables
 *.exe
 *.out

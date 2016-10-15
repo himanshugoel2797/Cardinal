@@ -1,0 +1,136 @@
+\hypertarget{structfuse__operations}{}\section{fuse\+\_\+operations Struct Reference}
+\label{structfuse__operations}\index{fuse\+\_\+operations@{fuse\+\_\+operations}}
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+unsigned int {\bfseries flag\+\_\+nopath}\+: 1\hypertarget{structfuse__operations_abd0d90b9b500f6607f9aad9ae07784d8}{}\label{structfuse__operations_abd0d90b9b500f6607f9aad9ae07784d8}
+
+\item 
+unsigned int {\bfseries flag\+\_\+rsvd}\+: 31\hypertarget{structfuse__operations_af3b3e9f21464e053e43a3d7b733a7bfa}{}\label{structfuse__operations_af3b3e9f21464e053e43a3d7b733a7bfa}
+
+\item 
+int($\ast$ {\bfseries getattr} )(const char $\ast$, struct stat $\ast$)\hypertarget{structfuse__operations_ad1fe65eb63bdf8fac5fdc953e7c643ca}{}\label{structfuse__operations_ad1fe65eb63bdf8fac5fdc953e7c643ca}
+
+\item 
+int($\ast$ {\bfseries readlink} )(const char $\ast$, char $\ast$, size\+\_\+t)\hypertarget{structfuse__operations_a0a7fe4e7fe5db55e96ef6adaf64c09e2}{}\label{structfuse__operations_a0a7fe4e7fe5db55e96ef6adaf64c09e2}
+
+\item 
+int($\ast$ {\bfseries mknod} )(const char $\ast$, mode\+\_\+t, dev\+\_\+t)\hypertarget{structfuse__operations_a086e9d012d0de2f2cdd53ba13c65ace7}{}\label{structfuse__operations_a086e9d012d0de2f2cdd53ba13c65ace7}
+
+\item 
+int($\ast$ {\bfseries mkdir} )(const char $\ast$, mode\+\_\+t)\hypertarget{structfuse__operations_a58099b7eb4078ec35b911d7dc1c49cb9}{}\label{structfuse__operations_a58099b7eb4078ec35b911d7dc1c49cb9}
+
+\item 
+int($\ast$ {\bfseries unlink} )(const char $\ast$)\hypertarget{structfuse__operations_a61c9fc784e6218b9943ce0bc49c48a3d}{}\label{structfuse__operations_a61c9fc784e6218b9943ce0bc49c48a3d}
+
+\item 
+int($\ast$ {\bfseries rmdir} )(const char $\ast$)\hypertarget{structfuse__operations_ac08fb89a4d0bd842986730d57b7a42ff}{}\label{structfuse__operations_ac08fb89a4d0bd842986730d57b7a42ff}
+
+\item 
+int($\ast$ {\bfseries symlink} )(const char $\ast$, const char $\ast$)\hypertarget{structfuse__operations_a3039bb250169cf41be015faa0f899a38}{}\label{structfuse__operations_a3039bb250169cf41be015faa0f899a38}
+
+\item 
+int($\ast$ {\bfseries rename} )(const char $\ast$, const char $\ast$, unsigned int)\hypertarget{structfuse__operations_ad0e98825661f523291253f1913f9ffd2}{}\label{structfuse__operations_ad0e98825661f523291253f1913f9ffd2}
+
+\item 
+int($\ast$ {\bfseries link} )(const char $\ast$, const char $\ast$)\hypertarget{structfuse__operations_aca657a1bcec2528e4e45add8f20de1f5}{}\label{structfuse__operations_aca657a1bcec2528e4e45add8f20de1f5}
+
+\item 
+int($\ast$ {\bfseries chmod} )(const char $\ast$, mode\+\_\+t)\hypertarget{structfuse__operations_a21e1cd230612b5140006edf0e490f02f}{}\label{structfuse__operations_a21e1cd230612b5140006edf0e490f02f}
+
+\item 
+int($\ast$ {\bfseries chown} )(const char $\ast$, uid\+\_\+t, gid\+\_\+t)\hypertarget{structfuse__operations_a414d7b818e280aa2e753aac97734ae4d}{}\label{structfuse__operations_a414d7b818e280aa2e753aac97734ae4d}
+
+\item 
+int($\ast$ {\bfseries truncate} )(const char $\ast$, off\+\_\+t)\hypertarget{structfuse__operations_a3f6513ffa448b6646265266ec9bf2cb2}{}\label{structfuse__operations_a3f6513ffa448b6646265266ec9bf2cb2}
+
+\item 
+int($\ast$ {\bfseries open} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a08a085fceedd8770e3290a80aa9645ac}{}\label{structfuse__operations_a08a085fceedd8770e3290a80aa9645ac}
+
+\item 
+int($\ast$ {\bfseries read} )(const char $\ast$, char $\ast$, size\+\_\+t, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a272960bfd96a0100cbadc4e5a8886038}{}\label{structfuse__operations_a272960bfd96a0100cbadc4e5a8886038}
+
+\item 
+int($\ast$ {\bfseries write} )(const char $\ast$, const char $\ast$, size\+\_\+t, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a1fdc611027324dd68a550f9662db1fac}{}\label{structfuse__operations_a1fdc611027324dd68a550f9662db1fac}
+
+\item 
+int($\ast$ {\bfseries statfs} )(const char $\ast$, struct statvfs $\ast$)\hypertarget{structfuse__operations_a76d29dba617a64321cf52d62cd969292}{}\label{structfuse__operations_a76d29dba617a64321cf52d62cd969292}
+
+\item 
+int($\ast$ {\bfseries flush} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a6bfecd61ddd58f74820953ee23b19ef3}{}\label{structfuse__operations_a6bfecd61ddd58f74820953ee23b19ef3}
+
+\item 
+int($\ast$ {\bfseries release} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a4a6f1b50c583774125b5003811ecebce}{}\label{structfuse__operations_a4a6f1b50c583774125b5003811ecebce}
+
+\item 
+int($\ast$ {\bfseries fsync} )(const char $\ast$, int, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_abaa2a0bdc9b9955a399ea6973f6f4927}{}\label{structfuse__operations_abaa2a0bdc9b9955a399ea6973f6f4927}
+
+\item 
+int($\ast$ {\bfseries setxattr} )(const char $\ast$, const char $\ast$, const char $\ast$, size\+\_\+t, int)\hypertarget{structfuse__operations_aa45a72b6238ec1e97f910d940aaddc51}{}\label{structfuse__operations_aa45a72b6238ec1e97f910d940aaddc51}
+
+\item 
+int($\ast$ {\bfseries getxattr} )(const char $\ast$, const char $\ast$, char $\ast$, size\+\_\+t)\hypertarget{structfuse__operations_aa3b04e186793cf6c6b81bf7fea5be417}{}\label{structfuse__operations_aa3b04e186793cf6c6b81bf7fea5be417}
+
+\item 
+int($\ast$ {\bfseries listxattr} )(const char $\ast$, char $\ast$, size\+\_\+t)\hypertarget{structfuse__operations_a6fbfd692db6efb23a3f84b6926c398af}{}\label{structfuse__operations_a6fbfd692db6efb23a3f84b6926c398af}
+
+\item 
+int($\ast$ {\bfseries removexattr} )(const char $\ast$, const char $\ast$)\hypertarget{structfuse__operations_ad8078e468e2ef46f8084bc8f58252000}{}\label{structfuse__operations_ad8078e468e2ef46f8084bc8f58252000}
+
+\item 
+int($\ast$ {\bfseries opendir} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_abe51ac9a15f28e68de9b7b09199cbbe2}{}\label{structfuse__operations_abe51ac9a15f28e68de9b7b09199cbbe2}
+
+\item 
+int($\ast$ {\bfseries readdir} )(const char $\ast$, void $\ast$, fuse\+\_\+fill\+\_\+dir\+\_\+t, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$, enum fuse\+\_\+readdir\+\_\+flags)\hypertarget{structfuse__operations_ae269583c4bfaf4d9a82e1d51a902cd5c}{}\label{structfuse__operations_ae269583c4bfaf4d9a82e1d51a902cd5c}
+
+\item 
+int($\ast$ {\bfseries releasedir} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_ac3760f5298013d4255bed9932e719db1}{}\label{structfuse__operations_ac3760f5298013d4255bed9932e719db1}
+
+\item 
+int($\ast$ {\bfseries fsyncdir} )(const char $\ast$, int, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a57c3cd511dd199cd52e8fe145e9b4b20}{}\label{structfuse__operations_a57c3cd511dd199cd52e8fe145e9b4b20}
+
+\item 
+void $\ast$($\ast$ {\bfseries init} )(struct \hyperlink{structfuse__conn__info}{fuse\+\_\+conn\+\_\+info} $\ast$conn)\hypertarget{structfuse__operations_a25a852f98c2e8a6f8a3689c53e093ee6}{}\label{structfuse__operations_a25a852f98c2e8a6f8a3689c53e093ee6}
+
+\item 
+void($\ast$ {\bfseries destroy} )(void $\ast$)\hypertarget{structfuse__operations_a533b13773c1879bed793b36a25d65ba8}{}\label{structfuse__operations_a533b13773c1879bed793b36a25d65ba8}
+
+\item 
+int($\ast$ {\bfseries access} )(const char $\ast$, int)\hypertarget{structfuse__operations_a4dd366b9f74ead6927fb75afb91863bc}{}\label{structfuse__operations_a4dd366b9f74ead6927fb75afb91863bc}
+
+\item 
+int($\ast$ {\bfseries create} )(const char $\ast$, mode\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a8f5349c22f360bda57ff10d10486d148}{}\label{structfuse__operations_a8f5349c22f360bda57ff10d10486d148}
+
+\item 
+int($\ast$ {\bfseries ftruncate} )(const char $\ast$, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a9bc20fac15d539ebc12ea8892ad563aa}{}\label{structfuse__operations_a9bc20fac15d539ebc12ea8892ad563aa}
+
+\item 
+int($\ast$ {\bfseries fgetattr} )(const char $\ast$, struct stat $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_ab10c7af9faf94092929d63868fff348c}{}\label{structfuse__operations_ab10c7af9faf94092929d63868fff348c}
+
+\item 
+int($\ast$ {\bfseries lock} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$, int cmd, struct flock $\ast$)\hypertarget{structfuse__operations_a50875b0793d46b25e30cea61b2eb7a3b}{}\label{structfuse__operations_a50875b0793d46b25e30cea61b2eb7a3b}
+
+\item 
+int($\ast$ {\bfseries utimens} )(const char $\ast$, const struct \hyperlink{structtimespec}{timespec} tv\mbox{[}2\mbox{]})\hypertarget{structfuse__operations_adaae920bd72edddc5f9494c14ae7eecc}{}\label{structfuse__operations_adaae920bd72edddc5f9494c14ae7eecc}
+
+\item 
+int($\ast$ {\bfseries bmap} )(const char $\ast$, size\+\_\+t, uint64\+\_\+t $\ast$)\hypertarget{structfuse__operations_a24c2c62c2b55ad35feb7b2745b3306b3}{}\label{structfuse__operations_a24c2c62c2b55ad35feb7b2745b3306b3}
+
+\item 
+int($\ast$ {\bfseries poll} )(const char $\ast$, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$, struct fuse\+\_\+pollhandle $\ast$, unsigned $\ast$)\hypertarget{structfuse__operations_a883993af81d7cfa1e39fd2e9f7185520}{}\label{structfuse__operations_a883993af81d7cfa1e39fd2e9f7185520}
+
+\item 
+int($\ast$ {\bfseries write\+\_\+buf} )(const char $\ast$, struct \hyperlink{structfuse__bufvec}{fuse\+\_\+bufvec} $\ast$, off\+\_\+t, structfuse\+\_\+file\+\_\+info $\ast$)\hypertarget{structfuse__operations_a97885456c4c1a625929df4b6cb8cb193}{}\label{structfuse__operations_a97885456c4c1a625929df4b6cb8cb193}
+
+\item 
+int($\ast$ {\bfseries read\+\_\+buf} )(const char $\ast$, struct \hyperlink{structfuse__bufvec}{fuse\+\_\+bufvec} $\ast$$\ast$, size\+\_\+t, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a0d0ac4480af64250a9c76b83ca964440}{}\label{structfuse__operations_a0d0ac4480af64250a9c76b83ca964440}
+
+\item 
+int($\ast$ {\bfseries fallocate} )(const char $\ast$, int, off\+\_\+t, off\+\_\+t, struct \hyperlink{structfuse__file__info}{fuse\+\_\+file\+\_\+info} $\ast$)\hypertarget{structfuse__operations_a22ee7ba94cbc9ad068b15a0b1d22afd3}{}\label{structfuse__operations_a22ee7ba94cbc9ad068b15a0b1d22afd3}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+libs/libfuse/include/fuse.\+h\end{DoxyCompactItemize}

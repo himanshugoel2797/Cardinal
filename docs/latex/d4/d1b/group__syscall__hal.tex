@@ -1,0 +1,84 @@
+\hypertarget{group__syscall__hal}{}\section{Syscall H\+AL}
+\label{group__syscall__hal}\index{Syscall H\+AL@{Syscall H\+AL}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{group__syscall__hal_gae9f4ad6abf7f3be03af3a9e499a2e4f5}{Syscall\+\_\+\+Initialize} (void)\hypertarget{group__syscall__hal_gae9f4ad6abf7f3be03af3a9e499a2e4f5}{}\label{group__syscall__hal_gae9f4ad6abf7f3be03af3a9e499a2e4f5}
+
+\begin{DoxyCompactList}\small\item\em Initialize the syscall H\+AL. \end{DoxyCompactList}\item 
+void \hyperlink{group__syscall__hal_ga8dd6b5a2b1d289f84fd6577deb9168b0}{Switch\+To\+User\+Mode} (uint64\+\_\+t pc, uint64\+\_\+t sp)
+\begin{DoxyCompactList}\small\item\em Switch to user mode. \end{DoxyCompactList}\item 
+void \hyperlink{group__syscall__hal_ga895922ecc344ec7f1377e30cff527a18}{Set\+Kernel\+Stack} (void $\ast$stack)
+\begin{DoxyCompactList}\small\item\em Sets the kernel stack. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{group__syscall__hal_gab5eb7a22391ee3d3a943d043490ab222}{Get\+Kernel\+Stack} (void)
+\begin{DoxyCompactList}\small\item\em Gets the kernel stack. \end{DoxyCompactList}\item 
+void \hyperlink{group__syscall__hal_ga5dcf060e3d7d3f277ff3932d23e3b035}{Setup\+Security\+Monitor} (void)\hypertarget{group__syscall__hal_ga5dcf060e3d7d3f277ff3932d23e3b035}{}\label{group__syscall__hal_ga5dcf060e3d7d3f277ff3932d23e3b035}
+
+\begin{DoxyCompactList}\small\item\em Setup the security monitor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{Syscall H\+AL@{Syscall H\+AL}!Get\+Kernel\+Stack@{Get\+Kernel\+Stack}}
+\index{Get\+Kernel\+Stack@{Get\+Kernel\+Stack}!Syscall H\+AL@{Syscall H\+AL}}
+\subsubsection[{\texorpdfstring{Get\+Kernel\+Stack(void)}{GetKernelStack(void)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Get\+Kernel\+Stack (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__syscall__hal_gab5eb7a22391ee3d3a943d043490ab222}{}\label{group__syscall__hal_gab5eb7a22391ee3d3a943d043490ab222}
+
+
+{\ttfamily \#include $<$target/hal/syscall.\+h$>$}
+
+
+
+Gets the kernel stack. 
+
+\begin{DoxyReturn}{Returns}
+The kernel stack. 
+\end{DoxyReturn}
+\index{Syscall H\+AL@{Syscall H\+AL}!Set\+Kernel\+Stack@{Set\+Kernel\+Stack}}
+\index{Set\+Kernel\+Stack@{Set\+Kernel\+Stack}!Syscall H\+AL@{Syscall H\+AL}}
+\subsubsection[{\texorpdfstring{Set\+Kernel\+Stack(void $\ast$stack)}{SetKernelStack(void *stack)}}]{\setlength{\rightskip}{0pt plus 5cm}void Set\+Kernel\+Stack (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{stack}
+\end{DoxyParamCaption}
+)}\hypertarget{group__syscall__hal_ga895922ecc344ec7f1377e30cff527a18}{}\label{group__syscall__hal_ga895922ecc344ec7f1377e30cff527a18}
+
+
+{\ttfamily \#include $<$target/hal/syscall.\+h$>$}
+
+
+
+Sets the kernel stack. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em stack} & The stack \\
+\hline
+\end{DoxyParams}
+\index{Syscall H\+AL@{Syscall H\+AL}!Switch\+To\+User\+Mode@{Switch\+To\+User\+Mode}}
+\index{Switch\+To\+User\+Mode@{Switch\+To\+User\+Mode}!Syscall H\+AL@{Syscall H\+AL}}
+\subsubsection[{\texorpdfstring{Switch\+To\+User\+Mode(uint64\+\_\+t pc, uint64\+\_\+t sp)}{SwitchToUserMode(uint64\_t pc, uint64\_t sp)}}]{\setlength{\rightskip}{0pt plus 5cm}void Switch\+To\+User\+Mode (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{pc, }
+\item[{uint64\+\_\+t}]{sp}
+\end{DoxyParamCaption}
+)}\hypertarget{group__syscall__hal_ga8dd6b5a2b1d289f84fd6577deb9168b0}{}\label{group__syscall__hal_ga8dd6b5a2b1d289f84fd6577deb9168b0}
+
+
+{\ttfamily \#include $<$target/hal/syscall.\+h$>$}
+
+
+
+Switch to user mode. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em pc} & The location to start execution at \\
+\hline
+\mbox{\tt in}  & {\em sp} & The stack pointer value to use \\
+\hline
+\end{DoxyParams}

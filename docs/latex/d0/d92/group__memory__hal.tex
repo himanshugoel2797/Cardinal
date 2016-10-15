@@ -1,0 +1,821 @@
+\hypertarget{group__memory__hal}{}\section{Memory Management}
+\label{group__memory__hal}\index{Memory Management@{Memory Management}}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structMemoryAllocationsMap}{Memory\+Allocations\+Map}
+\item 
+struct \hyperlink{structForkedMemoryData}{Forked\+Memory\+Data}
+\item 
+struct \hyperlink{structManagedPageTable}{Managed\+Page\+Table}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{group__memory__hal_ga7d467c1d283fdfa1f2081ba1e0d01b6e}{P\+A\+G\+E\+\_\+\+S\+I\+ZE}~KiB(4)
+\item 
+\#define \hyperlink{group__memory__hal_ga19026599ca53eb83da5f02be3604f4fc}{T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}~KiB(32)
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{structMemoryAllocationsMap}{Memory\+Allocations\+Map} \hyperlink{group__memory__hal_ga91c66252a28d011008224fc4dc01885e}{Memory\+Allocations\+Map}
+\item 
+typedef struct \hyperlink{structForkedMemoryData}{Forked\+Memory\+Data} \hyperlink{group__memory__hal_gafcbcf8480ddd2494d17d17f196a27ca6}{Forked\+Memory\+Data}
+\item 
+typedef struct \hyperlink{structManagedPageTable}{Managed\+Page\+Table} \hyperlink{group__memory__hal_gad2397dbb839987d0753da093f7549f66}{Managed\+Page\+Table}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void $\ast$ \hyperlink{group__memory__hal_gadb5f3831d980612868dbb74756f07877}{Get\+Virtual\+Address} (Caching\+Mode c, void $\ast$physical\+Address)
+\begin{DoxyCompactList}\small\item\em Gets the virtual address. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{group__memory__hal_ga068e21628a7e3cb106bbde7da70c03f0}{Get\+Physical\+Address} (void $\ast$virtual\+Address)
+\begin{DoxyCompactList}\small\item\em Gets the physical address. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{group__memory__hal_gafe782bc6705018a08927bb39a225850a}{Get\+Physical\+Address\+Page\+Table} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$src, void $\ast$virtual\+Address)
+\begin{DoxyCompactList}\small\item\em Gets the physical address from a specific page table. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_gadbb8e6aa6429764d392f2a7f21f862b9}{Create\+Virtual\+Memory\+Instance} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$inst)
+\begin{DoxyCompactList}\small\item\em Creates a virtual memory instance. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_gad6748d1395a14d4f9c85dacad9f69c57}{Free\+Virtual\+Memory\+Instance} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$inst)
+\begin{DoxyCompactList}\small\item\em Free a virtual memory instance. \end{DoxyCompactList}\item 
+\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$ \hyperlink{group__memory__hal_ga0b3ca6ba77c946090486ed7623b02f3a}{Set\+Active\+Virtual\+Memory\+Instance} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$inst)
+\begin{DoxyCompactList}\small\item\em Sets the active virtual memory instance. \end{DoxyCompactList}\item 
+\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$ \hyperlink{group__memory__hal_ga16a884ac1d3f8592c51696e598c3f388}{Get\+Active\+Virtual\+Memory\+Instance} (void)
+\begin{DoxyCompactList}\small\item\em Gets the active virtual memory instance. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_ga55792beaa12c8a01cb7a958f25298a4a}{Fork\+Table} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$src, \hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$dst)
+\begin{DoxyCompactList}\small\item\em Fork the src page table into the dst table. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_gaf12f8fa8069d8c3c8c6d3662743965ab}{Map\+Page} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t physical\+Address, uint64\+\_\+t virtual\+Address, size\+\_\+t size, Caching\+Mode cache\+Mode, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)
+\begin{DoxyCompactList}\small\item\em Map a page into the page table. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_ga5b899ceffe056eb4accb4ce051a35c3c}{Change\+Page\+Flags} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t virtual\+Address, Caching\+Mode cache\+Mode, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)
+\begin{DoxyCompactList}\small\item\em Change the flags on an existing page mapping. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_gaeadb7160dc7c72db80b7d2e63525dec5}{Unmap\+Page} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t virtual\+Address, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Unmap an existing page mapping. \end{DoxyCompactList}\item 
+uint64\+\_\+t \hyperlink{group__memory__hal_gac722f82a0df4747180f3c7b113b3e936}{Get\+Memory\+Allocation\+Type\+Top} (Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags sec\+\_\+perms)
+\begin{DoxyCompactList}\small\item\em Gets the upper extent of the given memory allocation type in virtual memory. \end{DoxyCompactList}\item 
+uint64\+\_\+t \hyperlink{group__memory__hal_ga3ac119747e32d0a3d91c6a97d9e25c09}{Get\+Memory\+Allocation\+Type\+Base} (Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags sec\+\_\+perms)
+\begin{DoxyCompactList}\small\item\em Gets the low extent of the given memory allocation type in virtual memory. \end{DoxyCompactList}\item 
+Memory\+Allocation\+Errors \hyperlink{group__memory__hal_ga056bb78e5beccb23ea293fe43962393b}{Find\+Free\+Virtual\+Address} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t $\ast$virtual\+Address, size\+\_\+t size, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)
+\begin{DoxyCompactList}\small\item\em Find a free virtual address. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga86c40810b55a13e73f8d19a1eb8891e8}{Handle\+Page\+Fault} (uint64\+\_\+t virtual\+Address, uint64\+\_\+t instruction\+\_\+pointer, Memory\+Allocation\+Flags error)
+\begin{DoxyCompactList}\small\item\em Handle a page fault. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga05983f77acff6cdb4ae5bc697fda128c}{Perform\+T\+L\+B\+Shootdown} (void)\hypertarget{group__memory__hal_ga05983f77acff6cdb4ae5bc697fda128c}{}\label{group__memory__hal_ga05983f77acff6cdb4ae5bc697fda128c}
+
+\begin{DoxyCompactList}\small\item\em Perform a T\+LB shootdown. \end{DoxyCompactList}\item 
+uint64\+\_\+t \hyperlink{group__memory__hal_ga38d7d120822b48d7c31a7e52969aeecb}{Setup\+Temporary\+Write\+Map} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t addr, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Setup a temporary writeable mapping of the virtual address in the specified page table into the current space. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga15cb64d29c2d42754d474b5b99c57f5a}{Uninstall\+Temporary\+Write\+Map} (uint64\+\_\+t loc, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Uninstall the temporary write mapping setup by \hyperlink{group__memory__hal_ga38d7d120822b48d7c31a7e52969aeecb}{Setup\+Temporary\+Write\+Map()} \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga3c4c23cb2e658fa0213fda1d71a8fa39}{Check\+Address\+Permissions} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t addr, Caching\+Mode $\ast$cache\+Mode, Memory\+Allocation\+Flags $\ast$flags)
+\begin{DoxyCompactList}\small\item\em Retrieve the access permissions on a mapping. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga3bd4c5b1c1c001e27aa3a26c735c64ca}{Write\+Value\+At\+Address64} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint64\+\_\+t $\ast$addr, uint64\+\_\+t val)
+\begin{DoxyCompactList}\small\item\em Writes a 64-\/bit value at the specified address in the specified page table. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_gac735f7816a3f90773251fee78bb14e14}{Write\+Value\+At\+Address32} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, uint32\+\_\+t $\ast$addr, uint32\+\_\+t val)
+\begin{DoxyCompactList}\small\item\em Writes a 32-\/bit value at the specified address in the specified page table. \end{DoxyCompactList}\item 
+uint64\+\_\+t \hyperlink{group__memory__hal_gac1f7c0b6cfea48c7e5a85650b859d4cf}{Allocate\+Physical\+Page} (void)
+\begin{DoxyCompactList}\small\item\em Allocate a physical page. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga7a16691da55bbba1a24046a39691feb6}{Free\+Physical\+Page} (uint64\+\_\+t ptr)
+\begin{DoxyCompactList}\small\item\em Free a previously allocated page. \end{DoxyCompactList}\item 
+uint64\+\_\+t \hyperlink{group__memory__hal_ga4252d21415bbdba613651dd74bf5ff7d}{Allocate\+Physical\+Page\+Cont} (int page\+Count)
+\begin{DoxyCompactList}\small\item\em Allocate a continuous set of physical pages. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_gaa3d1107b7812b8e5e931d39d162d1e31}{Free\+Physical\+Page\+Cont} (uint64\+\_\+t ptr, int page\+Count)
+\begin{DoxyCompactList}\small\item\em Free a continuous set of previously allocated pages. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{group__memory__hal_gad4d70c510c0ceaaba7f3019a6639adf7}{Allocate\+A\+P\+L\+S\+Memory} (uint64\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em Allocate Application Processor Local Storage. \end{DoxyCompactList}\item 
+int \hyperlink{group__memory__hal_ga3022d9b7eccca6a47a59574f3504eefa}{Get\+Core\+Count} (void)
+\begin{DoxyCompactList}\small\item\em Gets the core count. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_ga5cc9503ace8d3944b2fe575e29acd4c9}{Halt\+Processor} (void)\hypertarget{group__memory__hal_ga5cc9503ace8d3944b2fe575e29acd4c9}{}\label{group__memory__hal_ga5cc9503ace8d3944b2fe575e29acd4c9}
+
+\begin{DoxyCompactList}\small\item\em Halt the processor. \end{DoxyCompactList}\item 
+void \hyperlink{group__memory__hal_gaeacbe2fb33e6a0df47defab0a6643fef}{Wipe\+Memory\+Type\+From\+Table} (\hyperlink{structManagedPageTable}{Managed\+Page\+Table} $\ast$page\+Table, Memory\+Allocation\+Type type)
+\begin{DoxyCompactList}\small\item\em Wipe all allocations of the specified type from the specified page table. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Macro Definition Documentation}
+\index{Memory Management@{Memory Management}!P\+A\+G\+E\+\_\+\+S\+I\+ZE@{P\+A\+G\+E\+\_\+\+S\+I\+ZE}}
+\index{P\+A\+G\+E\+\_\+\+S\+I\+ZE@{P\+A\+G\+E\+\_\+\+S\+I\+ZE}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{P\+A\+G\+E\+\_\+\+S\+I\+ZE}{PAGE\_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define P\+A\+G\+E\+\_\+\+S\+I\+ZE~KiB(4)}\hypertarget{group__memory__hal_ga7d467c1d283fdfa1f2081ba1e0d01b6e}{}\label{group__memory__hal_ga7d467c1d283fdfa1f2081ba1e0d01b6e}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+The default page size. \index{Memory Management@{Memory Management}!T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE@{T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}}
+\index{T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE@{T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE}{THREAD\_LOCAL\_STORAGE\_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define T\+H\+R\+E\+A\+D\+\_\+\+L\+O\+C\+A\+L\+\_\+\+S\+T\+O\+R\+A\+G\+E\+\_\+\+S\+I\+ZE~KiB(32)}\hypertarget{group__memory__hal_ga19026599ca53eb83da5f02be3604f4fc}{}\label{group__memory__hal_ga19026599ca53eb83da5f02be3604f4fc}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+The size of the T\+LS. 
+
+\subsection{Typedef Documentation}
+\index{Memory Management@{Memory Management}!Forked\+Memory\+Data@{Forked\+Memory\+Data}}
+\index{Forked\+Memory\+Data@{Forked\+Memory\+Data}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Forked\+Memory\+Data}{ForkedMemoryData}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Forked\+Memory\+Data}  {\bf Forked\+Memory\+Data}}\hypertarget{group__memory__hal_gafcbcf8480ddd2494d17d17f196a27ca6}{}\label{group__memory__hal_gafcbcf8480ddd2494d17d17f196a27ca6}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+Describes a forked memory allocation. \index{Memory Management@{Memory Management}!Managed\+Page\+Table@{Managed\+Page\+Table}}
+\index{Managed\+Page\+Table@{Managed\+Page\+Table}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Managed\+Page\+Table}{ManagedPageTable}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Managed\+Page\+Table}  {\bf Managed\+Page\+Table}}\hypertarget{group__memory__hal_gad2397dbb839987d0753da093f7549f66}{}\label{group__memory__hal_gad2397dbb839987d0753da093f7549f66}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+Describes a hardware independent page table \index{Memory Management@{Memory Management}!Memory\+Allocations\+Map@{Memory\+Allocations\+Map}}
+\index{Memory\+Allocations\+Map@{Memory\+Allocations\+Map}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Memory\+Allocations\+Map}{MemoryAllocationsMap}}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf Memory\+Allocations\+Map}  {\bf Memory\+Allocations\+Map}}\hypertarget{group__memory__hal_ga91c66252a28d011008224fc4dc01885e}{}\label{group__memory__hal_ga91c66252a28d011008224fc4dc01885e}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+Describes a memory allocation in an address space. 
+
+\subsection{Function Documentation}
+\index{Memory Management@{Memory Management}!Allocate\+A\+P\+L\+S\+Memory@{Allocate\+A\+P\+L\+S\+Memory}}
+\index{Allocate\+A\+P\+L\+S\+Memory@{Allocate\+A\+P\+L\+S\+Memory}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Allocate\+A\+P\+L\+S\+Memory(uint64\+\_\+t size)}{AllocateAPLSMemory(uint64\_t size)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Allocate\+A\+P\+L\+S\+Memory (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gad4d70c510c0ceaaba7f3019a6639adf7}{}\label{group__memory__hal_gad4d70c510c0ceaaba7f3019a6639adf7}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Allocate Application Processor Local Storage. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em size} & The size of the allocation.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+N\+U\+LL on error, The virtual address of the allocation on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Allocate\+Physical\+Page@{Allocate\+Physical\+Page}}
+\index{Allocate\+Physical\+Page@{Allocate\+Physical\+Page}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Allocate\+Physical\+Page(void)}{AllocatePhysicalPage(void)}}]{\setlength{\rightskip}{0pt plus 5cm}uint64\+\_\+t Allocate\+Physical\+Page (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gac1f7c0b6cfea48c7e5a85650b859d4cf}{}\label{group__memory__hal_gac1f7c0b6cfea48c7e5a85650b859d4cf}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Allocate a physical page. 
+
+\begin{DoxyReturn}{Returns}
+0 on error, The physical address of the allocation on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Allocate\+Physical\+Page\+Cont@{Allocate\+Physical\+Page\+Cont}}
+\index{Allocate\+Physical\+Page\+Cont@{Allocate\+Physical\+Page\+Cont}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Allocate\+Physical\+Page\+Cont(int page\+Count)}{AllocatePhysicalPageCont(int pageCount)}}]{\setlength{\rightskip}{0pt plus 5cm}uint64\+\_\+t Allocate\+Physical\+Page\+Cont (
+\begin{DoxyParamCaption}
+\item[{int}]{page\+Count}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga4252d21415bbdba613651dd74bf5ff7d}{}\label{group__memory__hal_ga4252d21415bbdba613651dd74bf5ff7d}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Allocate a continuous set of physical pages. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Count} & The page count\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on error, The physical address of the allocation on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Change\+Page\+Flags@{Change\+Page\+Flags}}
+\index{Change\+Page\+Flags@{Change\+Page\+Flags}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Change\+Page\+Flags(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t virtual\+Address, Caching\+Mode cache\+Mode, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)}{ChangePageFlags(ManagedPageTable *pageTable, uint64\_t virtualAddress, CachingMode cacheMode, MemoryAllocationType allocType, MemoryAllocationFlags flags)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Change\+Page\+Flags (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t}]{virtual\+Address, }
+\item[{Caching\+Mode}]{cache\+Mode, }
+\item[{Memory\+Allocation\+Type}]{alloc\+Type, }
+\item[{Memory\+Allocation\+Flags}]{flags}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga5b899ceffe056eb4accb4ce051a35c3c}{}\label{group__memory__hal_ga5b899ceffe056eb4accb4ce051a35c3c}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Change the flags on an existing page mapping. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address \\
+\hline
+\mbox{\tt in}  & {\em cache\+Mode} & The cache mode \\
+\hline
+\mbox{\tt in}  & {\em alloc\+Type} & The allocate type \\
+\hline
+\mbox{\tt in}  & {\em flags} & The flags\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Check\+Address\+Permissions@{Check\+Address\+Permissions}}
+\index{Check\+Address\+Permissions@{Check\+Address\+Permissions}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Check\+Address\+Permissions(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t addr, Caching\+Mode $\ast$cache\+Mode, Memory\+Allocation\+Flags $\ast$flags)}{CheckAddressPermissions(ManagedPageTable *pageTable, uint64\_t addr, CachingMode *cacheMode, MemoryAllocationFlags *flags)}}]{\setlength{\rightskip}{0pt plus 5cm}void Check\+Address\+Permissions (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t}]{addr, }
+\item[{Caching\+Mode $\ast$}]{cache\+Mode, }
+\item[{Memory\+Allocation\+Flags $\ast$}]{flags}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga3c4c23cb2e658fa0213fda1d71a8fa39}{}\label{group__memory__hal_ga3c4c23cb2e658fa0213fda1d71a8fa39}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Retrieve the access permissions on a mapping. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em addr} & The address \\
+\hline
+\mbox{\tt out}  & {\em cache\+Mode} & The cache mode \\
+\hline
+\mbox{\tt out}  & {\em flags} & The flags \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Create\+Virtual\+Memory\+Instance@{Create\+Virtual\+Memory\+Instance}}
+\index{Create\+Virtual\+Memory\+Instance@{Create\+Virtual\+Memory\+Instance}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Create\+Virtual\+Memory\+Instance(\+Managed\+Page\+Table $\ast$inst)}{CreateVirtualMemoryInstance(ManagedPageTable *inst)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Create\+Virtual\+Memory\+Instance (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{inst}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gadbb8e6aa6429764d392f2a7f21f862b9}{}\label{group__memory__hal_gadbb8e6aa6429764d392f2a7f21f862b9}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Creates a virtual memory instance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em inst} & The instance to initialize\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Find\+Free\+Virtual\+Address@{Find\+Free\+Virtual\+Address}}
+\index{Find\+Free\+Virtual\+Address@{Find\+Free\+Virtual\+Address}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Find\+Free\+Virtual\+Address(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t $\ast$virtual\+Address, size\+\_\+t size, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)}{FindFreeVirtualAddress(ManagedPageTable *pageTable, uint64\_t *virtualAddress, size\_t size, MemoryAllocationType allocType, MemoryAllocationFlags flags)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Find\+Free\+Virtual\+Address (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t $\ast$}]{virtual\+Address, }
+\item[{size\+\_\+t}]{size, }
+\item[{Memory\+Allocation\+Type}]{alloc\+Type, }
+\item[{Memory\+Allocation\+Flags}]{flags}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga056bb78e5beccb23ea293fe43962393b}{}\label{group__memory__hal_ga056bb78e5beccb23ea293fe43962393b}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Find a free virtual address. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address \\
+\hline
+\mbox{\tt in}  & {\em size} & The size \\
+\hline
+\mbox{\tt in}  & {\em alloc\+Type} & The allocate type \\
+\hline
+\mbox{\tt in}  & {\em flags} & The flags\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Fork\+Table@{Fork\+Table}}
+\index{Fork\+Table@{Fork\+Table}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Fork\+Table(\+Managed\+Page\+Table $\ast$src, Managed\+Page\+Table $\ast$dst)}{ForkTable(ManagedPageTable *src, ManagedPageTable *dst)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Fork\+Table (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{src, }
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{dst}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga55792beaa12c8a01cb7a958f25298a4a}{}\label{group__memory__hal_ga55792beaa12c8a01cb7a958f25298a4a}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Fork the src page table into the dst table. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em src} & The source \\
+\hline
+{\em dst} & The destination\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Free\+Physical\+Page@{Free\+Physical\+Page}}
+\index{Free\+Physical\+Page@{Free\+Physical\+Page}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Free\+Physical\+Page(uint64\+\_\+t ptr)}{FreePhysicalPage(uint64\_t ptr)}}]{\setlength{\rightskip}{0pt plus 5cm}void Free\+Physical\+Page (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{ptr}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga7a16691da55bbba1a24046a39691feb6}{}\label{group__memory__hal_ga7a16691da55bbba1a24046a39691feb6}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Free a previously allocated page. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em ptr} & The physical address of the page to free. \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Free\+Physical\+Page\+Cont@{Free\+Physical\+Page\+Cont}}
+\index{Free\+Physical\+Page\+Cont@{Free\+Physical\+Page\+Cont}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Free\+Physical\+Page\+Cont(uint64\+\_\+t ptr, int page\+Count)}{FreePhysicalPageCont(uint64\_t ptr, int pageCount)}}]{\setlength{\rightskip}{0pt plus 5cm}void Free\+Physical\+Page\+Cont (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{ptr, }
+\item[{int}]{page\+Count}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gaa3d1107b7812b8e5e931d39d162d1e31}{}\label{group__memory__hal_gaa3d1107b7812b8e5e931d39d162d1e31}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Free a continuous set of previously allocated pages. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em ptr} & The physical address of the page to start freeing from \\
+\hline
+\mbox{\tt in}  & {\em page\+Count} & The page count \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Free\+Virtual\+Memory\+Instance@{Free\+Virtual\+Memory\+Instance}}
+\index{Free\+Virtual\+Memory\+Instance@{Free\+Virtual\+Memory\+Instance}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Free\+Virtual\+Memory\+Instance(\+Managed\+Page\+Table $\ast$inst)}{FreeVirtualMemoryInstance(ManagedPageTable *inst)}}]{\setlength{\rightskip}{0pt plus 5cm}void Free\+Virtual\+Memory\+Instance (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{inst}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gad6748d1395a14d4f9c85dacad9f69c57}{}\label{group__memory__hal_gad6748d1395a14d4f9c85dacad9f69c57}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Free a virtual memory instance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em inst} & The instance \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Get\+Active\+Virtual\+Memory\+Instance@{Get\+Active\+Virtual\+Memory\+Instance}}
+\index{Get\+Active\+Virtual\+Memory\+Instance@{Get\+Active\+Virtual\+Memory\+Instance}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Active\+Virtual\+Memory\+Instance(void)}{GetActiveVirtualMemoryInstance(void)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Managed\+Page\+Table}$\ast$ Get\+Active\+Virtual\+Memory\+Instance (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga16a884ac1d3f8592c51696e598c3f388}{}\label{group__memory__hal_ga16a884ac1d3f8592c51696e598c3f388}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the active virtual memory instance. 
+
+\begin{DoxyReturn}{Returns}
+The active virtual memory instance. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Core\+Count@{Get\+Core\+Count}}
+\index{Get\+Core\+Count@{Get\+Core\+Count}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Core\+Count(void)}{GetCoreCount(void)}}]{\setlength{\rightskip}{0pt plus 5cm}int Get\+Core\+Count (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga3022d9b7eccca6a47a59574f3504eefa}{}\label{group__memory__hal_ga3022d9b7eccca6a47a59574f3504eefa}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the core count. 
+
+\begin{DoxyReturn}{Returns}
+The core count. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Memory\+Allocation\+Type\+Base@{Get\+Memory\+Allocation\+Type\+Base}}
+\index{Get\+Memory\+Allocation\+Type\+Base@{Get\+Memory\+Allocation\+Type\+Base}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Memory\+Allocation\+Type\+Base(\+Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags sec\+\_\+perms)}{GetMemoryAllocationTypeBase(MemoryAllocationType allocType, MemoryAllocationFlags sec\_perms)}}]{\setlength{\rightskip}{0pt plus 5cm}uint64\+\_\+t Get\+Memory\+Allocation\+Type\+Base (
+\begin{DoxyParamCaption}
+\item[{Memory\+Allocation\+Type}]{alloc\+Type, }
+\item[{Memory\+Allocation\+Flags}]{sec\+\_\+perms}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga3ac119747e32d0a3d91c6a97d9e25c09}{}\label{group__memory__hal_ga3ac119747e32d0a3d91c6a97d9e25c09}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the low extent of the given memory allocation type in virtual memory. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em alloc\+Type} & The allocate type \\
+\hline
+\mbox{\tt in}  & {\em sec\+\_\+perms} & The security permissions\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The memory allocation type base address. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Memory\+Allocation\+Type\+Top@{Get\+Memory\+Allocation\+Type\+Top}}
+\index{Get\+Memory\+Allocation\+Type\+Top@{Get\+Memory\+Allocation\+Type\+Top}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Memory\+Allocation\+Type\+Top(\+Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags sec\+\_\+perms)}{GetMemoryAllocationTypeTop(MemoryAllocationType allocType, MemoryAllocationFlags sec\_perms)}}]{\setlength{\rightskip}{0pt plus 5cm}uint64\+\_\+t Get\+Memory\+Allocation\+Type\+Top (
+\begin{DoxyParamCaption}
+\item[{Memory\+Allocation\+Type}]{alloc\+Type, }
+\item[{Memory\+Allocation\+Flags}]{sec\+\_\+perms}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gac722f82a0df4747180f3c7b113b3e936}{}\label{group__memory__hal_gac722f82a0df4747180f3c7b113b3e936}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the upper extent of the given memory allocation type in virtual memory. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em alloc\+Type} & The allocate type \\
+\hline
+\mbox{\tt in}  & {\em sec\+\_\+perms} & The security permissions\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The memory allocation type top address. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Physical\+Address@{Get\+Physical\+Address}}
+\index{Get\+Physical\+Address@{Get\+Physical\+Address}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Physical\+Address(void $\ast$virtual\+Address)}{GetPhysicalAddress(void *virtualAddress)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Get\+Physical\+Address (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{virtual\+Address}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga068e21628a7e3cb106bbde7da70c03f0}{}\label{group__memory__hal_ga068e21628a7e3cb106bbde7da70c03f0}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the physical address. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The physical address. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Physical\+Address\+Page\+Table@{Get\+Physical\+Address\+Page\+Table}}
+\index{Get\+Physical\+Address\+Page\+Table@{Get\+Physical\+Address\+Page\+Table}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Physical\+Address\+Page\+Table(\+Managed\+Page\+Table $\ast$src, void $\ast$virtual\+Address)}{GetPhysicalAddressPageTable(ManagedPageTable *src, void *virtualAddress)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Get\+Physical\+Address\+Page\+Table (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{src, }
+\item[{void $\ast$}]{virtual\+Address}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gafe782bc6705018a08927bb39a225850a}{}\label{group__memory__hal_gafe782bc6705018a08927bb39a225850a}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the physical address from a specific page table. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em src} & The page table \\
+\hline
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The physical address from the page table. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Get\+Virtual\+Address@{Get\+Virtual\+Address}}
+\index{Get\+Virtual\+Address@{Get\+Virtual\+Address}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Get\+Virtual\+Address(\+Caching\+Mode c, void $\ast$physical\+Address)}{GetVirtualAddress(CachingMode c, void *physicalAddress)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Get\+Virtual\+Address (
+\begin{DoxyParamCaption}
+\item[{Caching\+Mode}]{c, }
+\item[{void $\ast$}]{physical\+Address}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gadb5f3831d980612868dbb74756f07877}{}\label{group__memory__hal_gadb5f3831d980612868dbb74756f07877}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Gets the virtual address. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em c} & The caching mode to translate from \\
+\hline
+\mbox{\tt in}  & {\em physical\+Address} & The physical address\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The virtual address. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Handle\+Page\+Fault@{Handle\+Page\+Fault}}
+\index{Handle\+Page\+Fault@{Handle\+Page\+Fault}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Handle\+Page\+Fault(uint64\+\_\+t virtual\+Address, uint64\+\_\+t instruction\+\_\+pointer, Memory\+Allocation\+Flags error)}{HandlePageFault(uint64\_t virtualAddress, uint64\_t instruction\_pointer, MemoryAllocationFlags error)}}]{\setlength{\rightskip}{0pt plus 5cm}void Handle\+Page\+Fault (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{virtual\+Address, }
+\item[{uint64\+\_\+t}]{instruction\+\_\+pointer, }
+\item[{Memory\+Allocation\+Flags}]{error}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga86c40810b55a13e73f8d19a1eb8891e8}{}\label{group__memory__hal_ga86c40810b55a13e73f8d19a1eb8891e8}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Handle a page fault. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address \\
+\hline
+\mbox{\tt in}  & {\em instruction\+\_\+pointer} & The instruction pointer \\
+\hline
+\mbox{\tt in}  & {\em error} & The error \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Map\+Page@{Map\+Page}}
+\index{Map\+Page@{Map\+Page}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Map\+Page(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t physical\+Address, uint64\+\_\+t virtual\+Address, size\+\_\+t size, Caching\+Mode cache\+Mode, Memory\+Allocation\+Type alloc\+Type, Memory\+Allocation\+Flags flags)}{MapPage(ManagedPageTable *pageTable, uint64\_t physicalAddress, uint64\_t virtualAddress, size\_t size, CachingMode cacheMode, MemoryAllocationType allocType, MemoryAllocationFlags flags)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Map\+Page (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t}]{physical\+Address, }
+\item[{uint64\+\_\+t}]{virtual\+Address, }
+\item[{size\+\_\+t}]{size, }
+\item[{Caching\+Mode}]{cache\+Mode, }
+\item[{Memory\+Allocation\+Type}]{alloc\+Type, }
+\item[{Memory\+Allocation\+Flags}]{flags}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gaf12f8fa8069d8c3c8c6d3662743965ab}{}\label{group__memory__hal_gaf12f8fa8069d8c3c8c6d3662743965ab}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Map a page into the page table. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em physical\+Address} & The physical address \\
+\hline
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address \\
+\hline
+\mbox{\tt in}  & {\em size} & The size \\
+\hline
+\mbox{\tt in}  & {\em cache\+Mode} & The cache mode \\
+\hline
+\mbox{\tt in}  & {\em alloc\+Type} & The allocate type \\
+\hline
+\mbox{\tt in}  & {\em flags} & The flags\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Set\+Active\+Virtual\+Memory\+Instance@{Set\+Active\+Virtual\+Memory\+Instance}}
+\index{Set\+Active\+Virtual\+Memory\+Instance@{Set\+Active\+Virtual\+Memory\+Instance}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Set\+Active\+Virtual\+Memory\+Instance(\+Managed\+Page\+Table $\ast$inst)}{SetActiveVirtualMemoryInstance(ManagedPageTable *inst)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Managed\+Page\+Table}$\ast$ Set\+Active\+Virtual\+Memory\+Instance (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{inst}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga0b3ca6ba77c946090486ed7623b02f3a}{}\label{group__memory__hal_ga0b3ca6ba77c946090486ed7623b02f3a}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Sets the active virtual memory instance. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em inst} & The instance\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Return the previously active virtual memory instance. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Setup\+Temporary\+Write\+Map@{Setup\+Temporary\+Write\+Map}}
+\index{Setup\+Temporary\+Write\+Map@{Setup\+Temporary\+Write\+Map}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Setup\+Temporary\+Write\+Map(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t addr, size\+\_\+t size)}{SetupTemporaryWriteMap(ManagedPageTable *pageTable, uint64\_t addr, size\_t size)}}]{\setlength{\rightskip}{0pt plus 5cm}uint64\+\_\+t Setup\+Temporary\+Write\+Map (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t}]{addr, }
+\item[{size\+\_\+t}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga38d7d120822b48d7c31a7e52969aeecb}{}\label{group__memory__hal_ga38d7d120822b48d7c31a7e52969aeecb}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Setup a temporary writeable mapping of the virtual address in the specified page table into the current space. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em addr} & The address \\
+\hline
+\mbox{\tt in}  & {\em size} & The size\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The virtual address of the mapping in the current address space. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Uninstall\+Temporary\+Write\+Map@{Uninstall\+Temporary\+Write\+Map}}
+\index{Uninstall\+Temporary\+Write\+Map@{Uninstall\+Temporary\+Write\+Map}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Uninstall\+Temporary\+Write\+Map(uint64\+\_\+t loc, size\+\_\+t size)}{UninstallTemporaryWriteMap(uint64\_t loc, size\_t size)}}]{\setlength{\rightskip}{0pt plus 5cm}void Uninstall\+Temporary\+Write\+Map (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{loc, }
+\item[{size\+\_\+t}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga15cb64d29c2d42754d474b5b99c57f5a}{}\label{group__memory__hal_ga15cb64d29c2d42754d474b5b99c57f5a}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Uninstall the temporary write mapping setup by \hyperlink{group__memory__hal_ga38d7d120822b48d7c31a7e52969aeecb}{Setup\+Temporary\+Write\+Map()} 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em loc} & The location \\
+\hline
+\mbox{\tt in}  & {\em size} & The size \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Unmap\+Page@{Unmap\+Page}}
+\index{Unmap\+Page@{Unmap\+Page}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Unmap\+Page(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t virtual\+Address, size\+\_\+t size)}{UnmapPage(ManagedPageTable *pageTable, uint64\_t virtualAddress, size\_t size)}}]{\setlength{\rightskip}{0pt plus 5cm}Memory\+Allocation\+Errors Unmap\+Page (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t}]{virtual\+Address, }
+\item[{size\+\_\+t}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gaeadb7160dc7c72db80b7d2e63525dec5}{}\label{group__memory__hal_gaeadb7160dc7c72db80b7d2e63525dec5}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Unmap an existing page mapping. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em virtual\+Address} & The virtual address \\
+\hline
+\mbox{\tt in}  & {\em size} & The size\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error code on failure, Memory\+Allocation\+Errors\+\_\+\+None on success. 
+\end{DoxyReturn}
+\index{Memory Management@{Memory Management}!Wipe\+Memory\+Type\+From\+Table@{Wipe\+Memory\+Type\+From\+Table}}
+\index{Wipe\+Memory\+Type\+From\+Table@{Wipe\+Memory\+Type\+From\+Table}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Wipe\+Memory\+Type\+From\+Table(\+Managed\+Page\+Table $\ast$page\+Table, Memory\+Allocation\+Type type)}{WipeMemoryTypeFromTable(ManagedPageTable *pageTable, MemoryAllocationType type)}}]{\setlength{\rightskip}{0pt plus 5cm}void Wipe\+Memory\+Type\+From\+Table (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{Memory\+Allocation\+Type}]{type}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gaeacbe2fb33e6a0df47defab0a6643fef}{}\label{group__memory__hal_gaeacbe2fb33e6a0df47defab0a6643fef}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Wipe all allocations of the specified type from the specified page table. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em type} & The type \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Write\+Value\+At\+Address32@{Write\+Value\+At\+Address32}}
+\index{Write\+Value\+At\+Address32@{Write\+Value\+At\+Address32}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Write\+Value\+At\+Address32(\+Managed\+Page\+Table $\ast$page\+Table, uint32\+\_\+t $\ast$addr, uint32\+\_\+t val)}{WriteValueAtAddress32(ManagedPageTable *pageTable, uint32\_t *addr, uint32\_t val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Write\+Value\+At\+Address32 (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint32\+\_\+t $\ast$}]{addr, }
+\item[{uint32\+\_\+t}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_gac735f7816a3f90773251fee78bb14e14}{}\label{group__memory__hal_gac735f7816a3f90773251fee78bb14e14}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Writes a 32-\/bit value at the specified address in the specified page table. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em addr} & The address \\
+\hline
+\mbox{\tt in}  & {\em val} & The value \\
+\hline
+\end{DoxyParams}
+\index{Memory Management@{Memory Management}!Write\+Value\+At\+Address64@{Write\+Value\+At\+Address64}}
+\index{Write\+Value\+At\+Address64@{Write\+Value\+At\+Address64}!Memory Management@{Memory Management}}
+\subsubsection[{\texorpdfstring{Write\+Value\+At\+Address64(\+Managed\+Page\+Table $\ast$page\+Table, uint64\+\_\+t $\ast$addr, uint64\+\_\+t val)}{WriteValueAtAddress64(ManagedPageTable *pageTable, uint64\_t *addr, uint64\_t val)}}]{\setlength{\rightskip}{0pt plus 5cm}void Write\+Value\+At\+Address64 (
+\begin{DoxyParamCaption}
+\item[{{\bf Managed\+Page\+Table} $\ast$}]{page\+Table, }
+\item[{uint64\+\_\+t $\ast$}]{addr, }
+\item[{uint64\+\_\+t}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{group__memory__hal_ga3bd4c5b1c1c001e27aa3a26c735c64ca}{}\label{group__memory__hal_ga3bd4c5b1c1c001e27aa3a26c735c64ca}
+
+
+{\ttfamily \#include $<$target/hal/memory.\+h$>$}
+
+
+
+Writes a 64-\/bit value at the specified address in the specified page table. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em page\+Table} & The page table \\
+\hline
+\mbox{\tt in}  & {\em addr} & The address \\
+\hline
+\mbox{\tt in}  & {\em val} & The value \\
+\hline
+\end{DoxyParams}

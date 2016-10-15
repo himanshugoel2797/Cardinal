@@ -1,0 +1,116 @@
+\hypertarget{group__kmalloc}{}\section{Kernel Memory Allocation}
+\label{group__kmalloc}\index{Kernel Memory Allocation@{Kernel Memory Allocation}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{group__kmalloc_ga63480a95a307ab439fa8d58df704a4ea}{kmalloc\+\_\+init} (void)
+\begin{DoxyCompactList}\small\item\em Initialize the kernel memory allocator. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}{kmalloc} (size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em kernel malloc \end{DoxyCompactList}\item 
+void \hyperlink{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}{kfree} (void $\ast$addr)
+\begin{DoxyCompactList}\small\item\em kernel free \end{DoxyCompactList}\item 
+void \hyperlink{group__kmalloc_ga2e55df57a359c2d24eb9b17f814fec51}{kcompact} ()
+\begin{DoxyCompactList}\small\item\em Compact the kernel memory allocation table. \end{DoxyCompactList}\item 
+void $\ast$ {\bfseries Allocate\+Mapping} (Memory\+Allocation\+Type t, Memory\+Allocation\+Flags flags, size\+\_\+t size)\hypertarget{group__kmalloc_ga79179bdfc6debb042bef75ee2a22379b}{}\label{group__kmalloc_ga79179bdfc6debb042bef75ee2a22379b}
+
+\item 
+void {\bfseries Free\+Mapping} (void $\ast$mem, size\+\_\+t size)\hypertarget{group__kmalloc_ga368fbc2594a88e98201cea587eae41ff}{}\label{group__kmalloc_ga368fbc2594a88e98201cea587eae41ff}
+
+\item 
+void $\ast$ {\bfseries Allocate\+Mapping\+Cont} (Memory\+Allocation\+Type t, Memory\+Allocation\+Flags flags, size\+\_\+t size)\hypertarget{group__kmalloc_gad8725ae2fe0d7278f553394c29e9c676}{}\label{group__kmalloc_gad8725ae2fe0d7278f553394c29e9c676}
+
+\item 
+void {\bfseries Free\+Mapping\+Cont} (void $\ast$mem, size\+\_\+t size)\hypertarget{group__kmalloc_gad4a1cc99e14f148bf2d0777a331c3976}{}\label{group__kmalloc_gad4a1cc99e14f148bf2d0777a331c3976}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{Kernel Memory Allocation@{Kernel Memory Allocation}!kcompact@{kcompact}}
+\index{kcompact@{kcompact}!Kernel Memory Allocation@{Kernel Memory Allocation}}
+\subsubsection[{\texorpdfstring{kcompact()}{kcompact()}}]{\setlength{\rightskip}{0pt plus 5cm}void kcompact (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__kmalloc_ga2e55df57a359c2d24eb9b17f814fec51}{}\label{group__kmalloc_ga2e55df57a359c2d24eb9b17f814fec51}
+
+
+{\ttfamily \#include $<$kmalloc/kmalloc.\+h$>$}
+
+
+
+Compact the kernel memory allocation table. 
+
+This shouldn\textquotesingle{}t need to be called from outside \begin{DoxySeeAlso}{See also}
+\hyperlink{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}{kmalloc()}, \hyperlink{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}{kfree()} 
+\end{DoxySeeAlso}
+\index{Kernel Memory Allocation@{Kernel Memory Allocation}!kfree@{kfree}}
+\index{kfree@{kfree}!Kernel Memory Allocation@{Kernel Memory Allocation}}
+\subsubsection[{\texorpdfstring{kfree(void $\ast$addr)}{kfree(void *addr)}}]{\setlength{\rightskip}{0pt plus 5cm}void kfree (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{addr}
+\end{DoxyParamCaption}
+)}\hypertarget{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}{}\label{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}
+
+
+{\ttfamily \#include $<$kmalloc/kmalloc.\+h$>$}
+
+
+
+kernel free 
+
+
+\begin{DoxyParams}{Parameters}
+{\em addr} & The virtual address previously allocated by kmalloc \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}{kmalloc()} 
+\end{DoxySeeAlso}
+\index{Kernel Memory Allocation@{Kernel Memory Allocation}!kmalloc@{kmalloc}}
+\index{kmalloc@{kmalloc}!Kernel Memory Allocation@{Kernel Memory Allocation}}
+\subsubsection[{\texorpdfstring{kmalloc(size\+\_\+t size)}{kmalloc(size\_t size)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ kmalloc (
+\begin{DoxyParamCaption}
+\item[{size\+\_\+t}]{size}
+\end{DoxyParamCaption}
+)}\hypertarget{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}{}\label{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}
+
+
+{\ttfamily \#include $<$kmalloc/kmalloc.\+h$>$}
+
+
+
+kernel malloc 
+
+
+\begin{DoxyParams}{Parameters}
+{\em size} & The size in bytes of the memory to allocate \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The virtual address of the allocated space 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}{kfree()} 
+\end{DoxySeeAlso}
+\index{Kernel Memory Allocation@{Kernel Memory Allocation}!kmalloc\+\_\+init@{kmalloc\+\_\+init}}
+\index{kmalloc\+\_\+init@{kmalloc\+\_\+init}!Kernel Memory Allocation@{Kernel Memory Allocation}}
+\subsubsection[{\texorpdfstring{kmalloc\+\_\+init(void)}{kmalloc\_init(void)}}]{\setlength{\rightskip}{0pt plus 5cm}void kmalloc\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{group__kmalloc_ga63480a95a307ab439fa8d58df704a4ea}{}\label{group__kmalloc_ga63480a95a307ab439fa8d58df704a4ea}
+
+
+{\ttfamily \#include $<$kmalloc/kmalloc.\+h$>$}
+
+
+
+Initialize the kernel memory allocator. 
+
+Requires that the physical memory manager and the virtual memory manager be initialized too \begin{DoxySeeAlso}{See also}
+\hyperlink{group__kmalloc_ga5f52d7c56b7d67dc2f96b2e93dfdc7be}{kmalloc()}, \hyperlink{group__kmalloc_gaa3ff6401026972fc396bda649a01c994}{kfree()} 
+\end{DoxySeeAlso}

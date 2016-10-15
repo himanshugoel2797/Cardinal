@@ -1,0 +1,9 @@
+var searchData=
+[
+  ['raiseinterrupt',['RaiseInterrupt',['../d5/dbb/group__interrupt__man.html#gaa136d4a1f9b2941b2007490f7892e82f',1,'RaiseInterrupt(uint32_t int_no):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#gaa136d4a1f9b2941b2007490f7892e82f',1,'RaiseInterrupt(uint32_t int_no):&#160;interrupt_man.c']]],
+  ['registerinterrupthandler',['RegisterInterruptHandler',['../d5/dbb/group__interrupt__man.html#gad3dd8be4c4822d7638fffb07a622e9d3',1,'RegisterInterruptHandler(uint32_t int_no, InterruptHandler handler):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#gad3dd8be4c4822d7638fffb07a622e9d3',1,'RegisterInterruptHandler(uint32_t int_no, InterruptHandler handler):&#160;interrupt_man.c']]],
+  ['removeinterrupthandler',['RemoveInterruptHandler',['../d5/dbb/group__interrupt__man.html#ga54064af76219852653d32f909fdaefa1',1,'RemoveInterruptHandler(uint32_t id):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#ga54064af76219852653d32f909fdaefa1',1,'RemoveInterruptHandler(uint32_t id):&#160;interrupt_man.c']]],
+  ['requestinterruptvectorblock',['RequestInterruptVectorBlock',['../d5/dbb/group__interrupt__man.html#ga3cf4616b6e880a89e4bff8ce5f87963c',1,'RequestInterruptVectorBlock(uint32_t vectorCount):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#ga3cf4616b6e880a89e4bff8ce5f87963c',1,'RequestInterruptVectorBlock(uint32_t vectorCount):&#160;interrupt_man.c']]],
+  ['resetpreemption',['ResetPreemption',['../d6/d5a/group__threading.html#gab52aed09194cc102f20c88258e997b87',1,'ResetPreemption(void):&#160;thread.c'],['../d6/d5a/group__threading.html#gab52aed09194cc102f20c88258e997b87',1,'ResetPreemption(void):&#160;thread.c']]],
+  ['restorefpustate',['RestoreFPUState',['../d6/d5a/group__threading.html#ga5cf0bfd67b6889da19a7af46cd4d7c82',1,'RestoreFPUState(void *dst):&#160;fpu.c'],['../d6/d5a/group__threading.html#ga5cf0bfd67b6889da19a7af46cd4d7c82',1,'RestoreFPUState(void *source):&#160;fpu.c']]]
+];

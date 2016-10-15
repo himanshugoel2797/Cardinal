@@ -1,0 +1,22 @@
+\hypertarget{structFileHandlers}{}\section{File\+Handlers Struct Reference}
+\label{structFileHandlers}\index{File\+Handlers@{File\+Handlers}}
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+uint64\+\_\+t($\ast$ {\bfseries open} )(\hyperlink{structFileSystemObject}{File\+System\+Object} $\ast$handlers, const char $\ast$file, int flags, int mode)\hypertarget{structFileHandlers_ace75f4785056149290e384e116e1d1b7}{}\label{structFileHandlers_ace75f4785056149290e384e116e1d1b7}
+
+\item 
+int($\ast$ {\bfseries close} )(\hyperlink{structFileSystemObject}{File\+System\+Object} $\ast$handlers, uint64\+\_\+t fd)\hypertarget{structFileHandlers_a5d08b1252e8f3428181989c2b3a272f7}{}\label{structFileHandlers_a5d08b1252e8f3428181989c2b3a272f7}
+
+\item 
+int($\ast$ {\bfseries read} )(\hyperlink{structFileSystemObject}{File\+System\+Object} $\ast$handlers, uint64\+\_\+t fd, void $\ast$buf, int64\+\_\+t offset, uint64\+\_\+t whence, size\+\_\+t cnt)\hypertarget{structFileHandlers_aa5d17c7742c2216783e445f29389ff31}{}\label{structFileHandlers_aa5d17c7742c2216783e445f29389ff31}
+
+\item 
+int($\ast$ {\bfseries write} )(\hyperlink{structFileSystemObject}{File\+System\+Object} $\ast$handlers, uint64\+\_\+t fd, void $\ast$buf, int64\+\_\+t offset, uint64\+\_\+t whence, size\+\_\+t cnt)\hypertarget{structFileHandlers_a8940db20920d98067acfecc072f50887}{}\label{structFileHandlers_a8940db20920d98067acfecc072f50887}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+libs/libcserver/include/mount\+\_\+db.\+h\end{DoxyCompactItemize}

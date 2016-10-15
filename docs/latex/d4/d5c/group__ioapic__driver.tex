@@ -1,0 +1,98 @@
+\hypertarget{group__ioapic__driver}{}\section{IO A\+P\+IC driver}
+\label{group__ioapic__driver}\index{I\+O A\+P\+I\+C driver@{I\+O A\+P\+I\+C driver}}
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structIOAPIC__Desc}{I\+O\+A\+P\+I\+C\+\_\+\+Desc}
+\item 
+struct \hyperlink{structIOAPIC__InterruptMapEntry}{I\+O\+A\+P\+I\+C\+\_\+\+Interrupt\+Map\+Entry}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries M\+A\+X\+\_\+\+I\+O\+A\+P\+I\+C\+\_\+\+C\+O\+U\+NT}~128\hypertarget{group__ioapic__driver_gaae56740375e9882b1757f0b2a39009bb}{}\label{group__ioapic__driver_gaae56740375e9882b1757f0b2a39009bb}
+
+\item 
+\#define {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+P\+I\+N\+\_\+\+C\+O\+U\+NT}~24\hypertarget{group__ioapic__driver_ga082123e6ffce76dbda0b5e88929c8b57}{}\label{group__ioapic__driver_ga082123e6ffce76dbda0b5e88929c8b57}
+
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+uint8\+\_\+t {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+Initialize} (uint64\+\_\+t base\+Addr, uint32\+\_\+t global\+\_\+int\+\_\+base)\hypertarget{group__ioapic__driver_gaf4474a38de81efadf90a3a5dcc6f8c36}{}\label{group__ioapic__driver_gaf4474a38de81efadf90a3a5dcc6f8c36}
+
+\item 
+void {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+Map\+I\+RQ} (uint8\+\_\+t global\+\_\+irq, uint8\+\_\+t apic\+\_\+vector, uint64\+\_\+t apic\+\_\+id, uint8\+\_\+t trigger\+\_\+mode, uint8\+\_\+t polarity, uint8\+\_\+t delivery\+\_\+mode)\hypertarget{group__ioapic__driver_ga5e4d78aa2c907bc93705b28059e6e4a7}{}\label{group__ioapic__driver_ga5e4d78aa2c907bc93705b28059e6e4a7}
+
+\item 
+void {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+Set\+Enable\+Mode} (uint8\+\_\+t vector, bool active)\hypertarget{group__ioapic__driver_gac5221e30605a6c6af53ca229ebf31075}{}\label{group__ioapic__driver_gac5221e30605a6c6af53ca229ebf31075}
+
+\item 
+uint8\+\_\+t {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+Get\+Vector} (uint8\+\_\+t global\+\_\+irq, uint8\+\_\+t $\ast$vec)\hypertarget{group__ioapic__driver_gad157f506506fbfa003f9374d2bc416db}{}\label{group__ioapic__driver_gad157f506506fbfa003f9374d2bc416db}
+
+\item 
+void {\bfseries I\+O\+A\+P\+I\+C\+\_\+\+Virtualize\+All} (void)\hypertarget{group__ioapic__driver_ga8372078d6ae0621377a30d25d52771cb}{}\label{group__ioapic__driver_ga8372078d6ae0621377a30d25d52771cb}
+
+\item 
+uint32\+\_\+t \hyperlink{group__ioapic__driver_gafbbecbb604eb53ebd03c05f38e811215}{I\+O\+A\+P\+I\+C\+\_\+\+Read} (uint32\+\_\+t volatile $\ast$io\+\_\+apic\+\_\+base\+Addr, uint32\+\_\+t index)
+\begin{DoxyCompactList}\small\item\em Read an I\+O\+A\+P\+IC configuration register. \end{DoxyCompactList}\item 
+void \hyperlink{group__ioapic__driver_gadc1df43ab4f7ea0081be5d730261500b}{I\+O\+A\+P\+I\+C\+\_\+\+Write} (uint32\+\_\+t volatile $\ast$io\+\_\+apic\+\_\+base\+Addr, uint32\+\_\+t index, uint32\+\_\+t val)
+\begin{DoxyCompactList}\small\item\em Write an I\+O\+A\+P\+IC configuration register. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{I\+O A\+P\+I\+C driver@{I\+O A\+P\+I\+C driver}!I\+O\+A\+P\+I\+C\+\_\+\+Read@{I\+O\+A\+P\+I\+C\+\_\+\+Read}}
+\index{I\+O\+A\+P\+I\+C\+\_\+\+Read@{I\+O\+A\+P\+I\+C\+\_\+\+Read}!I\+O A\+P\+I\+C driver@{I\+O A\+P\+I\+C driver}}
+\subsubsection[{\texorpdfstring{I\+O\+A\+P\+I\+C\+\_\+\+Read(uint32\+\_\+t volatile $\ast$io\+\_\+apic\+\_\+base\+Addr, uint32\+\_\+t index)}{IOAPIC\_Read(uint32\_t volatile *io\_apic\_baseAddr, uint32\_t index)}}]{\setlength{\rightskip}{0pt plus 5cm}uint32\+\_\+t I\+O\+A\+P\+I\+C\+\_\+\+Read (
+\begin{DoxyParamCaption}
+\item[{uint32\+\_\+t volatile $\ast$}]{io\+\_\+apic\+\_\+base\+Addr, }
+\item[{uint32\+\_\+t}]{index}
+\end{DoxyParamCaption}
+)}\hypertarget{group__ioapic__driver_gafbbecbb604eb53ebd03c05f38e811215}{}\label{group__ioapic__driver_gafbbecbb604eb53ebd03c05f38e811215}
+
+
+{\ttfamily \#include $<$target/x86\+\_\+64/apic/io\+\_\+apic/priv\+\_\+io\+\_\+apic.\+h$>$}
+
+
+
+Read an I\+O\+A\+P\+IC configuration register. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em io\+\_\+apic\+\_\+base\+Addr} & the base address of the IO A\+P\+IC M\+M\+IO space \\
+\hline
+{\em index} & the register index to read \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the value of the register 
+\end{DoxyReturn}
+\index{I\+O A\+P\+I\+C driver@{I\+O A\+P\+I\+C driver}!I\+O\+A\+P\+I\+C\+\_\+\+Write@{I\+O\+A\+P\+I\+C\+\_\+\+Write}}
+\index{I\+O\+A\+P\+I\+C\+\_\+\+Write@{I\+O\+A\+P\+I\+C\+\_\+\+Write}!I\+O A\+P\+I\+C driver@{I\+O A\+P\+I\+C driver}}
+\subsubsection[{\texorpdfstring{I\+O\+A\+P\+I\+C\+\_\+\+Write(uint32\+\_\+t volatile $\ast$io\+\_\+apic\+\_\+base\+Addr, uint32\+\_\+t index, uint32\+\_\+t val)}{IOAPIC\_Write(uint32\_t volatile *io\_apic\_baseAddr, uint32\_t index, uint32\_t val)}}]{\setlength{\rightskip}{0pt plus 5cm}void I\+O\+A\+P\+I\+C\+\_\+\+Write (
+\begin{DoxyParamCaption}
+\item[{uint32\+\_\+t volatile $\ast$}]{io\+\_\+apic\+\_\+base\+Addr, }
+\item[{uint32\+\_\+t}]{index, }
+\item[{uint32\+\_\+t}]{val}
+\end{DoxyParamCaption}
+)}\hypertarget{group__ioapic__driver_gadc1df43ab4f7ea0081be5d730261500b}{}\label{group__ioapic__driver_gadc1df43ab4f7ea0081be5d730261500b}
+
+
+{\ttfamily \#include $<$target/x86\+\_\+64/apic/io\+\_\+apic/priv\+\_\+io\+\_\+apic.\+h$>$}
+
+
+
+Write an I\+O\+A\+P\+IC configuration register. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em io\+\_\+apic\+\_\+base\+Addr} & the base address of the IO A\+P\+IC M\+M\+IO space \\
+\hline
+{\em index} & the register index to read \\
+\hline
+{\em val} & the register value \\
+\hline
+\end{DoxyParams}

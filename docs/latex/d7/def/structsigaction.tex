@@ -1,0 +1,28 @@
+\hypertarget{structsigaction}{}\section{sigaction Struct Reference}
+\label{structsigaction}\index{sigaction@{sigaction}}
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+union \{\\
+\>void($\ast$ {\bfseries sa\_handler} )(int)\\
+\>void($\ast$ {\bfseries sa\_sigaction} )(int, \hyperlink{structsiginfo__t}{siginfo\_t} $\ast$, void $\ast$)\\
+\}; \hypertarget{structsigaction_a2319684462b5e8c969bf93fcb9cd6516}{}\label{structsigaction_a2319684462b5e8c969bf93fcb9cd6516}
+\\
+
+\end{tabbing}\item 
+\hyperlink{structsigset__t}{sigset\+\_\+t} {\bfseries sa\+\_\+mask}\hypertarget{structsigaction_a684e70081d03d46ce70af097ea5cfd49}{}\label{structsigaction_a684e70081d03d46ce70af097ea5cfd49}
+
+\item 
+int {\bfseries sa\+\_\+flags}\hypertarget{structsigaction_aea0dabe7a03641c8b426521f4406b425}{}\label{structsigaction_aea0dabe7a03641c8b426521f4406b425}
+
+\item 
+void($\ast$ {\bfseries sa\+\_\+restorer} )(void)\hypertarget{structsigaction_a6b046efc50cfff56c5f5c98a6833c560}{}\label{structsigaction_a6b046efc50cfff56c5f5c98a6833c560}
+
+\end{DoxyCompactItemize}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+libs/libc/include/signal.\+h\end{DoxyCompactItemize}
