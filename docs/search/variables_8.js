@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['pagetable',['PageTable',['../d9/db1/structManagedPageTable.html#ae948d913dc35bb1db17cbf5d9eef1421',1,'ManagedPageTable']]],
-  ['physicaladdress',['PhysicalAddress',['../d5/d3a/structMemoryAllocationsMap.html#a27cbacbed8d041f372dd35378a831657',1,'MemoryAllocationsMap::PhysicalAddress()'],['../d0/dd8/structForkedMemoryData.html#aecc1db7b412f9b7f875eca5f73910698',1,'ForkedMemoryData::PhysicalAddress()']]],
-  ['preferredpowermanagementprofile',['PreferredPowerManagementProfile',['../d3/db5/structFADT.html#a0c1c87c1a02fc29df6d8cb41ccc4391f',1,'FADT']]],
-  ['prev',['prev',['../d5/d3a/structMemoryAllocationsMap.html#a980322a4e7c8fe7fa4937618c9cf2747',1,'MemoryAllocationsMap']]]
+  ['len',['len',['../d8/dba/structCardinalMemMap.html#af0aad51893c8ab2668d7b06057bc9c81',1,'CardinalMemMap']]],
+  ['length',['Length',['../d8/d2c/structMemoryMapParams.html#abe8a986a56d2f182924ece2f6c487d4f',1,'MemoryMapParams::Length()'],['../d5/d3a/structMemoryAllocationsMap.html#a4843d10e317bb2ed7f7531cce438e1d8',1,'MemoryAllocationsMap::Length()'],['../d0/dd8/structForkedMemoryData.html#a823cec539fdf5f87899149b6ebc5a46a',1,'ForkedMemoryData::Length()']]],
+  ['letters',['letters',['../d6/de0/group__graphics.html#ga059dc2a923cc926cb19214aa9a8301e3',1,'font.h']]],
+  ['lock',['lock',['../d4/d03/structProcessInformation.html#a876a352e5328aea15bf4948c86edae8b',1,'ProcessInformation::lock()'],['../d0/dd8/structForkedMemoryData.html#a848f24734eb0c95d865ee9f336dad2d1',1,'ForkedMemoryData::Lock()']]]
 ];

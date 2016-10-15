@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['size',['Size',['../d3/de7/group__ipc__api.html#ga233839529bde6260f81fe40f2ddfeaad',1,'Message']]],
-  ['sourcepid',['SourcePID',['../d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85',1,'Message']]]
+  ['name',['Name',['../d4/d03/structProcessInformation.html#a912bea277ead35d49596c85b41741364',1,'ProcessInformation']]],
+  ['netreferencecount',['NetReferenceCount',['../d0/dd8/structForkedMemoryData.html#a80dff83c77a4bc3c06adf45d527a60ca',1,'ForkedMemoryData']]],
+  ['next',['next',['../d5/d3a/structMemoryAllocationsMap.html#ae3d0fd2e1d38f2035c58deec5066e15b',1,'MemoryAllocationsMap']]]
 ];

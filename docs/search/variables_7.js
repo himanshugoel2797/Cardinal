@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['netreferencecount',['NetReferenceCount',['../d0/dd8/structForkedMemoryData.html#a80dff83c77a4bc3c06adf45d527a60ca',1,'ForkedMemoryData']]],
-  ['next',['next',['../d5/d3a/structMemoryAllocationsMap.html#ae3d0fd2e1d38f2035c58deec5066e15b',1,'MemoryAllocationsMap']]]
+  ['id',['ID',['../d4/d03/structProcessInformation.html#a511ba3ee8ee6fb0e118805e75c054039',1,'ProcessInformation']]],
+  ['initrdlength',['InitrdLength',['../dc/d07/structCardinalBootInfo.html#abeb7a1ad04f928a20c15df6795f56c30',1,'CardinalBootInfo']]],
+  ['initrdstartaddress',['InitrdStartAddress',['../dc/d07/structCardinalBootInfo.html#a8524ddffee8fa5c73e084987f8b595e0',1,'CardinalBootInfo']]]
 ];

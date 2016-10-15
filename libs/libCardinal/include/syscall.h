@@ -327,4 +327,14 @@ Syscall6(uint32_t syscall_num,
     return ret_error;
 }
 
+/**
+ * @brief      Gets the errno.
+ *
+ * @return     The errno.
+ */
+static __inline uint64_t
+GetErrno(void) {
+    return Syscall0(Syscall_GetErrno);
+}
+
 #endif

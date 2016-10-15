@@ -3,6 +3,7 @@ var searchData=
   ['raiseinterrupt',['RaiseInterrupt',['../d5/dbb/group__interrupt__man.html#gaa136d4a1f9b2941b2007490f7892e82f',1,'RaiseInterrupt(uint32_t int_no):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#gaa136d4a1f9b2941b2007490f7892e82f',1,'RaiseInterrupt(uint32_t int_no):&#160;interrupt_man.c']]],
   ['readrequest',['ReadRequest',['../d9/dcf/structReadRequest.html',1,'']]],
   ['readresponse',['ReadResponse',['../dc/dbe/structReadResponse.html',1,'']]],
+  ['reference_5fcount',['reference_count',['../d4/d03/structProcessInformation.html#ad755feb5f3610757e98a7f1f9d8acc99',1,'ProcessInformation']]],
   ['registerinterrupthandler',['RegisterInterruptHandler',['../d5/dbb/group__interrupt__man.html#gad3dd8be4c4822d7638fffb07a622e9d3',1,'RegisterInterruptHandler(uint32_t int_no, InterruptHandler handler):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#gad3dd8be4c4822d7638fffb07a622e9d3',1,'RegisterInterruptHandler(uint32_t int_no, InterruptHandler handler):&#160;interrupt_man.c']]],
   ['removeinterrupthandler',['RemoveInterruptHandler',['../d5/dbb/group__interrupt__man.html#ga54064af76219852653d32f909fdaefa1',1,'RemoveInterruptHandler(uint32_t id):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#ga54064af76219852653d32f909fdaefa1',1,'RemoveInterruptHandler(uint32_t id):&#160;interrupt_man.c']]],
   ['removerequest',['RemoveRequest',['../d6/d54/structRemoveRequest.html',1,'']]],

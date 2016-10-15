@@ -10,7 +10,7 @@
 #include "libs/libCardinal/include/signal.h"
 
 /**
- * \defgroup Process Management
+ * \defgroup proc_man Process Management
  * @{
  */
 

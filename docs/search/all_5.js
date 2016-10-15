@@ -18,5 +18,6 @@ var searchData=
   ['elf64_5fsym',['Elf64_Sym',['../de/dae/structElf64__Sym.html',1,'']]],
   ['elf_5fcommonehdr',['Elf_CommonEhdr',['../d3/dc8/structElf__CommonEhdr.html',1,'']]],
   ['elfinformation',['ElfInformation',['../d7/de6/structElfInformation.html',1,'']]],
-  ['errormessage',['ErrorMessage',['../dc/dd8/structErrorMessage.html',1,'']]]
+  ['errormessage',['ErrorMessage',['../dc/dd8/structErrorMessage.html',1,'']]],
+  ['exitstatus',['ExitStatus',['../d4/d03/structProcessInformation.html#a79eae1fc9e6a327d6ecc9b35848d5543',1,'ProcessInformation']]]
 ];

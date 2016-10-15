@@ -6,6 +6,10 @@
 #include "memory.h"
 #include "synchronization.h"
 
+/**
+ * \addtogroup proc_man
+ */
+
 #include "libs/libCardinal/include/ipc.h"
 
 //! The maximum length of a process name.
@@ -38,37 +42,44 @@ typedef enum {
     ProcessPriority_High        //!< High priority.
 } ProcessPriority;
 
+/**
+ * Process Errors.
+ */
 typedef enum {
-    ProcessErrors_None = 0,
-    ProcessErrors_Unknown = (1 << 0),
-    ProcessErrors_UIDNotFound = (1 << 1),
+    ProcessErrors_None = 0,                 //!< No Error.
+    ProcessErrors_Unknown = (1 << 0),       //!< Unknown Error.
+    ProcessErrors_UIDNotFound = (1 << 1),   //!< Invalid UID.
 } ProcessErrors;
 
+/**
+ * Process information/state.
+ */
 typedef struct ProcessInformation {
-    UID                         ID;
-    UID                         UserID;
-    UID                         GroupID;    //GroupIDs are used to control permission levels
+    UID                         ID;                         //!< The Process ID.
+    UID                         UserID;                     //!< The User ID of the owner.
+    UID                         GroupID;                    //!< GroupIDs are used to control permission levels
 
-    char                        Name[MAX_PROCESS_NAME_LEN];
-    ProcessStatus               Status;
-    ManagedPageTable            *PageTable;
-    uint64_t                    HeapBreak;
-    uint32_t                    ExitStatus;
-    List                        *Children;
-    List                        *ThreadIDs;
-    List                        *PendingMessages;
+    char                        Name[MAX_PROCESS_NAME_LEN]; //!< The name of the process.
+    ProcessStatus               Status;                     //!< The status of the process.
+    ManagedPageTable            *PageTable;                 //!< The page table.
+    uint64_t                    HeapBreak;                  //!< The heap break.
+    uint32_t                    ExitStatus;                 //!< The process exit status.
+    List                        *Children;                  //!< The process's children processes.
+    List                        *ThreadIDs;                 //!< The threads that belong to this process.
+    List                        *PendingMessages;           //!< The pending messages.
 
-    void                        *PLS;
-    size_t                      PLSSize;
+    void                        *PLS;                       //!< Process local storage (PLS).
+    size_t                      PLSSize;                    //!< The size of the PLS.
 
-    bool                        HandlingMessage;
-    Spinlock                    MessageLock;
+    bool                        HandlingMessage;            //!< Is the process currently handling a message?
+    Spinlock                    MessageLock;                //!< Message access synchronization.
 
-    struct ProcessInformation   *Parent;
+    struct ProcessInformation   *Parent;                    //!< Pointer to the parent of the process.
 
-    uint32_t                    reference_count;
-    Spinlock                    lock;
+    uint32_t                    reference_count;            //!< Reference count
+    Spinlock                    lock;                       //!< Read/Write synchronization.
 } ProcessInformation;
 
+/**@}*/
 
 #endif
