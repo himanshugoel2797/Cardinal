@@ -15,16 +15,16 @@
 
 
 typedef struct MemoryAllocationsMap {
-    CachingMode     CacheMode;
-    uint64_t    VirtualAddress;
-    uint64_t    PhysicalAddress;
-    uint64_t    Length;
-    MemoryAllocationFlags Flags;
-    MemoryAllocationType  AllocationType;
-    void*    AdditionalData;
+    CachingMode     CacheMode;            //!< The CachingMode used for this allocation.
+    uint64_t    VirtualAddress;           //!< The virtual address of this allocation.
+    uint64_t    PhysicalAddress;          //!< The physical address of this allocation.
+    uint64_t    Length;                   //!< The length, in bytes of this allocation
+    MemoryAllocationFlags Flags;          //!< The MemoryAllocationFlags of this allocation.
+    MemoryAllocationType  AllocationType; //!< The MemoryAllocationType of this allocation.
+    void*    AdditionalData;              //!< Additional data associated with this allocation.
 
-    struct MemoryAllocationsMap *next;
-    struct MemoryAllocationsMap *prev;
+    struct MemoryAllocationsMap *next;    //!< The next allocation in the list.
+    struct MemoryAllocationsMap *prev;    //!< The previous allocation in the list.
 } MemoryAllocationsMap;
 
 typedef struct ForkedMemoryData {
