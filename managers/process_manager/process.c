@@ -29,9 +29,7 @@ ProcessSys_Initialize(void) {
     root->ID = new_proc_uid();  //Root process ID is ROOT_PID
     strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
-    root->Permissions = ProcessPermissions_None;
     root->PageTable = GetActiveVirtualMemoryInstance();
-    root->SyscallFlags = ProcessSyscallFlags_PermissionsLocked;
     root->HeapBreak = 0;
     root->Children = List_Create(CreateSpinlock());
     root->Parent = NULL;
@@ -62,9 +60,7 @@ ForkProcess(ProcessInformation *src,
     ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
     dst->ID = new_proc_uid();
     dst->Status = src->Status;
-    dst->Permissions = src->Permissions;
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
-    dst->SyscallFlags = ProcessSyscallFlags_None;
     dst->HeapBreak = src->HeapBreak;
     dst->PLS = src->PLS;
 
@@ -268,54 +264,6 @@ GetProcessReference(UID           pid,
 
         if(pInfID == pid) {
             if(procInfo != NULL)*procInfo = pInf;
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-char*
-GetCurrentProcessWorkingDirectory(void) {
-    ProcessInformation pinfo;
-    GetProcessInformation(GetCurrentProcessUID(), &pinfo);
-
-    return pinfo.WorkingDirectory;
-}
-
-ProcessErrors
-SetProcessPermissions(UID pid,
-                      ProcessPermissions perms) {
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            pInf->Permissions = perms;
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
-}
-
-ProcessErrors
-SetProcessSyscallStatus(UID pid,
-                        ProcessSyscallFlags flags) {
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
-
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
-
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            pInf->SyscallFlags = flags;
-            UnlockSpinlock(pInf->lock);
             return ProcessErrors_None;
         }
     }

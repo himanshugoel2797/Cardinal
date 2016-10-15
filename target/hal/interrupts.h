@@ -4,6 +4,11 @@
 #include "types.h"
 
 /**
+ * \defgroup interrupt_man Interrupt Management
+ * @{
+ */
+
+/**
  * An interrupt handler.
  */
 typedef void(*InterruptHandler)(uint32_t int_no,
@@ -83,5 +88,7 @@ HandleInterruptNoReturn(uint32_t vector);
  */
 void*
 GetSavedInterruptState(void);
+
+/**@}*/
 
 #endif

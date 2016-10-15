@@ -8,41 +8,40 @@
 
 #include "libs/libCardinal/include/ipc.h"
 
+//! The maximum length of a process name.
 #define MAX_PROCESS_NAME_LEN (256)
+
+//! The maximum number of pending messages.
 #define MAX_PENDING_MESSAGE_CNT 256
+
+//! The size of the Process Local Storage (PLS).
 #define MAX_PLS_SIZE KiB(64)
 
+//! The PID of the root of the process tree.
 #define ROOT_PID 1
 
+/**
+ * The process status.
+ */
 typedef enum {
-    ProcessStatus_Stopped,
-    ProcessStatus_Sleeping,
-    ProcessStatus_Terminating,
-    ProcessStatus_Executing
+    ProcessStatus_Stopped,      //!< The process is stopped.
+    ProcessStatus_Sleeping,     //!< The process is sleeping.
+    ProcessStatus_Terminating,  //!< The process is terminating.
+    ProcessStatus_Executing     //!< The process is executing.
 } ProcessStatus;
 
+/**
+ * The process priority.
+ */
 typedef enum {
-    ProcessPriority_Normal,
-    ProcessPriority_High
+    ProcessPriority_Normal,     //!< Normal priority.
+    ProcessPriority_High        //!< High priority.
 } ProcessPriority;
-
-typedef enum {
-    ProcessPermissions_None = 0,
-    ProcessPermissions_IRQAccess = (1 << 0),
-    ProcessPermissions_SystemPermissions = (1 << 1)
-} ProcessPermissions;
-
-typedef enum {
-    ProcessSyscallFlags_None = 0,
-    ProcessSyscallFlags_PermissionsLocked = (1 << 0),
-    ProcessSyscallFlags_DriverPermissions = (1 << 1),
-} ProcessSyscallFlags;
 
 typedef enum {
     ProcessErrors_None = 0,
     ProcessErrors_Unknown = (1 << 0),
     ProcessErrors_UIDNotFound = (1 << 1),
-    ProcessErrors_DescriptorNotFound = (1 << 2)
 } ProcessErrors;
 
 typedef struct ProcessInformation {
@@ -52,9 +51,7 @@ typedef struct ProcessInformation {
 
     char                        Name[MAX_PROCESS_NAME_LEN];
     ProcessStatus               Status;
-    ProcessPermissions          Permissions;
     ManagedPageTable            *PageTable;
-    ProcessSyscallFlags         SyscallFlags;
     uint64_t                    HeapBreak;
     uint32_t                    ExitStatus;
     List                        *Children;
@@ -67,7 +64,6 @@ typedef struct ProcessInformation {
     bool                        HandlingMessage;
     Spinlock                    MessageLock;
 
-    char                        *WorkingDirectory;
     struct ProcessInformation   *Parent;
 
     uint32_t                    reference_count;

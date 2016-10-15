@@ -33,17 +33,6 @@ void*
 GetProcessLocalStorage(UID pid,
                        size_t minSize);
 
-char*
-GetCurrentProcessWorkingDirectory(void);
-
-ProcessErrors
-SetProcessPermissions(UID pid,
-                      ProcessPermissions perms);
-
-ProcessErrors
-SetProcessSyscallStatus(UID pid,
-                        ProcessSyscallFlags flags);
-
 uint64_t
 PostMessages(Message **msg, uint64_t msg_cnt);
 
