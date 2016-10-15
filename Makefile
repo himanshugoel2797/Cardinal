@@ -37,7 +37,7 @@ CCADMIN=CCadmin
 CC=clang
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -target $(TARGET_TRIPLET) -nostdinc -isystem$(BUILD_DIR)/libs/libc/include -std=c11 -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS) -D_KERNEL_ -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
+CFLAGS= -target $(TARGET_TRIPLET) -nostdinc -isystem$(BUILD_DIR)/libs/libc/include -std=c11 -ffreestanding -Wall -Wextra -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS) -DEXEC_ENTRY_POINT=$(EXEC_ENTRY_POINT) -D_KERNEL_ -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
@@ -99,6 +99,7 @@ build-tests:build
 	mkdir -p ISO
 	mkdir -p ISO/isodir
 	mkdir -p ISO/isodir/boot
+	sh scripts/rebuild-initrd.sh
 	cp "build/$(CONF)/kernel.bin" ISO/isodir/boot/kernel.bin
 	cp "build/$(CONF)/initrd" ISO/isodir/boot/initrd
 	mkdir -p ISO/isodir/boot/grub
@@ -108,7 +109,7 @@ build-tests:build
 # run tests
 test: build-tests
 # Add your pre 'test' code here...
-	qemu-system-x86_64 --enable-kvm -m 4096M -machine q35, -cpu qemu64,+invtsc,+xsave -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=flash.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso"
+	qemu-system-x86_64 --enable-kvm -m 4096M -machine q35, -cpu qemu64,+invtsc,+xsave -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=disk.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso"
 
 install:clean build-tests
 	sudo dd if="ISO/os.iso" of=/dev/$(OUTDISK) && sync

@@ -122,5 +122,7 @@ ImportInitrd(void) {
             fb += b_info.framebuffer_pitch * 8/b_info.framebuffer_bpp;
         }
     }
-	*/
+    */
+
+    	
 }

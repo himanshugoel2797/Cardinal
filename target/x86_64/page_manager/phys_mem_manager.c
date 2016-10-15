@@ -3,7 +3,6 @@
 #include "virt_mem_manager/virt_mem_manager.h"
 #include "bootinfo.h"
 #include "boot_information/boot_information.h"
-#include "elf.h"
 #include "common/common.h"
 
 static uint64_t memory_size,

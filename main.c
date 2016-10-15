@@ -3,7 +3,6 @@
 #include "kmalloc.h"
 #include "managers.h"
 #include "memory.h"
-#include "program.h"
 #include "syscall.h"
 #include "initrd.h"
 #include "synchronization.h"
@@ -28,14 +27,14 @@ kernel_main_init(void) {
 }
 
 void
-load_elf(const char *exec) {
-    void *elf_loc = NULL;
-    uint64_t elf_size = 0;
+load_exec(const char *exec) {
+    void *exec_loc = NULL;
+    uint64_t exec_size = 0;
 
-    Initrd_GetFile(exec, &elf_loc, &elf_size);
-    const char *argv[] = {exec};
+    Initrd_GetFile(exec, &exec_loc, &exec_size);
 
-    LoadAndStartApplication(elf_loc, elf_size, argv, 1, NULL);
+    void* sp = GetThreadUserStack(GetCurrentThreadUID());
+    SwitchToUserMode(EXEC_ENTRY_POINT, (uint64_t)sp);
     while(1);
 }
 
@@ -80,7 +79,7 @@ kernel_main(void) {
     }
 
     if(cpid == 0) {
-        load_elf("sys_init.elf");
+        load_exec("userboot.bin");
     }
 
     FreeThread(GetCurrentThreadUID());

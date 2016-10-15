@@ -57,6 +57,7 @@ typedef struct ThreadInfo {
     uint64_t            current_stack;
     uint64_t            sleep_duration_ns;
     uint64_t            sleep_start_time;
+    uint64_t            Errno;
 
     int32_t             core_affinity;
 
@@ -181,5 +182,16 @@ GetCurrentThreadInfo(void);
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code);
+
+void
+SetThreadIsPaused(UID tid, 
+                  bool paused);
+
+void
+SetThreadErrno(UID tid,
+               uint64_t errno);
+
+uint64_t
+GetThreadErrno(UID tid);
 
 #endif

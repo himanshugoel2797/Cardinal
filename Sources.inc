@@ -1,5 +1,5 @@
 SOURCES=main.o \
-		common/common.o common/sprintf.o common/list.o common/elf.o common/initrd.o common/unicode.o \
+		common/common.o common/sprintf.o common/list.o common/initrd.o common/unicode.o \
 		managers/bootstrap_mem_pool/bootstrap_mem_pool.o \
 		boot_information/multiboot2/parseMultiboot2.o \
 		acpi/acpi_tables.o kmalloc/kmalloc.o kmalloc/block_alloc.o \
@@ -14,6 +14,7 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/memory.o \
 		managers/syscall_manager/syscalls/ipc.o \
 		managers/syscall_manager/syscalls/property.o \
+		managers/syscall_manager/syscalls/errno.o \
 		drivers/usb/controller.o \
 		drivers/usb/uhci/uhci_controller.o \
 		Sibyl/sec_mon.o

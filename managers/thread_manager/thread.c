@@ -96,6 +96,7 @@ PROPERTY_GET_SET(uint64_t, kernel_stack_aligned, 0)
 PROPERTY_GET_SET(uint64_t, current_stack, 0)
 PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
 PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
+PROPERTY_GET_SET(uint64_t, Errno, 0)
 
 PROPERTY_GET_SET(int32_t, core_affinity, 0)
 
@@ -240,6 +241,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, clear_child_tid, regs->clear_tid);
     SET_PROPERTY_VAL(thd, set_child_tid, regs->set_tid);
     SET_PROPERTY_VAL(thd, set_parent_tid, regs->p_tid);
+    SET_PROPERTY_VAL(thd, Errno, 0);
 
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base) - 1;
@@ -598,6 +600,14 @@ FreeThread(UID id) {
 }
 
 void
+SetThreadIsPaused(UID tid, bool paused) {
+    if(paused)
+        SetThreadState(tid, ThreadState_Paused);
+    else
+        SetThreadState(tid, ThreadState_Running);
+}
+
+void
 YieldThread(void) {
     ResetPreemption();
     RaiseInterrupt(preempt_vector);
@@ -824,4 +834,35 @@ int
 GetCoreLoad(int coreNum) {
     if(coreNum > (int)List_Length(cores))return -1;
     return ((CoreInfo*)List_EntryAt(cores, coreNum))->getCoreData();
+}
+
+void
+SetThreadErrno(UID id,
+               uint64_t errno){
+    
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        SET_PROPERTY_VAL(coreState->cur_thread, Errno, errno);
+        return;
+    }
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            SET_PROPERTY_VAL(thd, Errno, errno);
+            return;
+        }
+    }
+}
+
+uint64_t
+GetThreadErrno(UID id){
+    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
+        return GET_PROPERTY_VAL(coreState->cur_thread, Errno);
+    }
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            return GET_PROPERTY_VAL(thd, Errno);
+        }
+    }
+    return -1;
 }

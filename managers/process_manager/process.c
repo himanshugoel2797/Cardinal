@@ -101,7 +101,7 @@ TerminateProcess(UID pid, uint32_t exit_code) {
     LockSpinlock(pinfo->lock);
 
     //Stop this process
-    pinfo->Status = ProcessStatus_Stopped;
+    pinfo->Status = ProcessStatus_Terminating;
     pinfo->ExitStatus = exit_code;
 
     //Remove this process from the list of processes
@@ -116,6 +116,7 @@ TerminateProcess(UID pid, uint32_t exit_code) {
 
     //Remove this process from its parent's list of children
     if(pinfo->Parent != NULL) {
+
         for(uint64_t i = 0; i < List_Length(pinfo->Parent->Children); i++) {
             ProcessInformation *inf = List_EntryAt(pinfo->Parent->Children, i);
 
@@ -124,7 +125,9 @@ TerminateProcess(UID pid, uint32_t exit_code) {
                 break;
             }
         }
-    }
+
+        //This process no longer holds a reference to its parent, reduce reference count
+        AtomicDecrement32(&pinfo->Parent->reference_count);
 
     //Post a message to the parent process with the exit code
     struct SigChild *exit_msg = kmalloc(sizeof(struct SigChild));
@@ -140,8 +143,8 @@ TerminateProcess(UID pid, uint32_t exit_code) {
         exit_msg->exit_code = exit_code;
 
         PostMessages((Message**)&exit_msg, 1);
+        }
     }
-
 
     //Kill all the threads
     for(uint64_t i = 0; i < List_Length(pinfo->ThreadIDs); i++) {

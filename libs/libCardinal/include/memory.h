@@ -66,7 +66,7 @@ struct MemoryMapParams {
 #ifndef _KERNEL_
 
 static __inline uint64_t
-R0_MemoryMap(UID pid,
+R0_Map(UID pid,
              uint64_t phys,
              uint64_t virt,
              uint64_t len,
@@ -84,7 +84,14 @@ R0_MemoryMap(UID pid,
     p.AllocationType = type;
     p.AllocationFlags = flags;
 
-    return Syscall1(Syscall_R0_MemoryMap, &p);
+    return Syscall1(Syscall_R0_Map, &p);
+}
+
+static __inline uint64_t
+R0_Unmap(UID pid,
+         uint64_t virt,
+         uint64_t size) {
+    return Syscall3(Syscall_R0_Unmap, pid, virt, size);
 }
 
 static __inline int
@@ -96,6 +103,9 @@ static __inline uint64_t
 R0_GetPhysicalAddress(uint64_t v_addr) {
     return GetProperty(CardinalProperty_R0_PhysicalAddress, v_addr);
 }
+
+static __inline int
+R0_AllocatePages()
 
 #endif
 

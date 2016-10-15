@@ -1,4 +1,5 @@
 #include "syscalls_all.h"
+#include "priv_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
 #include "libs/libc/include/thread.h"
 
@@ -100,16 +101,22 @@ uint64_t
 Clone_Syscall(uint64_t UNUSED(instruction_pointer),
               uint64_t syscall_num,
               uint64_t *syscall_params) {
-    if(syscall_num != Syscall_Clone)
-        return -ENOSYS;
+    
+    if(syscall_num != Syscall_Clone){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 1)
-        return -EINVAL;
+    if(data->param_num != 1){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     uint64_t *params = (uint64_t*)data->params[0];
 
+    SyscallSetErrno(0);
     return clone((int (*)(void*))params[0],
                  (void*)params[1],
                  params[2],
@@ -123,16 +130,23 @@ uint64_t
 R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
                uint64_t syscall_num,
                uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_Fork)
-        return -ENOSYS;
+    if(syscall_num != Syscall_R0_Fork){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
-        return -EPERM;
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+        SyscallSetErrno(-EPERM);
+        return 0;
+    }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 0)
-        return -EINVAL;
+    if(data->param_num != 0){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
+    SyscallSetErrno(0);
     return ForkCurrentProcess();
 }

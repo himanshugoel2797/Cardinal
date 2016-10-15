@@ -131,6 +131,8 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
                 if(!shmemFree && (allocType == MemoryAllocationType_Shared))
                     UnlockSpinlock(share_data->Lock);
 
+                //TODO Free the memory from the remaining mappings
+
                 m = n;
             }
 

@@ -4,6 +4,14 @@
 #include "types.h"
 
 uint64_t
+SyscallSetErrno(uint64_t errno);
+
+uint64_t
+GetErrno_Syscall(uint64_t instruction_pointer,
+                 uint64_t syscall_num,
+                 uint64_t *syscall_params);
+
+uint64_t
 Nanosleep_Syscall(uint64_t instruction_pointer,
                   uint64_t syscall_num,
                   uint64_t *syscall_params);
@@ -34,11 +42,6 @@ PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t *syscall_params);
 
 uint64_t
-RegisterIPCMessageHandler_Syscall(uint64_t UNUSED(instruction_pointer),
-                                  uint64_t syscall_num,
-                                  uint64_t *syscall_params);
-
-uint64_t
 SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params);
@@ -49,8 +52,13 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t *syscall_params);
 
 uint64_t
-R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
+R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params);
+
+uint64_t
+R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
+                uint64_t syscall_num,
+                uint64_t *syscall_params);
 
 #endif

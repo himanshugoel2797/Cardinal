@@ -1,4 +1,6 @@
 #include "syscalls_all.h"
+#include "priv_syscalls.h"
+
 #include "syscalls/arch_syscalls.h"
 #include "boot_information/boot_information.h"
 #include "common/common.h"
@@ -15,16 +17,21 @@ uint64_t
 SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
-    if(syscall_num != Syscall_SetProperty)
-        return -ENOSYS;
+    if(syscall_num != Syscall_SetProperty){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
 
 
-    if(data->param_num != 3)
-        return -EINVAL;
+    if(data->param_num != 3){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
+    //TODO interpret error codes
     switch(data->params[0]) {
     case CardinalProperty_SetTidAddress:
         return set_tid_address((void*)data->params[2]);
@@ -49,7 +56,8 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
 #endif
     default:
-        return -EINVAL;
+        SyscallSetErrno(-EINVAL);
+        return 0;
         break;
     }
 }
@@ -58,50 +66,71 @@ uint64_t
 GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
-    if(syscall_num != Syscall_GetProperty)
-        return -ENOSYS;
+    if(syscall_num != Syscall_GetProperty){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 2)
-        return -EINVAL;
+    if(data->param_num != 2){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     switch(data->params[0]) {
     case CardinalProperty_PID:
+        SyscallSetErrno(0);
         return GetCurrentProcessUID();
         break;
     case CardinalProperty_TID:
+        SyscallSetErrno(0);
         return GetCurrentThreadUID();
         break;
     case CardinalProperty_GroupID: {
         uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
-        if(rVal == (uint64_t)-1)return -EPERM;
-        else return rVal;
+        if(rVal == (uint64_t)-1)
+        {
+            SyscallSetErrno(-EPERM);
+            return 0;
+        }
+        else {
+
+            SyscallSetErrno(0);
+            return rVal;
+        }
     }
     break;
     case CardinalProperty_R0_BootInfo: {
-        if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
-            return -EPERM;
+        if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+            SyscallSetErrno(-EPERM);
+            return 0;
+        }
 
         //TODO ensure this address is valid
         CardinalBootInfo *info = GetBootInfo();
         memcpy((CardinalBootInfo*)data->params[1], info, sizeof(CardinalBootInfo));
 
-        return 0;
+        return SyscallSetErrno(0);
     }
     break;
     case CardinalProperty_R0_PhysicalAddress: {
-        if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
-            return -EPERM;
+        if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+            SyscallSetErrno(-EPERM);
+            return 0;
+        }
 
+        SyscallSetErrno(0);
         return (uint64_t)GetPhysicalAddress((void*)(uint64_t*)data->params[1]);
     }
     break;
     case CardinalProperty_PLS:
+        SyscallSetErrno(0);
         return (uint64_t)GetProcessLocalStorage(GetCurrentProcessUID(), syscall_params[1]);
         break;
     default:
-        return -EINVAL;
+        SyscallSetErrno(-EINVAL);
+        return 0;
         break;
     }
 

@@ -12,8 +12,7 @@ $(SUBDIRS):
 	cp $@/*.elf .
 
 clean:
-	find . -name "*.elf" -type f -delete
-	find . -name "*.o" -type f -delete
+	find . -name "*.*" -type f -delete
 	rm -f initrd
 
 .PHONY: all $(SUBDIRS)

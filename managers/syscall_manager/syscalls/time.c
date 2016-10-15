@@ -1,4 +1,5 @@
 #include "syscalls_all.h"
+#include "priv_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
 
 #include "time.h"
@@ -10,11 +11,12 @@ Nanosleep_Syscall(uint64_t UNUSED(instruction_pointer),
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(syscall_num != Syscall_Nanosleep)
-        return -ENOSYS;
+        return SyscallSetErrno(-ENOSYS);
 
     if(data->param_num != 1)
-        return -EINVAL;
+        return SyscallSetErrno(-EINVAL);
 
     SleepThread(GetCurrentThreadUID(), data->params[0]);
-    return 0;
+
+    return SyscallSetErrno(0);
 }

@@ -1,11 +1,30 @@
 #include "syscalls_all.h"
+#include "priv_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
 #include "memory.h"
 #include "kmalloc.h"
 #include <sys/mman.h>
 
 uint64_t
-brk(void* targ_brk_address) {
+Brk_Syscall(uint64_t UNUSED(instruction_pointer),
+            uint64_t syscall_num,
+            uint64_t *syscall_params) {
+    
+    if(syscall_num != Syscall_Brk) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+
+    if(data->param_num != 1) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    void* targ_brk_address = (void*)data->params[0];
+    
     ProcessInformation *p_info;
     GetProcessReference(GetCurrentProcessUID(), &p_info);
 
@@ -22,6 +41,7 @@ brk(void* targ_brk_address) {
         else addr = p_info->HeapBreak;
         UnlockSpinlock(p_info->lock);
 
+        SyscallSetErrno(0);
         return addr;
     }
 
@@ -33,8 +53,13 @@ brk(void* targ_brk_address) {
 
         LockSpinlock(p_info->lock);
 
-        if((uint64_t)targ_brk_address <= p_info->HeapBreak)
-            return UnlockSpinlock(p_info->lock), (uint64_t)targ_brk_address;
+        if((uint64_t)targ_brk_address <= p_info->HeapBreak){
+
+            UnlockSpinlock(p_info->lock), 
+            
+            SyscallSetErrno(0);
+            return (uint64_t)targ_brk_address;
+        }
 
         uint64_t size = (uint64_t)targ_brk_address - p_info->HeapBreak;
         uint64_t prev_heap_break = p_info->HeapBreak;
@@ -52,50 +77,42 @@ brk(void* targ_brk_address) {
 
         UnlockSpinlock(p_info->lock);
 
+        SyscallSetErrno(0);
         return (uint64_t)targ_brk_address;
     }
 
-    return -ENOMEM;
-
+    SyscallSetErrno(-ENOMEM);
+    return p_info->HeapBreak;
 }
 
 uint64_t
-Brk_Syscall(uint64_t UNUSED(instruction_pointer),
-            uint64_t syscall_num,
-            uint64_t *syscall_params) {
-    if(syscall_num != Syscall_Brk)
-        return -ENOSYS;
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-
-    if(data->param_num != 1)
-        return -ENOSYS;
-
-    void* targ_brk_address = (void*)data->params[0];
-    return brk(targ_brk_address);
-}
-
-uint64_t
-R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
+R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_MemoryMap)
-        return -ENOSYS;
+    if(syscall_num != Syscall_R0_Map) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0)
-        return -EPERM;
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
+        SyscallSetErrno(-EPERM);
+        return 0;
+    }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 1)
-        return -ENOSYS;
+    if(data->param_num != 1) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
 
     struct MemoryMapParams *mmap_params = (struct MemoryMapParams*)data->params[0];
 
     ProcessInformation *p_info;
-    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None)
-        return -EINVAL;
+    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None){
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
 
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
@@ -107,7 +124,8 @@ R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
                                   mmap_params->AllocationType,
                                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
 
-            return -ENOMEM;
+        SyscallSetErrno(-ENOMEM);
+        return 0;
     }
 
     if(MapPage(p_info->PageTable,
@@ -116,8 +134,49 @@ R0MemoryMap_Syscall(uint64_t UNUSED(instruction_pointer),
                mmap_params->Length,
                mmap_params->CacheMode,
                mmap_params->AllocationType,
-               mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
-        return -ENOMEM;
-    else
+               mmap_params->AllocationFlags) != MemoryAllocationErrors_None) {
+
+        SyscallSetErrno(-ENOMEM);
+        return 0;
+    }
+    else {
+
+        SyscallSetErrno(0);
         return mmap_params->VirtualAddress;
+    }
+}
+
+uint64_t
+R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
+                uint64_t syscall_num,
+                uint64_t *syscall_params) {
+    
+    if(syscall_num != Syscall_R0_Unmap){
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+        SyscallSetErrno(-EPERM);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 3){
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    ProcessInformation *p_info;
+    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None){
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    UnmapPage(p_info->PageTable,
+              data->params[1],
+              data->params[2]);
+
+    return SyscallSetErrno(0);
 }

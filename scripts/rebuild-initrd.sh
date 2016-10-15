@@ -13,6 +13,11 @@ cd $SRC_DIR/sys_init
 	make all
 	make install INSTALL_DIR=$INITRD_INST_DIR
 
+cd $SRC_DIR/userboot 
+	make clean
+	make all
+	make install INSTALL_DIR=$INITRD_INST_DIR
+
 cd $SRC_DIR/srv
 
 cd namespace_man
