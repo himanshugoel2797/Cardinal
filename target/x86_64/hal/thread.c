@@ -24,7 +24,7 @@ SavePreviousThread(ThreadInfo *src) {
     Registers *regs = GetSavedInterruptState();
     if(src != NULL) {
         LockSpinlock(src->lock);
-        src->current_stack = regs->rsp;
+        src->CurrentStack = regs->rsp;
         UnlockSpinlock(src->lock);
     }
 }
@@ -32,7 +32,7 @@ SavePreviousThread(ThreadInfo *src) {
 void
 SwitchToThread(ThreadInfo *dst) {
     LockSpinlock(dst->lock);
-    uint64_t target_stack = dst->current_stack;
+    uint64_t target_stack = dst->CurrentStack;
     if(target_stack & 0xf)__asm__ volatile("cli\n\thlt");
     UnlockSpinlock(dst->lock);
 
@@ -79,7 +79,7 @@ GetGSBase(void) {
 
 void
 PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
-    uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
+    uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
     data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();
@@ -88,7 +88,7 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
 
 void
 SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs) {
-    uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
+    uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)regs->tls;
     data[ARCH_DATA_GS_OFFSET] = 0;
@@ -97,7 +97,7 @@ SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs) {
 
 void
 PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
-    uint64_t *data = (uint64_t*)tInfo->arch_specific_data;
+    uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
     SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);

@@ -46,26 +46,26 @@ typedef struct ThreadInfo {
 
     ProcessInformation  *ParentProcess;
 
-    ThreadState         state;
-    ThreadWakeCondition wakeCondition;
-    ThreadPriority      priority;
+    ThreadState         State;
+    ThreadWakeCondition WakeCondition;
+    ThreadPriority      Priority;
 
-    uint64_t            interrupt_stack_base;
-    uint64_t            interrupt_stack_aligned;
-    uint64_t            kernel_stack_base;
-    uint64_t            kernel_stack_aligned;
-    uint64_t            current_stack;
-    uint64_t            sleep_duration_ns;
-    uint64_t            sleep_start_time;
+    uint64_t            InterruptStackBase;
+    uint64_t            InterruptStackAligned;
+    uint64_t            KernelStackBase;
+    uint64_t            KernelStackAligned;
+    uint64_t            CurrentStack;
+    uint64_t            SleepDurationNS;
+    uint64_t            SleepStartTime;
     uint64_t            Errno;
 
-    int32_t             core_affinity;
+    int32_t             CoreAffinity;
 
-    void                *set_child_tid;
-    void                *clear_child_tid;
-    void                *set_parent_tid;
-    void                *fpu_state;
-    void                *arch_specific_data;
+    void                *SetChildTID;
+    void                *ClearChildTID;
+    void                *SetParentTID;
+    void                *FPUState;
+    void                *ArchSpecificData;
 
     uint32_t            reference_count;
     Spinlock            lock;

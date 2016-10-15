@@ -85,26 +85,26 @@ PROPERTY_GET_SET(UID, ID, 0)
 
 PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 
-PROPERTY_GET_SET(ThreadState, state, 0)
-PROPERTY_GET_SET(ThreadWakeCondition, wakeCondition, 0)
-PROPERTY_GET_SET(ThreadPriority, priority, 0)
+PROPERTY_GET_SET(ThreadState, State, 0)
+PROPERTY_GET_SET(ThreadWakeCondition, WakeCondition, 0)
+PROPERTY_GET_SET(ThreadPriority, Priority, 0)
 
-PROPERTY_GET_SET(uint64_t, interrupt_stack_base, 0)
-PROPERTY_GET_SET(uint64_t, interrupt_stack_aligned, 0)
-PROPERTY_GET_SET(uint64_t, kernel_stack_base, 0)
-PROPERTY_GET_SET(uint64_t, kernel_stack_aligned, 0)
-PROPERTY_GET_SET(uint64_t, current_stack, 0)
-PROPERTY_GET_SET(uint64_t, sleep_duration_ns, 0)
-PROPERTY_GET_SET(uint64_t, sleep_start_time, 0)
+PROPERTY_GET_SET(uint64_t, InterruptStackBase, 0)
+PROPERTY_GET_SET(uint64_t, InterruptStackAligned, 0)
+PROPERTY_GET_SET(uint64_t, KernelStackBase, 0)
+PROPERTY_GET_SET(uint64_t, KernelStackAligned, 0)
+PROPERTY_GET_SET(uint64_t, CurrentStack, 0)
+PROPERTY_GET_SET(uint64_t, SleepDurationNS, 0)
+PROPERTY_GET_SET(uint64_t, SleepStartTime, 0)
 PROPERTY_GET_SET(uint64_t, Errno, 0)
 
-PROPERTY_GET_SET(int32_t, core_affinity, 0)
+PROPERTY_GET_SET(int32_t, CoreAffinity, 0)
 
-PROPERTY_GET_SET(void*, set_child_tid, NULL)
-PROPERTY_GET_SET(void*, clear_child_tid, NULL)
-PROPERTY_GET_SET(void*, set_parent_tid, NULL)
-PROPERTY_GET_SET(void*, fpu_state, NULL)
-PROPERTY_GET_SET(void*, arch_specific_data, NULL)
+PROPERTY_GET_SET(void*, SetChildTID, NULL)
+PROPERTY_GET_SET(void*, ClearChildTID, NULL)
+PROPERTY_GET_SET(void*, SetParentTID, NULL)
+PROPERTY_GET_SET(void*, FPUState, NULL)
+PROPERTY_GET_SET(void*, ArchSpecificData, NULL)
 
 UID
 GetCurrentThreadUID(void) {
@@ -231,35 +231,35 @@ CreateThreadADV(UID parentProcess,
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
 
-    SET_PROPERTY_VAL(thd, state, ThreadState_Initialize);
-    SET_PROPERTY_VAL(thd, priority, ThreadPriority_Neutral);
-    SET_PROPERTY_VAL(thd, sleep_duration_ns, 0);
-    SET_PROPERTY_VAL(thd, fpu_state, kmalloc(GetFPUStateSize() + 64));
-    SET_PROPERTY_VAL(thd, interrupt_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
-    SET_PROPERTY_VAL(thd, kernel_stack_base, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
-    SET_PROPERTY_VAL(thd, arch_specific_data, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
-    SET_PROPERTY_VAL(thd, clear_child_tid, regs->clear_tid);
-    SET_PROPERTY_VAL(thd, set_child_tid, regs->set_tid);
-    SET_PROPERTY_VAL(thd, set_parent_tid, regs->p_tid);
+    SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);
+    SET_PROPERTY_VAL(thd, Priority, ThreadPriority_Neutral);
+    SET_PROPERTY_VAL(thd, SleepDurationNS, 0);
+    SET_PROPERTY_VAL(thd, FPUState, kmalloc(GetFPUStateSize() + 64));
+    SET_PROPERTY_VAL(thd, InterruptStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
+    SET_PROPERTY_VAL(thd, KernelStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
+    SET_PROPERTY_VAL(thd, ArchSpecificData, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
+    SET_PROPERTY_VAL(thd, ClearChildTID, regs->clear_tid);
+    SET_PROPERTY_VAL(thd, SetChildTID, regs->set_tid);
+    SET_PROPERTY_VAL(thd, SetParentTID, regs->p_tid);
     SET_PROPERTY_VAL(thd, Errno, 0);
 
     //Setup kernel stack
-    uint64_t kstack = GET_PROPERTY_VAL(thd, kernel_stack_base) - 1;
+    uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase) - 1;
     kstack -= kstack % 16;
-    SET_PROPERTY_VAL(thd, kernel_stack_aligned, kstack);
+    SET_PROPERTY_VAL(thd, KernelStackAligned, kstack);
 
     //Setup interrupt stack
-    uint64_t istack = GET_PROPERTY_VAL(thd, interrupt_stack_base) - 1;
+    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase) - 1;
     istack -= istack % 16;
-    SET_PROPERTY_VAL(thd, interrupt_stack_aligned, istack);
+    SET_PROPERTY_VAL(thd, InterruptStackAligned, istack);
 
     //Setup FPU state
-    uint64_t fpu_state_tmp = (uint64_t)GET_PROPERTY_VAL(thd,fpu_state);
-    if(fpu_state_tmp % 64 != 0)
-        fpu_state_tmp += 64 - fpu_state_tmp % 64;
+    uint64_t FPUState_tmp = (uint64_t)GET_PROPERTY_VAL(thd,FPUState);
+    if(FPUState_tmp % 64 != 0)
+        FPUState_tmp += 64 - FPUState_tmp % 64;
 
-    SET_PROPERTY_VAL(thd, fpu_state, (void*)fpu_state_tmp);
-    SaveFPUState(GET_PROPERTY_VAL(thd, fpu_state));
+    SET_PROPERTY_VAL(thd, FPUState, (void*)FPUState_tmp);
+    SaveFPUState(GET_PROPERTY_VAL(thd, FPUState));
 
     //Get the process information
     ProcessInformation *pInfo = NULL;
@@ -323,7 +323,7 @@ CreateThreadADV(UID parentProcess,
     //push r15
 
     //Update the thread list
-    SET_PROPERTY_VAL(thd, current_stack, (uint64_t)&cur_stack_frame[offset]);
+    SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)&cur_stack_frame[offset]);
 
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
@@ -343,14 +343,14 @@ void
 SetChildTIDAddress(UID id,
                    void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, set_child_tid, address);
+        SET_PROPERTY_VAL(coreState->cur_thread, SetChildTID, address);
         return;
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, set_child_tid, address);
+            SET_PROPERTY_VAL(thd, SetChildTID, address);
             return;
         }
     }
@@ -361,14 +361,14 @@ void
 SetClearChildTIDAddress(UID id,
                         void *address) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid, address);
+        SET_PROPERTY_VAL(coreState->cur_thread, ClearChildTID, address);
         return;
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, clear_child_tid, address);
+            SET_PROPERTY_VAL(thd, ClearChildTID, address);
             return;
         }
     }
@@ -378,13 +378,13 @@ SetClearChildTIDAddress(UID id,
 void*
 GetClearChildTIDAddress(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, clear_child_tid);
+        return GET_PROPERTY_VAL(coreState->cur_thread, ClearChildTID);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, clear_child_tid);
+            return GET_PROPERTY_VAL(thd, ClearChildTID);
         }
     }
 
@@ -394,13 +394,13 @@ GetClearChildTIDAddress(UID id) {
 void*
 GetChildTIDAddress(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, set_child_tid);
+        return GET_PROPERTY_VAL(coreState->cur_thread, SetChildTID);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, set_child_tid);
+            return GET_PROPERTY_VAL(thd, SetChildTID);
         }
     }
 
@@ -410,13 +410,13 @@ GetChildTIDAddress(UID id) {
 void*
 GetParentTIDAddress(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, set_parent_tid);
+        return GET_PROPERTY_VAL(coreState->cur_thread, SetParentTID);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, set_parent_tid);
+            return GET_PROPERTY_VAL(thd, SetParentTID);
         }
     }
 
@@ -427,14 +427,14 @@ void
 SetThreadState(UID id,
                ThreadState state) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, state, state);
+        SET_PROPERTY_VAL(coreState->cur_thread, State, state);
         return;
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, state, state);
+            SET_PROPERTY_VAL(thd, State, state);
             return;
         }
     }
@@ -444,10 +444,10 @@ void
 SleepThread(UID id,
             uint64_t duration_ns) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Sleep);
-        SET_PROPERTY_VAL(coreState->cur_thread, wakeCondition, ThreadWakeCondition_SleepEnd);
-        SET_PROPERTY_VAL(coreState->cur_thread, sleep_start_time, GetTimerValue());
-        SET_PROPERTY_VAL(coreState->cur_thread, sleep_duration_ns, duration_ns);
+        SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Sleep);
+        SET_PROPERTY_VAL(coreState->cur_thread, WakeCondition, ThreadWakeCondition_SleepEnd);
+        SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());
+        SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);
         YieldThread();
         return;
     }
@@ -455,10 +455,10 @@ SleepThread(UID id,
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, state, ThreadState_Sleep);
-            SET_PROPERTY_VAL(thd, wakeCondition, ThreadWakeCondition_SleepEnd);
-            SET_PROPERTY_VAL(thd, sleep_start_time, GetTimerValue());
-            SET_PROPERTY_VAL(thd, sleep_duration_ns, duration_ns);
+            SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
+            SET_PROPERTY_VAL(thd, WakeCondition, ThreadWakeCondition_SleepEnd);
+            SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
+            SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
             return;
         }
     }
@@ -467,13 +467,13 @@ SleepThread(UID id,
 ThreadState
 GetThreadState(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, state);
+        return GET_PROPERTY_VAL(coreState->cur_thread, State);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, state);
+            return GET_PROPERTY_VAL(thd, State);
         }
     }
     return -1;
@@ -504,13 +504,13 @@ GetThreadUserStack(UID id) {
 void*
 GetThreadKernelStack(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, kernel_stack_aligned);
+        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, KernelStackAligned);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return (void*)GET_PROPERTY_VAL(thd, kernel_stack_aligned);
+            return (void*)GET_PROPERTY_VAL(thd, KernelStackAligned);
         }
     }
     return NULL;
@@ -519,13 +519,13 @@ GetThreadKernelStack(UID id) {
 void*
 GetThreadCurrentStack(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, current_stack);
+        return (void*)GET_PROPERTY_VAL(coreState->cur_thread, CurrentStack);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return (void*)GET_PROPERTY_VAL(thd, current_stack);
+            return (void*)GET_PROPERTY_VAL(thd, CurrentStack);
         }
     }
     return NULL;
@@ -533,16 +533,16 @@ GetThreadCurrentStack(UID id) {
 
 void
 SetThreadBasePriority(UID id,
-                      ThreadPriority priority) {
+                      ThreadPriority Priority) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, priority, priority);
+        SET_PROPERTY_VAL(coreState->cur_thread, Priority, Priority);
         return;
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, priority, priority);
+            SET_PROPERTY_VAL(thd, Priority, Priority);
             return;
         }
     }
@@ -551,13 +551,13 @@ SetThreadBasePriority(UID id,
 ThreadPriority
 GetThreadPriority(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, priority);
+        return GET_PROPERTY_VAL(coreState->cur_thread, Priority);
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, priority);
+            return GET_PROPERTY_VAL(thd, Priority);
         }
     }
     return -1;
@@ -568,13 +568,13 @@ void
 SetThreadCoreAffinity(UID id,
                       int coreID) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, core_affinity, coreID);
+        SET_PROPERTY_VAL(coreState->cur_thread, CoreAffinity, coreID);
         return;
     }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, core_affinity, coreID);
+            SET_PROPERTY_VAL(thd, CoreAffinity, coreID);
             return;
         }
     }
@@ -583,12 +583,12 @@ SetThreadCoreAffinity(UID id,
 int
 GetThreadCoreAffinity(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        return GET_PROPERTY_VAL(coreState->cur_thread, core_affinity);
+        return GET_PROPERTY_VAL(coreState->cur_thread, CoreAffinity);
     }
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, core_affinity);
+            return GET_PROPERTY_VAL(thd, CoreAffinity);
         }
     }
     return -1;
@@ -640,7 +640,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
         if(next_thread == NULL)continue;
 
-        switch(GET_PROPERTY_VAL(next_thread, state)) {
+        switch(GET_PROPERTY_VAL(next_thread, State)) {
         case ThreadState_Exiting:
             if(GetSpinlockContenderCount(next_thread->lock) == 0) {
                 LockSpinlock(next_thread->lock);
@@ -648,19 +648,19 @@ GetNextThread(ThreadInfo *prevThread) {
                 CachingMode cMode = 0;
                 MemoryAllocationFlags cFlags = 0;
                 CheckAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                        (uint64_t)next_thread->set_child_tid,
+                                        (uint64_t)next_thread->SetChildTID,
                                         &cMode,
                                         &cFlags);
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)
                         WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                              (uint32_t*)next_thread->clear_child_tid,
+                                              (uint32_t*)next_thread->ClearChildTID,
                                               0);
                 }
 
-                kfree((void*)(next_thread->kernel_stack_base - STACK_SIZE));
-                kfree((void*)(next_thread->interrupt_stack_base - STACK_SIZE));
+                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
+                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
 
                 for(uint64_t i = 0; i < List_Length(thds); i++) {
                     ThreadInfo *tInfo = List_EntryAt(thds, i);
@@ -698,9 +698,9 @@ GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Sleep:
             LockSpinlock(next_thread->lock);
             uint64_t cur_time = GetTimerValue();
-            if(next_thread->wakeCondition == ThreadWakeCondition_SleepEnd) {
-                if(GetTimerInterval_NS(cur_time - next_thread->sleep_start_time) >= next_thread->sleep_duration_ns) {
-                    next_thread->state = ThreadState_Running;
+            if(next_thread->WakeCondition == ThreadWakeCondition_SleepEnd) {
+                if(GetTimerInterval_NS(cur_time - next_thread->SleepStartTime) >= next_thread->SleepDurationNS) {
+                    next_thread->State = ThreadState_Running;
                     exit_loop = TRUE;
                     UnlockSpinlock(next_thread->lock);
                 } else {
@@ -729,44 +729,44 @@ TaskSwitch(uint32_t int_no,
 
     err_code = 0;
 
-    SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
+    SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
     PerformArchSpecificTaskSave(coreState->cur_thread);
     SavePreviousThread(coreState->cur_thread);
 
 
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
-    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
-    SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_aligned);
-    SetKernelStack((void*)coreState->cur_thread->kernel_stack_aligned);
+    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
+    SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
+    SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);
 
-    if(coreState->cur_thread->state == ThreadState_Initialize) {
-        coreState->cur_thread->state = ThreadState_Running;
+    if(coreState->cur_thread->State == ThreadState_Initialize) {
+        coreState->cur_thread->State = ThreadState_Running;
 
         CachingMode cMode = 0;
         MemoryAllocationFlags cFlags = 0;
         CheckAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
-                                (uint64_t)coreState->cur_thread->set_child_tid,
+                                (uint64_t)coreState->cur_thread->SetChildTID,
                                 &cMode,
                                 &cFlags);
 
         if(cMode != 0 && cFlags != 0) {
             if(cFlags & MemoryAllocationFlags_User)
-                *(uint32_t*)coreState->cur_thread->set_child_tid = (uint32_t)coreState->cur_thread->ID;
+                *(uint32_t*)coreState->cur_thread->SetChildTID = (uint32_t)coreState->cur_thread->ID;
         }
 
         if(coreState->cur_thread->ParentProcess->Parent != NULL) {
             CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                    (uint64_t)coreState->cur_thread->set_parent_tid,
+                                    (uint64_t)coreState->cur_thread->SetParentTID,
                                     &cMode,
                                     &cFlags);
 
             if(cMode != 0 && cFlags != 0) {
                 if(cFlags & MemoryAllocationFlags_User)
                     WriteValueAtAddress32(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                          (uint32_t*)coreState->cur_thread->set_parent_tid,
+                                          (uint32_t*)coreState->cur_thread->SetParentTID,
                                           (uint32_t)coreState->cur_thread->ID);
             }
         }
@@ -789,16 +789,16 @@ SwitchThread(void) {
 
     coreState->cur_thread = GetNextThread(NULL);
 
-    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, fpu_state));
-    SetInterruptStack((void*)coreState->cur_thread->interrupt_stack_aligned);
-    SetKernelStack((void*)coreState->cur_thread->kernel_stack_aligned);
+    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
+    SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
+    SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);
 
     //Resume execution of the thread
-    if(GET_PROPERTY_VAL(coreState->cur_thread, state) == ThreadState_Initialize) {
-        SET_PROPERTY_VAL(coreState->cur_thread, state, ThreadState_Running);
+    if(GET_PROPERTY_VAL(coreState->cur_thread, State) == ThreadState_Initialize) {
+        SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Running);
         SwitchToThread(coreState->cur_thread);
     }
 
