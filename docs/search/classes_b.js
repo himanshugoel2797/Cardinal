@@ -8,6 +8,7 @@ var searchData=
   ['madt_5fentryisaovr',['MADT_EntryISAOVR',['../d4/d04/structMADT__EntryISAOVR.html',1,'']]],
   ['madt_5fentrylapic',['MADT_EntryLAPIC',['../d1/d7d/structMADT__EntryLAPIC.html',1,'']]],
   ['managedpagetable',['ManagedPageTable',['../d9/db1/structManagedPageTable.html',1,'']]],
+  ['max_5falign_5ft',['max_align_t',['../d8/d8c/structmax__align__t.html',1,'']]],
   ['mcfg',['MCFG',['../d8/d00/structMCFG.html',1,'']]],
   ['mcfg_5fentry',['MCFG_Entry',['../db/da2/structMCFG__Entry.html',1,'']]],
   ['memoryallocationsmap',['MemoryAllocationsMap',['../d5/d3a/structMemoryAllocationsMap.html',1,'']]],

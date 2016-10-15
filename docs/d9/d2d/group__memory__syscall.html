@@ -80,7 +80,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
-<a href="#enum-members">Enumerations</a>  </div>
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Memory Syscalls</div>  </div>
 </div><!--header-->
@@ -145,6 +146,24 @@ Enumerations</h2></td></tr>
  }<tr class="memdesc:ga1c37324a30e01fffd90ff594a6e2fe00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory Allocation Errors.  <a href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">More...</a><br /></td></tr>
 </td></tr>
 <tr class="separator:ga1c37324a30e01fffd90ff594a6e2fe00"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga5f99751273190832a493a9e792274f52"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga5f99751273190832a493a9e792274f52">R0_Map</a> (UID pid, uint64_t phys, uint64_t *virt, uint64_t len, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> type, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags)</td></tr>
+<tr class="memdesc:ga5f99751273190832a493a9e792274f52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a physical address to a virtual address in any process. R0 process only.  <a href="#ga5f99751273190832a493a9e792274f52">More...</a><br /></td></tr>
+<tr class="separator:ga5f99751273190832a493a9e792274f52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga518764eb321eed796a4143b0c9d58be9"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga518764eb321eed796a4143b0c9d58be9">R0_Unmap</a> (UID pid, uint64_t virt, uint64_t size)</td></tr>
+<tr class="memdesc:ga518764eb321eed796a4143b0c9d58be9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmap a virtual address in any process. R0 process only.  <a href="#ga518764eb321eed796a4143b0c9d58be9">More...</a><br /></td></tr>
+<tr class="separator:ga518764eb321eed796a4143b0c9d58be9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gaad9ba4788ae5a1a191a1df9307bbb31d">R0_GetBootInfo</a> (<a class="el" href="../../dc/d07/structCardinalBootInfo.html">CardinalBootInfo</a> *bInfo)</td></tr>
+<tr class="memdesc:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the boot information structure. R0 process only.  <a href="#gaad9ba4788ae5a1a191a1df9307bbb31d">More...</a><br /></td></tr>
+<tr class="separator:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6dea5316a98d587293e6011114c43e04"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga6dea5316a98d587293e6011114c43e04">R0_GetPhysicalAddress</a> (uint64_t v_addr, uint64_t *p_addr)</td></tr>
+<tr class="memdesc:ga6dea5316a98d587293e6011114c43e04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate a virtual address to a physical address. R0 process only.  <a href="#ga6dea5316a98d587293e6011114c43e04">More...</a><br /></td></tr>
+<tr class="separator:ga6dea5316a98d587293e6011114c43e04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1b91e86506299c305e9f71c049b2dd16"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1b91e86506299c305e9f71c049b2dd16">R0_AllocatePages</a> (uint64_t cnt, uint64_t *p_addr)</td></tr>
+<tr class="memdesc:ga1b91e86506299c305e9f71c049b2dd16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a continuous range of physical pages. R0 process only.  <a href="#ga1b91e86506299c305e9f71c049b2dd16">More...</a><br /></td></tr>
+<tr class="separator:ga1b91e86506299c305e9f71c049b2dd16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
@@ -304,6 +323,268 @@ Enumerations</h2></td></tr>
 <p>Process related user RW information, persists on Execve. </p>
 </td></tr>
 </table>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga1b91e86506299c305e9f71c049b2dd16"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_AllocatePages </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>cnt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>p_addr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Allocate a continuous range of physical pages. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cnt</td><td>The page count </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">p_addr</td><td>The physical address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaad9ba4788ae5a1a191a1df9307bbb31d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_GetBootInfo </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../dc/d07/structCardinalBootInfo.html">CardinalBootInfo</a> *&#160;</td>
+          <td class="paramname"><em>bInfo</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Get the boot information structure. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bInfo</td><td>The preallocated boot information structure to fill</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6dea5316a98d587293e6011114c43e04"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_GetPhysicalAddress </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>v_addr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>p_addr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Translate a virtual address to a physical address. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">v_addr</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">p_addr</td><td>The physical address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5f99751273190832a493a9e792274f52"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_Map </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>phys</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>virt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a>&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a>&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a>&#160;</td>
+          <td class="paramname"><em>flags</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Map a physical address to a virtual address in any process. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">phys</td><td>The physical address </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">virt</td><td>The virtual address (0 to allocate, returned by same parameter) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">len</td><td>The length </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>The type </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga518764eb321eed796a4143b0c9d58be9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_Unmap </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>virt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Unmap a virtual address in any process. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">virt</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>The size</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error code on failure, 0 on success. </dd></dl>
 
 </div>
 </div>

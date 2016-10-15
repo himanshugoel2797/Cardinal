@@ -1,7 +1,6 @@
 var searchData=
 [
   ['fadt',['FADT',['../d3/db5/structFADT.html',1,'']]],
-  ['fadt_5fsig',['FADT_SIG',['../df/dc3/group__acpi__tables.html#ga45c39b8a5e8a350bda6da743f0e2e983',1,'acpi_tables.h']]],
   ['fd2pathrequest',['Fd2PathRequest',['../dd/d7d/structFd2PathRequest.html',1,'']]],
   ['fd2pathresponse',['Fd2PathResponse',['../de/dd9/structFd2PathResponse.html',1,'']]],
   ['filedescriptor',['FileDescriptor',['../d5/dbb/structFileDescriptor.html',1,'']]],

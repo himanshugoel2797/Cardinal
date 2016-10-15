@@ -9,5 +9,6 @@ var searchData=
   ['coreinfo',['CoreInfo',['../d2/dd0/structCoreInfo.html',1,'']]],
   ['corekernelstackinfo',['CoreKernelStackInfo',['../d5/d17/structCoreKernelStackInfo.html',1,'']]],
   ['corethreadstate',['CoreThreadState',['../df/dfd/structCoreThreadState.html',1,'']]],
+  ['cregisters',['CRegisters',['../d6/d36/structCRegisters.html',1,'']]],
   ['cserver_5fhandlers',['cserver_handlers',['../db/db5/structcserver__handlers.html',1,'']]]
 ];

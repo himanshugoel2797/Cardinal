@@ -4,6 +4,5 @@ var searchData=
   ['handleinterruptnoreturn',['HandleInterruptNoReturn',['../d5/dbb/group__interrupt__man.html#gad9fcef5bc8393fd3633dceb1e85d4de4',1,'HandleInterruptNoReturn(uint32_t vector):&#160;interrupt_man.c'],['../d5/dbb/group__interrupt__man.html#gad9fcef5bc8393fd3633dceb1e85d4de4',1,'HandleInterruptNoReturn(uint32_t vector):&#160;interrupt_man.c']]],
   ['handlepagefault',['HandlePageFault',['../d0/d92/group__memory__hal.html#ga86c40810b55a13e73f8d19a1eb8891e8',1,'HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer, MemoryAllocationFlags error):&#160;memory.c'],['../d0/d92/group__memory__hal.html#ga86c40810b55a13e73f8d19a1eb8891e8',1,'HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer, MemoryAllocationFlags error):&#160;memory.c']]],
   ['handlingmessage',['HandlingMessage',['../d4/d03/structProcessInformation.html#a6a0dfc7e679df7ecfc7576cd0cc078fe',1,'ProcessInformation']]],
-  ['heapbreak',['HeapBreak',['../d4/d03/structProcessInformation.html#a61cb33f39714fe70956f9cc5a7c9ca9c',1,'ProcessInformation']]],
-  ['hpet_5fsig',['HPET_SIG',['../df/dc3/group__acpi__tables.html#ga1821c66b58038ee3216b0edda540d5c6',1,'acpi_tables.h']]]
+  ['heapbreak',['HeapBreak',['../d4/d03/structProcessInformation.html#a61cb33f39714fe70956f9cc5a7c9ca9c',1,'ProcessInformation']]]
 ];

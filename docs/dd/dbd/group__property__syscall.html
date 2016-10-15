@@ -79,7 +79,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 
 <div class="header">
   <div class="summary">
-<a href="#enum-members">Enumerations</a>  </div>
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Property Syscalls</div>  </div>
 </div><!--header-->
@@ -99,10 +100,21 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a173e10512dc420ad47799566933cda6d">CardinalProperty_GroupID</a>, 
 <br />
 &#160;&#160;<a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a8c474a2a4885b4a24c1be26a87249ed8">CardinalProperty_R0_BootInfo</a>, 
-<a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa">CardinalProperty_R0_PhysicalAddress</a>
+<a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa">CardinalProperty_R0_PhysicalAddress</a>, 
+<a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a555e5db22b0b7f32581321847ec0446b">CardinalProperty_ArchPrctl</a>, 
+<a class="el" href="../../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2acde991039c627e7e858af2cdb007a62b">CardinalProperty_IOPL</a>
 <br />
  }</td></tr>
 <tr class="separator:ga1c4351f0d46c7a1b8b066cc48e5c11e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga2a6a041656f748c4852e4d765d515ad3"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/dbd/group__property__syscall.html#ga2a6a041656f748c4852e4d765d515ad3">GetProperty</a> (<a class="el" href="../../dd/dbd/group__property__syscall.html#ga1c4351f0d46c7a1b8b066cc48e5c11e2">CardinalProperties</a> prop, uint64_t type, uint64_t *val)</td></tr>
+<tr class="memdesc:ga2a6a041656f748c4852e4d765d515ad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets a property value.  <a href="#ga2a6a041656f748c4852e4d765d515ad3">More...</a><br /></td></tr>
+<tr class="separator:ga2a6a041656f748c4852e4d765d515ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa3c924b22671b97c8ee10639fce82638"><td class="memItemLeft" align="right" valign="top">static __inline bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/dbd/group__property__syscall.html#gaa3c924b22671b97c8ee10639fce82638">SetProperty</a> (<a class="el" href="../../dd/dbd/group__property__syscall.html#ga1c4351f0d46c7a1b8b066cc48e5c11e2">CardinalProperties</a> prop, uint64_t type, uint64_t val)</td></tr>
+<tr class="memdesc:gaa3c924b22671b97c8ee10639fce82638"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets a property value.  <a href="#gaa3c924b22671b97c8ee10639fce82638">More...</a><br /></td></tr>
+<tr class="separator:gaa3c924b22671b97c8ee10639fce82638"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
@@ -149,7 +161,120 @@ Enumerations</h2></td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa"></a>CardinalProperty_R0_PhysicalAddress&#160;</td><td class="fielddoc">
 <p>Translate a virtual address to a physical address. </p>
 </td></tr>
+<tr><td class="fieldname"><a class="anchor" id="gga1c4351f0d46c7a1b8b066cc48e5c11e2a555e5db22b0b7f32581321847ec0446b"></a>CardinalProperty_ArchPrctl&#160;</td><td class="fielddoc">
+<p>Perform architecture specific operations. </p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="gga1c4351f0d46c7a1b8b066cc48e5c11e2acde991039c627e7e858af2cdb007a62b"></a>CardinalProperty_IOPL&#160;</td><td class="fielddoc">
+<p>Change the IO privilege level. </p>
+</td></tr>
 </table>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga2a6a041656f748c4852e4d765d515ad3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t GetProperty </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../dd/dbd/group__property__syscall.html#ga1c4351f0d46c7a1b8b066cc48e5c11e2">CardinalProperties</a>&#160;</td>
+          <td class="paramname"><em>prop</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/syscall_property.h&gt;</code></p>
+
+<p>Gets a property value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">prop</td><td>The property </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>The subtype of the property </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">val</td><td>The value</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa3c924b22671b97c8ee10639fce82638"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline bool SetProperty </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../dd/dbd/group__property__syscall.html#ga1c4351f0d46c7a1b8b066cc48e5c11e2">CardinalProperties</a>&#160;</td>
+          <td class="paramname"><em>prop</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/syscall_property.h&gt;</code></p>
+
+<p>Sets a property value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">prop</td><td>The property </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>The subtype of the property </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">val</td><td>The value to set.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
 
 </div>
 </div>

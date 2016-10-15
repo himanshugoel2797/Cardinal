@@ -80,8 +80,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
-<a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">IPC API</div>  </div>
@@ -97,50 +97,24 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An error message.  <a href="../../dc/dd8/structErrorMessage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:gacb84a306ee37479f97cf0b476560f027"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gacb84a306ee37479f97cf0b476560f027"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gacb84a306ee37479f97cf0b476560f027">MAX_MESSAGE_SIZE</a>&#160;&#160;&#160;(UINT16_MAX)</td></tr>
-<tr class="memdesc:gacb84a306ee37479f97cf0b476560f027"><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum size of a message. <br /></td></tr>
-<tr class="separator:gacb84a306ee37479f97cf0b476560f027"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaab39821a28fe0b175b2a8b2925841d23"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaab39821a28fe0b175b2a8b2925841d23"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaab39821a28fe0b175b2a8b2925841d23">CARDINAL_IPCDEST_NUM</a>&#160;&#160;&#160;512</td></tr>
-<tr class="memdesc:gaab39821a28fe0b175b2a8b2925841d23"><td class="mdescLeft">&#160;</td><td class="mdescRight">The maximum number of special destinations. <br /></td></tr>
-<tr class="separator:gaab39821a28fe0b175b2a8b2925841d23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga975cd575dbff08c5af0f81f39cc2e902"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga975cd575dbff08c5af0f81f39cc2e902"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga975cd575dbff08c5af0f81f39cc2e902">CARDINAL_IPCDEST_SPECIAL</a>&#160;&#160;&#160;(1ull &lt;&lt; 32)</td></tr>
-<tr class="memdesc:ga975cd575dbff08c5af0f81f39cc2e902"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifies a system reserved destination. <br /></td></tr>
-<tr class="separator:ga975cd575dbff08c5af0f81f39cc2e902"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac8415f66de652cdb54133be03a701442"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gac8415f66de652cdb54133be03a701442"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>CARDINAL_IPCDEST_LOCAL</b>&#160;&#160;&#160;(1ull &lt;&lt; 33)</td></tr>
-<tr class="separator:gac8415f66de652cdb54133be03a701442"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae3bc2771265815a1bb684332eb5f41f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae3bc2771265815a1bb684332eb5f41f3"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>CARDINAL_IPCDEST_LOCAL_NAMESPACEREGISTRY</b>&#160;&#160;&#160;((CARDINAL_IPCDEST_LOCAL) | (<a class="el" href="../../d3/de7/group__ipc__api.html#ga975cd575dbff08c5af0f81f39cc2e902">CARDINAL_IPCDEST_SPECIAL</a>) | 1)</td></tr>
-<tr class="separator:gae3bc2771265815a1bb684332eb5f41f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5e2cd913ff6e4a040f34c00a2b510b13"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga5e2cd913ff6e4a040f34c00a2b510b13"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>CARDINAL_IPCDEST_GLOBAL_NAMESPACEREGISTRY</b>&#160;&#160;&#160;((<a class="el" href="../../d3/de7/group__ipc__api.html#ga975cd575dbff08c5af0f81f39cc2e902">CARDINAL_IPCDEST_SPECIAL</a>) | 1)</td></tr>
-<tr class="separator:ga5e2cd913ff6e4a040f34c00a2b510b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae22880b52e082b5dc94cf8ce8a5dc7ed"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae22880b52e082b5dc94cf8ce8a5dc7ed"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>CARDINAL_IPCDEST_GLOBAL_DISPLAYSERVER</b>&#160;&#160;&#160;((<a class="el" href="../../d3/de7/group__ipc__api.html#ga975cd575dbff08c5af0f81f39cc2e902">CARDINAL_IPCDEST_SPECIAL</a>) | 2)</td></tr>
-<tr class="separator:gae22880b52e082b5dc94cf8ce8a5dc7ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4430f6ab37dcd0cbc915fc3802328133"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga4430f6ab37dcd0cbc915fc3802328133"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>CARDINAL_IPCDEST_GLOBAL_MEMORYSERVER</b>&#160;&#160;&#160;((<a class="el" href="../../d3/de7/group__ipc__api.html#ga975cd575dbff08c5af0f81f39cc2e902">CARDINAL_IPCDEST_SPECIAL</a>) | 3)</td></tr>
-<tr class="separator:ga4430f6ab37dcd0cbc915fc3802328133"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5025a8e4a430a74a69ba63033548b4be"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga5025a8e4a430a74a69ba63033548b4be"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga5025a8e4a430a74a69ba63033548b4be">CARDINAL_MSG_TYPE_IO</a>&#160;&#160;&#160;1</td></tr>
-<tr class="memdesc:ga5025a8e4a430a74a69ba63033548b4be"><td class="mdescLeft">&#160;</td><td class="mdescRight">I/O request message. <br /></td></tr>
-<tr class="separator:ga5025a8e4a430a74a69ba63033548b4be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga79d6f2cd151ffb0e8be855cfbaab6aab"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga79d6f2cd151ffb0e8be855cfbaab6aab"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga79d6f2cd151ffb0e8be855cfbaab6aab">CARDINAL_MSG_TYPE_SIGNAL</a>&#160;&#160;&#160;2</td></tr>
-<tr class="memdesc:ga79d6f2cd151ffb0e8be855cfbaab6aab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signal notification message. <br /></td></tr>
-<tr class="separator:ga79d6f2cd151ffb0e8be855cfbaab6aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:gac5d2505352602da27debb8163160af23"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gac5d2505352602da27debb8163160af23"></a>
 typedef struct <a class="el" href="../../d8/dd0/structMessage.html">Message</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gac5d2505352602da27debb8163160af23">Message</a></td></tr>
 <tr class="memdesc:gac5d2505352602da27debb8163160af23"><td class="mdescLeft">&#160;</td><td class="mdescRight">IPC <a class="el" href="../../d8/dd0/structMessage.html" title="IPC Message. ">Message</a>. <br /></td></tr>
 <tr class="separator:gac5d2505352602da27debb8163160af23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gadbfd80dc9a852f431889a51a9bd7f4de">GetIPCMessageFrom</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m, UID sourcePID, uint64_t msg_id)</td></tr>
+<tr class="memdesc:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message from the source.  <a href="#gadbfd80dc9a852f431889a51a9bd7f4de">More...</a><br /></td></tr>
+<tr class="separator:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga7b0e0d5af67aee2cbe853a14a5cc0d49">GetIPCMessage</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m)</td></tr>
+<tr class="memdesc:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message.  <a href="#ga7b0e0d5af67aee2cbe853a14a5cc0d49">More...</a><br /></td></tr>
+<tr class="separator:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga4a2fb55a1dbeda3c413e03230adafd71">PostIPCMessages</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> **m, uint64_t cnt)</td></tr>
+<tr class="memdesc:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posts ipc messages.  <a href="#ga4a2fb55a1dbeda3c413e03230adafd71">More...</a><br /></td></tr>
+<tr class="separator:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -178,6 +152,141 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="separator:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga7b0e0d5af67aee2cbe853a14a5cc0d49"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline int GetIPCMessage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d8/dd0/structMessage.html">Message</a> *&#160;</td>
+          <td class="paramname"><em>m</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/ipc.h&gt;</code></p>
+
+<p>Gets the ipc message. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>A preallocated message buffer of size MAX_MESSAGE_SIZE</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The ipc message. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gadbfd80dc9a852f431889a51a9bd7f4de"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline int GetIPCMessageFrom </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d8/dd0/structMessage.html">Message</a> *&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>sourcePID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>msg_id</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/ipc.h&gt;</code></p>
+
+<p>Gets the ipc message from the source. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">m</td><td>A preallocated message buffer of size MAX_MESSAGE_SIZE </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sourcePID</td><td>The source pid (0 for any) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">msg_id</td><td>The message identifier (0 for any)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no message to return, 1 if a message has been returned. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga4a2fb55a1dbeda3c413e03230adafd71"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline int PostIPCMessages </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d8/dd0/structMessage.html">Message</a> **&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>cnt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/ipc.h&gt;</code></p>
+
+<p>Posts ipc messages. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">m</td><td>A list of messages to post </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cnt</td><td>The number of messages in the list</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>If 'i' is the number of messages sent, -(i + 1) on error, i on success. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
