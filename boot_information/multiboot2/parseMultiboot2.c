@@ -36,7 +36,7 @@ ParseAndSaveBootInformation(void *boot_info) {
 
                 map[j/mmap->entry_size].addr = mmap_e->addr;
                 map[j/mmap->entry_size].len = mmap_e->len;
-                map[j/mmap->entry_size].type = mmap_e->type;
+                map[j/mmap->entry_size].type = (CardinalMemoryRegionType)mmap_e->type;
             }
 
             bootInfo.CardinalMemoryMap = map;

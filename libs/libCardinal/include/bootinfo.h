@@ -3,11 +3,16 @@
 
 #include "cardinal_types.h"
 
+//! The physical memory regions
+typedef enum {
+    CardinalMemoryRegionType_Free = 1,  //!< The region is free
+} CardinalMemoryRegionType;
+
 //! An entry in the memory map
 typedef struct {
-    uint64_t addr;
-    uint64_t len;
-    uint8_t type;
+    uint64_t addr;                      //!< The base physical address
+    uint64_t len;                       //!< The length, in bytes, of the region
+    CardinalMemoryRegionType type;      //!< The type of the region
 } CardinalMemMap;
 
 //! Defines the boot information format for Cardinal

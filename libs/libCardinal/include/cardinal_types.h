@@ -4,7 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+//! Unique Identifier
 typedef uint64_t UID;
+
+//! System Identifier
 typedef uint64_t SysID;
 
 #endif

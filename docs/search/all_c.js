@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['m',['m',['../d3/de7/group__ipc__api.html#gaedd9812fb8bc7bcdc64291c50d160269',1,'ErrorMessage']]],
   ['madt',['MADT',['../d3/d42/structMADT.html',1,'']]],
   ['madt_5fapic_5fnmi_5fentry_5ftype',['MADT_APIC_NMI_ENTRY_TYPE',['../df/dc3/group__acpi__tables.html#ga31bb8a84c0d4021d0350d4e0eaa0aa56',1,'madt.h']]],
   ['madt_5fentryapic_5fnmi',['MADT_EntryAPIC_NMI',['../dd/da8/structMADT__EntryAPIC__NMI.html',1,'']]],
@@ -15,6 +16,8 @@ var searchData=
   ['madt_5fsig',['MADT_SIG',['../df/dc3/group__acpi__tables.html#ga6e966555ad9c8eaf6dcb718de074d870',1,'acpi_tables.h']]],
   ['managedpagetable',['ManagedPageTable',['../d9/db1/structManagedPageTable.html',1,'ManagedPageTable'],['../d0/d92/group__memory__hal.html#gad2397dbb839987d0753da093f7549f66',1,'ManagedPageTable():&#160;memory.h']]],
   ['mappage',['MapPage',['../d0/d92/group__memory__hal.html#gaf12f8fa8069d8c3c8c6d3662743965ab',1,'MapPage(ManagedPageTable *pageTable, uint64_t physicalAddress, uint64_t virtualAddress, size_t size, CachingMode cacheMode, MemoryAllocationType allocType, MemoryAllocationFlags flags):&#160;memory.c'],['../d0/d92/group__memory__hal.html#gaf12f8fa8069d8c3c8c6d3662743965ab',1,'MapPage(ManagedPageTable *pageTable, uint64_t physicalAddress, uint64_t virtualAddress, size_t size, CachingMode cacheMode, MemoryAllocationType allocType, MemoryAllocationFlags flags):&#160;memory.c']]],
+  ['max_5fmessage_5fsize',['MAX_MESSAGE_SIZE',['../d3/de7/group__ipc__api.html#gacb84a306ee37479f97cf0b476560f027',1,'ipc.h']]],
+  ['max_5fpending_5fmessage_5fcnt',['MAX_PENDING_MESSAGE_CNT',['../dd/d7b/group__Process.html#ga83779167c36b2ad349521fea17b325fc',1,'process.h']]],
   ['mcfg',['MCFG',['../d8/d00/structMCFG.html',1,'']]],
   ['mcfg_5fentry',['MCFG_Entry',['../db/da2/structMCFG__Entry.html',1,'']]],
   ['mcfg_5fsig',['MCFG_SIG',['../df/dc3/group__acpi__tables.html#ga0928a2f6fe80de39820060619520dbd4',1,'acpi_tables.h']]],
@@ -22,12 +25,14 @@ var searchData=
   ['memoryallocationsmap',['MemoryAllocationsMap',['../d5/d3a/structMemoryAllocationsMap.html',1,'MemoryAllocationsMap'],['../d0/d92/group__memory__hal.html#ga91c66252a28d011008224fc4dc01885e',1,'MemoryAllocationsMap():&#160;memory.h']]],
   ['memorymapparams',['MemoryMapParams',['../d8/d2c/structMemoryMapParams.html',1,'']]],
   ['memorysize',['MemorySize',['../dc/d07/structCardinalBootInfo.html#a89580713ff34546aeca0db6c7ac1d25c',1,'CardinalBootInfo']]],
-  ['message',['Message',['../d8/dd0/structMessage.html',1,'']]],
+  ['message',['Message',['../d8/dd0/structMessage.html',1,'Message'],['../d3/de7/group__ipc__api.html#gac5d2505352602da27debb8163160af23',1,'Message():&#160;ipc.h']]],
   ['mkdirrequest',['MkdirRequest',['../d8/de4/structMkdirRequest.html',1,'']]],
   ['mkdirresponse',['MkdirResponse',['../df/d40/structMkdirResponse.html',1,'']]],
   ['mountevent',['MountEvent',['../df/dba/structMountEvent.html',1,'']]],
   ['mountrequest',['MountRequest',['../d6/d7b/structMountRequest.html',1,'']]],
   ['mountresponse',['MountResponse',['../d2/dd0/structMountResponse.html',1,'']]],
+  ['msgid',['MsgID',['../d3/de7/group__ipc__api.html#ga69331dfb560aa706c8ee22ee2abcde41',1,'Message']]],
+  ['msgtype',['MsgType',['../d3/de7/group__ipc__api.html#gab7b9a9d0dff38bc532eacf9fd60d9b21',1,'Message']]],
   ['multiboot_5faout_5fsymbol_5ftable',['multiboot_aout_symbol_table',['../df/d98/structmultiboot__aout__symbol__table.html',1,'']]],
   ['multiboot_5fapm_5finfo',['multiboot_apm_info',['../d3/db4/structmultiboot__apm__info.html',1,'']]],
   ['multiboot_5fcolor',['multiboot_color',['../d7/d2b/structmultiboot__color.html',1,'']]],
@@ -61,5 +66,6 @@ var searchData=
   ['multiboot_5ftag_5fstring',['multiboot_tag_string',['../de/d46/structmultiboot__tag__string.html',1,'']]],
   ['multiboot_5ftag_5fvbe',['multiboot_tag_vbe',['../db/d3c/structmultiboot__tag__vbe.html',1,'']]],
   ['multiboot_5fvbe_5finfo_5fblock',['multiboot_vbe_info_block',['../d9/d69/structmultiboot__vbe__info__block.html',1,'']]],
-  ['multiboot_5fvbe_5fmode_5finfo_5fblock',['multiboot_vbe_mode_info_block',['../d6/d6f/structmultiboot__vbe__mode__info__block.html',1,'']]]
+  ['multiboot_5fvbe_5fmode_5finfo_5fblock',['multiboot_vbe_mode_info_block',['../d6/d6f/structmultiboot__vbe__mode__info__block.html',1,'']]],
+  ['management',['Management',['../dd/d7b/group__Process.html',1,'']]]
 ];

@@ -40,6 +40,7 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="../../index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="../../pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="../../modules.html"><span>Modules</span></a></li>
       <li class="current"><a href="../../annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="../../files.html"><span>Files</span></a></li>
@@ -87,32 +88,45 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">Message Struct Reference</div>  </div>
+<div class="title">Message Struct Reference<div class="ingroups"><a class="el" href="../../d3/de7/group__ipc__api.html">IPC API</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>IPC <a class="el" href="../../d8/dd0/structMessage.html" title="IPC Message. ">Message</a>.  
+ <a href="../../d8/dd0/structMessage.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d9/d24/ipc_8h_source.html">ipc.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a1758f562d9624388acbb602f46620f85"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1758f562d9624388acbb602f46620f85"></a>
-UID&#160;</td><td class="memItemRight" valign="bottom"><b>SourcePID</b></td></tr>
-<tr class="separator:a1758f562d9624388acbb602f46620f85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f80472ee2d4c47d2843d770192c496c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9f80472ee2d4c47d2843d770192c496c"></a>
-UID&#160;</td><td class="memItemRight" valign="bottom"><b>DestinationPID</b></td></tr>
-<tr class="separator:a9f80472ee2d4c47d2843d770192c496c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69331dfb560aa706c8ee22ee2abcde41"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a69331dfb560aa706c8ee22ee2abcde41"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>MsgID</b></td></tr>
-<tr class="separator:a69331dfb560aa706c8ee22ee2abcde41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab7b9a9d0dff38bc532eacf9fd60d9b21"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>MsgType</b></td></tr>
-<tr class="separator:ab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac7beebd8893b5926b6ccbf26cd848d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac7beebd8893b5926b6ccbf26cd848d4"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>rsv</b> [4]</td></tr>
-<tr class="separator:aac7beebd8893b5926b6ccbf26cd848d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a233839529bde6260f81fe40f2ddfeaad"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a233839529bde6260f81fe40f2ddfeaad"></a>
-unsigned short&#160;</td><td class="memItemRight" valign="bottom"><b>Size</b></td></tr>
-<tr class="separator:a233839529bde6260f81fe40f2ddfeaad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1758f562d9624388acbb602f46620f85"><td class="memItemLeft" align="right" valign="top">
+UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85">SourcePID</a></td></tr>
+<tr class="memdesc:ga1758f562d9624388acbb602f46620f85"><td class="mdescLeft">&#160;</td><td class="mdescRight">The sender PID. <br /></td></tr>
+<tr class="separator:ga1758f562d9624388acbb602f46620f85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9f80472ee2d4c47d2843d770192c496c"><td class="memItemLeft" align="right" valign="top">
+UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga9f80472ee2d4c47d2843d770192c496c">DestinationPID</a></td></tr>
+<tr class="memdesc:ga9f80472ee2d4c47d2843d770192c496c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The destination PID. <br /></td></tr>
+<tr class="separator:ga9f80472ee2d4c47d2843d770192c496c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga69331dfb560aa706c8ee22ee2abcde41"><td class="memItemLeft" align="right" valign="top">
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga69331dfb560aa706c8ee22ee2abcde41">MsgID</a></td></tr>
+<tr class="memdesc:ga69331dfb560aa706c8ee22ee2abcde41"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message ID, uniquely identifies a conversation. <br /></td></tr>
+<tr class="separator:ga69331dfb560aa706c8ee22ee2abcde41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memItemLeft" align="right" valign="top">
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gab7b9a9d0dff38bc532eacf9fd60d9b21">MsgType</a></td></tr>
+<tr class="memdesc:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message type (CARDINAL_MSG_TYPE_XXXXX). <br /></td></tr>
+<tr class="separator:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="memItemLeft" align="right" valign="top">
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaac7beebd8893b5926b6ccbf26cd848d4">rsv</a> [4]</td></tr>
+<tr class="memdesc:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved for future use. <br /></td></tr>
+<tr class="separator:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga233839529bde6260f81fe40f2ddfeaad"><td class="memItemLeft" align="right" valign="top">
+unsigned short&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga233839529bde6260f81fe40f2ddfeaad">Size</a></td></tr>
+<tr class="memdesc:ga233839529bde6260f81fe40f2ddfeaad"><td class="mdescLeft">&#160;</td><td class="mdescRight">The size of the message. <br /></td></tr>
+<tr class="separator:ga233839529bde6260f81fe40f2ddfeaad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following file:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>IPC <a class="el" href="../../d8/dd0/structMessage.html" title="IPC Message. ">Message</a>. </p>
+</div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>libs/libCardinal/include/<a class="el" href="../../d9/d24/ipc_8h_source.html">ipc.h</a></li>
 </ul>
 </div><!-- contents -->

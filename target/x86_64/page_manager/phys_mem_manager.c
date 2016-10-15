@@ -48,7 +48,7 @@ MemMan_Initialize(void) {
         uint64_t len = info->CardinalMemoryMap[j].len;
         if(len % PAGE_SIZE != 0)len = (len/PAGE_SIZE + 1) * PAGE_SIZE;
 
-        if(info->CardinalMemoryMap[j].type == 1)MemMan_MarkFree(addr, len);
+        if(info->CardinalMemoryMap[j].type == CardinalMemoryRegionType_Free)MemMan_MarkFree(addr, len);
     }
 
     //Mark important regions that have been preallocated
