@@ -18,7 +18,7 @@ typedef struct {
 //! Defines the boot information format for Cardinal
 typedef struct {
     uint64_t MemorySize;                          //!< The total RAM size.
-    uint32_t elf_shdr_type;                     
+    uint32_t elf_shdr_type;
     uint32_t elf_shdr_size;
     uint32_t elf_shdr_num;
     uint32_t elf_shdr_entsize;

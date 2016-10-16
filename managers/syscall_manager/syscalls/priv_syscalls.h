@@ -43,8 +43,8 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params);
+              uint64_t syscall_num,
+              uint64_t *syscall_params);
 
 uint64_t
 R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),

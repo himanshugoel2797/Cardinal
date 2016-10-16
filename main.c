@@ -34,7 +34,7 @@ load_exec(UID pid, const char *exec) {
     Initrd_GetFile(exec, &exec_loc, &exec_size);
 
     //Map the executable into the process
-    
+
     CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     StartProcess(pid);
     while(1);

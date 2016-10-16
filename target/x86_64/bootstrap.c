@@ -65,14 +65,14 @@ bootstrap_kernel(void *param,
     info->InitrdStartAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)info->InitrdStartAddress);
     void* tmp_initrd_addr = bootstrap_malloc(info->InitrdLength + PAGE_SIZE);
 
-        uint64_t tmp_initrd_addr_u64 = (uint64_t)tmp_initrd_addr;
-        if(tmp_initrd_addr_u64 % PAGE_SIZE != 0)tmp_initrd_addr_u64 += (PAGE_SIZE - tmp_initrd_addr_u64 % PAGE_SIZE);
+    uint64_t tmp_initrd_addr_u64 = (uint64_t)tmp_initrd_addr;
+    if(tmp_initrd_addr_u64 % PAGE_SIZE != 0)tmp_initrd_addr_u64 += (PAGE_SIZE - tmp_initrd_addr_u64 % PAGE_SIZE);
 
-        tmp_initrd_addr = (void*)tmp_initrd_addr_u64;
+    tmp_initrd_addr = (void*)tmp_initrd_addr_u64;
 
-        memcpy(tmp_initrd_addr, (void*)info->InitrdStartAddress, info->InitrdLength);
-        memset((void*)info->InitrdStartAddress, 0, info->InitrdLength);
-        info->InitrdStartAddress = (uint64_t)tmp_initrd_addr;
+    memcpy(tmp_initrd_addr, (void*)info->InitrdStartAddress, info->InitrdLength);
+    memset((void*)info->InitrdStartAddress, 0, info->InitrdLength);
+    info->InitrdStartAddress = (uint64_t)tmp_initrd_addr;
 
     if(magic != MULTIBOOT_MAGIC) {
         bootstrap_kernel_panic(0xff);   //We weren't booted by a standards compliant bootloader, can't trust this environment

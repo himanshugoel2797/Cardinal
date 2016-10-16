@@ -88,12 +88,12 @@ struct MemoryMapParams {
  */
 static __inline uint64_t
 R0_Map(UID pid,
-             uint64_t phys,
-             uint64_t *virt,
-             uint64_t len,
-             CachingMode cacheMode,
-             MemoryAllocationType type,
-             MemoryAllocationFlags flags) {
+       uint64_t phys,
+       uint64_t *virt,
+       uint64_t len,
+       CachingMode cacheMode,
+       MemoryAllocationType type,
+       MemoryAllocationFlags flags) {
     struct MemoryMapParams p;
 
 

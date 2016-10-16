@@ -9,7 +9,7 @@ uint64_t
 Brk_Syscall(uint64_t UNUSED(instruction_pointer),
             uint64_t syscall_num,
             uint64_t *syscall_params) {
-    
+
     if(syscall_num != Syscall_Brk) {
         SyscallSetErrno(-ENOSYS);
         return 0;
@@ -24,7 +24,7 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     void* targ_brk_address = (void*)data->params[0];
-    
+
     ProcessInformation *p_info;
     GetProcessReference(GetCurrentProcessUID(), &p_info);
 
@@ -53,11 +53,11 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 
         LockSpinlock(p_info->lock);
 
-        if((uint64_t)targ_brk_address <= p_info->HeapBreak){
+        if((uint64_t)targ_brk_address <= p_info->HeapBreak) {
 
-            UnlockSpinlock(p_info->lock), 
-            
-            SyscallSetErrno(0);
+            UnlockSpinlock(p_info->lock),
+
+                           SyscallSetErrno(0);
             return (uint64_t)targ_brk_address;
         }
 
@@ -87,8 +87,8 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params) {
+              uint64_t syscall_num,
+              uint64_t *syscall_params) {
     if(syscall_num != Syscall_R0_Map) {
         SyscallSetErrno(-ENOSYS);
         return 0;
@@ -109,7 +109,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
     struct MemoryMapParams *mmap_params = (struct MemoryMapParams*)data->params[0];
 
     ProcessInformation *p_info;
-    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None){
+    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
@@ -124,7 +124,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
                                   mmap_params->AllocationType,
                                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
 
-        SyscallSetErrno(-ENOMEM);
+            SyscallSetErrno(-ENOMEM);
         return 0;
     }
 
@@ -138,8 +138,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
         SyscallSetErrno(-ENOMEM);
         return 0;
-    }
-    else {
+    } else {
 
         SyscallSetErrno(0);
         return mmap_params->VirtualAddress;
@@ -150,26 +149,26 @@ uint64_t
 R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
                 uint64_t syscall_num,
                 uint64_t *syscall_params) {
-    
-    if(syscall_num != Syscall_R0_Unmap){
+
+    if(syscall_num != Syscall_R0_Unmap) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return -1;
     }
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 3){
+    if(data->param_num != 3) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
 
     ProcessInformation *p_info;
-    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None){
+    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }

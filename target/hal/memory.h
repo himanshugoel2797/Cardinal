@@ -37,7 +37,7 @@ typedef struct MemoryAllocationsMap {
 
     struct MemoryAllocationsMap *next;    //!< The next allocation in the list.
     struct MemoryAllocationsMap *prev;    //!< The previous allocation in the list.
-} MemoryAllocationsMap; 
+} MemoryAllocationsMap;
 
 /**
  * Describes a hardware independent page table

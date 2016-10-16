@@ -712,12 +712,11 @@ GetNextThread(ThreadInfo *prevThread) {
                 List_AddEntry(neutral, next_thread);
             }
             break;
-        default:
-            {
-                if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
-                    exit_loop = TRUE;
-            }
-            break;
+        default: {
+            if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
+                exit_loop = TRUE;
+        }
+        break;
         }
 
     }
@@ -841,8 +840,8 @@ GetCoreLoad(int coreNum) {
 
 void
 SetThreadErrno(UID id,
-               uint64_t errno){
-    
+               uint64_t errno) {
+
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         SET_PROPERTY_VAL(coreState->cur_thread, Errno, errno);
         return;
@@ -857,7 +856,7 @@ SetThreadErrno(UID id,
 }
 
 uint64_t
-GetThreadErrno(UID id){
+GetThreadErrno(UID id) {
     if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
         return GET_PROPERTY_VAL(coreState->cur_thread, Errno);
     }

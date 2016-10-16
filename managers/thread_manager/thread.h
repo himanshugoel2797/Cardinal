@@ -407,7 +407,7 @@ TaskSwitch(uint32_t int_no,
  * @param[in]  paused  TRUE to pause, FALSE to resume
  */
 void
-SetThreadIsPaused(UID tid, 
+SetThreadIsPaused(UID tid,
                   bool paused);
 
 /**

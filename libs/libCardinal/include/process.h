@@ -19,15 +19,15 @@ R0_ExitDeleteProcess(UID pid) {
 }
 
 static __inline uint64_t
-R0_CreateProcess(UID *uid){
-	if(uid != NULL){
+R0_CreateProcess(UID *uid) {
+    if(uid != NULL) {
 
 
-		return GetErrno();
-	}
-	return -EINVAL;
+        return GetErrno();
+    }
+    return -EINVAL;
 }
-    
+
 static __inline uint64_t
 R0_StartProcess(UID pid) {
 

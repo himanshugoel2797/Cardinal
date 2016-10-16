@@ -67,7 +67,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         if(inst->reference_count != 0)
             HaltProcessor();
-    
+
         LockSpinlock(vmem_lock);
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);

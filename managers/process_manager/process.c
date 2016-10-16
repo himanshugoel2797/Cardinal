@@ -82,7 +82,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     dst->Children = List_Create(CreateSpinlock());
     List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
-    
+
     dst->Parent = src;
     dst->reference_count = 1;
     dst->lock = CreateSpinlock();
@@ -95,7 +95,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
 ProcessErrors
 StartProcess(UID pid) {
-    
+
     ProcessInformation *pinfo = NULL;
     ProcessErrors err = GetProcessReference(pid, &pinfo);
     if(err != ProcessErrors_None)
@@ -146,17 +146,17 @@ TerminateProcess(UID pid, uint32_t exit_code) {
         //This process no longer holds a reference to its parent, reduce reference count
         AtomicDecrement32(&pinfo->Parent->reference_count);
 
-    //Post a message to the parent process with the exit code
-    struct SigChild *exit_msg = kmalloc(MESSAGE_SIZE);
-    if(exit_msg != NULL) {
-        memset(exit_msg, 0, sizeof(struct SigChild));
-        exit_msg->m.SourcePID = pid;
-        exit_msg->m.MsgID = 0;
-        exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
-        exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
-        exit_msg->exit_code = exit_code;
+        //Post a message to the parent process with the exit code
+        struct SigChild *exit_msg = kmalloc(MESSAGE_SIZE);
+        if(exit_msg != NULL) {
+            memset(exit_msg, 0, sizeof(struct SigChild));
+            exit_msg->m.SourcePID = pid;
+            exit_msg->m.MsgID = 0;
+            exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
+            exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
+            exit_msg->exit_code = exit_code;
 
-        PostMessages(pinfo->Parent->ID, (Message**)&exit_msg, 1);
+            PostMessages(pinfo->Parent->ID, (Message**)&exit_msg, 1);
         }
     }
 
@@ -252,7 +252,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
     int index = (int)DestinationPID;
     if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
-        DestinationPID = specialDestinationPIDs[index];    
+        DestinationPID = specialDestinationPIDs[index];
 
     ProcessInformation *pInfo = NULL;
     if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
@@ -272,21 +272,21 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
         LockSpinlock(pInfo->MessageLock);
 
         {
-            if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT){
+            if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT) {
                 UnlockSpinlock(pInfo->MessageLock);
                 return i;
             }
 
             m = kmalloc(MESSAGE_SIZE);
-            
-            if(m == NULL){
+
+            if(m == NULL) {
                 UnlockSpinlock(pInfo->MessageLock);
                 return i;
             }
 
             memcpy(m, msg[i], MESSAGE_SIZE);
-        }        
-        
+        }
+
         UnlockSpinlock(pInfo->MessageLock);
 
         m->SourcePID = GetCurrentProcessUID();
