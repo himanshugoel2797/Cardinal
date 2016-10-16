@@ -32,7 +32,6 @@ var searchData=
   ['siginfo_5ft',['siginfo_t',['../dc/dbc/structsiginfo__t.html',1,'']]],
   ['sigset_5ft',['sigset_t',['../d4/df5/structsigset__t.html',1,'']]],
   ['sigval_5ft',['sigval_t',['../d3/d3a/unionsigval__t.html',1,'']]],
-  ['size',['Size',['../d3/de7/group__ipc__api.html#ga233839529bde6260f81fe40f2ddfeaad',1,'Message']]],
   ['sleepdurationns',['SleepDurationNS',['../d5/dfe/structThreadInfo.html#a3c047c210ef30c9256521009d3bd14cd',1,'ThreadInfo']]],
   ['sleepstarttime',['SleepStartTime',['../d5/dfe/structThreadInfo.html#ad3021f8339b9b5d0bb156bd8ca8b0543',1,'ThreadInfo']]],
   ['sleepthread',['SleepThread',['../d6/d5a/group__threading.html#ga8621566c7923c1fc0fdbcf110ca29253',1,'SleepThread(UID id, uint64_t duration_ns):&#160;thread.c'],['../d6/d5a/group__threading.html#ga8621566c7923c1fc0fdbcf110ca29253',1,'SleepThread(UID id, uint64_t duration_ns):&#160;thread.c']]],
