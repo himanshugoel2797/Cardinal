@@ -67,6 +67,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
     ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
     *pid = dst->ID = new_proc_uid();
     dst->UserID = userID;
+    dst->GroupID = src->GroupID;
     dst->Status = ProcessStatus_Stopped;
 
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
@@ -89,40 +90,6 @@ CreateProcess(UID parent, UID userID, UID *pid) {
     AtomicIncrement32(&src->reference_count);
 
     List_AddEntry(processes, dst);
-    return ProcessErrors_None;
-}
-
-ProcessErrors
-ForkProcess(ProcessInformation *src,
-            ProcessInformation **dest) {
-    LockSpinlock(src->lock);
-    ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
-    dst->ID = new_proc_uid();
-    dst->Status = src->Status;
-    dst->PageTable = kmalloc(sizeof(ManagedPageTable));
-    dst->HeapBreak = src->HeapBreak;
-
-    dst->ThreadIDs = List_Create(CreateSpinlock());
-    dst->PendingMessages = List_Create(CreateSpinlock());
-    dst->MessageLock = CreateSpinlock();
-
-    dst->Children = List_Create(CreateSpinlock());
-    List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
-    dst->Parent = src;
-
-    ForkTable(src->PageTable, dst->PageTable);
-
-    dst->reference_count = 1;   //The parent process has a reference to the child
-    dst->lock = CreateSpinlock();
-
-    src->reference_count++;
-
-    //Add dst to src's children
-    UnlockSpinlock(src->lock);
-
-    List_AddEntry(processes, dst);
-    *dest = dst;
-
     return ProcessErrors_None;
 }
 
@@ -218,53 +185,6 @@ TerminateProcess(UID pid, uint32_t exit_code) {
 
 }
 
-UID
-ForkCurrentProcess(void) {
-
-    CRegisters regs;
-    regs.set_tid = NULL;
-    regs.clear_tid = NULL;
-    regs.p_tid = NULL;
-    regs.tls = NULL;
-    regs.rip = (uint64_t)__builtin_return_address(0);
-    regs.rbp = *(uint64_t*)__builtin_frame_address(0);
-    regs.rsp = (uint64_t)__builtin_frame_address(0);
-    regs.rsp += 16;
-    regs.rax = 0;
-    __asm__ volatile("movq %%rbx, %%rax" : "=a"(regs.rbx));
-    __asm__ volatile("movq %%rcx, %%rax" : "=a"(regs.rcx));
-    __asm__ volatile("movq %%rdx, %%rax" : "=a"(regs.rdx));
-    __asm__ volatile("movq %%rsi, %%rax" : "=a"(regs.rsi));
-    __asm__ volatile("movq %%rdi, %%rax" : "=a"(regs.rdi));
-    __asm__ volatile("movq %%r8, %%rax" : "=a"(regs.r8));
-    __asm__ volatile("movq %%r9, %%rax" : "=a"(regs.r9));
-    __asm__ volatile("movq %%r10, %%rax" : "=a"(regs.r10));
-    __asm__ volatile("movq %%r11, %%rax" : "=a"(regs.r11));
-    __asm__ volatile("movq %%r12, %%rax" : "=a"(regs.r12));
-    __asm__ volatile("movq %%r13, %%rax" : "=a"(regs.r13));
-    __asm__ volatile("movq %%r14, %%rax" : "=a"(regs.r14));
-    __asm__ volatile("movq %%r15, %%rax" : "=a"(regs.r15));
-    __asm__ volatile("pushf\n\tpopq %%rax" : "=a"(regs.rflags));
-    __asm__ volatile("movw %%ss, %%ax" : "=a"(regs.ss));
-    __asm__ volatile("movw %%cs, %%ax" : "=a"(regs.cs));
-
-    regs.set_tid = NULL;
-    regs.clear_tid = NULL;
-    regs.p_tid = NULL;
-    regs.tls = NULL;
-
-    ProcessInformation *dst_proc = NULL;
-    ProcessInformation *src_proc = NULL;
-    GetProcessReference(GetCurrentProcessUID(), &src_proc);
-
-    ForkProcess(src_proc, &dst_proc);
-    CreateThreadADV(dst_proc->ID, &regs);
-
-    return dst_proc->ID;
-}
-
-
-
 ProcessErrors
 GetProcessInformation(UID           pid,
                       ProcessInformation    *procInfo) {
@@ -304,14 +224,6 @@ GetProcessReference(UID           pid,
     }
     return ProcessErrors_UIDNotFound;
 }
-
-void
-RaiseSignal(UID pid,
-            int sig_no) {
-    pid = 0;
-    sig_no = 0;
-}
-
 
 uint64_t
 PostMessages(UID dstPID, Message **msg, uint64_t cnt) {

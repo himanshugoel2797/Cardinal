@@ -14,17 +14,8 @@
  * @{
  */
 
-/**
- * @brief      Fork the source process.
- *
- * @param      src   The source
- * @param      dst   The destination
- *
- * @return     Error code on failure, ProcessErrors_None on success.
- */
 ProcessErrors
-ForkProcess(ProcessInformation *src,
-            ProcessInformation **dst);
+CreateProcess(UID parent, UID userID, UID *pid);
 
 /**
  * @brief      Terminate the specified process.
@@ -34,14 +25,6 @@ ForkProcess(ProcessInformation *src,
  */
 void
 TerminateProcess(UID pid, uint32_t exit_code);
-
-/**
- * @brief      Fork the current process.
- *
- * @return     0 on the new process, the PID of the new process on the calling process.
- */
-UID
-ForkCurrentProcess(void);
 
 /**
  * @brief      Gets the process information.

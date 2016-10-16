@@ -6,7 +6,6 @@ void
 RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);
     RegisterSyscall(Syscall_Brk, Brk_Syscall);
-    RegisterSyscall(Syscall_Clone, Clone_Syscall);
 
     RegisterSyscall(Syscall_GetIPCMessageFrom, GetIPCMessageFrom_Syscall);
     RegisterSyscall(Syscall_PostIPCMessage, PostIPCMessage_Syscall);

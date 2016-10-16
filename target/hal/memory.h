@@ -34,25 +34,10 @@ typedef struct MemoryAllocationsMap {
     uint64_t    Length;                   //!< The length, in bytes, of this allocation
     MemoryAllocationFlags Flags;          //!< The MemoryAllocationFlags of this allocation.
     MemoryAllocationType  AllocationType; //!< The MemoryAllocationType of this allocation.
-    void*    AdditionalData;              //!< Additional data associated with this allocation.
 
     struct MemoryAllocationsMap *next;    //!< The next allocation in the list.
     struct MemoryAllocationsMap *prev;    //!< The previous allocation in the list.
 } MemoryAllocationsMap; 
-
-/**
- * Describes a forked memory allocation.
- */
-typedef struct ForkedMemoryData {
-    CachingMode CacheMode;                //!< The CachingMode used for this allocation.
-    uint64_t VirtualAddress;              //!< The virtual address of this allocation.
-    uint64_t PhysicalAddress;             //!< The physical address of this allocation.
-    uint64_t Length;                      //!< The length, in bytes, of this allocation.
-    uint32_t NetReferenceCount;           //!< The number of address spaces that refer to this fork.
-    MemoryAllocationFlags Flags;          //!< The MemoryAllocationFlags of this allocation.
-    MemoryAllocationType AllocationType;  //!< The MemoryAllocationType of this allocation.
-    Spinlock Lock;                        //!< The lock to synchronize access to this structure.
-} ForkedMemoryData;
 
 /**
  * Describes a hardware independent page table
@@ -134,18 +119,6 @@ SetActiveVirtualMemoryInstance(ManagedPageTable* inst);
  */
 ManagedPageTable*
 GetActiveVirtualMemoryInstance(void);
-
-/**
- * @brief      Fork the src page table into the dst table.
- *
- * @param      src   The source
- * @param      dst   The destination
- *
- * @return     Error code on failure, MemoryAllocationErrors_None on success.
- */
-MemoryAllocationErrors
-ForkTable(ManagedPageTable *src,
-          ManagedPageTable *dst);
 
 /**
  * @brief      Map a page into the page table.

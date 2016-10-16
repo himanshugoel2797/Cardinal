@@ -5,7 +5,6 @@ typedef enum {
     Syscall_NumStart = 1,
     Syscall_Brk = Syscall_NumStart,
     Syscall_Nanosleep,
-    Syscall_Clone,
 
     Syscall_GetIPCMessageFrom,
     Syscall_PostIPCMessage,

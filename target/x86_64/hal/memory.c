@@ -67,54 +67,9 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         if(inst->reference_count != 0)
             HaltProcessor();
+    
         LockSpinlock(vmem_lock);
-        if(inst->PageTable != 0 && inst->PageTable % PAGE_SIZE == 0) {
-
-            //First free all memory we can free
-
-            MemoryAllocationsMap* m = inst->AllocationMap;
-            while(m != NULL) {
-                MemoryAllocationsMap* n = m->next;
-
-                uint64_t phys_addr = m->PhysicalAddress;
-                uint64_t len = m->Length;
-                MemoryAllocationType allocType = m->AllocationType;
-                ForkedMemoryData *fork_data = (ForkedMemoryData*)m->AdditionalData;
-
-                if(allocType & MemoryAllocationType_Fork) {
-                    LockSpinlock(fork_data->Lock);
-                    AtomicDecrement32(&fork_data->NetReferenceCount);
-                }
-                
-                UnmapPage(inst,
-                          m->VirtualAddress,
-                          m->Length);
-                bool toFree = !(allocType & MemoryAllocationType_Global);
-                bool forkFree = (allocType & MemoryAllocationType_Fork);
-                forkFree = forkFree && (fork_data->NetReferenceCount == 0);
-
-                if(toFree && forkFree) {
-                    FreePhysicalPageCont(phys_addr, len / PAGE_SIZE);
-                }
-
-                if(forkFree) {
-                    FreeSpinlock(fork_data->Lock);
-                    kfree(fork_data);
-                }
-
-                if(!forkFree && (allocType & MemoryAllocationType_Fork))
-                    UnlockSpinlock(fork_data->Lock);
-
-                //TODO Free the memory from the remaining mappings
-
-                m = n;
-            }
-
-            if(inst->AllocationMap != NULL)
-                HaltProcessor();
-
-            VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
-        }
+        VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);
     }
 }
@@ -182,7 +137,6 @@ MapPage(ManagedPageTable *pageTable,
         allocMap->Length = size;
         allocMap->Flags = flags;
         allocMap->AllocationType = allocType;
-        allocMap->AdditionalData = 0;
     }
 
     LockSpinlock(pageTable->lock);
@@ -199,7 +153,6 @@ MapPage(ManagedPageTable *pageTable,
                 top->CacheMode = map->CacheMode;
                 top->Flags = map->Flags;
                 top->AllocationType = map->AllocationType;
-                top->AdditionalData = map->AdditionalData;
 
                 top->VirtualAddress = virtualAddress + size;
                 top->PhysicalAddress = (uint64_t)VirtMemMan_GetPhysicalAddress((PML_Instance)pageTable->PageTable, (void*)(virtualAddress + size));
@@ -339,7 +292,6 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 top->CacheMode = map->CacheMode;
                 top->Flags = map->Flags;
                 top->AllocationType = map->AllocationType;
-                top->AdditionalData = map->AdditionalData;
 
                 top->VirtualAddress = virtualAddress + size;
                 top->PhysicalAddress = (uint64_t)VirtMemMan_GetPhysicalAddress((PML_Instance)pageTable->PageTable, (void*)(virtualAddress + size));
@@ -431,132 +383,6 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
     return MemoryAllocationErrors_None;
 }
 
-MemoryAllocationErrors
-InternalForkTable(ManagedPageTable *src,
-                  ManagedPageTable *dst) {
-    if(dst == NULL)return MemoryAllocationErrors_Unknown;
-
-    dst->reference_count = 0;
-    dst->lock = CreateSpinlock();
-    dst->AllocationMap = NULL;
-    CreateVirtualMemoryInstance(dst);
-
-    if(src == NULL)return MemoryAllocationErrors_Unknown;
-    if(dst == NULL)return MemoryAllocationErrors_Unknown;
-
-    LockSpinlock(src->lock);
-    MemoryAllocationsMap *c = src->AllocationMap;
-
-    while(c != NULL) {
-
-        if(c->AllocationType != MemoryAllocationType_Shared) {
-            MapPage(dst,
-                    c->PhysicalAddress,
-                    c->VirtualAddress,
-                    c->Length,
-                    c->CacheMode,
-                    c->AllocationType | MemoryAllocationType_Fork,
-                    c->Flags
-                   );
-        }
-
-        c = c->next;
-    }
-
-    c = dst->AllocationMap;
-    MemoryAllocationsMap *tmp_node = NULL;
-
-    while(c != NULL) {
-        tmp_node = c->prev;
-        c->prev = c->next;
-        c->next = tmp_node;
-
-        tmp_node = c;
-        c = c->prev;
-    }
-
-    if(tmp_node != NULL)
-        dst->AllocationMap = tmp_node;
-
-    //Setup the fork data structure before marking the src data as forked in order to determine the fork source
-    MemoryAllocationsMap *src_map = src->AllocationMap;
-    MemoryAllocationsMap *dst_map = dst->AllocationMap;
-
-    while(src_map != NULL && dst_map != NULL) {
-
-        while(src_map != NULL && src_map->AllocationType == MemoryAllocationType_Shared)src_map = src_map->next;
-        if(src_map == NULL)
-            HaltProcessor();
-
-        if(src_map->VirtualAddress != dst_map->VirtualAddress)
-            HaltProcessor();
-
-        if(src_map->AllocationType & MemoryAllocationType_Fork)
-            dst_map->AdditionalData = src_map->AdditionalData;
-        else {
-            dst_map->AdditionalData = kmalloc(sizeof(ForkedMemoryData));
-            ((ForkedMemoryData*)dst_map->AdditionalData)->Lock = CreateSpinlock();
-        }
-
-        ForkedMemoryData *fork_data = (ForkedMemoryData*)dst_map->AdditionalData;
-        LockSpinlock(fork_data->Lock);
-        fork_data->VirtualAddress = src_map->VirtualAddress;
-        fork_data->PhysicalAddress = src_map->PhysicalAddress;
-        fork_data->Length = src_map->Length;
-
-        if(src_map->AllocationType & MemoryAllocationType_Fork)
-            AtomicIncrement32(&fork_data->NetReferenceCount);
-        else
-            fork_data->NetReferenceCount = 2;
-
-        fork_data->Flags = src_map->Flags;
-        fork_data->AllocationType = src_map->AllocationType & ~MemoryAllocationType_Fork;
-        fork_data->CacheMode = src_map->CacheMode;
-
-        src_map->AdditionalData = fork_data;
-        UnlockSpinlock(fork_data->Lock);
-
-        src_map = src_map->next;
-        dst_map = dst_map->next;
-    }
-
-    c = dst->AllocationMap;
-
-    while(c != NULL) {
-
-        ChangePageFlags(src,
-                        c->VirtualAddress,
-                        c->CacheMode,
-                        c->AllocationType | MemoryAllocationType_Fork,
-                        c->Flags
-                       );
-
-        c = c->next;
-    }
-
-    UnlockSpinlock(src->lock);
-
-    return MemoryAllocationErrors_None;
-}
-
-static uint8_t tmp_stack[4096];
-
-MemoryAllocationErrors
-ForkTable(ManagedPageTable *src,
-          ManagedPageTable *dst) {
-    MemoryAllocationErrors err = 0;
-    __asm__ volatile
-    (
-        "xchg %%rax, %%rsp\n\t"
-        "push %%rax\n\t"
-        "call InternalForkTable\n\t"
-        "pop %%rcx\n\t"
-        "mov %%rcx, %%rsp\n\t"
-        :"=a"(err) :"a"(tmp_stack + 4096 - 16), "D"(src), "S"(dst) : "rcx"
-    );
-    return err;
-}
-
 uint64_t
 AllocatePhysicalPage(void) {
     LockSpinlock(vmem_lock);
@@ -624,68 +450,8 @@ HandlePageFault(uint64_t virtualAddress,
     MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
     while(map != NULL) {
         if(virtualAddress >= map->VirtualAddress && virtualAddress < (map->VirtualAddress + map->Length)) {
+
             //Found an entry that describes this fault
-            if((map->AllocationType & MemoryAllocationType_Fork) && (error & MemoryAllocationFlags_Write)) {
-
-                ForkedMemoryData *fork_data = (ForkedMemoryData*)map->AdditionalData;
-                LockSpinlock(fork_data->Lock);
-
-                uint64_t tmp_loc_virt = 0;
-                uint64_t tmp_loc_phys = fork_data->NetReferenceCount-- > 1 ? AllocatePhysicalPageCont(fork_data->Length / PAGE_SIZE) : fork_data->PhysicalAddress;
-
-                //First allocate the same amount of memory in another location
-                FindFreeVirtualAddress(
-                    procInfo->PageTable,
-                    &tmp_loc_virt,
-                    fork_data->Length,
-                    MemoryAllocationType_Heap,
-                    MemoryAllocationFlags_Write);
-
-                MapPage(procInfo->PageTable,
-                        tmp_loc_phys,
-                        tmp_loc_virt,
-                        fork_data->Length,
-                        CachingModeWriteBack,
-                        MemoryAllocationType_Heap,
-                        MemoryAllocationFlags_Write);
-
-                //Then copy over the data
-                memcpy((void*)tmp_loc_virt, (void*)fork_data->VirtualAddress, fork_data->Length);
-
-                //Then undo the above mapping
-                UnmapPage(procInfo->PageTable,
-                          tmp_loc_virt,
-                          fork_data->Length);
-
-                //Then map the same pages on top of the existing set
-                UnmapPage(procInfo->PageTable,
-                          fork_data->VirtualAddress,
-                          fork_data->Length);
-
-                MapPage(procInfo->PageTable,
-                        tmp_loc_phys,
-                        fork_data->VirtualAddress,
-                        fork_data->Length,
-                        fork_data->CacheMode,
-                        fork_data->AllocationType,
-                        fork_data->Flags
-                       );
-
-                map->AllocationType &= ~MemoryAllocationType_Fork;
-
-                //Now cause a TLB shootdown
-                PerformTLBShootdown();
-
-                UnlockSpinlock(fork_data->Lock);
-                if(fork_data->NetReferenceCount == 0) {
-                    FreeSpinlock(fork_data->Lock);
-                    kfree(fork_data);
-                }
-
-                break;
-
-            }
-
             if(map->AllocationType & MemoryAllocationType_Application) {
                 __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
             }

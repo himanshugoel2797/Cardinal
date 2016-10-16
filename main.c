@@ -51,25 +51,12 @@ kernel_main(void) {
     Syscall_Initialize();
     DeviceManager_Initialize();
     smp_unlock_cores();
-
-    {
-        CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
-            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 0;  //ARGB
-        }
-    }
     SetupPreemption();
-
-    {
-        CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
-            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 8;  //ARGB
-        }
-    }
-
     target_device_setup();
 
-    UID cpid = ForkCurrentProcess();
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
 
     {
         CardinalBootInfo *info = GetBootInfo();
@@ -78,6 +65,7 @@ kernel_main(void) {
         }
     }
 
+    while(1); //TODO
     if(cpid == 0) {
         load_exec("userboot.bin");
     }
