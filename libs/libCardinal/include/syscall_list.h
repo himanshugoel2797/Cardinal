@@ -13,20 +13,21 @@ typedef enum {
     Syscall_SetProperty,
     Syscall_GetProperty,
 
-    Syscall_GetErrno,                   //Get the error for the latest syscall
+    Syscall_GetErrno,                   //!< Get the error for the latest syscall
 
-    Syscall_R0_Map,                     //Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions
-    Syscall_R0_Unmap,                   //Unmap a mapping
-    Syscall_R0_AllocatePages,           //Allocate a continuous range of pages
-    Syscall_R0_FreePages,               //Free a continuous range of pages
-    Syscall_R0_Fork,                    //Forks the process
-    Syscall_R0_GetProcessInfo,          //Get the kernel's process information
-    Syscall_R0_SetProcessInfo,          //Set the kernel's process information
-    Syscall_R0_CreateThread,            //Create a new thread
-    Syscall_R0_WipeMemoryMap,           //Wipe the memory map of a process
-    Syscall_R0_SetThreadIsPaused,       //Allow pausing/resuming threads
-    Syscall_R0_ExitDeleteThread,        //Exit and delete a thread by its TID
-    Syscall_R0_ExitDeleteProcess,       //Exit and delete a process by its PID
+    Syscall_R0_Map,                     //!< Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions
+    Syscall_R0_Unmap,                   //!< Unmap a mapping
+    Syscall_R0_AllocatePages,           //!< Allocate a continuous range of pages
+    Syscall_R0_FreePages,               //!< Free a continuous range of pages
+    Syscall_R0_CreateProcess,           //!< Create a process
+    Syscall_R0_StartProcess,            //!< Start a process
+    Syscall_R0_GetProcessInfo,          //!< Get the kernel's process information
+    Syscall_R0_SetProcessInfo,          //!< Set the kernel's process information
+    Syscall_R0_CreateThread,            //!< Create a new thread
+    Syscall_R0_WipeMemoryMap,           //!< Wipe the memory map of a process
+    Syscall_R0_SetThreadIsPaused,       //!< Allow pausing/resuming threads
+    Syscall_R0_ExitDeleteThread,        //!< Exit and delete a thread by its TID
+    Syscall_R0_ExitDeleteProcess,       //!< Exit and delete a process by its PID
 
     Syscall_R1_PowerManagementEvent,    //Send or receive power management events
 

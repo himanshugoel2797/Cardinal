@@ -1,0 +1,7 @@
+{
+    "folders": [{
+        "path": ".",
+        "folder_exclude_patterns": ["docs", "root"],
+        "file_exclude_patterns": ["*.bc"]
+    }]
+}

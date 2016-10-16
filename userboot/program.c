@@ -1,13 +1,9 @@
 #include "program.h"
-#include "common.h"
-#include "memory.h"
-#include "kmalloc.h"
+#include <cardinal/memory.h>
 #include "elf.h"
-#include "managers.h"
-#include "syscall.h"
 
 
-void
+int
 LoadAndStartApplication(void *elf_loc,
                         uint64_t elf_size,
                         const char **argv,
@@ -15,7 +11,8 @@ LoadAndStartApplication(void *elf_loc,
                         const char **envp) {
     ElfInformation elf_info;
     ElfLoaderError err = LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, GetActiveVirtualMemoryInstance(), &elf_info);
-    if(err != ElfLoaderError_Success)__asm__("cli\n\thlt" :: "a"(err));
+    if(err != ElfLoaderError_Success)
+        return -1;
 
     uint32_t auxv_cnt = 0;
     AUXVector auxv[7];

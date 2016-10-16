@@ -55,14 +55,6 @@ LoadElf64(void *loc,
     elfData->phdr_ent_size = hdr->e_phentsize;
 
 
-    uint64_t v_tmp_addr = 0;
-    FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
-                           &v_tmp_addr,
-                           PAGE_SIZE,
-                           MemoryAllocationType_Heap,
-                           MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel);
-
-
     Elf64_Phdr *phdr = (Elf64_Phdr*)(hdr->e_phoff + (uint64_t)loc);
     for(int i = 0; i < (int)hdr->e_phnum; i++, phdr = (Elf64_Phdr*)((uint64_t)phdr + hdr->e_phentsize)) {
 
@@ -86,23 +78,29 @@ LoadElf64(void *loc,
             uint64_t mem_clr_sz = p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz;
             uint64_t mem_cpy_sz = p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz;
 
-            p_addr = R0_GetPhysicalAddress(
-                            R0_Map(pid,
-                                0,
-                                p_vaddr - p_vaddr % PAGE_SIZE,
-                                PAGE_SIZE,
-                                CachingModeWriteBack,
-                                MemoryAllocationType_Application,
-                                flags));
+            if(R0_AllocatePages(1, &p_addr) != 0)
+                return ElfLoaderError_OutOfMemory;
+
+            uint64_t vaddr = p_vaddr - p_vaddr % PAGE_SIZE;
+            if(R0_Map(pid,
+                   p_addr,
+                   &vaddr,
+                   PAGE_SIZE,
+                   CachingModeWriteBack,
+                   MemoryAllocationType_Application,
+                   flags)) != 0)
+                return ElfLoaderError_OutOfMemory;
 
 
-            R0_Map(pid,
+            uint64_t v_tmp_addr = 0;
+            if(R0_Map(pid,
                     p_addr,
-                    v_tmp_addr,
+                    &v_tmp_addr,
                     PAGE_SIZE,
                     CachingModeWriteBack,
                     MemoryAllocationType_Heap,
-                    MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+                    MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))
+                return ElfLoaderError_OutOfMemory;
 
 
             switch(phdr->p_type) {

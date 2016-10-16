@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <cardinal/cardinal_types.h>
 
 typedef uint32_t Elf32_Addr;
 typedef uint32_t Elf32_Off;
@@ -388,7 +389,8 @@ typedef enum ElfLoaderError {
     ElfLoaderError_IncompatibleBinary,
     ElfLoaderError_NotElf,
     ElfLoaderError_UnknownABI,
-    ElfLoaderError_UnknownClass
+    ElfLoaderError_UnknownClass,
+    ElfLoaderError_OutOfMemory,
 } ElfLoaderError;
 
 typedef enum ElfLimitations {

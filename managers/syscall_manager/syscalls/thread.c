@@ -125,28 +125,3 @@ Clone_Syscall(uint64_t UNUSED(instruction_pointer),
                  (void*)params[5],
                  (void*)params[6]);
 }
-
-uint64_t
-R0Fork_Syscall(uint64_t UNUSED(instruction_pointer),
-               uint64_t syscall_num,
-               uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_Fork){
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
-        SyscallSetErrno(-EPERM);
-        return 0;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 0){
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    SyscallSetErrno(0);
-    return ForkCurrentProcess();
-}

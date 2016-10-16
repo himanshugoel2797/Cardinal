@@ -61,22 +61,33 @@ GetFile(const char *file,
     return 1;
 }
 
-void
+int
 ImportInitrd(void) {
     CardinalBootInfo b_info;
     if(R0_GetBootInfo(&b_info) != 0)
-        return;
+        return -1;
 
-    uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.InitrdStartAddress);
+    uint64_t initrd_addr = 0;
+    
+    if(R0_GetPhysicalAddress(b_info.InitrdStartAddress, &initrd_addr) != 0)
+        return -1;
+    
     uint64_t InitrdLength = b_info.InitrdLength;
 
-    InitrdStartAddress = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
+    InitrdStartAddress = 0;
+    uint64_t pid = 0;
+
+    if(GetProperty(CardinalProperty_PID, 0, &pid) != 0)
+        return -1;
+
+    if(R0_Map(pid,
                                      initrd_addr,
-                                     0,
+                                     &InitrdStartAddress,
                                      InitrdLength,
                                      CachingModeWriteBack,
                                      MemoryAllocationType_MMap,
-                                     MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
+                                     MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present) != 0)
+        return -1;
 
 /*
     uint64_t fb_addr = R0_GetPhysicalAddress(b_info.FramebufferAddress);

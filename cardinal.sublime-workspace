@@ -1,0 +1,477 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"Cardin",
+				"CardinalMemoryRegionType"
+			],
+			[
+				"Card",
+				"CardinalMemoryRegionType"
+			],
+			[
+				"PROPE",
+				"PROPERTY_GET_SET"
+			],
+			[
+				"Syscall",
+				"SyscallSetErrno"
+			],
+			[
+				"E",
+				"ENOSYS"
+			],
+			[
+				"EN",
+				"ENOMEM"
+			],
+			[
+				"sys",
+				"syscall_num"
+			],
+			[
+				"mma",
+				"mmap_params"
+			],
+			[
+				"ElfLo",
+				"ElfLoaderError_IncompatibleBinary"
+			],
+			[
+				"Sys",
+				"Syscall_R0_SetThreadIsPaused"
+			],
+			[
+				"Syscall_",
+				"Syscall_R0_ExitDeleteThread"
+			],
+			[
+				"refer",
+				"reference_count"
+			],
+			[
+				"ThreadState_",
+				"ThreadState_Running"
+			],
+			[
+				"File",
+				"FileSystemError_PathInvalid"
+			],
+			[
+				"cm",
+				"cmd_name"
+			],
+			[
+				"write",
+				"write_resp"
+			],
+			[
+				"wri",
+				"write_resp"
+			],
+			[
+				"WriteRe",
+				"WriteRequest"
+			],
+			[
+				"read",
+				"read_resp"
+			],
+			[
+				"read_",
+				"read_req"
+			],
+			[
+				"rea",
+				"read_size"
+			],
+			[
+				"open",
+				"open_req"
+			],
+			[
+				"fs",
+				"fs_obj"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": ".sublime-project",
+			"settings":
+			{
+				"buffer_size": 144,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					""
+				],
+				[
+					"Packages/Makefile/Make.sublime-build",
+					"Clean"
+				]
+			],
+			[
+				"Packages/Makefile/Make.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 372.0,
+		"last_filter": "Package Control: ",
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				"Install",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			". setup_env.sh"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/hgoel/Documents/Cardinal",
+		"/home/hgoel/Documents/Cardinal/target",
+		"/home/hgoel/Documents/Cardinal/target/x86_64"
+	],
+	"file_history":
+	[
+		"/home/hgoel/Documents/Cardinal/.sublime-project",
+		"/home/hgoel/.config/sublime-text-3/Packages/IntelliDocs/IntelliDocs.sublime-settings",
+		"/home/hgoel/Documents/Cardinal/Doxyfile",
+		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/README.md",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall.h",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.h",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h",
+		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/Base File.sublime-settings",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_types.h",
+		"/home/hgoel/Documents/Cardinal/sys_init/initrd.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/debug_gfx.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager/phys_mem_manager.c",
+		"/home/hgoel/Documents/Cardinal/userboot/initrd.c",
+		"/home/hgoel/Documents/Cardinal/main.c",
+		"/home/hgoel/Documents/Cardinal/sys_init/sys_init.elf",
+		"/home/hgoel/Documents/Cardinal/sys_init/Makefile",
+		"/home/hgoel/Documents/Cardinal/userboot/Makefile",
+		"/home/hgoel/Documents/Cardinal/userboot/elf.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/memory.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/ipc.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/thread.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/errno.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c",
+		"/home/hgoel/Documents/Cardinal/userboot/include/program.h",
+		"/home/hgoel/Documents/Cardinal/userboot/include/elf.h",
+		"/home/hgoel/Documents/Cardinal/userboot/main.c",
+		"/home/hgoel/Documents/Cardinal/Makefile",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/syscall.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/thread.h",
+		"/home/hgoel/Documents/Cardinal/acpi/acpi_tables.c",
+		"/home/hgoel/Documents/Cardinal/target/hal/interrupts.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/process.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/thread.h",
+		"/home/hgoel/Documents/Cardinal/.gitignore",
+		"/home/hgoel/Documents/Cardinal/target/hal/timer.h",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c",
+		"/home/hgoel/Documents/Cardinal/target/hal/synchronization.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/memory.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/time.c",
+		"/home/hgoel/Documents/Cardinal/Sources.inc",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.h",
+		"/home/hgoel/Documents/Cardinal/initrd/Makefile",
+		"/home/hgoel/Documents/Cardinal/scripts/rebuild-initrd.sh",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/archDefs.inc",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/Sources.inc",
+		"/home/hgoel/Documents/Cardinal/target/hal/program.h",
+		"/home/hgoel/Documents/Cardinal/root/sys/src/Cardinal_directory_server-master/Makefile"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			"-root/*,-*.bc,-*.S,-docs/*",
+			"-root/*,-*.bc,-*.S"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"GetProperty",
+			"///",
+			"multiboot_tag_m",
+			"CardinalMemoryMap_len",
+			"cardinalMemMap",
+			"framebuffer_red_mask_size",
+			"framebuffer_green_mask_size",
+			"framebuffer_blue_mask_size",
+			"framebuffer_blue_field_position",
+			"framebuffer_green_field_position",
+			"framebuffer_red_field_position",
+			"framebuffer_bpp",
+			"framebuffer_height",
+			"framebuffer_width",
+			"framebuffer_pitch",
+			"framebuffer_addr",
+			"initrd_len",
+			"initrd_start_addr",
+			"rsdp_addr",
+			"mem_size",
+			"[in/out]",
+			"struct",
+			"arch_specific_data",
+			"current_stack",
+			"arch_specific_data",
+			"set_parent_tid",
+			"clear_child_tid",
+			"set_child_tid",
+			"core_affinity",
+			"sleep_start_time",
+			"sleep_duration_ns",
+			"current_stack",
+			"kernel_stack_base",
+			"kernel_stack_aligned",
+			"interrupt_stack_aligned",
+			"interrupt_stack_base",
+			"priority",
+			"wakeCondition",
+			"fpu_state",
+			"state",
+			"SetSyscallErrno",
+			"TODO",
+			"ProcessStatus_Stopped",
+			"seek",
+			"getdents64",
+			"dir",
+			"read"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"//!",
+			"CardinalMemoryMapLength",
+			"CardinalMemoryMap",
+			"FramebufferRedMaskSize",
+			"FramebufferGreenMaskSize",
+			"FramebufferBlueMaskSize",
+			"FramebufferBlueFieldPosition",
+			"FramebufferGreenFieldPosition",
+			"FramebufferRedFieldPosition",
+			"FramebufferBPP",
+			"FramebufferHeight",
+			"FramebufferWidth",
+			"FramebufferPitch",
+			"FramebufferAddress",
+			"InitrdLength",
+			"InitrdStartAddress",
+			"RSDPAddress",
+			"MemorySize",
+			"",
+			"ArchSpecificData",
+			"CurrentStack",
+			"ArchSpecificData",
+			"SetParentTID",
+			"ClearChildTID",
+			"SetChildTID",
+			"CoreAffinity",
+			"SleepStartTime",
+			"SleepDurationNS",
+			"CurrentStack",
+			"KernelStackBase",
+			"KernelStackAligned",
+			"InterruptStackAligned",
+			"InterruptStackBase",
+			"Priority",
+			"WakeCondition",
+			"FPUState",
+			"State",
+			"SyscallSetErrno"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": ".sublime-project",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 144,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								144,
+								144
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 25.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "cardinal.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 201.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
