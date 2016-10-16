@@ -3,7 +3,13 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
+#include <cardinal/memory.h>
 #include <cardinal/cardinal_types.h>
+
+#define PAGE_SIZE 4096
+#define TRUE true
+#define FALSE false
 
 typedef uint32_t Elf32_Addr;
 typedef uint32_t Elf32_Off;

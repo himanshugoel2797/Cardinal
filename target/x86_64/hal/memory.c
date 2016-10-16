@@ -57,6 +57,8 @@ MemoryAllocationErrors
 CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
+        inst->lock = CreateSpinlock();
+        inst->reference_count = 1;
         return MemoryAllocationErrors_None;
     }
     return MemoryAllocationErrors_Unknown;

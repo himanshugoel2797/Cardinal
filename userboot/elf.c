@@ -43,7 +43,7 @@ VerifyElf(void *loc,
 ElfLoaderError
 LoadElf64(void *loc,
           uint64_t size,
-          ElfLimitations UNUSED(limits),
+          ElfLimitations limits,
           UID pid,
           ElfInformation *elfData) {
     if(size < sizeof(Elf64_Ehdr))return ElfLoaderError_NotElf;
@@ -88,7 +88,7 @@ LoadElf64(void *loc,
                       PAGE_SIZE,
                       CachingModeWriteBack,
                       MemoryAllocationType_Application,
-                      flags)) != 0)
+                      flags) != 0)
                 return ElfLoaderError_OutOfMemory;
 
 

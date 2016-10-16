@@ -1,6 +1,6 @@
 TARGET=userboot.bin
 
-OBJS=main.o initrd.o program.o elf.o
+OBJS=main.o initrd.o elf.o
 
 LIBS=
 
@@ -9,7 +9,7 @@ LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
 CFLAGS=-Iinclude
-LDFLAGS=-nostartfiles
+LDFLAGS=-nostartfiles -fpic
 
 .PHONY:all
 

@@ -156,7 +156,7 @@ AllocateStack(UID parentProcess,
 
     FindFreeVirtualAddress(
         pInfo->PageTable,
-        (uint64_t*)&user_stack_base,
+        &user_stack_base,
         STACK_SIZE,
         MemoryAllocationType_Stack,
         MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0));
@@ -187,7 +187,7 @@ CreateThread(UID parentProcess,
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
     regs.rsp = user_stack_base;
-    regs.rbp = 0;
+    regs.rbp = user_stack_base;
     regs.rax = 0;
     regs.rbx = 0;
     regs.rcx = 0;
@@ -209,8 +209,8 @@ CreateThread(UID parentProcess,
     regs.set_tid = NULL;
 
     if(perm_level == ThreadPermissionLevel_User) {
-        regs.ss = 0x20;
-        regs.cs = 0x28;
+        regs.ss = 0x23;
+        regs.cs = 0x2F;
     } else if(perm_level == ThreadPermissionLevel_Kernel) {
         regs.ss = 0x10;
         regs.cs = 0x8;
@@ -273,7 +273,8 @@ CreateThreadADV(UID parentProcess,
 
 
 
-    uint64_t *cur_stack_frame = (uint64_t*)SetupTemporaryWriteMap(pInfo->PageTable, kstack, PAGE_SIZE);
+    uint64_t cur_stack_frame_vaddr = SetupTemporaryWriteMap(pInfo->PageTable, kstack - kstack % PAGE_SIZE, PAGE_SIZE);
+    uint64_t *cur_stack_frame = (uint64_t*)(cur_stack_frame_vaddr + (kstack % PAGE_SIZE));
     int offset = 0;
     cur_stack_frame[--offset] = regs->ss;
     cur_stack_frame[--offset] = regs->rsp;
@@ -298,7 +299,7 @@ CreateThreadADV(UID parentProcess,
     cur_stack_frame[--offset] = regs->r14;
     cur_stack_frame[--offset] = regs->r15;
 
-    UninstallTemporaryWriteMap((uint64_t)cur_stack_frame, PAGE_SIZE);
+    UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);
     //push ss
     //push rsp
     //push rflags
@@ -323,7 +324,9 @@ CreateThreadADV(UID parentProcess,
     //push r15
 
     //Update the thread list
-    SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)&cur_stack_frame[offset]);
+    uint64_t* kstack_p = (uint64_t*)kstack;
+    //__asm__("cli\n\thlt" :: "a"(kstack), "b"(cur_stack_frame));
+    SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)(&kstack_p[offset]));
 
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());

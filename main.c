@@ -1,4 +1,5 @@
 #include "main.h"
+#include "common.h"
 #include "types.h"
 #include "kmalloc.h"
 #include "managers.h"
@@ -33,11 +34,42 @@ load_exec(UID pid, const char *exec) {
 
     Initrd_GetFile(exec, &exec_loc, &exec_size);
 
-    //Map the executable into the process
+    uint64_t orig_exec_size = exec_size;
+    exec_size += (PAGE_SIZE - exec_size % PAGE_SIZE);
 
-    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
+    //Map the executable into the process
+    ProcessInformation *pinfo = NULL;
+    if(GetProcessReference(pid, &pinfo) != ProcessErrors_None)
+        return;
+
+
+
+    for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++){
+
+        uint64_t p_addr = AllocatePhysicalPage();
+
+        MapPage(pinfo->PageTable,
+            p_addr,
+            0x400000 + i * PAGE_SIZE,
+            PAGE_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Application,
+            MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Exec);
+
+    }
+
+
+    uint8_t* write_target = (uint8_t*)SetupTemporaryWriteMap(pinfo->PageTable,
+                                                             0x400000,
+                                                             exec_size);
+
+    memcpy(write_target, exec_loc, orig_exec_size);
+
+    UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
+
+    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)0x400000, NULL);
     StartProcess(pid);
-    while(1);
+    return;
 }
 
 void
@@ -55,6 +87,7 @@ kernel_main(void) {
     smp_unlock_cores();
     SetupPreemption();
     target_device_setup();
+
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
