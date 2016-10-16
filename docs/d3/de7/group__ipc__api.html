@@ -106,15 +106,15 @@ typedef struct <a class="el" href="../../d8/dd0/structMessage.html">Message</a>&
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gadbfd80dc9a852f431889a51a9bd7f4de">GetIPCMessageFrom</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m, UID sourcePID, uint64_t msg_id)</td></tr>
-<tr class="memdesc:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message from the source.  <a href="#gadbfd80dc9a852f431889a51a9bd7f4de">More...</a><br /></td></tr>
-<tr class="separator:gadbfd80dc9a852f431889a51a9bd7f4de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0fc4d62e43c595436d2dfc20f23902ec"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga0fc4d62e43c595436d2dfc20f23902ec">GetIPCMessageFrom</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m, UID sourcePID, uint32_t msg_id)</td></tr>
+<tr class="memdesc:ga0fc4d62e43c595436d2dfc20f23902ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message from the source.  <a href="#ga0fc4d62e43c595436d2dfc20f23902ec">More...</a><br /></td></tr>
+<tr class="separator:ga0fc4d62e43c595436d2dfc20f23902ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga7b0e0d5af67aee2cbe853a14a5cc0d49">GetIPCMessage</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m)</td></tr>
 <tr class="memdesc:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message.  <a href="#ga7b0e0d5af67aee2cbe853a14a5cc0d49">More...</a><br /></td></tr>
 <tr class="separator:ga7b0e0d5af67aee2cbe853a14a5cc0d49"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga4a2fb55a1dbeda3c413e03230adafd71">PostIPCMessages</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> **m, uint64_t cnt)</td></tr>
-<tr class="memdesc:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posts ipc messages.  <a href="#ga4a2fb55a1dbeda3c413e03230adafd71">More...</a><br /></td></tr>
-<tr class="separator:ga4a2fb55a1dbeda3c413e03230adafd71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga201f0870905183cbb7981308b3d2e034"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga201f0870905183cbb7981308b3d2e034">PostIPCMessages</a> (UID dstPID, <a class="el" href="../../d8/dd0/structMessage.html">Message</a> **m, uint64_t cnt)</td></tr>
+<tr class="memdesc:ga201f0870905183cbb7981308b3d2e034"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posts ipc messages.  <a href="#ga201f0870905183cbb7981308b3d2e034">More...</a><br /></td></tr>
+<tr class="separator:ga201f0870905183cbb7981308b3d2e034"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -122,22 +122,14 @@ Variables</h2></td></tr>
 UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85">Message::SourcePID</a></td></tr>
 <tr class="memdesc:ga1758f562d9624388acbb602f46620f85"><td class="mdescLeft">&#160;</td><td class="mdescRight">The sender PID. <br /></td></tr>
 <tr class="separator:ga1758f562d9624388acbb602f46620f85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9f80472ee2d4c47d2843d770192c496c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga9f80472ee2d4c47d2843d770192c496c"></a>
-UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga9f80472ee2d4c47d2843d770192c496c">Message::DestinationPID</a></td></tr>
-<tr class="memdesc:ga9f80472ee2d4c47d2843d770192c496c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The destination PID. <br /></td></tr>
-<tr class="separator:ga9f80472ee2d4c47d2843d770192c496c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga69331dfb560aa706c8ee22ee2abcde41"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga69331dfb560aa706c8ee22ee2abcde41"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga69331dfb560aa706c8ee22ee2abcde41">Message::MsgID</a></td></tr>
-<tr class="memdesc:ga69331dfb560aa706c8ee22ee2abcde41"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message ID, uniquely identifies a conversation. <br /></td></tr>
-<tr class="separator:ga69331dfb560aa706c8ee22ee2abcde41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gab7b9a9d0dff38bc532eacf9fd60d9b21"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gab7b9a9d0dff38bc532eacf9fd60d9b21">Message::MsgType</a></td></tr>
-<tr class="memdesc:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message type (CARDINAL_MSG_TYPE_XXXXX). <br /></td></tr>
-<tr class="separator:gab7b9a9d0dff38bc532eacf9fd60d9b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaac7beebd8893b5926b6ccbf26cd848d4"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaac7beebd8893b5926b6ccbf26cd848d4">Message::rsv</a> [4]</td></tr>
-<tr class="memdesc:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved for future use. <br /></td></tr>
-<tr class="separator:gaac7beebd8893b5926b6ccbf26cd848d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga841846fbc1e35bc8af275dd9a80dd047"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga841846fbc1e35bc8af275dd9a80dd047"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga841846fbc1e35bc8af275dd9a80dd047">Message::MsgID</a></td></tr>
+<tr class="memdesc:ga841846fbc1e35bc8af275dd9a80dd047"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message ID, uniquely identifies a conversation. <br /></td></tr>
+<tr class="separator:ga841846fbc1e35bc8af275dd9a80dd047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga3e0fe0b022a77c62f6f212839ff9e3b5"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga3e0fe0b022a77c62f6f212839ff9e3b5">Message::MsgType</a></td></tr>
+<tr class="memdesc:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message type (CARDINAL_MSG_TYPE_XXXXX). <br /></td></tr>
+<tr class="separator:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaedd9812fb8bc7bcdc64291c50d160269"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaedd9812fb8bc7bcdc64291c50d160269"></a>
 <a class="el" href="../../d8/dd0/structMessage.html">Message</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaedd9812fb8bc7bcdc64291c50d160269">ErrorMessage::m</a></td></tr>
 <tr class="memdesc:gaedd9812fb8bc7bcdc64291c50d160269"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard required message header. <br /></td></tr>
@@ -180,11 +172,11 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The ipc message. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no message to return, 1 if a message has been returned. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="gadbfd80dc9a852f431889a51a9bd7f4de"></a>
+<a class="anchor" id="ga0fc4d62e43c595436d2dfc20f23902ec"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -206,7 +198,7 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>msg_id</em>&#160;</td>
         </tr>
         <tr>
@@ -237,7 +229,7 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 
 </div>
 </div>
-<a class="anchor" id="ga4a2fb55a1dbeda3c413e03230adafd71"></a>
+<a class="anchor" id="ga201f0870905183cbb7981308b3d2e034"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -247,6 +239,12 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
         <tr>
           <td class="memname">static __inline int PostIPCMessages </td>
           <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>dstPID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="../../d8/dd0/structMessage.html">Message</a> **&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
@@ -274,12 +272,13 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Posts ipc messages. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">dstPID</td><td>The destination pid </td></tr>
     <tr><td class="paramdir"></td><td class="paramname">m</td><td>A list of messages to post </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">cnt</td><td>The number of messages in the list</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>If 'i' is the number of messages sent, -(i + 1) on error, i on success. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>-1 on failure to post any messages, the number of messages posted on success. </dd></dl>
 
 </div>
 </div>

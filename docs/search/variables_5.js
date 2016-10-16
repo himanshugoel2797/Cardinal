@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['getcoredata',['getCoreData',['../d2/dd0/structCoreInfo.html#a235c5e7eaf89c2932a0615a7d17281ef',1,'CoreInfo']]],
-  ['groupid',['GroupID',['../d4/d03/structProcessInformation.html#a3a34d1bc21f65a73b1a7b6852ba1044b',1,'ProcessInformation']]]
+  ['handlingmessage',['HandlingMessage',['../d4/d03/structProcessInformation.html#a6a0dfc7e679df7ecfc7576cd0cc078fe',1,'ProcessInformation']]],
+  ['heapbreak',['HeapBreak',['../d4/d03/structProcessInformation.html#a61cb33f39714fe70956f9cc5a7c9ca9c',1,'ProcessInformation']]]
 ];

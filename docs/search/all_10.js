@@ -21,6 +21,5 @@ var searchData=
   ['resetpreemption',['ResetPreemption',['../d6/d5a/group__threading.html#gab52aed09194cc102f20c88258e997b87',1,'ResetPreemption(void):&#160;thread.c'],['../d6/d5a/group__threading.html#gab52aed09194cc102f20c88258e997b87',1,'ResetPreemption(void):&#160;thread.c']]],
   ['restorefpustate',['RestoreFPUState',['../d6/d5a/group__threading.html#ga5cf0bfd67b6889da19a7af46cd4d7c82',1,'RestoreFPUState(void *dst):&#160;fpu.c'],['../d6/d5a/group__threading.html#ga5cf0bfd67b6889da19a7af46cd4d7c82',1,'RestoreFPUState(void *source):&#160;fpu.c']]],
   ['rsdpaddress',['RSDPAddress',['../dc/d07/structCardinalBootInfo.html#ad9aa3b5f9a301f1e1b8b04268dbee228',1,'CardinalBootInfo']]],
-  ['rsv',['rsv',['../d3/de7/group__ipc__api.html#gaac7beebd8893b5926b6ccbf26cd848d4',1,'Message']]],
   ['rtc_5ftime',['RTC_Time',['../dd/d8f/structRTC__Time.html',1,'']]]
 ];

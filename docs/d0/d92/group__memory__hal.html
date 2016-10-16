@@ -91,8 +91,6 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d3a/structMemoryAllocationsMap.html">MemoryAllocationsMap</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dd8/structForkedMemoryData.html">ForkedMemoryData</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -100,8 +98,6 @@ Data Structures</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:ga91c66252a28d011008224fc4dc01885e"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d5/d3a/structMemoryAllocationsMap.html">MemoryAllocationsMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga91c66252a28d011008224fc4dc01885e">MemoryAllocationsMap</a></td></tr>
 <tr class="separator:ga91c66252a28d011008224fc4dc01885e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafcbcf8480ddd2494d17d17f196a27ca6"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d0/dd8/structForkedMemoryData.html">ForkedMemoryData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gafcbcf8480ddd2494d17d17f196a27ca6">ForkedMemoryData</a></td></tr>
-<tr class="separator:gafcbcf8480ddd2494d17d17f196a27ca6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad2397dbb839987d0753da093f7549f66"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gad2397dbb839987d0753da093f7549f66">ManagedPageTable</a></td></tr>
 <tr class="separator:gad2397dbb839987d0753da093f7549f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -128,9 +124,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga16a884ac1d3f8592c51696e598c3f388"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga16a884ac1d3f8592c51696e598c3f388">GetActiveVirtualMemoryInstance</a> (void)</td></tr>
 <tr class="memdesc:ga16a884ac1d3f8592c51696e598c3f388"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the active virtual memory instance.  <a href="#ga16a884ac1d3f8592c51696e598c3f388">More...</a><br /></td></tr>
 <tr class="separator:ga16a884ac1d3f8592c51696e598c3f388"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga55792beaa12c8a01cb7a958f25298a4a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga55792beaa12c8a01cb7a958f25298a4a">ForkTable</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *src, <a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *dst)</td></tr>
-<tr class="memdesc:ga55792beaa12c8a01cb7a958f25298a4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fork the src page table into the dst table.  <a href="#ga55792beaa12c8a01cb7a958f25298a4a">More...</a><br /></td></tr>
-<tr class="separator:ga55792beaa12c8a01cb7a958f25298a4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf12f8fa8069d8c3c8c6d3662743965ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gaf12f8fa8069d8c3c8c6d3662743965ab">MapPage</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t physicalAddress, uint64_t virtualAddress, size_t size, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> allocType, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags)</td></tr>
 <tr class="memdesc:gaf12f8fa8069d8c3c8c6d3662743965ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a page into the page table.  <a href="#gaf12f8fa8069d8c3c8c6d3662743965ab">More...</a><br /></td></tr>
 <tr class="separator:gaf12f8fa8069d8c3c8c6d3662743965ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -199,21 +192,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Typedef Documentation</h2>
-<a class="anchor" id="gafcbcf8480ddd2494d17d17f196a27ca6"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="../../d0/dd8/structForkedMemoryData.html">ForkedMemoryData</a>  <a class="el" href="../../d0/dd8/structForkedMemoryData.html">ForkedMemoryData</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
-<p>Describes a forked memory allocation. </p>
-
-</div>
-</div>
 <a class="anchor" id="gad2397dbb839987d0753da093f7549f66"></a>
 <div class="memitem">
 <div class="memproto">
@@ -509,44 +487,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
     <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>The size </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">allocType</td><td>The allocate type </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga55792beaa12c8a01cb7a958f25298a4a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> ForkTable </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
-          <td class="paramname"><em>src</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
-          <td class="paramname"><em>dst</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
-
-<p>Fork the src page table into the dst table. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">src</td><td>The source </td></tr>
-    <tr><td class="paramname">dst</td><td>The destination</td></tr>
   </table>
   </dd>
 </dl>

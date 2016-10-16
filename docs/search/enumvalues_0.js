@@ -8,7 +8,6 @@ var searchData=
   ['cardinalproperty_5fgroupid',['CardinalProperty_GroupID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a173e10512dc420ad47799566933cda6d',1,'syscall_property.h']]],
   ['cardinalproperty_5fiopl',['CardinalProperty_IOPL',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2acde991039c627e7e858af2cdb007a62b',1,'syscall_property.h']]],
   ['cardinalproperty_5fpid',['CardinalProperty_PID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2ae1cb1e4826f9f903ca60b72e7011497f',1,'syscall_property.h']]],
-  ['cardinalproperty_5fpls',['CardinalProperty_PLS',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a13ffff269d34e0250bbb96604c9c3da1',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fbootinfo',['CardinalProperty_R0_BootInfo',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a8c474a2a4885b4a24c1be26a87249ed8',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fphysicaladdress',['CardinalProperty_R0_PhysicalAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa',1,'syscall_property.h']]],
   ['cardinalproperty_5fsettidaddress',['CardinalProperty_SetTidAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a5425cf6f4052b624e773e8c91148320b',1,'syscall_property.h']]],

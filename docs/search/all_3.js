@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['cachemode',['CacheMode',['../d8/d2c/structMemoryMapParams.html#a92c32547b4902dc265686624c2b3cbb4',1,'MemoryMapParams::CacheMode()'],['../d5/d3a/structMemoryAllocationsMap.html#a08c56993ab4612a97722b137c4e28ca1',1,'MemoryAllocationsMap::CacheMode()'],['../d0/dd8/structForkedMemoryData.html#aea350f2a54e7b4367df75d6db2ab0484',1,'ForkedMemoryData::CacheMode()']]],
+  ['cachemode',['CacheMode',['../d8/d2c/structMemoryMapParams.html#a92c32547b4902dc265686624c2b3cbb4',1,'MemoryMapParams::CacheMode()'],['../d5/d3a/structMemoryAllocationsMap.html#a08c56993ab4612a97722b137c4e28ca1',1,'MemoryAllocationsMap::CacheMode()']]],
   ['cachingmode',['CachingMode',['../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5',1,'memory.h']]],
   ['cachingmodeuncachable',['CachingModeUncachable',['../d9/d2d/group__memory__syscall.html#gga3742e22d7fe8eba99cc98b5c4e685ca5aa719cf3ac1de0fb6e217586f1bb90a46',1,'memory.h']]],
   ['cachingmodewriteback',['CachingModeWriteBack',['../d9/d2d/group__memory__syscall.html#gga3742e22d7fe8eba99cc98b5c4e685ca5a98c74bf8e1191371211bd425e82a49f0',1,'memory.h']]],
@@ -16,7 +16,6 @@ var searchData=
   ['cardinalproperty_5fgroupid',['CardinalProperty_GroupID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a173e10512dc420ad47799566933cda6d',1,'syscall_property.h']]],
   ['cardinalproperty_5fiopl',['CardinalProperty_IOPL',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2acde991039c627e7e858af2cdb007a62b',1,'syscall_property.h']]],
   ['cardinalproperty_5fpid',['CardinalProperty_PID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2ae1cb1e4826f9f903ca60b72e7011497f',1,'syscall_property.h']]],
-  ['cardinalproperty_5fpls',['CardinalProperty_PLS',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a13ffff269d34e0250bbb96604c9c3da1',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fbootinfo',['CardinalProperty_R0_BootInfo',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a8c474a2a4885b4a24c1be26a87249ed8',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fphysicaladdress',['CardinalProperty_R0_PhysicalAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa',1,'syscall_property.h']]],
   ['cardinalproperty_5fsettidaddress',['CardinalProperty_SetTidAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a5425cf6f4052b624e773e8c91148320b',1,'syscall_property.h']]],
@@ -37,6 +36,7 @@ var searchData=
   ['corethreadstate',['CoreThreadState',['../df/dfd/structCoreThreadState.html',1,'']]],
   ['coreupdate',['CoreUpdate',['../d6/d5a/group__threading.html#ga44aec85c885acc4a48218e76014f482d',1,'CoreUpdate():&#160;thread.c'],['../d6/d5a/group__threading.html#ga44aec85c885acc4a48218e76014f482d',1,'CoreUpdate():&#160;thread.c']]],
   ['createbootstrapspinlock',['CreateBootstrapSpinlock',['../d6/d6a/group__sync__hal.html#ga39004a03f6873a1afac8bd26bbf97518',1,'CreateBootstrapSpinlock(void):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#ga39004a03f6873a1afac8bd26bbf97518',1,'CreateBootstrapSpinlock(void):&#160;synchronization.c']]],
+  ['createprocess',['CreateProcess',['../d3/d12/group__proc__man.html#ga7aa37247152a5583811095f00d71c15c',1,'CreateProcess(UID parent, UID userID, UID *pid):&#160;process.c'],['../d3/d12/group__proc__man.html#ga7aa37247152a5583811095f00d71c15c',1,'CreateProcess(UID parent, UID userID, UID *pid):&#160;process.c']]],
   ['createspinlock',['CreateSpinlock',['../d6/d6a/group__sync__hal.html#ga7440216d123bf0558c35b31e5ec7f0ef',1,'CreateSpinlock(void):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#ga7440216d123bf0558c35b31e5ec7f0ef',1,'CreateSpinlock(void):&#160;synchronization.c']]],
   ['createthread',['CreateThread',['../d6/d5a/group__threading.html#ga3c3774e918bb34e817f7e79e437e48bf',1,'CreateThread(UID parentProcess, ThreadPermissionLevel perm_level, ThreadEntryPoint entry_point, void *arg):&#160;thread.c'],['../d6/d5a/group__threading.html#ga3c3774e918bb34e817f7e79e437e48bf',1,'CreateThread(UID parentProcess, ThreadPermissionLevel perm_level, ThreadEntryPoint entry_point, void *arg):&#160;thread.c']]],
   ['createthreadadv',['CreateThreadADV',['../d6/d5a/group__threading.html#ga1c7f8c7fca426acb5555acdbc46ba60d',1,'CreateThreadADV(UID parentProcess, CRegisters *regs):&#160;thread.c'],['../d6/d5a/group__threading.html#ga1c7f8c7fca426acb5555acdbc46ba60d',1,'CreateThreadADV(UID parentProcess, CRegisters *regs):&#160;thread.c']]],

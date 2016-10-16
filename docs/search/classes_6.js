@@ -7,7 +7,6 @@ var searchData=
   ['filehandlers',['FileHandlers',['../dd/d7b/structFileHandlers.html',1,'']]],
   ['filesystemobject',['FileSystemObject',['../dd/d66/structFileSystemObject.html',1,'']]],
   ['flushrequest',['FlushRequest',['../dc/d52/structFlushRequest.html',1,'']]],
-  ['forkedmemorydata',['ForkedMemoryData',['../d0/dd8/structForkedMemoryData.html',1,'']]],
   ['fs_5fstatdata',['FS_StatData',['../dd/d81/structFS__StatData.html',1,'']]],
   ['fuse_5fargs',['fuse_args',['../d4/d27/structfuse__args.html',1,'']]],
   ['fuse_5fbuf',['fuse_buf',['../d8/d0b/structfuse__buf.html',1,'']]],
