@@ -92,23 +92,23 @@ LoadElf64(void *loc,
                 return ElfLoaderError_OutOfMemory;
 
 
-                uint64_t v_tmp_addr = 0;
-                if(R0_Map(pid,
-                          p_addr,
-                          &v_tmp_addr,
-                          PAGE_SIZE,
-                          CachingModeWriteBack,
-                          MemoryAllocationType_Heap,
-                          MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))
-                    return ElfLoaderError_OutOfMemory;
+            uint64_t v_tmp_addr = 0;
+            if(R0_Map(pid,
+                      p_addr,
+                      &v_tmp_addr,
+                      PAGE_SIZE,
+                      CachingModeWriteBack,
+                      MemoryAllocationType_Heap,
+                      MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))
+                return ElfLoaderError_OutOfMemory;
 
 
-                    switch(phdr->p_type) {
-                case PT_LOAD:
-                    memset((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, 0, mem_clr_sz);
-                        memcpy((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, (uint8_t*)loc + p_offset, mem_cpy_sz);
-                        break;
-                    }
+            switch(phdr->p_type) {
+            case PT_LOAD:
+                memset((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, 0, mem_clr_sz);
+                memcpy((void*)v_tmp_addr + p_vaddr % PAGE_SIZE, (uint8_t*)loc + p_offset, mem_cpy_sz);
+                break;
+            }
 
             R0_Unmap(pid,
                      v_tmp_addr,

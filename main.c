@@ -44,24 +44,24 @@ load_exec(UID pid, const char *exec) {
 
 
 
-    for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++){
+    for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++) {
 
         uint64_t p_addr = AllocatePhysicalPage();
 
         MapPage(pinfo->PageTable,
-            p_addr,
-            0x400000 + i * PAGE_SIZE,
-            PAGE_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Application,
-            MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Exec);
+                p_addr,
+                0x400000 + i * PAGE_SIZE,
+                PAGE_SIZE,
+                CachingModeWriteBack,
+                MemoryAllocationType_Application,
+                MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Exec);
 
     }
 
 
     uint8_t* write_target = (uint8_t*)SetupTemporaryWriteMap(pinfo->PageTable,
-                                                             0x400000,
-                                                             exec_size);
+                            0x400000,
+                            exec_size);
 
     memcpy(write_target, exec_loc, orig_exec_size);
 
