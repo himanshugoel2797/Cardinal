@@ -209,11 +209,11 @@ CreateThread(UID parentProcess,
     regs.set_tid = NULL;
 
     if(perm_level == ThreadPermissionLevel_User) {
-        regs.ss = 0x23;
-        regs.cs = 0x2F;
+        regs.ss = 0x20 | 3; //DPL: 3
+        regs.cs = 0x28 | 3; //DPL: 3
     } else if(perm_level == ThreadPermissionLevel_Kernel) {
-        regs.ss = 0x10;
-        regs.cs = 0x8;
+        regs.ss = 0x10 | 0; //DPL: 0
+        regs.cs = 0x08 | 0; //DPL: 0
     }
 
     regs.set_tid = NULL;
@@ -244,13 +244,11 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, Errno, 0);
 
     //Setup kernel stack
-    uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase) - 1;
-    kstack -= kstack % 16;
+    uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase);
     SET_PROPERTY_VAL(thd, KernelStackAligned, kstack);
 
     //Setup interrupt stack
-    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase) - 1;
-    istack -= istack % 16;
+    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase);
     SET_PROPERTY_VAL(thd, InterruptStackAligned, istack);
 
     //Setup FPU state
@@ -299,7 +297,6 @@ CreateThreadADV(UID parentProcess,
     cur_stack_frame[--offset] = regs->r14;
     cur_stack_frame[--offset] = regs->r15;
 
-    UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);
     //push ss
     //push rsp
     //push rflags
@@ -323,8 +320,10 @@ CreateThreadADV(UID parentProcess,
     //push r14
     //push r15
 
-    //Update the thread list
     uint64_t* kstack_p = (uint64_t*)kstack;
+
+    UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);
+    //Update the thread list
     //__asm__("cli\n\thlt" :: "a"(kstack), "b"(cur_stack_frame));
     SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)(&kstack_p[offset]));
 
