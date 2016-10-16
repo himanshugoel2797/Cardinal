@@ -93,11 +93,27 @@ CreateProcess(UID parent, UID userID, UID *pid) {
     return ProcessErrors_None;
 }
 
-void
+ProcessErrors
+StartProcess(UID pid) {
+    
+    ProcessInformation *pinfo = NULL;
+    ProcessErrors err = GetProcessReference(pid, &pinfo);
+    if(err != ProcessErrors_None)
+        return err;
+
+    LockSpinlock(pinfo->lock);
+    pinfo->Status = ProcessStatus_Executing;
+    UnlockSpinlock(pinfo->lock);
+
+    return ProcessErrors_None;
+}
+
+ProcessErrors
 TerminateProcess(UID pid, uint32_t exit_code) {
     ProcessInformation *pinfo = NULL;
-    if(GetProcessReference(pid, &pinfo) == ProcessErrors_UIDNotFound)
-        return;
+    ProcessErrors err = GetProcessReference(pid, &pinfo);
+    if(err != ProcessErrors_None)
+        return err;
 
     LockSpinlock(pinfo->lock);
 
@@ -183,6 +199,7 @@ TerminateProcess(UID pid, uint32_t exit_code) {
     FreeSpinlock(pinfo->lock);
     kfree(pinfo);
 
+    return ProcessErrors_None;
 }
 
 ProcessErrors

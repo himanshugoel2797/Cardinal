@@ -37,6 +37,7 @@ var searchData=
   ['sleepthread',['SleepThread',['../d6/d5a/group__threading.html#ga8621566c7923c1fc0fdbcf110ca29253',1,'SleepThread(UID id, uint64_t duration_ns):&#160;thread.c'],['../d6/d5a/group__threading.html#ga8621566c7923c1fc0fdbcf110ca29253',1,'SleepThread(UID id, uint64_t duration_ns):&#160;thread.c']]],
   ['sourcepid',['SourcePID',['../d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85',1,'Message']]],
   ['spinlock',['Spinlock',['../d6/d6a/group__sync__hal.html#ga2b7bd1f01b65ccbfaee98f004746ae8b',1,'synchronization.h']]],
+  ['startprocess',['StartProcess',['../d3/d12/group__proc__man.html#ga31feaca5b311e6e965d6d58a35161077',1,'StartProcess(UID pid):&#160;process.c'],['../d3/d12/group__proc__man.html#ga31feaca5b311e6e965d6d58a35161077',1,'StartProcess(UID pid):&#160;process.c']]],
   ['statdata',['StatData',['../d3/df7/structStatData.html',1,'']]],
   ['state',['State',['../d5/dfe/structThreadInfo.html#a5c1540a3e237727554b9064b809ab82c',1,'ThreadInfo']]],
   ['statfsrequest',['StatfsRequest',['../d1/d8f/structStatfsRequest.html',1,'']]],

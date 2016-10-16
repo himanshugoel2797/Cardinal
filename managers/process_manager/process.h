@@ -27,12 +27,24 @@ ProcessErrors
 CreateProcess(UID parent, UID userID, UID *pid);
 
 /**
+ * @brief      Starts a process.
+ *
+ * @param[in]  pid   The pid
+ *
+ * @return     Error code on failure, ProcessErrors_None on success.
+ */
+ProcessErrors
+StartProcess(UID pid);
+
+/**
  * @brief      Terminate the specified process.
  *
  * @param[in]  pid        The pid
  * @param[in]  exit_code  The exit code
+ *
+ * @return     Error code on failure, ProcessErrors_None on success.
  */
-void
+ProcessErrors
 TerminateProcess(UID pid, uint32_t exit_code);
 
 /**

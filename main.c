@@ -27,14 +27,16 @@ kernel_main_init(void) {
 }
 
 void
-load_exec(const char *exec) {
+load_exec(UID pid, const char *exec) {
     void *exec_loc = NULL;
     uint64_t exec_size = 0;
 
     Initrd_GetFile(exec, &exec_loc, &exec_size);
 
-    void* sp = GetThreadUserStack(GetCurrentThreadUID());
-    SwitchToUserMode(EXEC_ENTRY_POINT, (uint64_t)sp);
+    //Map the executable into the process
+    
+    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
+    StartProcess(pid);
     while(1);
 }
 
@@ -58,17 +60,7 @@ kernel_main(void) {
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
 
-    {
-        CardinalBootInfo *info = GetBootInfo();
-        for(uint32_t y = 0; y < info->FramebufferHeight * info->FramebufferPitch; y+=4) {
-            *(uint32_t*)(info->FramebufferAddress + y) = (uint32_t)(-1) << 16;  //ARGB
-        }
-    }
-
-    while(1); //TODO
-    if(cpid == 0) {
-        load_exec("userboot.bin");
-    }
+    load_exec(cpid, "userboot.bin");
 
     FreeThread(GetCurrentThreadUID());
     while(1);

@@ -80,6 +80,7 @@ PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
 PROPERTY_PROC_GET(ProcessInformation*, Parent, NULL)
 PROPERTY_PROC_GET(List*, PendingMessages, NULL)
 PROPERTY_PROC_GET(List*, ThreadIDs, NULL)
+PROPERTY_PROC_GET(ProcessStatus, Status, ProcessStatus_Stopped)
 
 PROPERTY_GET_SET(UID, ID, 0)
 
@@ -712,7 +713,10 @@ GetNextThread(ThreadInfo *prevThread) {
             }
             break;
         default:
-            exit_loop = TRUE;
+            {
+                if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
+                    exit_loop = TRUE;
+            }
             break;
         }
 
