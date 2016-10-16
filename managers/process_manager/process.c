@@ -54,6 +54,45 @@ ProcessSys_IsInitialized(void) {
 }
 
 ProcessErrors
+CreateProcess(UID parent, UID userID, UID *pid) {
+
+    if(pid == NULL)
+        return ProcessErrors_InvalidParameters;
+
+    ProcessInformation *src = NULL;
+    ProcessErrors err = GetProcessReference(parent, &src);
+    if(err != ProcessErrors_None)
+        return err;
+
+    ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
+    *pid = dst->ID = new_proc_uid();
+    dst->UserID = userID;
+    dst->Status = ProcessStatus_Stopped;
+
+    dst->PageTable = kmalloc(sizeof(ManagedPageTable));
+    if(CreateVirtualMemoryInstance(dst->PageTable) != MemoryAllocationErrors_None)
+        return ProcessErrors_Unknown;
+
+    dst->HeapBreak = 0;
+
+    dst->ThreadIDs = List_Create(CreateSpinlock());
+    dst->PendingMessages = List_Create(CreateSpinlock());
+    dst->MessageLock = CreateSpinlock();
+
+    dst->Children = List_Create(CreateSpinlock());
+    List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
+    
+    dst->Parent = src;
+    dst->reference_count = 1;
+    dst->lock = CreateSpinlock();
+
+    AtomicIncrement32(&src->reference_count);
+
+    List_AddEntry(processes, dst);
+    return ProcessErrors_None;
+}
+
+ProcessErrors
 ForkProcess(ProcessInformation *src,
             ProcessInformation **dest) {
     LockSpinlock(src->lock);
@@ -62,7 +101,6 @@ ForkProcess(ProcessInformation *src,
     dst->Status = src->Status;
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));
     dst->HeapBreak = src->HeapBreak;
-    dst->PLS = src->PLS;
 
     dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
@@ -126,15 +164,13 @@ TerminateProcess(UID pid, uint32_t exit_code) {
         AtomicDecrement32(&pinfo->Parent->reference_count);
 
     //Post a message to the parent process with the exit code
-    struct SigChild *exit_msg = kmalloc(sizeof(struct SigChild));
+    struct SigChild *exit_msg = kmalloc(MESSAGE_SIZE);
     if(exit_msg != NULL) {
         memset(exit_msg, 0, sizeof(struct SigChild));
         exit_msg->m.SourcePID = pid;
         exit_msg->m.DestinationPID = pinfo->Parent->ID;
         exit_msg->m.MsgID = 0;
         exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
-
-        exit_msg->m.Size = sizeof(struct SigChild);
         exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
         exit_msg->exit_code = exit_code;
 
@@ -311,15 +347,12 @@ PostMessages(Message **msg, uint64_t cnt) {
         if(msg[i] == NULL)
             return UnlockSpinlock(pInfo->MessageLock), i;
 
-        if(msg[i]->Size < sizeof(Message))
-            return UnlockSpinlock(pInfo->MessageLock), i;
-
         if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)
             return UnlockSpinlock(pInfo->MessageLock), i;
 
-        Message *m = kmalloc(msg[i]->Size);
+        Message *m = kmalloc(MESSAGE_SIZE);
         if(m == NULL)return UnlockSpinlock(pInfo->MessageLock), i;
-        memcpy(m, msg[i], msg[i]->Size);
+        memcpy(m, msg[i], MESSAGE_SIZE);
 
         m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
@@ -354,7 +387,7 @@ GetMessageFrom(Message *msg,
 
             if((tmp->MsgID == msg_id) | (msg_id == 0)) {
                 List_Remove(pInfo->PendingMessages, 0);
-                if(msg != NULL)memcpy(msg, tmp, tmp->Size);
+                if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
                 kfree(tmp);
 
                 UnlockSpinlock(pInfo->MessageLock);
@@ -384,37 +417,6 @@ SetSpecialDestinationPID(UID specialID) {
     UnlockSpinlock(specialPIDLock);
     return TRUE;
 }
-
-
-void*
-GetProcessLocalStorage(UID pid,
-                       size_t minSize) {
-    //Allocate the PLS if it hasn't been allocated, or if it's too small, allocate a new PLS of the appropriate size and copy over the data
-    ProcessInformation *info;
-    if(GetProcessReference(pid, &info) != ProcessErrors_None)
-        return NULL;
-
-    //Align the allocation size to the page size
-    if(minSize % PAGE_SIZE)
-        minSize += PAGE_SIZE - (minSize % PAGE_SIZE);
-
-    if(info->PLSSize != minSize | info->PLS == NULL) {
-        //Free the previous allocation, and create a new one that's the right size
-
-        if(info->PLS != NULL) {
-            FreeMappingCont(info->PLS, info->PLSSize);
-        }
-
-
-        info->PLSSize = minSize;
-        info->PLS = AllocateMappingCont(MemoryAllocationType_ApplicationProtected,
-                                        MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User,
-                                        info->PLSSize);
-    }
-
-    return info->PLS;
-}
-
 
 uint64_t
 GetProcessGroupID(UID pid) {

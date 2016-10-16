@@ -13,7 +13,7 @@
  */
 
 //! The maximum size of a message.
-#define MAX_MESSAGE_SIZE (256)
+#define MESSAGE_SIZE (256)
 
 //! The maximum number of special destinations.
 #define CARDINAL_IPCDEST_NUM 512

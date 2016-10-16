@@ -16,7 +16,6 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_GetErrno, GetErrno_Syscall);
 
-    RegisterSyscall(Syscall_R0_Fork, R0Fork_Syscall);
     RegisterSyscall(Syscall_R0_Map, R0Map_Syscall);
     RegisterSyscall(Syscall_R0_Unmap, R0Unmap_Syscall);
 }

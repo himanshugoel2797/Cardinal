@@ -18,7 +18,6 @@
 typedef enum {
     CardinalProperty_TID,               //!< Get Thread ID.
     CardinalProperty_PID,               //!< Get Process ID.
-    CardinalProperty_PLS,               //!< Get Process Local Storage.
     CardinalProperty_SetTidAddress,     //!< Set the TID write address.
     CardinalProperty_Time,              //!< Get the time.
     CardinalProperty_SpecialDestination,//!< Set a special destination.

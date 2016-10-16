@@ -124,10 +124,6 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return (uint64_t)GetPhysicalAddress((void*)(uint64_t*)data->params[1]);
     }
     break;
-    case CardinalProperty_PLS:
-        SyscallSetErrno(0);
-        return (uint64_t)GetProcessLocalStorage(GetCurrentProcessUID(), syscall_params[1]);
-        break;
     default:
         SyscallSetErrno(-EINVAL);
         return 0;

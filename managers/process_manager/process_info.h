@@ -16,10 +16,7 @@
 #define MAX_PROCESS_NAME_LEN (256)
 
 //! The maximum number of pending messages.
-#define MAX_PENDING_MESSAGE_CNT 256
-
-//! The size of the Process Local Storage (PLS).
-#define MAX_PLS_SIZE KiB(64)
+#define MAX_PENDING_MESSAGE_CNT 4096
 
 //! The PID of the root of the process tree.
 #define ROOT_PID 1
@@ -46,9 +43,10 @@ typedef enum {
  * Process Errors.
  */
 typedef enum {
-    ProcessErrors_None = 0,                 //!< No Error.
-    ProcessErrors_Unknown = (1 << 0),       //!< Unknown Error.
-    ProcessErrors_UIDNotFound = (1 << 1),   //!< Invalid UID.
+    ProcessErrors_None = 0,                     //!< No Error.
+    ProcessErrors_Unknown = (1 << 0),           //!< Unknown Error.
+    ProcessErrors_UIDNotFound = (1 << 1),       //!< Invalid UID.
+    ProcessErrors_InvalidParameters = (1 << 2), //!< Invalid parameter.
 } ProcessErrors;
 
 /**
@@ -67,9 +65,6 @@ typedef struct ProcessInformation {
     List                        *Children;                  //!< The process's children processes.
     List                        *ThreadIDs;                 //!< The threads that belong to this process.
     List                        *PendingMessages;           //!< The pending messages.
-
-    void                        *PLS;                       //!< Process local storage (PLS).
-    size_t                      PLSSize;                    //!< The size of the PLS.
 
     bool                        HandlingMessage;            //!< Is the process currently handling a message?
     Spinlock                    MessageLock;                //!< Message access synchronization.

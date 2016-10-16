@@ -14,9 +14,6 @@
  * @{
  */
 
-//! The maximum number of pending messages.
-#define MAX_PENDING_MESSAGE_CNT 4096
-
 /**
  * @brief      Fork the source process.
  *
@@ -69,18 +66,6 @@ GetProcessInformation(UID           pid,
 ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo);
-
-/**
- * @brief      Gets the process local storage.
- *
- * @param[in]  pid      The pid
- * @param[in]  minSize  The minimum size
- *
- * @return     The process local storage.
- */
-void*
-GetProcessLocalStorage(UID pid,
-                       size_t minSize);
 
 /**
  * @brief      Posts messages.
