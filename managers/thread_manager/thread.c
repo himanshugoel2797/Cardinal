@@ -140,7 +140,6 @@ Thread_Initialize(void) {
     sync_lock = CreateSpinlock();
 }
 
-#define STACK_SIZE KiB(32)
 
 uint64_t
 AllocateStack(UID parentProcess,

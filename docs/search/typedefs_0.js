@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['forkedmemorydata',['ForkedMemoryData',['../d0/d92/group__memory__hal.html#gafcbcf8480ddd2494d17d17f196a27ca6',1,'memory.h']]]
+  ['coreinfo',['CoreInfo',['../d6/d5a/group__threading.html#ga5f8c28f971c1fa5fd5437158cd00ef13',1,'thread.h']]]
 ];

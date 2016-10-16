@@ -2,6 +2,7 @@ var searchData=
 [
   ['pagetable',['PageTable',['../d4/d03/structProcessInformation.html#abb9a76a4fee7f67a12cbb2440f575115',1,'ProcessInformation::PageTable()'],['../d9/db1/structManagedPageTable.html#ae948d913dc35bb1db17cbf5d9eef1421',1,'ManagedPageTable::PageTable()']]],
   ['parent',['Parent',['../d4/d03/structProcessInformation.html#ab528f43e4fa476d831c0272e0866674f',1,'ProcessInformation']]],
+  ['parentprocess',['ParentProcess',['../d5/dfe/structThreadInfo.html#a0bae5bd086d4146ba9ddf6bce2fee1ec',1,'ThreadInfo']]],
   ['pci_5fbar',['PCI_BAR',['../da/da3/structPCI__BAR.html',1,'']]],
   ['pci_5fdevicefuncs',['PCI_DeviceFuncs',['../df/d9f/structPCI__DeviceFuncs.html',1,'']]],
   ['pendingmessages',['PendingMessages',['../d4/d03/structProcessInformation.html#a2b2e3a595afce3ee471eb547a97eb515',1,'ProcessInformation']]],
@@ -15,6 +16,7 @@ var searchData=
   ['postmessages',['PostMessages',['../d3/d12/group__proc__man.html#ga9a04a82a4e8f611fb82492fbf926df7f',1,'PostMessages(Message **msg, uint64_t cnt):&#160;process.c'],['../d3/d12/group__proc__man.html#ga9a04a82a4e8f611fb82492fbf926df7f',1,'PostMessages(Message **msg, uint64_t msg_cnt):&#160;process.c']]],
   ['preferredpowermanagementprofile',['PreferredPowerManagementProfile',['../d3/db5/structFADT.html#a0c1c87c1a02fc29df6d8cb41ccc4391f',1,'FADT']]],
   ['prev',['prev',['../d5/d3a/structMemoryAllocationsMap.html#a980322a4e7c8fe7fa4937618c9cf2747',1,'MemoryAllocationsMap']]],
+  ['priority',['Priority',['../d5/dfe/structThreadInfo.html#a7aadd81b1420e832b7c6378653abea84',1,'ThreadInfo']]],
   ['process_20management',['Process Management',['../d3/d12/group__proc__man.html',1,'']]],
   ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]],
   ['processsys_5finitialize',['ProcessSys_Initialize',['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c'],['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c']]],

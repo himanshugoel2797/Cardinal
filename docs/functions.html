@@ -85,6 +85,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="#index_g"><span>g</span></a></li>
       <li><a href="#index_h"><span>h</span></a></li>
       <li><a href="#index_i"><span>i</span></a></li>
+      <li><a href="#index_k"><span>k</span></a></li>
       <li><a href="#index_l"><span>l</span></a></li>
       <li><a href="#index_m"><span>m</span></a></li>
       <li><a href="#index_n"><span>n</span></a></li>
@@ -93,7 +94,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="#index_s"><span>s</span></a></li>
       <li><a href="#index_t"><span>t</span></a></li>
       <li><a href="#index_u"><span>u</span></a></li>
-      <li class="current"><a href="#index_v"><span>v</span></a></li>
+      <li><a href="#index_v"><span>v</span></a></li>
+      <li class="current"><a href="#index_w"><span>w</span></a></li>
     </ul>
   </div>
 </div><!-- top -->
@@ -132,6 +134,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="d5/d3a/structMemoryAllocationsMap.html#a3c85b62354d4a0841f1413f9cfa9bb32">MemoryAllocationsMap</a>
 , <a class="el" href="d8/d2c/structMemoryMapParams.html#a2a51d767864219e5701e520630d42f2e">MemoryMapParams</a>
 </li>
+<li>ArchSpecificData
+: <a class="el" href="d5/dfe/structThreadInfo.html#a13833519c7bb4f75c3a472634d17c5e3">ThreadInfo</a>
+</li>
 </ul>
 
 
@@ -150,8 +155,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Children
 : <a class="el" href="d4/d03/structProcessInformation.html#a94efc6279b09448452a0924a3d5f020b">ProcessInformation</a>
 </li>
+<li>ClearChildTID
+: <a class="el" href="d5/dfe/structThreadInfo.html#aae465e486de42abdf25f08628a38a137">ThreadInfo</a>
+</li>
 <li>code
 : <a class="el" href="d3/de7/group__ipc__api.html#gacfd25ea5c6dddd7fd0be64ef6f0e5b18">ErrorMessage</a>
+</li>
+<li>CoreAffinity
+: <a class="el" href="d5/dfe/structThreadInfo.html#a992b421969a75cf8850a3744d6d1422e">ThreadInfo</a>
+</li>
+<li>CurrentStack
+: <a class="el" href="d5/dfe/structThreadInfo.html#a84670fc45193ddf7111332a56f95b428">ThreadInfo</a>
 </li>
 </ul>
 
@@ -164,6 +178,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 
 <h3><a class="anchor" id="index_e"></a>- e -</h3><ul>
+<li>Errno
+: <a class="el" href="d5/dfe/structThreadInfo.html#a0169ca5f62e1cf64b9dbf6b26c343579">ThreadInfo</a>
+</li>
 <li>ExitStatus
 : <a class="el" href="d4/d03/structProcessInformation.html#a79eae1fc9e6a327d6ecc9b35848d5543">ProcessInformation</a>
 </li>
@@ -177,6 +194,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Flags
 : <a class="el" href="d0/dd8/structForkedMemoryData.html#ac5805d0bfa244478530b93b81ca6978c">ForkedMemoryData</a>
 , <a class="el" href="d5/d3a/structMemoryAllocationsMap.html#aa005c0eda018fbc34f205bd26083c214">MemoryAllocationsMap</a>
+</li>
+<li>FPUState
+: <a class="el" href="d5/dfe/structThreadInfo.html#a89a9ced913d99933d029d1392b4e4616">ThreadInfo</a>
 </li>
 <li>FramebufferAddress
 : <a class="el" href="dc/d07/structCardinalBootInfo.html#ae27066ea0c94c8b81c1101142d20c1d5">CardinalBootInfo</a>
@@ -215,6 +235,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 
 <h3><a class="anchor" id="index_g"></a>- g -</h3><ul>
+<li>getCoreData
+: <a class="el" href="d2/dd0/structCoreInfo.html#a235c5e7eaf89c2932a0615a7d17281ef">CoreInfo</a>
+</li>
 <li>GroupID
 : <a class="el" href="d4/d03/structProcessInformation.html#a3a34d1bc21f65a73b1a7b6852ba1044b">ProcessInformation</a>
 </li>
@@ -233,13 +256,31 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <h3><a class="anchor" id="index_i"></a>- i -</h3><ul>
 <li>ID
-: <a class="el" href="d4/d03/structProcessInformation.html#a511ba3ee8ee6fb0e118805e75c054039">ProcessInformation</a>
+: <a class="el" href="d2/dd0/structCoreInfo.html#a01e11fbcb7e192a95a30ba90840a0a70">CoreInfo</a>
+, <a class="el" href="d4/d03/structProcessInformation.html#a511ba3ee8ee6fb0e118805e75c054039">ProcessInformation</a>
+, <a class="el" href="d5/dfe/structThreadInfo.html#ada37af8c41d0e02825eb6ba18a23acc3">ThreadInfo</a>
 </li>
 <li>InitrdLength
 : <a class="el" href="dc/d07/structCardinalBootInfo.html#abeb7a1ad04f928a20c15df6795f56c30">CardinalBootInfo</a>
 </li>
 <li>InitrdStartAddress
 : <a class="el" href="dc/d07/structCardinalBootInfo.html#a8524ddffee8fa5c73e084987f8b595e0">CardinalBootInfo</a>
+</li>
+<li>InterruptStackAligned
+: <a class="el" href="d5/dfe/structThreadInfo.html#af89c53ff2902c3357160097e463f7db1">ThreadInfo</a>
+</li>
+<li>InterruptStackBase
+: <a class="el" href="d5/dfe/structThreadInfo.html#a02097606bfbca391f4da58bd51654589">ThreadInfo</a>
+</li>
+</ul>
+
+
+<h3><a class="anchor" id="index_k"></a>- k -</h3><ul>
+<li>KernelStackAligned
+: <a class="el" href="d5/dfe/structThreadInfo.html#adea9b9dcb246dfa9e70469c7b571384e">ThreadInfo</a>
+</li>
+<li>KernelStackBase
+: <a class="el" href="d5/dfe/structThreadInfo.html#abbcefad3be5df939889035f2d0feeb3b">ThreadInfo</a>
 </li>
 </ul>
 
@@ -258,6 +299,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li>lock
 : <a class="el" href="d4/d03/structProcessInformation.html#a876a352e5328aea15bf4948c86edae8b">ProcessInformation</a>
+, <a class="el" href="d5/dfe/structThreadInfo.html#ad0bb5157e50b78b0cfac80bfa2fb1537">ThreadInfo</a>
 </li>
 </ul>
 
@@ -302,6 +344,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Parent
 : <a class="el" href="d4/d03/structProcessInformation.html#ab528f43e4fa476d831c0272e0866674f">ProcessInformation</a>
 </li>
+<li>ParentProcess
+: <a class="el" href="d5/dfe/structThreadInfo.html#a0bae5bd086d4146ba9ddf6bce2fee1ec">ThreadInfo</a>
+</li>
 <li>PendingMessages
 : <a class="el" href="d4/d03/structProcessInformation.html#a2b2e3a595afce3ee471eb547a97eb515">ProcessInformation</a>
 </li>
@@ -322,12 +367,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>prev
 : <a class="el" href="d5/d3a/structMemoryAllocationsMap.html#a980322a4e7c8fe7fa4937618c9cf2747">MemoryAllocationsMap</a>
 </li>
+<li>Priority
+: <a class="el" href="d5/dfe/structThreadInfo.html#a7aadd81b1420e832b7c6378653abea84">ThreadInfo</a>
+</li>
 </ul>
 
 
 <h3><a class="anchor" id="index_r"></a>- r -</h3><ul>
 <li>reference_count
 : <a class="el" href="d4/d03/structProcessInformation.html#ad755feb5f3610757e98a7f1f9d8acc99">ProcessInformation</a>
+, <a class="el" href="d5/dfe/structThreadInfo.html#a0930c7541ed3674cd802815308089ec4">ThreadInfo</a>
 </li>
 <li>Reserved
 : <a class="el" href="d3/db5/structFADT.html#afbba574a9f42ad8a2df7b2b9f320e169">FADT</a>
@@ -342,11 +391,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 
 <h3><a class="anchor" id="index_s"></a>- s -</h3><ul>
+<li>SetChildTID
+: <a class="el" href="d5/dfe/structThreadInfo.html#a6f20bc0f017e5934a5c081db6700e8ef">ThreadInfo</a>
+</li>
+<li>SetParentTID
+: <a class="el" href="d5/dfe/structThreadInfo.html#ae616b5bee7412af07000165ae1a9ca1d">ThreadInfo</a>
+</li>
 <li>Size
 : <a class="el" href="d3/de7/group__ipc__api.html#ga233839529bde6260f81fe40f2ddfeaad">Message</a>
 </li>
+<li>SleepDurationNS
+: <a class="el" href="d5/dfe/structThreadInfo.html#a3c047c210ef30c9256521009d3bd14cd">ThreadInfo</a>
+</li>
+<li>SleepStartTime
+: <a class="el" href="d5/dfe/structThreadInfo.html#ad3021f8339b9b5d0bb156bd8ca8b0543">ThreadInfo</a>
+</li>
 <li>SourcePID
 : <a class="el" href="d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85">Message</a>
+</li>
+<li>State
+: <a class="el" href="d5/dfe/structThreadInfo.html#a5c1540a3e237727554b9064b809ab82c">ThreadInfo</a>
 </li>
 <li>Status
 : <a class="el" href="d4/d03/structProcessInformation.html#a9a59f80490c08ec417e82e6e4bd057f0">ProcessInformation</a>
@@ -379,6 +443,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="d0/dd8/structForkedMemoryData.html#af755e2ad12dce20145cfcbd07ff2c4c3">ForkedMemoryData</a>
 , <a class="el" href="d5/d3a/structMemoryAllocationsMap.html#a90507e8d6366b8f3bf34b9a96e0e8346">MemoryAllocationsMap</a>
 , <a class="el" href="d8/d2c/structMemoryMapParams.html#a2e894751aa3b4360d13ead79179af861">MemoryMapParams</a>
+</li>
+</ul>
+
+
+<h3><a class="anchor" id="index_w"></a>- w -</h3><ul>
+<li>WakeCondition
+: <a class="el" href="d5/dfe/structThreadInfo.html#ab791c21f54e7b7371fef46fd5a3a2361">ThreadInfo</a>
 </li>
 </ul>
 </div><!-- contents -->

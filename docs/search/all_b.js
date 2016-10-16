@@ -5,7 +5,7 @@ var searchData=
   ['letters',['letters',['../d6/de0/group__graphics.html#ga059dc2a923cc926cb19214aa9a8301e3',1,'font.h']]],
   ['list',['List',['../d0/d13/structList.html',1,'']]],
   ['listnode',['ListNode',['../dd/d2d/structListNode.html',1,'']]],
-  ['lock',['lock',['../d4/d03/structProcessInformation.html#a876a352e5328aea15bf4948c86edae8b',1,'ProcessInformation::lock()'],['../d0/dd8/structForkedMemoryData.html#a848f24734eb0c95d865ee9f336dad2d1',1,'ForkedMemoryData::Lock()']]],
+  ['lock',['lock',['../d4/d03/structProcessInformation.html#a876a352e5328aea15bf4948c86edae8b',1,'ProcessInformation::lock()'],['../d5/dfe/structThreadInfo.html#ad0bb5157e50b78b0cfac80bfa2fb1537',1,'ThreadInfo::lock()'],['../d0/dd8/structForkedMemoryData.html#a848f24734eb0c95d865ee9f336dad2d1',1,'ForkedMemoryData::Lock()']]],
   ['lockrequest',['LockRequest',['../d6/def/structLockRequest.html',1,'']]],
   ['lockresponse',['LockResponse',['../df/db5/structLockResponse.html',1,'']]],
   ['lockspinlock',['LockSpinlock',['../d6/d6a/group__sync__hal.html#ga8971920c153460f5f0937730dae6e882',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#ga8971920c153460f5f0937730dae6e882',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c']]]

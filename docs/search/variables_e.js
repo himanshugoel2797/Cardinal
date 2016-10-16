@@ -1,6 +1,11 @@
 var searchData=
 [
-  ['targetpid',['TargetPID',['../d8/d2c/structMemoryMapParams.html#a07f7f95d27c1b2c6e34ba4e67556e717',1,'MemoryMapParams']]],
-  ['threadids',['ThreadIDs',['../d4/d03/structProcessInformation.html#a48615b491b5f02a51843631be1d658ff',1,'ProcessInformation']]],
-  ['type',['type',['../d8/dba/structCardinalMemMap.html#a99bb382da6836790822b25d9cc144069',1,'CardinalMemMap']]]
+  ['setchildtid',['SetChildTID',['../d5/dfe/structThreadInfo.html#a6f20bc0f017e5934a5c081db6700e8ef',1,'ThreadInfo']]],
+  ['setparenttid',['SetParentTID',['../d5/dfe/structThreadInfo.html#ae616b5bee7412af07000165ae1a9ca1d',1,'ThreadInfo']]],
+  ['size',['Size',['../d3/de7/group__ipc__api.html#ga233839529bde6260f81fe40f2ddfeaad',1,'Message']]],
+  ['sleepdurationns',['SleepDurationNS',['../d5/dfe/structThreadInfo.html#a3c047c210ef30c9256521009d3bd14cd',1,'ThreadInfo']]],
+  ['sleepstarttime',['SleepStartTime',['../d5/dfe/structThreadInfo.html#ad3021f8339b9b5d0bb156bd8ca8b0543',1,'ThreadInfo']]],
+  ['sourcepid',['SourcePID',['../d3/de7/group__ipc__api.html#ga1758f562d9624388acbb602f46620f85',1,'Message']]],
+  ['state',['State',['../d5/dfe/structThreadInfo.html#a5c1540a3e237727554b9064b809ab82c',1,'ThreadInfo']]],
+  ['status',['Status',['../d4/d03/structProcessInformation.html#a9a59f80490c08ec417e82e6e4bd057f0',1,'ProcessInformation']]]
 ];
