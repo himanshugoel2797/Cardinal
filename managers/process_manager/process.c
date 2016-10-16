@@ -168,13 +168,12 @@ TerminateProcess(UID pid, uint32_t exit_code) {
     if(exit_msg != NULL) {
         memset(exit_msg, 0, sizeof(struct SigChild));
         exit_msg->m.SourcePID = pid;
-        exit_msg->m.DestinationPID = pinfo->Parent->ID;
         exit_msg->m.MsgID = 0;
         exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
         exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
         exit_msg->exit_code = exit_code;
 
-        PostMessages((Message**)&exit_msg, 1);
+        PostMessages(pinfo->Parent->ID, (Message**)&exit_msg, 1);
         }
     }
 
@@ -315,9 +314,23 @@ RaiseSignal(UID pid,
 
 
 uint64_t
-PostMessages(Message **msg, uint64_t cnt) {
+PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
     if(msg == NULL)
+        return -2;
+
+    UID DestinationPID = dstPID;
+
+    int index = (int)DestinationPID;
+    if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
+        DestinationPID = specialDestinationPIDs[index];    
+
+    ProcessInformation *pInfo = NULL;
+    if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
+        return -3;
+
+    //Check to ensure that the destination ID is of the same user ID, and if not, if it belongs to the lowest group ID, if not, fail
+    if(cur_procInfo->UserID != pInfo->UserID && (cur_procInfo->GroupID != 0 | pInfo->GroupID != 0))
         return -1;
 
     ProcessInformation *cur_procInfo = NULL;
@@ -325,39 +338,30 @@ PostMessages(Message **msg, uint64_t cnt) {
 
     for(uint64_t i = 0; i < cnt; i++) {
 
-        ProcessInformation *pInfo = NULL;
+        Message *m = NULL;
 
+        LockSpinlock(pInfo->MessageLock);
 
-        UID DestinationPID = msg[i]->DestinationPID;
+        {
+            if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT){
+                UnlockSpinlock(pInfo->MessageLock);
+                return i;
+            }
 
-        int index = (int)DestinationPID;
-        if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
-            DestinationPID = specialDestinationPIDs[index];
+            m = kmalloc(MESSAGE_SIZE);
+            
+            if(m == NULL){
+                UnlockSpinlock(pInfo->MessageLock);
+                return i;
+            }
 
-        if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
-            return -(i + 1);
-
-        //Check to ensure that the destination ID is of the same user ID, and if not, if it belongs to the lowest group ID, if not, fail
-        if(cur_procInfo->UserID != pInfo->UserID && (cur_procInfo->GroupID != 0 | pInfo->GroupID != 0))
-            return -(i + 1);
-
-        if(i == 0 || (msg[i]->DestinationPID != msg[i - 1]->DestinationPID))
-            LockSpinlock(pInfo->MessageLock);
-
-        if(msg[i] == NULL)
-            return UnlockSpinlock(pInfo->MessageLock), i;
-
-        if(List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT)
-            return UnlockSpinlock(pInfo->MessageLock), i;
-
-        Message *m = kmalloc(MESSAGE_SIZE);
-        if(m == NULL)return UnlockSpinlock(pInfo->MessageLock), i;
-        memcpy(m, msg[i], MESSAGE_SIZE);
+            memcpy(m, msg[i], MESSAGE_SIZE);
+        }        
+        
+        UnlockSpinlock(pInfo->MessageLock);
 
         m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
-
-        if(i == cnt - 1 || msg[i]->DestinationPID != msg[i + 1]->DestinationPID)UnlockSpinlock(pInfo->MessageLock);
     }
 
     return TRUE;

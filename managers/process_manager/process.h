@@ -70,13 +70,15 @@ GetProcessReference(UID           pid,
 /**
  * @brief      Posts messages.
  *
+ * @param[in]  dstPID   The destination pid
  * @param      msg      The message
  * @param[in]  msg_cnt  The message count
  *
- * @return     If 'i' is the number of messages sent, -(i + 1) on error, i on success.
+ * @return     If 'i' is the number of messages sent, -(i + 1) on error, i on
+ *             success.
  */
 uint64_t
-PostMessages(Message **msg, uint64_t msg_cnt);
+PostMessages(UID dstPID, Message **msg, uint64_t msg_cnt);
 
 /**
  * @brief      Gets the ipc message from the source.
@@ -90,7 +92,7 @@ PostMessages(Message **msg, uint64_t msg_cnt);
 bool
 GetMessageFrom(Message *msg,
                UID SourcePID,
-               uint64_t msg_id);
+               uint32_t msg_id);
 
 /**
  * @brief      Sets the special destination pid.

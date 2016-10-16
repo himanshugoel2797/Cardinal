@@ -13,7 +13,7 @@
  */
 
 //! The maximum size of a message.
-#define MESSAGE_SIZE (256)
+#define MESSAGE_SIZE (128)
 
 //! The maximum number of special destinations.
 #define CARDINAL_IPCDEST_NUM 512
@@ -36,10 +36,8 @@
 //! IPC Message.
 typedef struct Message {
     UID SourcePID;          //!< The sender PID
-    UID DestinationPID;     //!< The destination PID
-    uint64_t MsgID;         //!< The message ID, uniquely identifies a conversation.
-    uint64_t MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
-    uint64_t rsv[4];	    //!< Reserved for future use.
+    uint32_t MsgID;         //!< The message ID, uniquely identifies a conversation.
+    uint32_t MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
 //! An error message.
@@ -69,7 +67,7 @@ GetIPCMessageFrom(Message *m, UID sourcePID, uint64_t msg_id) {
  *
  * @param      m     A preallocated message buffer of size MAX_MESSAGE_SIZE
  *
- * @return     The ipc message.
+ * @return     0 if no message to return, 1 if a message has been returned.
  */
 static __inline int
 GetIPCMessage(Message *m) {
@@ -79,14 +77,16 @@ GetIPCMessage(Message *m) {
 /**
  * @brief      Posts ipc messages.
  *
- * @param      m     A list of messages to post
- * @param[in]  cnt   The number of messages in the list
+ * @param[in]  dstPID  The destination pid
+ * @param      m       A list of messages to post
+ * @param[in]  cnt     The number of messages in the list
  *
- * @return     If 'i' is the number of messages sent, -(i + 1) on error, i on success.
+ * @return     -1 on failure to post any messages, the number of messages posted
+ *             on success.
  */
 static __inline int
-PostIPCMessages(Message **m, uint64_t cnt) {
-    return (int)Syscall2(Syscall_PostIPCMessage, (uint64_t)m, cnt);
+PostIPCMessages(UID dstPID, Message **m, uint64_t cnt) {
+    return (int)Syscall3(Syscall_PostIPCMessage, dstPID, (uint64_t)m, cnt);
 }
 
 #endif
