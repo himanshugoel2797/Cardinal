@@ -58,7 +58,7 @@ struct ErrorMessage {
  * @return     0 if no message to return, 1 if a message has been returned.
  */
 static __inline int
-GetIPCMessageFrom(Message *m, UID sourcePID, uint64_t msg_id) {
+GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
     return (int)Syscall3(Syscall_GetIPCMessageFrom, (uint64_t)m, (uint64_t)sourcePID, msg_id);
 }
 

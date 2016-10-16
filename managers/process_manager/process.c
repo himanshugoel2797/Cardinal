@@ -329,12 +329,12 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
     if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
         return -3;
 
+    ProcessInformation *cur_procInfo = NULL;
+    GetProcessReference(GetCurrentProcessUID(), &cur_procInfo);
+
     //Check to ensure that the destination ID is of the same user ID, and if not, if it belongs to the lowest group ID, if not, fail
     if(cur_procInfo->UserID != pInfo->UserID && (cur_procInfo->GroupID != 0 | pInfo->GroupID != 0))
         return -1;
-
-    ProcessInformation *cur_procInfo = NULL;
-    GetProcessReference(GetCurrentProcessUID(), &cur_procInfo);
 
     for(uint64_t i = 0; i < cnt; i++) {
 
@@ -370,7 +370,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 bool
 GetMessageFrom(Message *msg,
                UID SourcePID,
-               uint64_t msg_id) {
+               uint32_t msg_id) {
 
     int index = (int)SourcePID;
     if((uint64_t)index != SourcePID && index < CARDINAL_IPCDEST_NUM)
