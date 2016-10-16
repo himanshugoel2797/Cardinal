@@ -13,7 +13,7 @@
  */
 
 //! The maximum size of a message.
-#define MAX_MESSAGE_SIZE (UINT16_MAX)
+#define MAX_MESSAGE_SIZE (256)
 
 //! The maximum number of special destinations.
 #define CARDINAL_IPCDEST_NUM 512
@@ -40,7 +40,6 @@ typedef struct Message {
     uint64_t MsgID;         //!< The message ID, uniquely identifies a conversation.
     uint64_t MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
     uint64_t rsv[4];	    //!< Reserved for future use.
-    unsigned short Size;    //!< The size of the message.
 } Message;
 
 //! An error message.

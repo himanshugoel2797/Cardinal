@@ -15,7 +15,7 @@
  */
 
 //! The maximum number of pending messages.
-#define MAX_PENDING_MESSAGE_CNT 256
+#define MAX_PENDING_MESSAGE_CNT 4096
 
 /**
  * @brief      Fork the source process.
