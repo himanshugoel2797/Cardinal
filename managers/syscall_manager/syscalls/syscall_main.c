@@ -17,4 +17,10 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_R0_Map, R0Map_Syscall);
     RegisterSyscall(Syscall_R0_Unmap, R0Unmap_Syscall);
+    
+    RegisterSyscall(Syscall_R0_AllocatePages, R0AllocatePages_Syscall);
+    RegisterSyscall(Syscall_R0_FreePages, R0FreePages_Syscall);
+
+    RegisterSyscall(Syscall_R0_CreateProcess, R0CreateProcess_Syscall);
+    RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
 }

@@ -179,3 +179,61 @@ R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
 
     return SyscallSetErrno(0);
 }
+
+
+uint64_t
+R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
+                uint64_t syscall_num,
+                uint64_t *syscall_params)
+{
+    if(syscall_num != Syscall_R0_AllocatePages){
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+        SyscallSetErrno(-EPERM);
+        return 0;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 1) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    uint64_t retVal = AllocatePhysicalPageCont(data->params[0]);
+    if(retVal == 0)
+        SyscallSetErrno(-ENOMEM);
+    else
+        SyscallSetErrno(0);
+    
+    return retVal;
+}
+
+uint64_t
+R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
+                uint64_t syscall_num,
+                uint64_t *syscall_params)
+{
+    if(syscall_num != Syscall_R0_FreePages){
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+        SyscallSetErrno(-EPERM);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 2) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    FreePhysicalPageCont(data->params[0], data->params[1]);
+    return SyscallSetErrno(0);
+}

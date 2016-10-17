@@ -171,6 +171,20 @@ R0_AllocatePages(uint64_t cnt, uint64_t *p_addr) {
     return GetErrno();
 }
 
+/**
+ * @brief      Free a continuous range of physical pages. R0 process only.
+ *
+ * @param[in]  p_addr  The p address
+ * @param[in]  cnt     The count
+ *
+ * @return     The error code on failure, 0 on success.
+ */
+static __inline uint64_t
+R0_FreePages(uint64_t p_addr, uint64_t cnt) {
+    Syscall2(Syscall_R0_FreePages, p_addr, cnt);
+    return GetErrno();
+}
+
 #endif
 
 /**@}*/

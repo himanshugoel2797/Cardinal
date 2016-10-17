@@ -16,6 +16,7 @@ var searchData=
   ['prev',['prev',['../d5/d3a/structMemoryAllocationsMap.html#a980322a4e7c8fe7fa4937618c9cf2747',1,'MemoryAllocationsMap']]],
   ['priority',['Priority',['../d5/dfe/structThreadInfo.html#a7aadd81b1420e832b7c6378653abea84',1,'ThreadInfo']]],
   ['process_20management',['Process Management',['../d3/d12/group__proc__man.html',1,'']]],
+  ['process_20management_20syscalls',['Process Management Syscalls',['../db/d9b/group__proc__syscall.html',1,'']]],
   ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]],
   ['processsys_5finitialize',['ProcessSys_Initialize',['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c'],['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c']]],
   ['processsys_5fisinitialized',['ProcessSys_IsInitialized',['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c'],['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c']]],

@@ -164,6 +164,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga1b91e86506299c305e9f71c049b2dd16"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1b91e86506299c305e9f71c049b2dd16">R0_AllocatePages</a> (uint64_t cnt, uint64_t *p_addr)</td></tr>
 <tr class="memdesc:ga1b91e86506299c305e9f71c049b2dd16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a continuous range of physical pages. R0 process only.  <a href="#ga1b91e86506299c305e9f71c049b2dd16">More...</a><br /></td></tr>
 <tr class="separator:ga1b91e86506299c305e9f71c049b2dd16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga85a34580e29527a03f1ba8c194d4d445"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga85a34580e29527a03f1ba8c194d4d445">R0_FreePages</a> (uint64_t p_addr, uint64_t cnt)</td></tr>
+<tr class="memdesc:ga85a34580e29527a03f1ba8c194d4d445"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a continuous range of physical pages. R0 process only.  <a href="#ga85a34580e29527a03f1ba8c194d4d445">More...</a><br /></td></tr>
+<tr class="separator:ga85a34580e29527a03f1ba8c194d4d445"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
@@ -366,6 +369,52 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cnt</td><td>The page count </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">p_addr</td><td>The physical address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga85a34580e29527a03f1ba8c194d4d445"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_FreePages </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>p_addr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>cnt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Free a continuous range of physical pages. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">p_addr</td><td>The p address </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cnt</td><td>The count</td></tr>
   </table>
   </dd>
 </dl>
