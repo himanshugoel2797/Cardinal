@@ -54,6 +54,18 @@ R0_StartProcess(UID pid) {
 	return GetErrno();
 }
 
+/**
+ * @brief      Gets the current process uid.
+ *
+ * @return     The current process uid.
+ */
+static __inline UID
+GetCurrentProcessUID(void) {
+	UID id = 0;
+	GetProperty(CardinalProperty_PID, 0, &id);
+	return id;
+}
+
 /**@}*/
 
 //TODO implement the following without having to export all the kernel's structures:

@@ -1,6 +1,6 @@
 TARGET=userboot.bin
 
-OBJS=main.o initrd.o elf.o
+OBJS=main.o initrd.o elf.o program.o
 
 LIBS=
 

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
+#include <cardinal/cardinal_types.h>
 #include "elf.h"
 
 typedef enum {
@@ -45,15 +45,17 @@ typedef struct {
     };
 } AUXVector;
 
-void
-LoadAndStartApplication(void *elfLoc,
+int
+LoadAndStartApplication(UID pid,
+                        void *elfLoc,
                         uint64_t elf_Size,
                         const char **argv,
                         uint32_t argc,
                         const char **envp);
 
 void*
-SetupApplicationStack(void *sp,
+SetupApplicationStack(UID pid,
+                      void *sp,
                       uint32_t argc,
                       const char **argv,
                       const char **envp,

@@ -1,5 +1,7 @@
 #include "elf.h"
 
+#include <string.h>
+
 ElfLoaderError
 VerifyElf(void *loc,
           uint64_t size,

@@ -22,6 +22,7 @@ typedef enum {
     Syscall_R0_StartProcess,            //!< Start a process
     Syscall_R0_GetProcessInfo,          //!< Get the kernel's process information
     Syscall_R0_SetProcessInfo,          //!< Set the kernel's process information
+    Syscall_R0_GetThreadInfo,           //!< Get the kernel's thread information
     Syscall_R0_CreateThread,            //!< Create a new thread
     Syscall_R0_WipeMemoryMap,           //!< Wipe the memory map of a process
     Syscall_R0_SetThreadIsPaused,       //!< Allow pausing/resuming threads
