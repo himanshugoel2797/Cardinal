@@ -11,6 +11,6 @@ TARGET_ARCH_LD=x86_64-elf-gcc
 AS=x86_64-elf-gcc 
 ASFLAGS+=-ffreestanding -march=x86_64 -m64
 
-EXEC_ENTRY_POINT=0x4000f0
+EXEC_ENTRY_POINT=0x400000
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/Sources.inc

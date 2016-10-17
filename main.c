@@ -50,7 +50,7 @@ load_exec(UID pid, const char *exec) {
 
         MapPage(pinfo->PageTable,
                 p_addr,
-                0x400000 + i * PAGE_SIZE,
+                EXEC_ENTRY_POINT + i * PAGE_SIZE,
                 PAGE_SIZE,
                 CachingModeWriteBack,
                 MemoryAllocationType_Application,
@@ -60,14 +60,14 @@ load_exec(UID pid, const char *exec) {
 
 
     uint8_t* write_target = (uint8_t*)SetupTemporaryWriteMap(pinfo->PageTable,
-                            0x400000,
+                            EXEC_ENTRY_POINT,
                             exec_size);
 
     memcpy(write_target, exec_loc, orig_exec_size);
 
     UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
 
-    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)0x400000, NULL);
+    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     StartProcess(pid);
     return;
 }
@@ -100,6 +100,11 @@ kernel_main(void) {
 }
 
 void
+idle_main(void) {
+    while(1);
+}
+
+void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
     getCoreData = NULL;
@@ -108,6 +113,10 @@ smp_core_main(int coreID,
     //Expose additional cores as a service
     Syscall_Initialize();
     __asm__ volatile("sti");
+    SetupPreemption();
+    RegisterCore(coreID, NULL);
+    CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    CoreUpdate();
     while(1);
     //Start the local timer and set it to call the thread switch handler
 }

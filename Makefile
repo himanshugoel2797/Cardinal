@@ -79,6 +79,7 @@ build:$(SOURCES:.o=.bc) clean_output initrd
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
 	$(TARGET_ARCH_LD) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
+	sh scripts/rebuild-initrd.sh
 	cd initrd && $(MAKE) $(TARGET_MAKE)
 	cp initrd/initrd build/$(CONF)/initrd
 
@@ -99,7 +100,6 @@ build-tests:build
 	mkdir -p ISO
 	mkdir -p ISO/isodir
 	mkdir -p ISO/isodir/boot
-	sh scripts/rebuild-initrd.sh
 	cp "build/$(CONF)/kernel.bin" ISO/isodir/boot/kernel.bin
 	cp "build/$(CONF)/initrd" ISO/isodir/boot/initrd
 	mkdir -p ISO/isodir/boot/grub
