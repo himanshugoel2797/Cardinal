@@ -18,8 +18,8 @@
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_ExitDeleteProcess(UID pid) {
-    Syscall1(Syscall_R0_ExitDeleteProcess, pid);       //Exit and delete a process by its PID
+R0_KillProcess(UID pid) {
+    Syscall1(Syscall_R0_KillProcess, pid);       //Exit and delete a process by its PID
     return GetErrno();
 }
 
