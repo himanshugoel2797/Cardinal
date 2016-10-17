@@ -67,6 +67,11 @@ SetGSBase(void *base) {
     wrmsr(0xC0000101, (uint64_t)base);
 }
 
+void
+SetKernelGSBase(void *base) {
+    wrmsr(0xC0000102, (uint64_t)base);
+}
+
 void*
 GetFSBase(void) {
     return (void*)rdmsr(0xC0000100);

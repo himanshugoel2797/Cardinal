@@ -24,6 +24,10 @@
  */
 #define THREAD_LOCAL_STORAGE_SIZE KiB(32)
 
+#ifdef __x86_64__
+#define CORE_LOCAL __attribute__((address_space(256)))
+#endif
+
 /**
  * Describes a memory allocation in an address space.
  */

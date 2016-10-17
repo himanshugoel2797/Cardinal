@@ -15,7 +15,7 @@ typedef struct CoreThreadState {
 static Spinlock sync_lock;
 static List *neutral, *thds;
 static List* cores;
-static volatile CoreThreadState *coreState = NULL;
+static volatile CoreThreadState* coreState = NULL;
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
 static volatile _Atomic UID base_thread_ID = 1;
@@ -230,6 +230,8 @@ CreateThreadADV(UID parentProcess,
 
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
+    LockSpinlock(thd->lock);
+    LockSpinlock(sync_lock);
 
     SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, Priority, ThreadPriority_Neutral);
@@ -334,9 +336,11 @@ CreateThreadADV(UID parentProcess,
     List_AddEntry(neutral, thd);
 
     UnlockSpinlock(sync_lock);
+    UnlockSpinlock(thd->lock);
     return GET_PROPERTY_VAL(thd, ID);
 
 error_exit:
+    UnlockSpinlock(sync_lock);
     UnlockSpinlock(thd->lock);
     FreeSpinlock(thd->lock);
     kfree(thd);
@@ -627,6 +631,8 @@ GetNextThread(ThreadInfo *prevThread) {
     - Put the thread back once done
     */
 
+    LockSpinlock(sync_lock);
+
     if(prevThread != NULL) {
         LockSpinlock(sync_lock);
         List_AddEntry(neutral, prevThread);
@@ -696,7 +702,9 @@ GetNextThread(ThreadInfo *prevThread) {
                 kfree(next_thread);
                 next_thread = NULL;
             } else {
+                LockSpinlock(sync_lock);
                 List_AddEntry(neutral, next_thread);
+                UnlockSpinlock(sync_lock);
             }
             break;
         case ThreadState_Paused:
@@ -711,23 +719,32 @@ GetNextThread(ThreadInfo *prevThread) {
                     UnlockSpinlock(next_thread->lock);
                 } else {
                     UnlockSpinlock(next_thread->lock);
+                    LockSpinlock(sync_lock);
                     List_AddEntry(neutral, next_thread);
+                    UnlockSpinlock(sync_lock);
                 }
             } else {
                 UnlockSpinlock(next_thread->lock);
+                LockSpinlock(sync_lock);
                 List_AddEntry(neutral, next_thread);
+                UnlockSpinlock(sync_lock);
             }
             break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
                 exit_loop = TRUE;
+            else{
+                LockSpinlock(sync_lock);
+                List_AddEntry(neutral, next_thread);
+                UnlockSpinlock(sync_lock);
+            }
         }
         break;
         }
 
     }
 
-
+    UnlockSpinlock(sync_lock);
     return next_thread;
 }
 
@@ -735,7 +752,11 @@ void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
+    __asm__ volatile("cli\n\thlt");
+
     err_code = 0;
+
+    LockSpinlock(sync_lock);
 
     SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
     PerformArchSpecificTaskSave(coreState->cur_thread);
@@ -781,6 +802,9 @@ TaskSwitch(uint32_t int_no,
 
     }
     HandleInterruptNoReturn(int_no);
+
+    UnlockSpinlock(sync_lock);
+
     SwitchToThread(coreState->cur_thread);
 }
 
@@ -795,6 +819,7 @@ SetPeriodicPreemptVector(uint32_t irq,
 void
 SwitchThread(void) {
 
+    LockSpinlock(sync_lock);
     coreState->cur_thread = GetNextThread(NULL);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
@@ -807,6 +832,8 @@ SwitchThread(void) {
     //Resume execution of the thread
     if(GET_PROPERTY_VAL(coreState->cur_thread, State) == ThreadState_Initialize) {
         SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Running);
+
+        UnlockSpinlock(sync_lock);
         SwitchToThread(coreState->cur_thread);
     }
 
@@ -832,7 +859,7 @@ RegisterCore(int id,
     List_AddEntry(cores, cInfo);
 
     if(coreState == NULL)
-        coreState = (CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
+        coreState = (volatile CoreThreadState*)AllocateAPLSMemory(sizeof(CoreThreadState));
 
     coreState->cur_thread = NULL;
     coreState->coreID = id;

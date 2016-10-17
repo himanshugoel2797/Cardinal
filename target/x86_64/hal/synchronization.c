@@ -54,7 +54,7 @@ IntLockSpinlock(Spinlock primitive) {
     );
 
     //Store the core number in the spinlock state in order to allow the lock to pass if the core number matches
-#else
+#elif _ASM_SPINLOCK_
     register uint64_t dummy1 = (uint64_t)__builtin_return_address(2);
 
     __asm__ volatile
@@ -71,11 +71,13 @@ IntLockSpinlock(Spinlock primitive) {
         "lock bts $0, (%[prim])\n\t"
         "jc 1b\n\t"
         "3:\n\t"
-        "4:\n\t"
         :: [prim]"r"(primitive), [rcx]"a"(dummy1)
         : "memory", "cc"
     );
+#else
 
+    volatile uint64_t *prim = (volatile uint64_t *)primitive;
+    while(__sync_lock_test_and_set(prim, 1)){ __asm__ volatile("pause"); }
 
 #endif
 
@@ -116,7 +118,7 @@ IntUnlockSpinlock(Spinlock primitive) {
     );
     return TRUE;
 
-#else
+#elif _ASM_SPINLOCK_
     register uint16_t dummy0 = 0;
 
     __asm__ volatile
@@ -128,6 +130,11 @@ IntUnlockSpinlock(Spinlock primitive) {
     );
 
     return TRUE;
+#else
+    volatile uint64_t *prim = (volatile uint64_t *)primitive;
+    __sync_synchronize();
+    prim[0] = 0;
+    return TRUE;
 #endif
 }
 
@@ -138,7 +145,7 @@ TryLockSpinlock(Spinlock primitive) {
     __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
 
     IntLockSpinlock(primitive);
-    uint64_t *prim = (uint64_t*)primitive;
+    volatile uint64_t *prim = (volatile uint64_t*)primitive;
     if(prim[4] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[5]++;
@@ -174,7 +181,7 @@ UnlockSpinlock(Spinlock primitive) {
     __asm__ volatile("pushfq\n\tpopq %0" : "=r"(iflag) :: "cc");
 
     IntLockSpinlock(primitive);
-    uint64_t *prim = (uint64_t*)primitive;
+    volatile uint64_t *prim = (volatile uint64_t*)primitive;
     if(prim[4] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[5]--;

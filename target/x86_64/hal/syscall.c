@@ -16,6 +16,7 @@ Syscall_Handler(void) {
     //Setup the environment to move into the OS syscall handler
     __asm__ volatile
     (
+        "swapgs\n\t"
         "pushq %%rax\n\t"
         "movq %%rsp, %%rax\n\t"
         "movq (k_stack_info), %%rsp\n\t"
@@ -46,6 +47,7 @@ Syscall_Handler(void) {
         "popq %%rax\n\t"
         "movq (k_stack_info), %%r11\n\t"
         "movq +8(%%r11), %%r11\n\t"
+        "swapgs\n\t"
         "sysretq\n\t" :::
     );
 }
@@ -62,6 +64,7 @@ SwitchToUserMode(uint64_t pc, uint64_t sp) {
         "mov %[sp], %%rsp\n\t"
         "mov %%rsp, %%rbp\n\t"
         "mov $0, %%rdx\n\t"
+        "swapgs\n\t"
         "sysretq\n\t" :: [sp]"r"(sp), "c"(pc)
     );
 }

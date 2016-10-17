@@ -76,7 +76,6 @@ GDT_Bootstrap(void) {
         "mov %ax, %ds\n\t"
         "mov %ax, %es\n\t"
         "mov %ax, %fs\n\t"
-        "mov %ax, %gs\n\t"
         "mov %ax, %ss\n\t"
 
         //Set the TSS
@@ -126,9 +125,7 @@ void GDT_Initialize() {
         "mov %ax, %ds\n\t"
         "mov %ax, %es\n\t"
         "mov %ax, %fs\n\t"
-        "mov %ax, %gs\n\t"
         "mov %ax, %ss\n\t"
-
         //Set the TSS
         "mov $0x33, %ax\n\t"
         "ltr %ax\n\t"

@@ -1,3 +1,4 @@
+#include "thread.h"
 #include "types.h"
 #include "page_manager/phys_mem_manager.h"
 #include "utils/native.h"
@@ -7,6 +8,7 @@
 #include "managers.h"
 #include "IDT/idt.h"
 #include "interrupts.h"
+#include "memory.h"
 
 #define PAT_MSR 0x277
 
@@ -46,30 +48,25 @@ static uint64_t* kernel_pdpt = NULL;
 static uint64_t* kernel_pdpt_paddr = NULL;
 
 typedef struct VirtMemManData {
-    uint64_t *coreLocalPMLData;
     PML_Instance curPML;
     bool hugePageSupport;
-    uint64_t *coreLocal_pdpt;
+    uint64_t coreLocalStorage;
 } VirtMemManData;
 
-static uint64_t coreLocalSpace;
-static volatile VirtMemManData *virtMemData;
 
-static uint64_t *tmp_corePML = NULL;
+static uint64_t coreLocalSpace;
+
+static volatile VirtMemManData CORE_LOCAL* virtMemData = (volatile VirtMemManData CORE_LOCAL*)0;
 
 void
 VirtMemMan_InitializeBootstrap(void) {
-    virtMemData = bootstrap_malloc(sizeof(VirtMemManData));
+    
+    //Assigns to virtMemData
+    SetGSBase(bootstrap_malloc(sizeof(VirtMemManData))); 
+
     virtMemData->curPML = (uint64_t*)BOOTSTRAP_PML_ADDR;    //Where initial PML is located
+    virtMemData->hugePageSupport = FALSE;   
 
-    if(tmp_corePML == NULL) {
-        tmp_corePML = bootstrap_malloc(8096);
-        if((uint64_t)tmp_corePML % KiB(4) != 0)
-            tmp_corePML = (uint64_t*)((uint64_t)tmp_corePML + KiB(4) - ((uint64_t)tmp_corePML % KiB(4)));
-    }
-
-    virtMemData->coreLocalPMLData = tmp_corePML;
-    virtMemData->hugePageSupport = FALSE;
 }
 
 void
@@ -274,45 +271,18 @@ VirtMemMan_Initialize(void) {
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
     }
 
-    //Setup core specific memory
-    VirtMemMan_Map(pml,
-                   CORE_LOCAL_MEM_ADDR,
-                   MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE),
-                   APLS_SIZE,
-                   TRUE,
-                   MEM_TYPE_WB,
-                   MEM_READ | MEM_WRITE,
-                   MEM_KERNEL);
-
+    //Enable NX
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 
-    virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
-    virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
-
-    VirtMemMan_SetCurrent(pml);
-
-
-    //Now change the virtMemData pointer to refer to the TLS version of the structure
-    VirtMemManData* tmp = (VirtMemManData*)virtMemData;
-    virtMemData = (VirtMemManData*)CORE_LOCAL_MEM_ADDR;
-    virtMemData->coreLocal_pdpt = (uint64_t*)pml[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF];
-    virtMemData->curPML = tmp->curPML;
-    virtMemData->hugePageSupport = tmp->hugePageSupport;
-    virtMemData->coreLocalPMLData = bootstrap_malloc(8096);
-    if((uint64_t)virtMemData->coreLocalPMLData % KiB(4) != 0) {
-        virtMemData->coreLocalPMLData = (uint64_t*)((uint64_t)virtMemData->coreLocalPMLData + KiB(4) - ((uint64_t)virtMemData->coreLocalPMLData % KiB(4)));
-    }
-
-    virtMemData->coreLocalPMLData[(CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF] = (uint64_t)virtMemData->coreLocal_pdpt;
-
-
+    virtMemData->curPML = pml;
+    virtMemData->coreLocalStorage = MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE);
     VirtMemMan_SetCurrent(pml);
 }
 
 void*
 VirtMemMan_AllocCoreLocalData(uint64_t size) {
     if(size <= coreLocalSpace && coreLocalSpace > 0) {
-        uint64_t addr = (uint64_t)virtMemData + (APLS_SIZE - coreLocalSpace);
+        uint64_t addr = CORE_LOCAL_MEM_ADDR + (APLS_SIZE - coreLocalSpace);
         coreLocalSpace -= size;
         return (void*)addr;
     }
@@ -341,23 +311,23 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
 
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
-    uint64_t *tmp_pml = (uint64_t*)tmp;
-    uint64_t *pml = (uint64_t*)instance;
 
-    ASSERT(instance != NULL);
+    //NOTE: Unmap first, then map so everything stays the same if tmp = instance
+    VirtMemMan_Unmap(tmp,
+                     CORE_LOCAL_MEM_ADDR,
+                     APLS_SIZE);
 
-    for(int i = 0; i < 512; i++) {
-        if(i == ((CORE_LOCAL_MEM_ADDR >> 39) & 0x1FF))continue;
+    VirtMemMan_Map(instance,
+                   CORE_LOCAL_MEM_ADDR,
+                   (uint64_t)virtMemData->coreLocalStorage,
+                   APLS_SIZE,
+                   TRUE,
+                   MEM_TYPE_WB,
+                   MEM_WRITE | MEM_READ,
+                   MEM_KERNEL);
 
-        if((uint64_t)tmp != BOOTSTRAP_PML_ADDR && tmp != instance)
-            tmp_pml[i] = virtMemData->coreLocalPMLData[i];
 
-        virtMemData->coreLocalPMLData[i] = pml[i];
-    }
-
-    //Setup the thread local storage for this core before changing!
-    __asm__ volatile("mov %0, %%cr3" :: "r"(VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)virtMemData->coreLocalPMLData)));
-
+    __asm__ volatile("mov %0, %%cr3" :: "r"(VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)instance)));
     virtMemData->curPML = instance;
     return tmp;
 }
@@ -459,7 +429,6 @@ VirtMemMan_MapHPage(PML_Instance       inst,
     if(sec_perms & MEM_USER)MARK_USER(pdpt[pdpt_off]);
 
     if(inst == virtMemData->curPML) {
-        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
         __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
     }
 }
@@ -499,7 +468,6 @@ VirtMemMan_MapLPage(PML_Instance       inst,
 
 
     if(inst == virtMemData->curPML) {
-        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
         __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
     }
 }
@@ -540,7 +508,6 @@ VirtMemMan_MapSPage(PML_Instance       inst,
     if(sec_perms & MEM_USER)MARK_USER(pt[pt_off]);
 
     if(inst == virtMemData->curPML) {
-        virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
         __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
     }
 }
@@ -562,7 +529,6 @@ VirtMemMan_UnmapSPage(PML_Instance inst, uint64_t virt_addr) {
 
                 pt[pt_off] = 0;
                 if(inst == virtMemData->curPML) {
-                    virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
                     __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
                 }
             }
@@ -585,7 +551,6 @@ VirtMemMan_UnmapLPage(PML_Instance inst, uint64_t virt_addr) {
 
             pd[pd_off] = 0;
             if(inst == virtMemData->curPML) {
-                virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
                 __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
             }
         }
@@ -601,7 +566,6 @@ VirtMemMan_UnmapHPage(PML_Instance inst, uint64_t virt_addr) {
 
         pdpt[pdpt_off] = 0;
         if(inst == virtMemData->curPML) {
-            virtMemData->coreLocalPMLData[pml_off] = inst[pml_off];
             __asm__ volatile("invlpg (%0)" :: "r"(virt_addr));
         }
     }

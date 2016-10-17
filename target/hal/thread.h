@@ -71,12 +71,28 @@ void*
 GetFSBase(void);
 
 /**
+ * @brief      Sets the kernel gs base.
+ *
+ * @param      base  The base
+ */
+void
+SetKernelGSBase(void *base);
+
+/**
  * @brief      Gets the gs base.
  *
  * @return     The gs base.
  */
 void*
 GetGSBase(void);
+
+/**
+ * @brief      Gets the gs.
+ *
+ * @return     The gs.
+ */
+void*
+GetGS(void);
 
 /**
  * @brief      Restore the FPU state from the provided data.
