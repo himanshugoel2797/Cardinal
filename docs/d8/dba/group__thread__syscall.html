@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Cardinal:: Process Management Syscalls</title>
+<title>Cardinal:: Threading Syscalls</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -81,25 +81,28 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">Process Management Syscalls</div>  </div>
+<div class="title">Threading Syscalls</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga625beb1d412c9b81a7d916500a74dd57"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga625beb1d412c9b81a7d916500a74dd57">R0_KillProcess</a> (UID pid)</td></tr>
-<tr class="memdesc:ga625beb1d412c9b81a7d916500a74dd57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit and delete a process. R0 process only.  <a href="#ga625beb1d412c9b81a7d916500a74dd57">More...</a><br /></td></tr>
-<tr class="separator:ga625beb1d412c9b81a7d916500a74dd57"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae50195172b270e385cc0ab5542fe9a91"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#gae50195172b270e385cc0ab5542fe9a91">R0_CreateProcess</a> (UID parent, UID userID, UID *uid)</td></tr>
-<tr class="memdesc:gae50195172b270e385cc0ab5542fe9a91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new process without starting. R0 process only.  <a href="#gae50195172b270e385cc0ab5542fe9a91">More...</a><br /></td></tr>
-<tr class="separator:gae50195172b270e385cc0ab5542fe9a91"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga69ad3016e720b60a8b33d2d7f875de15"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga69ad3016e720b60a8b33d2d7f875de15">R0_StartProcess</a> (UID pid)</td></tr>
-<tr class="memdesc:ga69ad3016e720b60a8b33d2d7f875de15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start a created process. R0 process only.  <a href="#ga69ad3016e720b60a8b33d2d7f875de15">More...</a><br /></td></tr>
-<tr class="separator:ga69ad3016e720b60a8b33d2d7f875de15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga820fcc3ceede1ae1ebec333ab0ad9dfd"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dba/group__thread__syscall.html#ga820fcc3ceede1ae1ebec333ab0ad9dfd">R0_CreateThread</a> (UID parent_pid, int(*entry_point)(void *arg), void *arg, UID *tid)</td></tr>
+<tr class="memdesc:ga820fcc3ceede1ae1ebec333ab0ad9dfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new thread. R0 process only.  <a href="#ga820fcc3ceede1ae1ebec333ab0ad9dfd">More...</a><br /></td></tr>
+<tr class="separator:ga820fcc3ceede1ae1ebec333ab0ad9dfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9003ab1ee0807f1df9b5365885e2a4be"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dba/group__thread__syscall.html#ga9003ab1ee0807f1df9b5365885e2a4be">R0_SetThreadIsPaused</a> (UID tid, bool pause)</td></tr>
+<tr class="memdesc:ga9003ab1ee0807f1df9b5365885e2a4be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the thread execution status. R0 process only.  <a href="#ga9003ab1ee0807f1df9b5365885e2a4be">More...</a><br /></td></tr>
+<tr class="separator:ga9003ab1ee0807f1df9b5365885e2a4be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4d00af47438488b998c651a05e6cd683"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dba/group__thread__syscall.html#ga4d00af47438488b998c651a05e6cd683">R0_KillThread</a> (UID tid)</td></tr>
+<tr class="memdesc:ga4d00af47438488b998c651a05e6cd683"><td class="mdescLeft">&#160;</td><td class="mdescRight">Kill a thread by its TID. R0 process only.  <a href="#ga4d00af47438488b998c651a05e6cd683">More...</a><br /></td></tr>
+<tr class="separator:ga4d00af47438488b998c651a05e6cd683"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga47992dbfa222b675112d05d56ef7ec42"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dba/group__thread__syscall.html#ga47992dbfa222b675112d05d56ef7ec42">R0_ExitDeleteThread</a> (void)</td></tr>
+<tr class="memdesc:ga47992dbfa222b675112d05d56ef7ec42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit and delete the current thread. R0 process only.  <a href="#ga47992dbfa222b675112d05d56ef7ec42">More...</a><br /></td></tr>
+<tr class="separator:ga47992dbfa222b675112d05d56ef7ec42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gae50195172b270e385cc0ab5542fe9a91"></a>
+<a class="anchor" id="ga820fcc3ceede1ae1ebec333ab0ad9dfd"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -107,22 +110,28 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static __inline uint64_t R0_CreateProcess </td>
+          <td class="memname">static __inline uint64_t R0_CreateThread </td>
           <td>(</td>
           <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>parent</em>, </td>
+          <td class="paramname"><em>parent_pid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>userID</em>, </td>
+          <td class="paramtype">int(*)(void *arg)&#160;</td>
+          <td class="paramname"><em>entry_point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>arg</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">UID *&#160;</td>
-          <td class="paramname"><em>uid</em>&#160;</td>
+          <td class="paramname"><em>tid</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -137,14 +146,15 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+<p><code>#include &lt;libs/libCardinal/include/thread.h&gt;</code></p>
 
-<p>Create a new process without starting. R0 process only. </p>
+<p>Create a new thread. R0 process only. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">parent</td><td>The parent PID </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">userID</td><td>The user ID </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">uid</td><td>The uid of the created process</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">parent_pid</td><td>The parent pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">entry_point</td><td>The entry point </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">arg</td><td>The argument </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">tid</td><td>The tid</td></tr>
   </table>
   </dd>
 </dl>
@@ -152,7 +162,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga625beb1d412c9b81a7d916500a74dd57"></a>
+<a class="anchor" id="ga47992dbfa222b675112d05d56ef7ec42"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -160,10 +170,10 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static __inline uint64_t R0_KillProcess </td>
+          <td class="memname">static __inline uint64_t R0_ExitDeleteThread </td>
           <td>(</td>
-          <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>pid</em></td><td>)</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -174,20 +184,14 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+<p><code>#include &lt;libs/libCardinal/include/thread.h&gt;</code></p>
 
-<p>Exit and delete a process. R0 process only. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+<p>Exit and delete the current thread. R0 process only. </p>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, does not return on success. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga69ad3016e720b60a8b33d2d7f875de15"></a>
+<a class="anchor" id="ga4d00af47438488b998c651a05e6cd683"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -195,10 +199,10 @@ Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static __inline uint64_t R0_StartProcess </td>
+          <td class="memname">static __inline uint64_t R0_KillThread </td>
           <td>(</td>
           <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>pid</em></td><td>)</td>
+          <td class="paramname"><em>tid</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -209,12 +213,58 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+<p><code>#include &lt;libs/libCardinal/include/thread.h&gt;</code></p>
 
-<p>Start a created process. R0 process only. </p>
+<p>Kill a thread by its TID. R0 process only. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid of the process to start</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tid</td><td>The tid</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga9003ab1ee0807f1df9b5365885e2a4be"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_SetThreadIsPaused </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>tid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>pause</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/thread.h&gt;</code></p>
+
+<p>Set the thread execution status. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">tid</td><td>The tid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pause</td><td>The pause status</td></tr>
   </table>
   </dd>
 </dl>
