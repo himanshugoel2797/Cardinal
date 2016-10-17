@@ -4,6 +4,10 @@
 
 void
 RegisterAllSyscalls(void) {
+
+	MemoryInitLocks();
+	PropertyInitLocks();
+
     RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);
     RegisterSyscall(Syscall_Brk, Brk_Syscall);
 

@@ -195,19 +195,20 @@ smp_bootstrap(void) {
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
-    SMP_IncrementCoreCount();
     int coreID = SMP_GetCoreCount();
-    SMP_UnlockTrampoline();
+    SMP_IncrementCoreCount();
 
     MemoryHAL_Initialize();
-    while(smp_sync_base);
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
     pageTable->reference_count = 0;
     pageTable->lock = CreateBootstrapSpinlock();
-    SetActiveVirtualMemoryInstance(pageTable);
 
+    SetActiveVirtualMemoryInstance(pageTable);
+    
+    SMP_UnlockTrampoline();
+    while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
     while(1);
 }

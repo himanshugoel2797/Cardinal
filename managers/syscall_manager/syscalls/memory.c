@@ -5,6 +5,14 @@
 #include "kmalloc.h"
 #include <sys/mman.h>
 
+static Spinlock brk_lock = NULL, map_lock = NULL;
+
+void
+MemoryInitLocks(void){
+    map_lock = CreateSpinlock();
+    brk_lock = CreateSpinlock();
+}
+
 uint64_t
 Brk_Syscall(uint64_t UNUSED(instruction_pointer),
             uint64_t syscall_num,
@@ -25,6 +33,8 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 
     void* targ_brk_address = (void*)data->params[0];
 
+    LockSpinlock(brk_lock);
+
     ProcessInformation *p_info;
     GetProcessReference(GetCurrentProcessUID(), &p_info);
 
@@ -42,6 +52,7 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
         UnlockSpinlock(p_info->lock);
 
         SyscallSetErrno(0);
+        UnlockSpinlock(brk_lock);
         return addr;
     }
 
@@ -55,9 +66,9 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
 
         if((uint64_t)targ_brk_address <= p_info->HeapBreak) {
 
-            UnlockSpinlock(p_info->lock),
-
-                           SyscallSetErrno(0);
+            UnlockSpinlock(p_info->lock);
+            SyscallSetErrno(0);
+            UnlockSpinlock(brk_lock);
             return (uint64_t)targ_brk_address;
         }
 
@@ -78,12 +89,15 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
         UnlockSpinlock(p_info->lock);
 
         SyscallSetErrno(0);
+        UnlockSpinlock(brk_lock);
         return (uint64_t)targ_brk_address;
     }
 
     SyscallSetErrno(-ENOMEM);
+    UnlockSpinlock(brk_lock);
     return p_info->HeapBreak;
 }
+
 
 uint64_t
 R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -106,6 +120,8 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
         return 0;
     }
 
+
+
     struct MemoryMapParams *mmap_params = (struct MemoryMapParams*)data->params[0];
 
     ProcessInformation *p_info;
@@ -113,6 +129,8 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
         SyscallSetErrno(-EINVAL);
         return 0;
     }
+
+    LockSpinlock(map_lock);
 
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
@@ -125,6 +143,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
                                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
 
             SyscallSetErrno(-ENOMEM);
+        UnlockSpinlock(map_lock);
         return 0;
     }
 
@@ -137,10 +156,12 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
                mmap_params->AllocationFlags) != MemoryAllocationErrors_None) {
 
         SyscallSetErrno(-ENOMEM);
+        UnlockSpinlock(map_lock);
         return 0;
     } else {
 
         SyscallSetErrno(0);
+        UnlockSpinlock(map_lock);
         return mmap_params->VirtualAddress;
     }
 }

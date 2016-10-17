@@ -333,9 +333,11 @@ CreateThreadADV(UID parentProcess,
     List_AddEntry(thds, thd);
     List_AddEntry(neutral, thd);
 
+    UnlockSpinlock(sync_lock);
     return GET_PROPERTY_VAL(thd, ID);
 
 error_exit:
+    UnlockSpinlock(thd->lock);
     FreeSpinlock(thd->lock);
     kfree(thd);
     return -1;
@@ -611,6 +613,7 @@ SetThreadIsPaused(UID tid, bool paused) {
 
 void
 YieldThread(void) {
+    __asm__("cli\n\thlt");
     ResetPreemption();
     RaiseInterrupt(preempt_vector);
 }
@@ -686,6 +689,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
 
                 UnlockSpinlock(next_thread->ParentProcess->lock);
+                UnlockSpinlock(next_thread->lock);
                 FreeSpinlock(next_thread->lock);
 
 

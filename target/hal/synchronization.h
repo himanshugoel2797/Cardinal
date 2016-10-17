@@ -13,6 +13,12 @@
  */
 typedef volatile uint64_t* Spinlock;
 
+
+void
+AutounlockSpinlock(Spinlock *prim);
+
+#define SpinlockUnlocker __attribute__((cleanup(AutounlockSpinlock)))
+
 /**
  * @brief      Creates a spinlock.
  *
@@ -34,9 +40,9 @@ CreateBootstrapSpinlock(void);
  *
  * @param[in]  primitive  The primitive
  *
- * @return     TRUE
+ * @return     primitive
  */
-bool
+Spinlock
 LockSpinlock(Spinlock primitive);
 
 /**

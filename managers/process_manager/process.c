@@ -190,12 +190,14 @@ TerminateProcess(UID pid, uint32_t exit_code) {
     }
     List_Free(pinfo->PendingMessages);
     List_Free(pinfo->ThreadIDs);
+    UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 
     FreeVirtualMemoryInstance(pinfo->PageTable);
 
 
     //TODO Inspect this to make sure the entire process information data is being freed
+    UnlockSpinlock(pinfo->lock);
     FreeSpinlock(pinfo->lock);
     kfree(pinfo);
 
@@ -367,7 +369,7 @@ SetProcessGroupID(UID pid, uint64_t id) {
         return -1;
 
     if(id < info->GroupID)
-        return -1;
+        return -2;
 
     info->GroupID = id;
 

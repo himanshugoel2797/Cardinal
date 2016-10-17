@@ -3,6 +3,12 @@
 
 #include "types.h"
 
+void
+MemoryInitLocks(void);
+
+void
+PropertyInitLocks(void);
+
 uint64_t
 SyscallSetErrno(uint64_t errno);
 

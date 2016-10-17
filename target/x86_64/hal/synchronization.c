@@ -156,9 +156,15 @@ TryLockSpinlock(Spinlock primitive) {
     return locked;
 }
 
-bool LockSpinlock(Spinlock primitive) {
+Spinlock 
+LockSpinlock(Spinlock primitive) {
     while(!TryLockSpinlock(primitive));
-    return TRUE;
+    return primitive;
+}
+
+void
+AutounlockSpinlock(Spinlock *prim){
+    UnlockSpinlock(*prim);
 }
 
 bool
