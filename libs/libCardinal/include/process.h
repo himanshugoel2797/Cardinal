@@ -35,7 +35,7 @@ R0_KillProcess(UID pid) {
 static __inline uint64_t
 R0_CreateProcess(UID parent, UID userID, UID *uid) {
     if(uid != NULL) {
-    	*uid = Syscall2(Syscall_R0_CreateProcess, parent, userID);
+        *uid = Syscall2(Syscall_R0_CreateProcess, parent, userID);
         return GetErrno();
     }
     return -EINVAL;
@@ -50,8 +50,8 @@ R0_CreateProcess(UID parent, UID userID, UID *uid) {
  */
 static __inline uint64_t
 R0_StartProcess(UID pid) {
-	Syscall1(Syscall_R0_StartProcess, pid);
-	return GetErrno();
+    Syscall1(Syscall_R0_StartProcess, pid);
+    return GetErrno();
 }
 
 /**
@@ -61,9 +61,9 @@ R0_StartProcess(UID pid) {
  */
 static __inline UID
 GetCurrentProcessUID(void) {
-	UID id = 0;
-	GetProperty(CardinalProperty_PID, 0, &id);
-	return id;
+    UID id = 0;
+    GetProperty(CardinalProperty_PID, 0, &id);
+    return id;
 }
 
 /**@}*/

@@ -62,14 +62,14 @@ static volatile VirtMemManData CORE_LOCAL* virtMemData = (volatile VirtMemManDat
 
 void
 VirtMemMan_InitializeBootstrap(void) {
-    
+
     //Assigns to virtMemData
-    SetGSBase(bootstrap_malloc(sizeof(VirtMemManData))); 
+    SetGSBase(bootstrap_malloc(sizeof(VirtMemManData)));
 
     virtMemData->curPML = (uint64_t*)BOOTSTRAP_PML_ADDR;    //Where initial PML is located
-    virtMemData->hugePageSupport = FALSE;   
+    virtMemData->hugePageSupport = FALSE;
 
-    if(vmem_lock == NULL){
+    if(vmem_lock == NULL) {
         vmem_lock = CreateBootstrapSpinlock();
     }
 }
@@ -281,7 +281,7 @@ VirtMemMan_Initialize(void) {
     //Enable NX
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 
-    
+
     virtMemData->curPML = pml;
     virtMemData->coreLocalStorage = MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE);
     VirtMemMan_SetCurrent(pml);
@@ -316,7 +316,7 @@ VirtMemMan_CreateInstance(void) {
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
 
-    
+
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
 

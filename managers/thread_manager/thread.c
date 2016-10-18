@@ -733,7 +733,7 @@ GetNextThread(ThreadInfo *prevThread) {
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
                 exit_loop = TRUE;
-            else{
+            else {
                 LockSpinlock(sync_lock);
                 List_AddEntry(neutral, next_thread);
                 UnlockSpinlock(sync_lock);

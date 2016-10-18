@@ -29,9 +29,9 @@ R0_CreateThread(UID parent_pid,
                 int (*entry_point)(void *arg),
                 void *arg,
                 UID *tid) {
-    if(tid != NULL){
-    	*tid = Syscall3(Syscall_R0_CreateThread, parent_pid, entry_point, arg);
-    	return GetErrno();
+    if(tid != NULL) {
+        *tid = Syscall3(Syscall_R0_CreateThread, parent_pid, entry_point, arg);
+        return GetErrno();
     }
     return -EINVAL;
 }
@@ -74,8 +74,8 @@ R0_KillThread(UID tid) {
 static __inline
 uint64_t
 R0_ExitDeleteThread(void) {
-	Syscall0(Syscall_R0_ExitDeleteThread);
-	return GetErrno();
+    Syscall0(Syscall_R0_ExitDeleteThread);
+    return GetErrno();
 }
 
 /**@}*/

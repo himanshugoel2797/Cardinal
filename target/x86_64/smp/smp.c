@@ -26,7 +26,9 @@ SMP_WaitForCoreCount(int curCC) {
 
 void
 SMP_LockTrampoline(void) {
-    while(__sync_lock_test_and_set(&smp_lock, 1)){ while(smp_lock)__asm__ volatile("pause"); }
+    while(__sync_lock_test_and_set(&smp_lock, 1)) {
+        while(smp_lock)__asm__ volatile("pause");
+    }
 }
 
 void

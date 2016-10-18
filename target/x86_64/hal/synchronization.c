@@ -77,7 +77,9 @@ IntLockSpinlock(Spinlock primitive) {
 #else
 
     volatile uint64_t *prim = (volatile uint64_t *)primitive;
-    while(__sync_lock_test_and_set(prim, 1)){ __asm__ volatile("pause"); }
+    while(__sync_lock_test_and_set(prim, 1)) {
+        __asm__ volatile("pause");
+    }
 
 #endif
 
@@ -163,14 +165,14 @@ TryLockSpinlock(Spinlock primitive) {
     return locked;
 }
 
-Spinlock 
+Spinlock
 LockSpinlock(Spinlock primitive) {
     while(!TryLockSpinlock(primitive));
     return primitive;
 }
 
 void
-AutounlockSpinlock(Spinlock *prim){
+AutounlockSpinlock(Spinlock *prim) {
     UnlockSpinlock(*prim);
 }
 

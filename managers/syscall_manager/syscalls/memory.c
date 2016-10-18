@@ -8,7 +8,7 @@
 static Spinlock brk_lock = NULL, map_lock = NULL;
 
 void
-MemoryInitLocks(void){
+MemoryInitLocks(void) {
     map_lock = CreateSpinlock();
     brk_lock = CreateSpinlock();
 }
@@ -204,15 +204,14 @@ R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                uint64_t syscall_num,
-                uint64_t *syscall_params)
-{
-    if(syscall_num != Syscall_R0_AllocatePages){
+                        uint64_t syscall_num,
+                        uint64_t *syscall_params) {
+    if(syscall_num != Syscall_R0_AllocatePages) {
         SyscallSetErrno(-ENOSYS);
         return 0;
     }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
@@ -229,21 +228,20 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
         SyscallSetErrno(-ENOMEM);
     else
         SyscallSetErrno(0);
-    
+
     return retVal;
 }
 
 uint64_t
 R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                uint64_t syscall_num,
-                uint64_t *syscall_params)
-{
-    if(syscall_num != Syscall_R0_FreePages){
+                    uint64_t syscall_num,
+                    uint64_t *syscall_params) {
+    if(syscall_num != Syscall_R0_FreePages) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0){
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return -1;
     }

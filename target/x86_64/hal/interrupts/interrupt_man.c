@@ -36,13 +36,12 @@ ShadowInterruptHandler(Registers *regs) {
         *int_stack = 0;
     }
 
-    if(*int_stack == 0){
+    if(*int_stack == 0) {
         *int_stack = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)AllocatePhysicalPageCont(4)) + 4096 * 4 - 1;
         *int_stack -= *int_stack % 16;
     }
 
-    if(regs->cs != 0x08)
-    {
+    if(regs->cs != 0x08) {
         //__asm__("swapgs");
     }
 
@@ -67,7 +66,7 @@ HandleInterruptNoReturn(uint32_t vector) {
 
     if(regs_saved->cs != 0x08)
         performSwap = TRUE;
-    
+
     memset((void*)regs_saved, 0, sizeof(Registers));
     if(vector > 31)APIC_SendEOI(vector);
 

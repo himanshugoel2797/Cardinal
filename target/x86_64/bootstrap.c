@@ -101,7 +101,7 @@ bootstrap_kernel(void *param,
     //Setup IST for important exceptions
     t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
     t_addr -= t_addr % 16;
-    
+
     GDT_SetIST(0x1, t_addr);
     IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
 
@@ -174,7 +174,7 @@ smp_unlock_cores(void) {
 void
 smp_bootstrap_stage2(void) {
     VirtMemMan_InitializeBootstrap();
-    
+
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
 
@@ -183,7 +183,7 @@ smp_bootstrap_stage2(void) {
     MemoryHAL_Initialize();
 
     GDT_Initialize();   //Setup the GDT
-    
+
 
 
     uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
@@ -200,12 +200,12 @@ smp_bootstrap_stage2(void) {
 
     t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
     t_addr -= t_addr % 16;
-    
+
     GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
     int coreID = SMP_GetCoreCount();
-    
+
     SMP_IncrementCoreCount();
 
     APIC_LocalInitialize();
@@ -219,7 +219,7 @@ smp_bootstrap_stage2(void) {
     pageTable->lock = CreateBootstrapSpinlock();
 
     SetActiveVirtualMemoryInstance(pageTable);
-    
+
     SMP_UnlockTrampoline();
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);

@@ -5,8 +5,8 @@
 void
 RegisterAllSyscalls(void) {
 
-	MemoryInitLocks();
-	PropertyInitLocks();
+    MemoryInitLocks();
+    PropertyInitLocks();
 
     RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);
     RegisterSyscall(Syscall_Brk, Brk_Syscall);
@@ -21,7 +21,7 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_R0_Map, R0Map_Syscall);
     RegisterSyscall(Syscall_R0_Unmap, R0Unmap_Syscall);
-    
+
     RegisterSyscall(Syscall_R0_AllocatePages, R0AllocatePages_Syscall);
     RegisterSyscall(Syscall_R0_FreePages, R0FreePages_Syscall);
 

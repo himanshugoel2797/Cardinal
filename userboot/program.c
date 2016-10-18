@@ -44,7 +44,7 @@ LoadAndStartApplication(UID pid,
     auxv[auxv_cnt++].a_val = (int64_t)0xBFEBFBFF;
 
     //void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt, &elf_info);
-    
+
     //Get the user mode stack pointer for the process, call SetupApplicationStack on it
     //Start the process
 }
@@ -71,7 +71,7 @@ SetupApplicationStack(UID pid,
     //Copy the argument array and environment variables onto the stack first, then update the pointers
 
     uint64_t phys_addr = 0;
-    if(R0_AllocatePages(1, &phys_addr) != 0){
+    if(R0_AllocatePages(1, &phys_addr) != 0) {
         return NULL;
     }
 
@@ -83,7 +83,7 @@ SetupApplicationStack(UID pid,
            CachingModeWriteBack,
            MemoryAllocationType_MMap,
            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-           );
+          );
 
 
     R0_Map(pid,
@@ -93,7 +93,7 @@ SetupApplicationStack(UID pid,
            CachingModeWriteBack,
            MemoryAllocationType_MMap,
            MemoryAllocationFlags_Write | MemoryAllocationFlags_User
-           );
+          );
 
     uint8_t *args = (uint8_t*)v_tmp_addr;
     uint64_t off = 0;

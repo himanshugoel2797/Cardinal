@@ -111,7 +111,7 @@ smp_core_main(int coreID,
     //Expose additional cores as a service
     Syscall_Initialize();
     RegisterCore(coreID, NULL);
-    
+
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
