@@ -97,11 +97,19 @@ bootstrap_kernel(void *param,
     uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
     t_addr -= t_addr % 16;
     SetInterruptStack((void*)t_addr);
+
     //Setup IST for important exceptions
-    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
+    t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
+    t_addr -= t_addr % 16;
+    
+    GDT_SetIST(0x1, t_addr);
     IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
 
-    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
+
+    t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
+    t_addr -= t_addr % 16;
+
+    GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
     ACPITables_Initialize();    //Initialize the ACPI table data
@@ -163,42 +171,47 @@ smp_unlock_cores(void) {
     smp_sync_base = 0;
 }
 
-__attribute__((section(".tramp_handler")))
 void
-smp_bootstrap(void) {
-    SMP_LockTrampoline();
-
-    //Allocate a new stack for this thread and put it into the scheduler's queue
-    uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
-    stack += KiB(16);
-    stack -= stack % 16;
-
-    __asm__ volatile("mov %0, %%rsp":: "r"(stack)); //Switch to a new stack
-
+smp_bootstrap_stage2(void) {
+    VirtMemMan_InitializeBootstrap();
+    
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
 
     //Setup the page table for this core
-    VirtMemMan_InitializeBootstrap();
     VirtMemMan_Initialize();
+    MemoryHAL_Initialize();
 
     GDT_Initialize();   //Setup the GDT
-    SetInterruptStack((void*)((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16) - 128));
+    
 
-    GDT_SetIST(0x1, (uint64_t)bootstrap_malloc(KiB(4)));
+
+    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
+    t_addr -= t_addr % 16;
+    SetInterruptStack((void*)t_addr);
+
+
+    t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
+    t_addr -= t_addr % 16;
+
+    GDT_SetIST(0x1, t_addr);
     IDT_ChangeEntry(0x8, 0x08, 0x8E, 0x1);  //Setup IST1 for Double fault
 
-    GDT_SetIST(0x2, (uint64_t)bootstrap_malloc(KiB(4)));
+
+    t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
+    t_addr -= t_addr % 16;
+    
+    GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
+
+    int coreID = SMP_GetCoreCount();
+    
+    SMP_IncrementCoreCount();
 
     APIC_LocalInitialize();
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
-    __asm__ volatile("cli");
-    int coreID = SMP_GetCoreCount();
-    SMP_IncrementCoreCount();
 
-    MemoryHAL_Initialize();
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
@@ -211,4 +224,17 @@ smp_bootstrap(void) {
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
     while(1);
+}
+
+__attribute__((section(".tramp_handler")))
+void
+smp_bootstrap(void) {
+    SMP_LockTrampoline();
+
+    //Allocate a new stack for this thread and put it into the scheduler's queue
+    uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));
+    stack += KiB(16);
+    stack -= stack % 16;
+
+    __asm__ volatile("mov %0, %%rsp\n\tcall smp_bootstrap_stage2":: "r"(stack)); //Switch to a new stack
 }

@@ -230,8 +230,6 @@ GetProcessReference(UID           pid,
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_EntryAt(processes, i);
 
-        if(List_Length(processes) > 3)__asm__ ("cli\n\thlt");
-
         LockSpinlock(pInf->lock);
         UID pInfID = pInf->ID;
         UnlockSpinlock(pInf->lock);

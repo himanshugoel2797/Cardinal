@@ -9,6 +9,7 @@
 #include "IDT/idt.h"
 #include "interrupts.h"
 #include "memory.h"
+#include "synchronization.h"
 
 #define PAT_MSR 0x277
 
@@ -55,6 +56,7 @@ typedef struct VirtMemManData {
 
 
 static uint64_t coreLocalSpace;
+static Spinlock vmem_lock = NULL;
 
 static volatile VirtMemManData CORE_LOCAL* virtMemData = (volatile VirtMemManData CORE_LOCAL*)0;
 
@@ -67,10 +69,14 @@ VirtMemMan_InitializeBootstrap(void) {
     virtMemData->curPML = (uint64_t*)BOOTSTRAP_PML_ADDR;    //Where initial PML is located
     virtMemData->hugePageSupport = FALSE;   
 
+    if(vmem_lock == NULL){
+        vmem_lock = CreateBootstrapSpinlock();
+    }
 }
 
 void
 VirtMemMan_Initialize(void) {
+
     CPUID_RequestInfo(0x80000001, 0);
     virtMemData->hugePageSupport = CPUID_FeatureIsAvailable(CPUID_EDX, (1 << 26));
 
@@ -87,6 +93,7 @@ VirtMemMan_Initialize(void) {
     pml = (PML_Instance)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)pml);
 
     memset ((void*)pml, 0, KiB(4));
+
 
     if(kernel_pdpt == NULL) {
         void* pdpt_0 = (void*)MemMan_Alloc ();
@@ -274,6 +281,7 @@ VirtMemMan_Initialize(void) {
     //Enable NX
     wrmsr(0xC0000080, rdmsr(0xC0000080) | (1 << 11));
 
+    
     virtMemData->curPML = pml;
     virtMemData->coreLocalStorage = MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE);
     VirtMemMan_SetCurrent(pml);
@@ -308,6 +316,7 @@ VirtMemMan_CreateInstance(void) {
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
 
+    
     //Update the previous PML instance
     PML_Instance tmp = virtMemData->curPML;
 
@@ -325,15 +334,17 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
                    MEM_WRITE | MEM_READ | MEM_EXEC,
                    MEM_KERNEL);
 
-
     __asm__ volatile("mov %0, %%cr3" :: "r"(VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)instance)));
+
     virtMemData->curPML = instance;
+
     return tmp;
 }
 
 PML_Instance
 VirtMemMan_GetCurrent(void) {
-    return virtMemData->curPML;
+    PML_Instance ret = virtMemData->curPML;
+    return ret;
 }
 
 

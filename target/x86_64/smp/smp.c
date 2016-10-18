@@ -3,12 +3,13 @@
 #include "synchronization.h"
 #include "apic/apic.h"
 
-static volatile int smp_coreCount = 0;
-static volatile int smp_lock = 0;
+volatile _Atomic int smp_coreCount = 0;
+volatile int smp_lock = 0;
 
 void
 SMP_IncrementCoreCount(void) {
-    AtomicIncrement32((uint32_t*)&smp_coreCount);
+    smp_coreCount++;
+    //AtomicIncrement32((uint32_t*)&smp_coreCount);
 }
 
 int
@@ -17,28 +18,19 @@ SMP_GetCoreCount(void) {
 }
 
 void
-SMP_WaitForCoreCountIncrement(void) {
-    volatile int curCC = SMP_GetCoreCount();
-    while(curCC == SMP_GetCoreCount());
+SMP_WaitForCoreCount(int curCC) {
+    //Make sure the trampoline has also been unlocked
+    while((curCC == SMP_GetCoreCount()) | smp_lock) __asm__ volatile("pause");
+
 }
 
 void
 SMP_LockTrampoline(void) {
-    __asm__ volatile
-    (
-        "1:"
-        "\n\tpause"
-        "\n\ttestl $1, (%0)"
-        "\n\tjnz 1b"
-        "\n\tlock btsl $0, (%0)"
-        "\n\tjc 1b" :: "r"(&smp_lock)
-    );
+    while(__sync_lock_test_and_set(&smp_lock, 1)){ while(smp_lock)__asm__ volatile("pause"); }
 }
 
 void
 SMP_UnlockTrampoline(void) {
-    __asm__ volatile
-    (
-        "movl $0, (%0)" :: "r"(&smp_lock)
-    );
+    __sync_synchronize();
+    smp_lock = 0;
 }

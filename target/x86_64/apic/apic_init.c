@@ -53,8 +53,9 @@ APIC_Initialize(void) {
                     } else if(lapic->apic_id != APIC_GetID() && passNum == 2) {
                         APIC_SendIPI(lapic->apic_id, APIC_DESTINATION_SHORT_NONE, 0, 5);
                         PIT_Sleep(10);
+                        int curCC = SMP_GetCoreCount();
                         APIC_SendIPI(lapic->apic_id, APIC_DESTINATION_SHORT_NONE, 0x0f, 6);
-                        SMP_WaitForCoreCountIncrement();
+                        SMP_WaitForCoreCount(curCC);
                     }
                 }
                 break;

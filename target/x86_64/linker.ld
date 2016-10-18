@@ -14,9 +14,14 @@ SECTIONS
 	.multiboot ALIGN(4K) : AT(ADDR(.multiboot))
 	{
 		*(.multiboot)
-    	*(.bootstrap_stack)
     	*(.bootstrap_code)
 	}
+
+	.bootstrap_stack ALIGN(4K) : AT(ADDR(.bootstrap_stack))
+	{
+    	*(.bootstrap_stack)
+	}
+
 	_bootstrap_region_end = .;
 
 	. = 0x0f000;
@@ -25,8 +30,13 @@ SECTIONS
 	{
 		*(.trampoline_code)
 	  	*(.trampoline_data)
-		*(.trampoline_stack)
 	}
+
+	.trampoline_stack ALIGN(4K) : AT(ADDR(.trampoline_stack))
+	{
+    	*(.trampoline_stack)
+	}
+
 	_trampoline_region_end = .;
 	
 	. = KERNEL_VADDR + 2M;

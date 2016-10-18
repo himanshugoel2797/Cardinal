@@ -14,6 +14,6 @@ int
 SMP_GetCoreCount(void);
 
 void
-SMP_WaitForCoreCountIncrement(void);
+SMP_WaitForCoreCount(int curCC);
 
 #endif

@@ -108,13 +108,16 @@ smp_core_main(int coreID,
     getCoreData = NULL;
     coreID = 0;
 
-    while(1);
     //Expose additional cores as a service
     Syscall_Initialize();
-    __asm__ volatile("sti");
-    SetupPreemption();
     RegisterCore(coreID, NULL);
-    CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    SetupPreemption();
     CoreUpdate();
     while(1);
     //Start the local timer and set it to call the thread switch handler
