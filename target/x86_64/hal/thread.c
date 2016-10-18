@@ -125,6 +125,6 @@ ResetPreemption(void) {
     __asm__("cli");
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
     APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
-    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
     __asm__("sti");
+    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

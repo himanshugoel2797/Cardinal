@@ -13,6 +13,10 @@
  * @{
  */
 
+typedef enum {
+    R0_ThreadInfoType_UserStackAddress
+} R0_ThreadInfoType;
+
 /**
  * @brief      Create a new thread. R0 process only.
  *
@@ -76,6 +80,46 @@ uint64_t
 R0_ExitDeleteThread(void) {
     Syscall0(Syscall_R0_ExitDeleteThread);
     return GetErrno();
+}
+
+/**
+ * @brief      Get thread information. R0 process only.
+ *
+ * @param[in]  tid    The tid
+ * @param[in]  type   The type
+ * @param      value  The value
+ *
+ * @return     Error code on failure, 0 on success.
+ */
+static __inline
+uint64_t
+R0_GetThreadInfo(UID tid,
+                 R0_ThreadInfoType type,
+                 uint64_t *value) {
+    if(value != NULL){
+        *value = Syscall2(Syscall_R0_GetThreadInfo, tid, type)
+        return GetErrno();
+    }
+    return -EINVAL;
+}
+
+/**
+ * @brief      Gets the current thread uid.
+ *
+ * @return     The current thread uid.
+ */
+static __inline UID
+GetCurrentThreadUID(void) {
+    UID id = 0;
+    GetProperty(CardinalProperty_TID, 0, &id);
+    return id;
+}
+
+static __inline void*
+R0_GetThreadUserStack(UID tid) {
+    uint64_t addr = 0;
+    R0_GetThreadInfo(tid, R0_ThreadInfoType_UserStackAddress, &addr);
+    return addr;
 }
 
 /**@}*/

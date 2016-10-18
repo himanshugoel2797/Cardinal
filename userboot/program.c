@@ -1,9 +1,11 @@
 #include "program.h"
 #include <cardinal/memory.h>
 #include <cardinal/process.h>
+#include <cardinal/thread.h>
 #include <string.h>
 #include "elf.h"
 
+//NOTE: Map userboot.bin into each process, elf loader just sets
 
 int
 LoadAndStartApplication(UID pid,
@@ -17,8 +19,14 @@ LoadAndStartApplication(UID pid,
     if(err != ElfLoaderError_Success)
         return -1;
 
-    //Create Thread with the entry point
-    UID tid = 0;
+    // The following code is set to a thread entry point and stored in a
+    // separate section. userboot.bin copies itself into the target process.
+    // Calculates the entry point to the auxv setup routine. Creates a thread in
+    // the process that will run the auxv setup on a newly allocated stack. Each
+    // process is thus started as Group 0, and its permission level is lowered
+    // correctly to its parent's level by the loader. Once the stack is setup,
+    // the loader cleans itself up, increases the group level to the parent
+    // process, swaps stacks and jumps to the actual elf entry point.
 
     uint32_t auxv_cnt = 0;
     AUXVector auxv[7];
@@ -43,7 +51,7 @@ LoadAndStartApplication(UID pid,
     auxv[auxv_cnt].a_type = AUXVectorType_HWCAP;
     auxv[auxv_cnt++].a_val = (int64_t)0xBFEBFBFF;
 
-    //void* sp = SetupApplicationStack(GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt, &elf_info);
+    void* sp = SetupApplicationStack(pid, R0_GetThreadUserStack(GetCurrentThreadUID()), argc, argv, envp, auxv, auxv_cnt, &elf_info);
 
     //Get the user mode stack pointer for the process, call SetupApplicationStack on it
     //Start the process

@@ -83,7 +83,7 @@ kernel_main(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();
-    smp_unlock_cores();
+    //smp_unlock_cores();
     SetupPreemption();
     target_device_setup();
 
@@ -112,12 +112,12 @@ smp_core_main(int coreID,
 
     RegisterCore(coreID, getCoreData);
 
-    //UID cpid = 0;
-    //if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        //HaltProcessor();
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
 
-    //CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    //StartProcess(cpid);
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
 
     SetupPreemption();
     CoreUpdate();
