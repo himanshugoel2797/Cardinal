@@ -105,18 +105,20 @@ idle_main(void) {
 void
 smp_core_main(int coreID,
               int (*getCoreData)(void)) {
-    getCoreData = NULL;
-    coreID = 0;
+
 
     //Expose additional cores as a service
     Syscall_Initialize();
-    RegisterCore(coreID, NULL);
 
-    UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
+    RegisterCore(coreID, getCoreData);
 
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    //UID cpid = 0;
+    //if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        //HaltProcessor();
+
+    //CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    //StartProcess(cpid);
+
     SetupPreemption();
     CoreUpdate();
     while(1);

@@ -617,7 +617,6 @@ SetThreadIsPaused(UID tid, bool paused) {
 
 void
 YieldThread(void) {
-    __asm__("cli\n\thlt");
     ResetPreemption();
     RaiseInterrupt(preempt_vector);
 }
@@ -754,6 +753,8 @@ void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
+    //if(coreState->coreID == 1)
+    {
     err_code = 0;
 
     LockSpinlock(sync_lock);
@@ -807,6 +808,7 @@ TaskSwitch(uint32_t int_no,
     UnlockSpinlock(sync_lock);
 
     SwitchToThread(coreState->cur_thread);
+    }
 }
 
 void
@@ -837,8 +839,6 @@ SwitchThread(void) {
         UnlockSpinlock(sync_lock);
         SwitchToThread(coreState->cur_thread);
     }
-
-    __asm__ ("cli\n\thlt");
 }
 
 void

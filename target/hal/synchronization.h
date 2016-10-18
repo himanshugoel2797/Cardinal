@@ -17,7 +17,7 @@ typedef volatile uint64_t* Spinlock;
 void
 AutounlockSpinlock(Spinlock *prim);
 
-#define SpinlockUnlocker __attribute__((cleanup(AutounlockSpinlock)))
+#define SpinlockUnlocker __attribute__((cleanup(AutounlockSpinlock))) Spinlock
 
 /**
  * @brief      Creates a spinlock.

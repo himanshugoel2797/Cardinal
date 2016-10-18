@@ -211,7 +211,7 @@ smp_bootstrap_stage2(void) {
     APIC_LocalInitialize();
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
-
+    __asm__ volatile("cli");
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();

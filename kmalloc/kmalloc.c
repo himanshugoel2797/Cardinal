@@ -111,10 +111,10 @@ static void* ksetup_instrumentation(void* addr, size_t size) {
 
 bool retry = FALSE;
 void *kmalloc(size_t size) {
-    LockSpinlock(alloc_sync);
+    SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);
+
     if(allocation_info == NULL) {
         void *val = bootstrap_malloc(size);
-        UnlockSpinlock(alloc_sync);
         return val;
     }
 
@@ -129,7 +129,6 @@ void *kmalloc(size_t size) {
     if(size < LARGE_HEAP_BLOCK_SIZE) {
         UID a = Balloc_Alloc(size);
         if(a != (UID)-1) {
-            UnlockSpinlock(alloc_sync);
             return Balloc_GetBaseAddress(a);
         }
     }
@@ -152,10 +151,8 @@ void *kmalloc(size_t size) {
             //kcompact();
             uint64_t res = (uint64_t)kmalloc(size);
             retry = FALSE;
-            UnlockSpinlock(alloc_sync);
             return ksetup_instrumentation((void*)res, size);
         }
-        UnlockSpinlock(alloc_sync);
         return (void*)NULL;
     }
 
@@ -178,21 +175,19 @@ void *kmalloc(size_t size) {
     MARK_USED(a_info);
     a_info->size = size;
     //TODO redesign this to automatically request more space when necessary
-    UnlockSpinlock(alloc_sync);
     return ksetup_instrumentation((void*)addr, size);
 }
 
 void kfree(void *addr) {
-    LockSpinlock(alloc_sync);
+    SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);
+    
     //Find the block that matches the address specified
     UID a = Balloc_GetUID(addr);
     if(a != (UID)-1) {
         Balloc_Free(a);
-        UnlockSpinlock(alloc_sync);
         return;
     }
     if(((uint64_t)addr < (uint64_t)k_pages_base_addr) | ((uint64_t)addr >= ((uint64_t)k_pages_base_addr + STORE_SIZE))) {
-        UnlockSpinlock(alloc_sync);
         return;
     }
 
@@ -212,8 +207,6 @@ void kfree(void *addr) {
 
     //Mark this block as free
     MARK_FREE(a_info);
-
-    UnlockSpinlock(alloc_sync);
 }
 
 void* AllocateMapping(MemoryAllocationType t, MemoryAllocationFlags flags, size_t size) {

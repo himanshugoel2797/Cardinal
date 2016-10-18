@@ -78,31 +78,12 @@ IntLockSpinlock(Spinlock primitive) {
 
     volatile uint64_t *prim = (volatile uint64_t *)primitive;
     while(__sync_lock_test_and_set(prim, 1)) {
-        __asm__ volatile("pause");
+        while(*prim)__asm__ volatile("pause");
     }
 
 #endif
 
     return TRUE;
-}
-
-uint64_t
-GetSpinlockContenderCount(Spinlock primitive) {
-
-#ifdef _TICKETED_SPINLOCK_
-    uint64_t cnt = 0;
-    __asm__ volatile
-    (
-        "movq (%[prim]), %[cnt]\n\t"
-        : [cnt]"=r"(cnt) : [prim]"r"(primitive) :
-    );
-
-    cnt = ((cnt >> 16) & 0xFFFF) - (cnt & 0xFFFF);
-    return cnt;
-#else
-    primitive = NULL;
-    return 0;
-#endif
 }
 
 bool
@@ -135,8 +116,34 @@ IntUnlockSpinlock(Spinlock primitive) {
 #else
     volatile uint64_t *prim = (volatile uint64_t *)primitive;
     __sync_synchronize();
-    prim[0] = 0;
+    *prim = 0;
     return TRUE;
+#endif
+}
+
+uint64_t
+GetSpinlockContenderCount(Spinlock primitive) {
+
+#ifdef _TICKETED_SPINLOCK_
+    uint64_t cnt = 0;
+    __asm__ volatile
+    (
+        "movq (%[prim]), %[cnt]\n\t"
+        : [cnt]"=r"(cnt) : [prim]"r"(primitive) :
+    );
+
+    cnt = ((cnt >> 16) & 0xFFFF) - (cnt & 0xFFFF);
+    return cnt;
+#else
+
+    int cnt = 0;
+
+    IntLockSpinlock(primitive);
+    volatile uint64_t *prim = (volatile uint64_t*)primitive;
+    cnt = prim[2];
+    IntUnlockSpinlock(primitive);
+
+    return cnt;
 #endif
 }
 
@@ -148,15 +155,17 @@ TryLockSpinlock(Spinlock primitive) {
 
     IntLockSpinlock(primitive);
     volatile uint64_t *prim = (volatile uint64_t*)primitive;
-    if(prim[4] == (APIC_GetID() + 1)) {
+    if(prim[1] == (APIC_GetID() + 1)) {
         locked = TRUE;
-        prim[5]++;
-    } else if(prim[4] == 0 && prim[5] == 0) {
-        prim[5] = 1;
-        prim[4] = APIC_GetID() + 1;
+        prim[2]++;
+    } else if(prim[1] == 0 && prim[2] == 0) {
+        prim[2] = 1;
+        prim[1] = APIC_GetID() + 1;
         locked = TRUE;
-        prim[6] = iflag;
+        prim[3] = iflag;
     }
+
+    __asm__ volatile("":::"memory");
     IntUnlockSpinlock(primitive);
 
     if(!locked)
@@ -180,20 +189,21 @@ bool
 UnlockSpinlock(Spinlock primitive) {
     bool locked = FALSE;
     uint64_t iflag = 0;
-    __asm__ volatile("pushfq\n\tpopq %0" : "=r"(iflag) :: "cc");
 
     IntLockSpinlock(primitive);
     volatile uint64_t *prim = (volatile uint64_t*)primitive;
-    if(prim[4] == (APIC_GetID() + 1)) {
+    if(prim[1] == (APIC_GetID() + 1)) {
         locked = TRUE;
-        prim[5]--;
-        if(prim[5] == 0) {
-            prim[4] = 0;
-            iflag = prim[6];
+        prim[2]--;
+        if(prim[2] == 0) {
+            prim[1] = 0;
+            iflag = prim[3];
         }
     }
+    __asm__ volatile("":::"memory");
     IntUnlockSpinlock(primitive);
 
+    if(iflag != 0)
     __asm__ volatile("pushq %0\n\tpopfq" :: "r"(iflag) : "cc");
 
     return locked;

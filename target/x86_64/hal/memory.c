@@ -56,9 +56,11 @@ GetPhysicalAddressPageTable(ManagedPageTable 	*src,
 MemoryAllocationErrors
 CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
+        LockSpinlock(vmem_lock);
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
         inst->lock = CreateSpinlock();
         inst->reference_count = 1;
+        UnlockSpinlock(vmem_lock);
         return MemoryAllocationErrors_None;
     }
     return MemoryAllocationErrors_Unknown;
