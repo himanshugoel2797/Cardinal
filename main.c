@@ -66,7 +66,6 @@ load_exec(UID pid, const char *exec) {
     memcpy(write_target, exec_loc, orig_exec_size);
 
     UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
-
     CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     StartProcess(pid);
     return;
@@ -109,6 +108,7 @@ smp_core_main(int coreID,
     getCoreData = NULL;
     coreID = 0;
 
+    while(1);
     //Expose additional cores as a service
     Syscall_Initialize();
     __asm__ volatile("sti");

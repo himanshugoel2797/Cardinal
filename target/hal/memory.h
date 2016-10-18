@@ -22,7 +22,7 @@
 /**
  * The size of the TLS.
  */
-#define THREAD_LOCAL_STORAGE_SIZE KiB(32)
+#define THREAD_LOCAL_STORAGE_SIZE KiB(64)
 
 #ifdef __x86_64__
 #define CORE_LOCAL __attribute__((address_space(256)))

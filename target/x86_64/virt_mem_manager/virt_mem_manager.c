@@ -263,7 +263,7 @@ VirtMemMan_Initialize(void) {
                             MEM_READ | MEM_WRITE | MEM_EXEC,
                             MEM_KERNEL);
 
-        coreLocalSpace = APLS_SIZE - sizeof(VirtMemManData);
+        coreLocalSpace = APLS_SIZE;
     } else {
         pml[511] = (uint64_t)kernel_pdpt_paddr;
         MARK_PRESENT(pml[511]);
@@ -304,7 +304,6 @@ VirtMemMan_CreateInstance(void) {
     return pml;
 }
 
-extern int x_cnt;
 
 PML_Instance
 VirtMemMan_SetCurrent(PML_Instance instance) {
@@ -323,7 +322,7 @@ VirtMemMan_SetCurrent(PML_Instance instance) {
                    APLS_SIZE,
                    TRUE,
                    MEM_TYPE_WB,
-                   MEM_WRITE | MEM_READ,
+                   MEM_WRITE | MEM_READ | MEM_EXEC,
                    MEM_KERNEL);
 
 

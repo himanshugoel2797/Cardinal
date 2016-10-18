@@ -76,13 +76,14 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     }
 }
 
+extern int ts_inited;
+
 ManagedPageTable*
 SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     ManagedPageTable *tmp = (ManagedPageTable*)*curPageTable;
     *curPageTable = inst;
     LockSpinlock(vmem_lock);
     LockSpinlock(inst->lock);
-
     inst->reference_count++;
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     UnlockSpinlock(inst->lock);

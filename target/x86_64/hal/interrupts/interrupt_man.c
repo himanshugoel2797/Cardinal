@@ -8,7 +8,7 @@
 
 static volatile InterruptHandler intHandlers[256] = {0};
 static Registers volatile *regs_saved = NULL;
-static uint64_t volatile int_stack = 0;
+static uint64_t* volatile int_stack = NULL;
 
 uint32_t
 RequestInterruptVectorBlock(uint32_t vectorCount) {
@@ -31,9 +31,19 @@ ShadowInterruptHandler(Registers *regs) {
         regs_saved = AllocateAPLSMemory(sizeof(Registers));
     }
 
-    if(int_stack == 0) {
-        int_stack = (uint64_t)AllocateAPLSMemory(4096) + 4095;
-        int_stack -= int_stack % 16;
+    if(int_stack == NULL) {
+        int_stack = (uint64_t*)AllocateAPLSMemory(sizeof(uint64_t*));
+        *int_stack = 0;
+    }
+
+    if(*int_stack == 0){
+        *int_stack = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)AllocatePhysicalPageCont(4)) + 4096 * 4 - 1;
+        *int_stack -= *int_stack % 16;
+    }
+
+    if(regs->cs != 0x08)
+    {
+        //__asm__("swapgs");
     }
 
     memcpy((void*)regs_saved, regs, sizeof(Registers));
@@ -44,18 +54,24 @@ ShadowInterruptHandler(Registers *regs) {
                          "callq *%%rbx\n\t"
                          "popq %%rax\n\t"
                          "xchgq %%rax, %%rsp\n\t"
-                         :: "a"(int_stack), "b"(intHandlers[regs->int_no]),
+                         :: "a"(*int_stack), "b"(intHandlers[regs->int_no]),
                          "D"(regs->int_no), "S"(regs->err_code));
     }
 
-    memset((void*)regs_saved, 0, sizeof(Registers));
-    if(regs->int_no > 31)APIC_SendEOI(regs->int_no);
+    HandleInterruptNoReturn(regs->int_no);
 }
 
 void
 HandleInterruptNoReturn(uint32_t vector) {
+    bool performSwap = FALSE;
+
+    if(regs_saved->cs != 0x08)
+        performSwap = TRUE;
+    
     memset((void*)regs_saved, 0, sizeof(Registers));
     if(vector > 31)APIC_SendEOI(vector);
+
+    //__asm__("swapgs");
 }
 
 uint32_t

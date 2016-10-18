@@ -748,11 +748,11 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
+int ts_inited = 0;
+
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
-
-    __asm__ volatile("cli\n\thlt");
 
     err_code = 0;
 
@@ -762,6 +762,7 @@ TaskSwitch(uint32_t int_no,
     PerformArchSpecificTaskSave(coreState->cur_thread);
     SavePreviousThread(coreState->cur_thread);
 
+    ts_inited = 1;
 
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
