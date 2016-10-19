@@ -8,7 +8,7 @@ CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
-CFLAGS=-Iinclude
+CFLAGS=-Iinclude -std=c11
 LDFLAGS=-nostartfiles -fpic
 
 .PHONY:all

@@ -8,7 +8,7 @@
 #include <cardinal/memory.h>
 #include <cardinal/syscall_property.h>
 
-static uint64_t InitrdStartAddress = 0;
+uint64_t InitrdStartAddress;
 
 typedef struct TARHeader {
     char filename[100];

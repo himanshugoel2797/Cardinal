@@ -68,7 +68,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
     ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
     *pid = dst->ID = new_proc_uid();
     dst->UserID = userID;
-    dst->GroupID = src->GroupID;
+    dst->GroupID = 0;           //All processes start as group 0, the program loader lowers their permissions.
     dst->Status = ProcessStatus_Stopped;
 
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));

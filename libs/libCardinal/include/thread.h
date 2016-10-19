@@ -97,7 +97,7 @@ R0_GetThreadInfo(UID tid,
                  R0_ThreadInfoType type,
                  uint64_t *value) {
     if(value != NULL){
-        *value = Syscall2(Syscall_R0_GetThreadInfo, tid, type)
+        *value = Syscall2(Syscall_R0_GetThreadInfo, tid, type);
         return GetErrno();
     }
     return -EINVAL;
