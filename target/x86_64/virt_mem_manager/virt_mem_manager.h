@@ -100,8 +100,9 @@ uint64_t
 VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
                            MEM_SECURITY_PERMS sec_perms);
 
-void*
+uint64_t
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
+                           uint64_t           *addr,
                            uint64_t           size,
                            MemoryAllocationType allocType,
                            MEM_SECURITY_PERMS sec_perms);

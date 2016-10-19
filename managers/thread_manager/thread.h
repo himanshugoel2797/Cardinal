@@ -17,7 +17,7 @@
 /**
  * The default stack size.
  */
-#define STACK_SIZE KiB(4)
+#define STACK_SIZE KiB(32)
 
 /**
  * Thread Priority levels.

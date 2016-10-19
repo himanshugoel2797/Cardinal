@@ -96,7 +96,6 @@ R0_Map(UID pid,
        MemoryAllocationFlags flags) {
     struct MemoryMapParams p;
 
-
     p.TargetPID = pid;
     p.PhysicalAddress = phys;
     p.VirtualAddress = *virt;
@@ -135,7 +134,8 @@ R0_Unmap(UID pid,
  */
 static __inline uint64_t
 R0_GetBootInfo(CardinalBootInfo *bInfo) {
-    return GetProperty(CardinalProperty_R0_BootInfo, (uint64_t)bInfo, NULL);
+    uint64_t dummy = 0;
+    return GetProperty(CardinalProperty_R0_BootInfo, (uint64_t)bInfo, &dummy);
 }
 
 /**
@@ -165,10 +165,11 @@ R0_GetPhysicalAddress(uint64_t v_addr, uint64_t *p_addr) {
  */
 static __inline uint64_t
 R0_AllocatePages(uint64_t cnt, uint64_t *p_addr) {
-    if(p_addr != NULL)
+    if(p_addr != NULL){
         *p_addr = Syscall1(Syscall_R0_AllocatePages, cnt);
-
-    return GetErrno();
+        return GetErrno();
+    }
+    return -EINVAL;
 }
 
 /**

@@ -55,6 +55,47 @@ R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
+R0CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
+                        uint64_t syscall_num,
+                        uint64_t *syscall_params) {
+    if(syscall_num != Syscall_R0_CreateThread) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
+        SyscallSetErrno(-EPERM);
+        return 0;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 3) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    UID pid = CreateThread(data->params[0], ThreadPermissionLevel_User, (ThreadEntryPoint)data->params[1], (void*)data->params[2]);
+    switch(ProcessErrors_None) {
+    case ProcessErrors_None:
+        SyscallSetErrno(0);
+        return pid;
+        break;
+    case ProcessErrors_Unknown:
+        SyscallSetErrno(-EUNKNWN);
+        return 0;
+        break;
+    case ProcessErrors_UIDNotFound:
+    case ProcessErrors_InvalidParameters:
+        SyscallSetErrno(-EINVAL);
+        return 0;
+        break;
+    }
+
+    return 0;
+}
+
+uint64_t
 R0StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {

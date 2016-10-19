@@ -9,7 +9,7 @@ LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
 CFLAGS=-Iinclude -std=c11
-LDFLAGS=-nostartfiles -fpic
+LDFLAGS=-nostartfiles -T linker.ld
 
 .PHONY:all
 
@@ -17,7 +17,7 @@ all:$(TARGET)
 
 $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET:.bin=.elf)
-	$(OBJCOPY) -O binary $(TARGET:.bin=.elf) $(TARGET)
+	$(OBJCOPY) --strip-all -O binary $(TARGET:.bin=.elf) $(TARGET)
 
 install:
 	cp *.bin $(INSTALL_DIR)

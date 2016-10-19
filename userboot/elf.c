@@ -1,6 +1,7 @@
 #include "elf.h"
 
 #include <string.h>
+#include <cardinal/process.h>
 
 ElfLoaderError
 VerifyElf(void *loc,
@@ -95,13 +96,13 @@ LoadElf64(void *loc,
 
 
             uint64_t v_tmp_addr = 0;
-            if(R0_Map(pid,
+            if(R0_Map(GetCurrentProcessUID(),
                       p_addr,
                       &v_tmp_addr,
                       PAGE_SIZE,
                       CachingModeWriteBack,
                       MemoryAllocationType_Heap,
-                      MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))
+                      MemoryAllocationFlags_User | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec))
                 return ElfLoaderError_OutOfMemory;
 
 
@@ -112,7 +113,7 @@ LoadElf64(void *loc,
                 break;
             }
 
-            R0_Unmap(pid,
+            R0_Unmap(GetCurrentProcessUID(),
                      v_tmp_addr,
                      PAGE_SIZE);
 

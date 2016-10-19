@@ -827,8 +827,9 @@ VirtMemMan_GetAllocTypeTop(MemoryAllocationType allocType,
     return (pml_base + 1) << 39;
 }
 
-void*
+uint64_t
 VirtMemMan_FindFreeAddress(PML_Instance       inst,
+                           uint64_t           *vaddr,
                            uint64_t           size,
                            MemoryAllocationType allocType,
                            MEM_SECURITY_PERMS sec_perms) {
@@ -918,8 +919,10 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
     if((addr >> 47) & 1)addr |= 0xffff000000000000;
 
 #undef BUILD_ADDR
-    if(addr == 0)addr = KiB(4);
-    return (void*)addr;
+    *vaddr = addr;
+    if(addr == 0)
+        return -1;
+    return 0;
 }
 
 

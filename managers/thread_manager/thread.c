@@ -747,7 +747,7 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
-int ts_inited = 0;
+#include "boot_information/boot_information.h"
 
 void
 TaskSwitch(uint32_t int_no,
@@ -763,8 +763,6 @@ TaskSwitch(uint32_t int_no,
     PerformArchSpecificTaskSave(coreState->cur_thread);
     SavePreviousThread(coreState->cur_thread);
 
-    ts_inited = 1;
-
     if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
@@ -772,6 +770,7 @@ TaskSwitch(uint32_t int_no,
     SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);
+
 
     if(coreState->cur_thread->State == ThreadState_Initialize) {
         coreState->cur_thread->State = ThreadState_Running;

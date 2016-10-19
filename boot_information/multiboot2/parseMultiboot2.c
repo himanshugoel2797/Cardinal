@@ -5,7 +5,7 @@
 #include "multiboot2.h"
 #include "common.h"
 
-static CardinalBootInfo bootInfo;
+CardinalBootInfo bootInfo;
 
 typedef struct multiboot_tag_framebuffer multiboot_tag_framebuffer;
 typedef struct multiboot_tag_mmap multiboot_tag_mmap;

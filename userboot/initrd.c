@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 
 #include "initrd.h"
 
@@ -8,7 +7,7 @@
 #include <cardinal/memory.h>
 #include <cardinal/syscall_property.h>
 
-uint64_t InitrdStartAddress;
+static uint64_t InitrdStartAddress = 0;
 
 typedef struct TARHeader {
     char filename[100];
@@ -33,6 +32,25 @@ unsigned int getsize(const char *in) {
     return size;
 }
 
+int
+strncmp(const char* s1,
+        const char* s2,
+        size_t n) {
+    while(n--)
+        if(*s1++!=*s2++)
+            return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
+    return 0;
+}
+
+size_t
+strlen(const char *str) {
+    size_t size = 0;
+    while(str[size] != 0) {
+        size++;
+    }
+    return size;
+}
+
 bool
 GetFile(const char *file,
         void **loc,
@@ -42,7 +60,7 @@ GetFile(const char *file,
 
     TARHeader *file_entry = (TARHeader*)InitrdStartAddress;
 
-    while(file_entry->filename[0] != 0) {
+    while(file_entry != NULL && file_entry->filename[0] != 0) {
         uint32_t len = strlen(file_entry->filename);
 
         if(strlen(file) == len && strncmp(file_entry->filename, file, len) == 0) {

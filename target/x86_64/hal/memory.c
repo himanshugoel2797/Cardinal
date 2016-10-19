@@ -376,12 +376,16 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
     if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
     if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
 
-    void* addr = VirtMemMan_FindFreeAddress((PML_Instance)pageTable->PageTable,
-                                            size,
-                                            allocType,
-                                            perms);
+    uint64_t addr = 0;
 
-    if(addr != NULL)*virtualAddress = (uint64_t)addr;
+    if(VirtMemMan_FindFreeAddress((PML_Instance)pageTable->PageTable,
+                                  &addr,
+                                  size,
+                                  allocType,
+                                  perms) != 0)
+        return MemoryAllocationErrors_Unknown;
+
+    if(addr != 0)*virtualAddress = addr;
 
     UnlockSpinlock(pageTable->lock);
 
@@ -471,7 +475,7 @@ HandlePageFault(uint64_t virtualAddress,
     }
 
     if(map == NULL) {
-        __asm__("cli\n\thlt" :: "a"(instruction_pointer));
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress));
     }
     UnlockSpinlock(procInfo->lock);
 }

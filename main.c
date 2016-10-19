@@ -35,6 +35,7 @@ load_exec(UID pid, const char *exec) {
     Initrd_GetFile(exec, &exec_loc, &exec_size);
 
     uint64_t orig_exec_size = exec_size;
+    exec_size += EXEC_ENTRY_POINT % PAGE_SIZE;
     exec_size += (PAGE_SIZE - exec_size % PAGE_SIZE);
 
     //Map the executable into the process
@@ -47,10 +48,11 @@ load_exec(UID pid, const char *exec) {
     for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++) {
 
         uint64_t p_addr = AllocatePhysicalPage();
+        uint64_t v_addr = (EXEC_ENTRY_POINT - EXEC_ENTRY_POINT % PAGE_SIZE) + i * PAGE_SIZE;
 
         MapPage(pinfo->PageTable,
                 p_addr,
-                EXEC_ENTRY_POINT + i * PAGE_SIZE,
+                v_addr,
                 PAGE_SIZE,
                 CachingModeWriteBack,
                 MemoryAllocationType_Application,
@@ -60,12 +62,14 @@ load_exec(UID pid, const char *exec) {
 
 
     uint8_t* write_target = (uint8_t*)SetupTemporaryWriteMap(pinfo->PageTable,
-                            EXEC_ENTRY_POINT,
+                            EXEC_ENTRY_POINT - (EXEC_ENTRY_POINT % PAGE_SIZE),
                             exec_size);
 
-    memcpy(write_target, exec_loc, orig_exec_size);
+    memcpy(write_target + (EXEC_ENTRY_POINT % PAGE_SIZE), exec_loc, orig_exec_size);
 
     UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
+
+
     CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     StartProcess(pid);
     return;

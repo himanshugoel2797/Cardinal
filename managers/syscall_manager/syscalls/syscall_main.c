@@ -27,4 +27,5 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_R0_CreateProcess, R0CreateProcess_Syscall);
     RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
+    RegisterSyscall(Syscall_R0_CreateThread, R0CreateThread_Syscall);
 }

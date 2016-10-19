@@ -135,21 +135,26 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
 
+    uint64_t virt_addr = mmap_params->VirtualAddress;
+
+    
     if(mmap_params->VirtualAddress == 0) {
         if(FindFreeVirtualAddress(p_info->PageTable,
-                                  &mmap_params->VirtualAddress,
+                                  &virt_addr,
                                   mmap_params->Length,
                                   mmap_params->AllocationType,
                                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
-
+        {
             SyscallSetErrno(-ENOMEM);
-        UnlockSpinlock(map_lock);
-        return 0;
+            UnlockSpinlock(map_lock);
+            return 0;
+        }
     }
+
 
     if(MapPage(p_info->PageTable,
                mmap_params->PhysicalAddress,
-               mmap_params->VirtualAddress,
+               virt_addr,
                mmap_params->Length,
                mmap_params->CacheMode,
                mmap_params->AllocationType,
@@ -162,7 +167,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
         SyscallSetErrno(0);
         UnlockSpinlock(map_lock);
-        return mmap_params->VirtualAddress;
+        return virt_addr;
     }
 }
 
