@@ -1,7 +1,7 @@
 {
     "folders": [{
         "path": ".",
-        "folder_exclude_patterns": ["docs", "root"],
-        "file_exclude_patterns": ["*.bc"]
+        "folder_exclude_patterns": ["docs", "root", "build", "iso"],
+        "file_exclude_patterns": ["*.bc", "*.iso", "*.bin", "*.elf", "*.img", "tmp.S"]
     }]
 }

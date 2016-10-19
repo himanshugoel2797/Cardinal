@@ -34,7 +34,7 @@ R0_CreateThread(UID parent_pid,
                 void *arg,
                 UID *tid) {
     if(tid != NULL) {
-        *tid = Syscall3(Syscall_R0_CreateThread, parent_pid, entry_point, arg);
+        *tid = Syscall3(Syscall_R0_CreateThread, parent_pid, (uint64_t)entry_point, (uint64_t)arg);
         return GetErrno();
     }
     return -EINVAL;

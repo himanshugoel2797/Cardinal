@@ -20,6 +20,12 @@ cd $SRC_DIR/userboot
 
 cd $SRC_DIR/srv
 
+cd elf_server
+	make clean
+	make all
+	make install INSTALL_DIR=$INITRD_INST_DIR
+cd ..
+
 cd namespace_man
 	make clean
 	make all

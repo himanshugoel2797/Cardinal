@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
         strcat(path, "/../include");
     } else if(!strcmp(argv[1], "--bin")) {
         strcat(path, "/../bin");
+    } else if(!strcmp(argv[1], "--srv")) {
+        strcat(path, "/../../srv");
     } else {
         showHelp(argv[0]);
         return 0;
