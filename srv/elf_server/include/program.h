@@ -7,13 +7,13 @@
 #include "elf.h"
 
 struct elf_setup_params {
-  uint16_t ver;
-  uint16_t size;
-  uint16_t page_size;
-  uint16_t argc;  
-  uint64_t rnd_seed;
-  uint64_t elf_entry_point;
-  char argv[1];
+    uint16_t ver;
+    uint16_t size;
+    uint16_t page_size;
+    uint16_t argc;
+    uint64_t rnd_seed;
+    uint64_t elf_entry_point;
+    char argv[1];
 };
 
 int

@@ -180,7 +180,7 @@ void *kmalloc(size_t size) {
 
 void kfree(void *addr) {
     SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);
-    
+
     //Find the block that matches the address specified
     UID a = Balloc_GetUID(addr);
     if(a != (UID)-1) {

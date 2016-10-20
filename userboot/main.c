@@ -5,27 +5,28 @@
 
 int
 LoadProgram(char *name) {
-	void *elf_loc = NULL; size_t elf_sz = 0;
-	if(GetFile(name, &elf_loc, &elf_sz)) {
+    void *elf_loc = NULL;
+    size_t elf_sz = 0;
+    if(GetFile(name, &elf_loc, &elf_sz)) {
 
-		UID pid = 0;
-		R0_CreateProcess(GetCurrentProcessUID(), 0, &pid);
+        UID pid = 0;
+        R0_CreateProcess(GetCurrentProcessUID(), 0, &pid);
 
-		const char *argv[] = {name};
-    	LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
-    	return 0;
-	}
-	return -1;	
+        const char *argv[] = {name};
+        LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
+        return 0;
+    }
+    return -1;
 }
 
-__attribute__((section(".entry_point"))) 
+__attribute__((section(".entry_point")))
 int _start() {
 
-	ImportInitrd();
+    ImportInitrd();
 
-	LoadProgram("elf_server.elf");
-	LoadProgram("sys_init.elf");
+    LoadProgram("elf_server.elf");
+    LoadProgram("sys_init.elf");
 
-	//Now exit the process, allowing the init process to take control of the system
-	R0_ExitProcess(0);
+    //Now exit the process, allowing the init process to take control of the system
+    R0_ExitProcess(0);
 }

@@ -44,7 +44,7 @@ typedef enum {
  */
 static __inline uint64_t
 GetProperty(CardinalProperties prop, uint64_t type, uint64_t *val) {
-    if(val != NULL){
+    if(val != NULL) {
         *val = Syscall2(Syscall_GetProperty, prop, type);
         return GetErrno();
     }

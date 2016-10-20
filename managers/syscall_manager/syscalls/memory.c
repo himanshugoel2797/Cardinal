@@ -137,14 +137,13 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
     uint64_t virt_addr = mmap_params->VirtualAddress;
 
-    
+
     if(mmap_params->VirtualAddress == 0) {
         if(FindFreeVirtualAddress(p_info->PageTable,
                                   &virt_addr,
                                   mmap_params->Length,
                                   mmap_params->AllocationType,
-                                  mmap_params->AllocationFlags) != MemoryAllocationErrors_None)
-        {
+                                  mmap_params->AllocationFlags) != MemoryAllocationErrors_None) {
             SyscallSetErrno(-ENOMEM);
             UnlockSpinlock(map_lock);
             return 0;

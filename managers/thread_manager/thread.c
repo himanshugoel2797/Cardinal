@@ -651,7 +651,7 @@ GetNextThread(ThreadInfo *prevThread) {
         if(next_thread == NULL)continue;
 
         //If the process is terminating, terminate the thread
-        if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)){
+        if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)) {
             SET_PROPERTY_VAL(next_thread, State, ThreadState_Exiting);
         }
 
@@ -697,8 +697,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)) == 0)
-                {
+                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)) == 0) {
                     TerminateProcess(GET_PROPERTY_PROC_VAL(next_thread, ID));
                 }
                 UnlockSpinlock(next_thread->lock);
@@ -762,58 +761,58 @@ TaskSwitch(uint32_t int_no,
 
     //if(coreState->coreID == 1)
     {
-    err_code = 0;
+        err_code = 0;
 
-    LockSpinlock(sync_lock);
+        LockSpinlock(sync_lock);
 
-    SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
-    PerformArchSpecificTaskSave(coreState->cur_thread);
-    SavePreviousThread(coreState->cur_thread);
+        SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
+        PerformArchSpecificTaskSave(coreState->cur_thread);
+        SavePreviousThread(coreState->cur_thread);
 
-    if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
+        if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
-    RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
-    SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
-    SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
-    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
-    PerformArchSpecificTaskSwitch(coreState->cur_thread);
+        RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
+        SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
+        SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
+        SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
+        PerformArchSpecificTaskSwitch(coreState->cur_thread);
 
 
-    if(coreState->cur_thread->State == ThreadState_Initialize) {
-        coreState->cur_thread->State = ThreadState_Running;
+        if(coreState->cur_thread->State == ThreadState_Initialize) {
+            coreState->cur_thread->State = ThreadState_Running;
 
-        CachingMode cMode = 0;
-        MemoryAllocationFlags cFlags = 0;
-        CheckAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
-                                (uint64_t)coreState->cur_thread->SetChildTID,
-                                &cMode,
-                                &cFlags);
-
-        if(cMode != 0 && cFlags != 0) {
-            if(cFlags & MemoryAllocationFlags_User)
-                *(uint32_t*)coreState->cur_thread->SetChildTID = (uint32_t)coreState->cur_thread->ID;
-        }
-
-        if(coreState->cur_thread->ParentProcess->Parent != NULL) {
-            CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                    (uint64_t)coreState->cur_thread->SetParentTID,
+            CachingMode cMode = 0;
+            MemoryAllocationFlags cFlags = 0;
+            CheckAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
+                                    (uint64_t)coreState->cur_thread->SetChildTID,
                                     &cMode,
                                     &cFlags);
 
             if(cMode != 0 && cFlags != 0) {
                 if(cFlags & MemoryAllocationFlags_User)
-                    WriteValueAtAddress32(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                          (uint32_t*)coreState->cur_thread->SetParentTID,
-                                          (uint32_t)coreState->cur_thread->ID);
+                    *(uint32_t*)coreState->cur_thread->SetChildTID = (uint32_t)coreState->cur_thread->ID;
             }
+
+            if(coreState->cur_thread->ParentProcess->Parent != NULL) {
+                CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                        (uint64_t)coreState->cur_thread->SetParentTID,
+                                        &cMode,
+                                        &cFlags);
+
+                if(cMode != 0 && cFlags != 0) {
+                    if(cFlags & MemoryAllocationFlags_User)
+                        WriteValueAtAddress32(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                                              (uint32_t*)coreState->cur_thread->SetParentTID,
+                                              (uint32_t)coreState->cur_thread->ID);
+                }
+            }
+
         }
+        HandleInterruptNoReturn(int_no);
 
-    }
-    HandleInterruptNoReturn(int_no);
+        UnlockSpinlock(sync_lock);
 
-    UnlockSpinlock(sync_lock);
-
-    SwitchToThread(coreState->cur_thread);
+        SwitchToThread(coreState->cur_thread);
     }
 }
 

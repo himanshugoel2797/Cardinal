@@ -19,9 +19,9 @@ LoadAndStartApplication(UID pid,
     UID tid = 0;
     int (*entry_point)(void*) = (int(*)(void*))elf_info.entry_point;
     if(R0_CreateThread(pid, entry_point, NULL, &tid) != 0)
-      return -6;  
+        return -6;
 
     //Start the process
     if(R0_StartProcess(pid) != 0)
-      return -7;
+        return -7;
 }

@@ -204,7 +204,7 @@ UnlockSpinlock(Spinlock primitive) {
     IntUnlockSpinlock(primitive);
 
     if(iflag != 0)
-    __asm__ volatile("pushq %0\n\tpopfq" :: "r"(iflag) : "cc");
+        __asm__ volatile("pushq %0\n\tpopfq" :: "r"(iflag) : "cc");
 
     return locked;
 }
