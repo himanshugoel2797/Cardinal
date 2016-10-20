@@ -45,7 +45,7 @@ StartProcess(UID pid);
  * @return     Error code on failure, ProcessErrors_None on success.
  */
 ProcessErrors
-TerminateProcess(UID pid, uint32_t exit_code);
+TerminateProcess(UID pid);
 
 /**
  * @brief      Gets the process information.
@@ -142,6 +142,17 @@ GetProcessGroupID(UID pid);
  */
 uint64_t
 SetProcessGroupID(UID pid, uint64_t id);
+
+/**
+ * @brief      Schedule the process for termination.
+ *
+ * @param[in]  pid        The pid
+ * @param[in]  exit_code  The exit code
+ *
+ * @return     Error code on failure, ProcessErros_None on success.
+ */
+uint64_t
+ScheduleProcessForTermination(UID pid, uint32_t exit_code);
 
 /**@}*/
 

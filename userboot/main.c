@@ -24,6 +24,8 @@ int _start() {
 	ImportInitrd();
 
 	LoadProgram("elf_server.elf");
+	LoadProgram("sys_init.elf");
 
-    while(1);
+	//Now exit the process, allowing the init process to take control of the system
+	R0_ExitProcess(0);
 }

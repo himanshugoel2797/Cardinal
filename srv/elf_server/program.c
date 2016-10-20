@@ -72,7 +72,7 @@ LoadAndStartApplication(UID pid,
     params->rnd_seed = 0;         //Set the seed to 0 for now, secondary loader will set it properly
     params->elf_entry_point = (uint64_t)elf_info.entry_point;
 
-    R0_Unmap(GetCurrentProcessUID(), params, net_size);
+    R0_Unmap(GetCurrentProcessUID(), (uint64_t)params, net_size);
 
     // We're no longer following the SysV Linux ABI, so just map in the data and
     // pass the virtual address.

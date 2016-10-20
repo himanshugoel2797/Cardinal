@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-void
+int
 ImportInitrd(void);
 
 bool

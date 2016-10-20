@@ -24,6 +24,19 @@ R0_KillProcess(UID pid) {
 }
 
 /**
+ * @brief      Exit the executing process. R0 process only.
+ *
+ * @param[in]  exit_code  The exit code
+ *
+ * @return     Error code on failure, does not return on success.
+ */
+static __inline uint64_t
+R0_ExitProcess(uint64_t exit_code) {
+    SetProperty(CardinalProperty_R0_Exit, 0, exit_code);
+    return GetErrno();
+}
+
+/**
  * @brief      Create a new process without starting. R0 process only.
  *
  * @param[in]  parent  The parent PID

@@ -97,8 +97,7 @@ kernel_main(void) {
 
     load_exec(cpid, "userboot.bin");
 
-    FreeThread(GetCurrentThreadUID());
-    while(1);
+    while(1) YieldThread();
 }
 
 void

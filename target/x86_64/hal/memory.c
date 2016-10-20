@@ -69,9 +69,6 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 void
 FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
-        if(inst->reference_count != 0)
-            HaltProcessor();
-
         LockSpinlock(vmem_lock);
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);
@@ -475,7 +472,7 @@ HandlePageFault(uint64_t virtualAddress,
     }
 
     if(map == NULL) {
-        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress));
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
     }
     UnlockSpinlock(procInfo->lock);
 }

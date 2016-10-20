@@ -650,6 +650,11 @@ GetNextThread(ThreadInfo *prevThread) {
 
         if(next_thread == NULL)continue;
 
+        //If the process is terminating, terminate the thread
+        if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)){
+            SET_PROPERTY_VAL(next_thread, State, ThreadState_Exiting);
+        }
+
         switch(GET_PROPERTY_VAL(next_thread, State)) {
         case ThreadState_Exiting:
             if(GetSpinlockContenderCount(next_thread->lock) == 0) {
@@ -692,8 +697,10 @@ GetNextThread(ThreadInfo *prevThread) {
                 LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-
-                UnlockSpinlock(next_thread->ParentProcess->lock);
+                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)) == 0)
+                {
+                    TerminateProcess(GET_PROPERTY_PROC_VAL(next_thread, ID));
+                }
                 UnlockSpinlock(next_thread->lock);
                 FreeSpinlock(next_thread->lock);
 

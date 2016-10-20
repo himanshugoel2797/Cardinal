@@ -21,7 +21,7 @@ typedef enum {
     CardinalProperty_SetTidAddress,     //!< Set the TID write address.
     CardinalProperty_Time,              //!< Get the time.
     CardinalProperty_SpecialDestination,//!< Set a special destination.
-    CardinalProperty_Exit,              //!< Exit the process, setting an exit code.
+    CardinalProperty_R0_Exit,           //!< Exit the process, setting an exit code.
     CardinalProperty_GroupID,           //!< Get the Group ID, can increase it.
     CardinalProperty_R0_BootInfo,       //!< Get the boot information.
     CardinalProperty_R0_PhysicalAddress,//!< Translate a virtual address to a physical address.

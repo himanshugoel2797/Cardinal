@@ -32,6 +32,25 @@ unsigned int getsize(const char *in) {
     return size;
 }
 
+int
+strncmp(const char* s1,
+        const char* s2,
+        size_t n) {
+    while(n--)
+        if(*s1++!=*s2++)
+            return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
+    return 0;
+}
+
+size_t
+strlen(const char *str) {
+    size_t size = 0;
+    while(str[size] != 0) {
+        size++;
+    }
+    return size;
+}
+
 bool
 GetFile(const char *file,
         void **loc,
@@ -41,7 +60,7 @@ GetFile(const char *file,
 
     TARHeader *file_entry = (TARHeader*)InitrdStartAddress;
 
-    while(file_entry->filename[0] != 0) {
+    while(file_entry != NULL && file_entry->filename[0] != 0) {
         uint32_t len = strlen(file_entry->filename);
 
         if(strlen(file) == len && strncmp(file_entry->filename, file, len) == 0) {
@@ -60,22 +79,33 @@ GetFile(const char *file,
     return 1;
 }
 
-void
+int
 ImportInitrd(void) {
     CardinalBootInfo b_info;
     if(R0_GetBootInfo(&b_info) != 0)
-        return;
+        return -1;
 
-    uint64_t initrd_addr = R0_GetPhysicalAddress(b_info.InitrdStartAddress);
+    uint64_t initrd_addr = 0;
+
+    if(R0_GetPhysicalAddress(b_info.InitrdStartAddress, &initrd_addr) != 0)
+        return -1;
+
     uint64_t InitrdLength = b_info.InitrdLength;
 
-    InitrdStartAddress = R0_MemoryMap(GetProperty(CardinalProperty_PID, 0),
-                                      initrd_addr,
-                                      0,
-                                      InitrdLength,
-                                      CachingModeWriteBack,
-                                      MemoryAllocationType_MMap,
-                                      MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present);
+    InitrdStartAddress = 0;
+    uint64_t pid = 0;
+
+    if(GetProperty(CardinalProperty_PID, 0, &pid) != 0)
+        return -1;
+
+    if(R0_Map(pid,
+              initrd_addr,
+              &InitrdStartAddress,
+              InitrdLength,
+              CachingModeWriteBack,
+              MemoryAllocationType_MMap,
+              MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present) != 0)
+        return -1;
 
     /*
         uint64_t fb_addr = R0_GetPhysicalAddress(b_info.FramebufferAddress);

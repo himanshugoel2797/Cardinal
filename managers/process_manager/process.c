@@ -82,7 +82,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
     dst->MessageLock = CreateSpinlock();
 
     dst->Children = List_Create(CreateSpinlock());
-    List_AddEntry(src->Children, (void*)(uint64_t)dst->ID);
+    List_AddEntry(src->Children, (void*)dst);
 
     dst->Parent = src;
     dst->reference_count = 1;
@@ -110,7 +110,10 @@ StartProcess(UID pid) {
 }
 
 ProcessErrors
-TerminateProcess(UID pid, uint32_t exit_code) {
+TerminateProcess(UID pid) {
+
+    UID curPID = GetCurrentProcessUID();
+
     ProcessInformation *pinfo = NULL;
     ProcessErrors err = GetProcessReference(pid, &pinfo);
     if(err != ProcessErrors_None)
@@ -120,7 +123,6 @@ TerminateProcess(UID pid, uint32_t exit_code) {
 
     //Stop this process
     pinfo->Status = ProcessStatus_Terminating;
-    pinfo->ExitStatus = exit_code;
 
     //Remove this process from the list of processes
     for(uint64_t i = 0; i < List_Length(processes); i++) {
@@ -155,21 +157,11 @@ TerminateProcess(UID pid, uint32_t exit_code) {
             exit_msg->m.MsgID = 0;
             exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
             exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
-            exit_msg->exit_code = exit_code;
+            exit_msg->exit_code = pinfo->ExitStatus;
 
             PostMessages(pinfo->Parent->ID, (Message**)&exit_msg, 1);
         }
     }
-
-    //Kill all the threads
-    for(uint64_t i = 0; i < List_Length(pinfo->ThreadIDs); i++) {
-        UID tid = (UID)List_EntryAt(pinfo->ThreadIDs, i);
-
-        FreeThread(tid);
-    }
-
-    //Wait for all threads to terminate
-    while(List_Length(pinfo->ThreadIDs) != 0)YieldThread();
 
     //Move children to root process
     ProcessInformation *root_p = NULL;
@@ -373,4 +365,15 @@ SetProcessGroupID(UID pid, uint64_t id) {
     info->GroupID = id;
 
     return info->GroupID;
+}
+
+uint64_t
+ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
+
+    info->Status = ProcessStatus_Terminating;
+    info->ExitStatus = exit_code;
+    return ProcessErrors_None;
 }
