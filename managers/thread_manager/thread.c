@@ -157,11 +157,14 @@ AllocateStack(UID parentProcess,
     FindFreeVirtualAddress(
         pInfo->PageTable,
         &user_stack_base,
-        STACK_SIZE,
+        STACK_SIZE + 2 * PAGE_SIZE,
         MemoryAllocationType_Stack,
         MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0));
 
     if(user_stack_base == 0)while(1);
+
+    //Add an offset in front for the guard page, the same has been done on the back.
+    user_stack_base += PAGE_SIZE;
 
     MapPage(pInfo->PageTable,
             0,
