@@ -29,7 +29,7 @@ SyscallReceived(uint64_t instruction_pointer,
     */
 
     MemoryAllocationFlags flags = 0;
-    CheckAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags);
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags, NULL);
 
     if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
         return -EINVAL;

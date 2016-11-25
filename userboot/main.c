@@ -26,7 +26,7 @@ int _start() {
 
     LoadProgram("elf_server.elf");
     LoadProgram("sys_init.elf");
-
+    
     //Now exit the process, allowing the init process to take control of the system
     R0_ExitProcess(0);
 }

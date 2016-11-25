@@ -51,7 +51,7 @@ void kmalloc_init(void) {
             STORE_SIZE,
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
     GetActiveVirtualMemoryInstance()->AllocationMap = NULL;
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
@@ -247,10 +247,11 @@ void FreeMapping(void* mem, size_t size) {
 
     CachingMode cMode = 0;
     MemoryAllocationFlags cFlags = 0;
-    CheckAddressPermissions(GetActiveVirtualMemoryInstance(),
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
                             (uint64_t)mem,
                             &cMode,
-                            &cFlags);
+                            &cFlags,
+                            NULL);
 
     if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
 
@@ -301,10 +302,11 @@ void FreeMappingCont(void* mem, size_t size) {
 
     CachingMode cMode = 0;
     MemoryAllocationFlags cFlags = 0;
-    CheckAddressPermissions(GetActiveVirtualMemoryInstance(),
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
                             (uint64_t)mem,
                             &cMode,
-                            &cFlags);
+                            &cFlags,
+                            NULL);
 
     if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
         uint64_t addr = (uint64_t)GetPhysicalAddress(mem);

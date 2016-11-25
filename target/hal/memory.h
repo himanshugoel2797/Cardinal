@@ -18,6 +18,7 @@
  * The default page size.
  */
 #define PAGE_SIZE KiB(4)
+#define PAGE_ALIGN_MASK ~(PAGE_SIZE - 1)
 
 /**
  * The size of the TLS.
@@ -221,6 +222,20 @@ FindFreeVirtualAddress(ManagedPageTable* 			pageTable,
                        MemoryAllocationFlags 	flags);
 
 /**
+ * @brief      Gets the page size.
+ *
+ * @param      pageTable       The page table
+ * @param[in]  virtualAddress  The virtual address
+ * @param      pageSize        Returns the page size
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+GetPageSize(ManagedPageTable *pageTable,
+            uint64_t virtualAddress,
+            uint64_t *pageSize);
+
+/**
  * @brief      Handle a page fault.
  *
  * @param[in]  virtualAddress       The virtual address
@@ -271,12 +286,14 @@ UninstallTemporaryWriteMap(uint64_t loc,
  * @param[in]  addr       The address
  * @param[out] cacheMode  The cache mode
  * @param[out] flags      The flags
+ * @param      allocType  The allocation type
  */
 void
-CheckAddressPermissions(ManagedPageTable *pageTable,
+GetAddressPermissions(ManagedPageTable *pageTable,
                         uint64_t addr,
                         CachingMode *cacheMode,
-                        MemoryAllocationFlags *flags);
+                        MemoryAllocationFlags *flags,
+                        MemoryAllocationType *allocType);
 
 /**
  * @brief      Writes a 64-bit value at the specified address in the specified
@@ -349,6 +366,18 @@ FreePhysicalPageCont(uint64_t ptr,
  */
 void*
 AllocateAPLSMemory(uint64_t size);
+
+/**
+ * @brief      Makes a reservation real.
+ *
+ * @param      pageTable       The page table
+ * @param[in]  virtualAddress  The virtual address
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+MakeReservationReal(ManagedPageTable *pageTable,
+                    uint64_t virtualAddress);
 
 /**
  * @brief      Gets the core count.

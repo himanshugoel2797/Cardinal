@@ -56,7 +56,7 @@ load_exec(UID pid, const char *exec) {
                 PAGE_SIZE,
                 CachingModeWriteBack,
                 MemoryAllocationType_Application,
-                MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Exec);
+                MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Exec | MemoryAllocationFlags_Present);
 
     }
 

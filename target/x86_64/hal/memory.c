@@ -70,6 +70,9 @@ void
 FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         LockSpinlock(vmem_lock);
+        
+        //The kernel expects the user mode to have freed up any and all memory as needed
+
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);
     }
@@ -114,6 +117,17 @@ MapPage(ManagedPageTable *pageTable,
 
     if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
 
+    //If this allocation is just reserved vmem, mark the page as not present
+    if(allocType & MemoryAllocationType_ReservedAllocation)
+    {
+        flags &= ~MemoryAllocationFlags_Present;
+        flags |= MemoryAllocationFlags_NotPresent;
+
+        //In this case, error out if a physical address is specified,
+        //backing memory is purely runtime allocated for this
+        if(physicalAddress != 0)
+            return MemoryAllocationErrors_InvalidFlags;
+    }
 
     MEM_TYPES cache = 0;
     if(cacheMode == CachingModeUncachable)cache = MEM_TYPE_UC;
@@ -196,15 +210,11 @@ MapPage(ManagedPageTable *pageTable,
         pageTable->AllocationMap = allocMap;
     }
 
-    if(allocType & MemoryAllocationType_Fork) {
-        access = access & ~MEM_WRITE; //Forked pages are copy on write
-    }
-
     VirtMemMan_Map((PML_Instance)pageTable->PageTable,
                    virtualAddress,
                    physicalAddress,
                    size,
-                   TRUE,
+                   (flags & MemoryAllocationFlags_Present),
                    cache,
                    access,
                    perms);
@@ -255,16 +265,11 @@ ChangePageFlags(ManagedPageTable *pageTable,
     map->Flags = flags;
     map->AllocationType = allocType;
 
-    //At this point, all parameters have been verified
-    if(allocType & MemoryAllocationType_Fork) {
-        access = access & ~MEM_WRITE; //Forked pages are copy on write
-    }
-
     VirtMemMan_Map((PML_Instance)pageTable->PageTable,
                    virtualAddress,
                    map->PhysicalAddress,
                    map->Length,
-                   TRUE,
+                   (flags & MemoryAllocationFlags_Present),
                    cache,
                    access,
                    perms);
@@ -373,6 +378,11 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
     if(flags & MemoryAllocationFlags_Kernel)perms |= MEM_KERNEL;
     if(flags & MemoryAllocationFlags_User)perms |= MEM_USER;
 
+
+    //Ignore the reserved allocation flag here, it only matters on map, unmap and #PF
+    if(allocType & MemoryAllocationType_ReservedAllocation)
+        allocType = allocType & ~MemoryAllocationType_ReservedAllocation;
+
     uint64_t addr = 0;
 
     if(VirtMemMan_FindFreeAddress((PML_Instance)pageTable->PageTable,
@@ -386,6 +396,26 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
 
     UnlockSpinlock(pageTable->lock);
 
+    return MemoryAllocationErrors_None;
+}
+
+MemoryAllocationErrors
+GetPageSize(ManagedPageTable *pageTable,
+            uint64_t virtualAddress,
+            uint64_t *pageSize)
+{
+    if(pageTable == NULL | pageSize == NULL)
+        return MemoryAllocationErrors_Unknown;
+
+    LockSpinlock(pageTable->lock);
+
+    uint64_t result = VirtMemMan_GetPageSize((PML_Instance)pageTable->PageTable,
+                                             virtualAddress);
+
+    if(result == (uint64_t)-1)
+        return MemoryAllocationErrors_InvalidVirtualAddress;
+
+    *pageSize = result;
     return MemoryAllocationErrors_None;
 }
 
@@ -428,6 +458,59 @@ AllocateAPLSMemory(uint64_t size) {
     return ret;
 }
 
+MemoryAllocationErrors
+MakeReservationReal(ManagedPageTable *pageTable,
+                    uint64_t virtualAddress)
+{
+    if(pageTable == NULL)
+        return MemoryAllocationErrors_Unknown;
+
+    LockSpinlock(pageTable->lock);
+    uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
+                MemoryAllocationFlags AllocationFlags = 0;
+                MemoryAllocationType AllocationType = 0;
+                CachingMode CacheMode = 0;
+                GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
+    
+    uint64_t page_size = 0;
+
+    
+    if(AllocationType & MemoryAllocationType_ReservedAllocation && GetPageSize(pageTable, 
+                               aligned_vaddr, 
+                               &page_size) == MemoryAllocationErrors_None){
+
+                //Give this page actual backing memory!
+                uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE);
+
+                //Mark the pages as present
+
+                AllocationFlags &= ~MemoryAllocationFlags_NotPresent;
+                AllocationFlags |= MemoryAllocationFlags_Present;
+
+                //Remove the reserved flag
+                AllocationType &= ~MemoryAllocationType_ReservedAllocation;
+
+                //Unmap to update this entry correctly
+                UnmapPage(pageTable,
+                          aligned_vaddr,
+                          page_size);
+
+                //Map with actual memory
+                MapPage(pageTable,
+                    phys_addr,
+                    aligned_vaddr,
+                    page_size,
+                    CacheMode,
+                    AllocationType,
+                    AllocationFlags);
+
+                UnlockSpinlock(pageTable->lock);
+                return MemoryAllocationErrors_None;
+            }
+            UnlockSpinlock(pageTable->lock);
+            return MemoryAllocationErrors_Unknown;
+}
+
 int
 GetCoreCount(void) {
     return SMP_GetCoreCount();
@@ -448,16 +531,24 @@ HandlePageFault(uint64_t virtualAddress,
     ProcessInformation *procInfo = NULL;
     GetProcessReference(GetCurrentProcessUID(), &procInfo);
     if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {
-        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->PageTable->AllocationMap));
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->ID));
         //while(1)debug_gfx_writeLine("Error: Page Fault");
     }
 
+    uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
+
     LockSpinlock(procInfo->lock);
+    LockSpinlock(procInfo->PageTable->lock);
     MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
     while(map != NULL) {
         if(virtualAddress >= map->VirtualAddress && virtualAddress < (map->VirtualAddress + map->Length)) {
 
             //Found an entry that describes this fault
+            if(map->AllocationType & MemoryAllocationType_ReservedAllocation) {
+                MakeReservationReal(procInfo->PageTable, aligned_vaddr);
+                break;
+            }
+
             if(map->AllocationType & MemoryAllocationType_Application) {
                 __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
             }
@@ -474,23 +565,38 @@ HandlePageFault(uint64_t virtualAddress,
     if(map == NULL) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
     }
+    UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
 }
 
 void
-CheckAddressPermissions(ManagedPageTable      *pageTable,
+GetAddressPermissions(ManagedPageTable      *pageTable,
                         uint64_t              addr,
                         CachingMode           *cacheMode,
-                        MemoryAllocationFlags *flags) {
+                        MemoryAllocationFlags *flags,
+                        MemoryAllocationType *allocType) {
     MEM_TYPES cache = 0;
     MEM_ACCESS_PERMS access_perm = 0;
     MEM_SECURITY_PERMS sec_perm = 0;
 
     CachingMode c = 0;
     MemoryAllocationFlags a = 0;
+    MemoryAllocationType t = 0;
 
     LockSpinlock(pageTable->lock);
-    VirtMemMan_CheckAddressPermissions((PML_Instance)pageTable->PageTable, addr, &cache, &access_perm, &sec_perm);
+    VirtMemMan_GetAddressPermissions((PML_Instance)pageTable->PageTable, addr, &cache, &access_perm, &sec_perm);
+
+    if(allocType != NULL){
+        MemoryAllocationsMap *map = pageTable->AllocationMap;
+        do{
+            if(addr >= map->VirtualAddress && addr < (map->VirtualAddress + map->Length)) {
+                t = map->AllocationType;
+                break;
+            }
+            map = map->next;
+        }while(map != NULL);
+    }
+
     UnlockSpinlock(pageTable->lock);
 
     if(cache == 0 && access_perm == 0 && sec_perm == 0) {
@@ -525,6 +631,8 @@ CheckAddressPermissions(ManagedPageTable      *pageTable,
 
     if(cacheMode != NULL)*cacheMode = c;
     if(flags != NULL)*flags = a;
+    if(allocType != NULL)*allocType = t;
+
 }
 
 void
@@ -580,13 +688,23 @@ SetupTemporaryWriteMap(ManagedPageTable *pageTable,
         uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
         uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
+        if(target_phys_addr == 0){
+                uint64_t aligned_vaddr = (addr + i);
+                MemoryAllocationFlags AllocationFlags = 0;
+                MemoryAllocationType AllocationType = 0;
+                CachingMode CacheMode = 0;
+                GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
+                if(AllocationType & MemoryAllocationType_ReservedAllocation)
+                    MakeReservationReal(pageTable, addr + i);
+        }
+
         MapPage(GetActiveVirtualMemoryInstance(),
                 tmp_loc_phys,
                 tmp_loc_virt + i,
                 PAGE_SIZE,
                 CachingModeWriteBack,
                 MemoryAllocationType_Heap,
-                MemoryAllocationFlags_Write);
+                MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
     }
 
     UnlockSpinlock(vmem_lock);
@@ -639,7 +757,7 @@ WriteValueAtAddress64(ManagedPageTable *pageTable,
             PAGE_SIZE,
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write);
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
 
     //Then copy over the data
     *(uint64_t*)target_addr = val;
@@ -684,7 +802,7 @@ WriteValueAtAddress32(ManagedPageTable *pageTable,
             PAGE_SIZE,
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write);
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
 
     //Then copy over the data
     *(uint32_t*)target_addr = val;

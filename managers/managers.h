@@ -5,6 +5,7 @@
 #include "process_manager/process.h"			   //Process Manager
 #include "thread_manager/thread.h"				   //Thread Manager
 #include "power_manager/pwm.h"					   //Power Manager
+#include "user_manager/user_manager.h"			   //User Manager
 #include "device_manager/device_manager.h"		   //Device Manager
 #include "syscall_manager/syscall.h"			   //Syscall Manager
 

@@ -4,6 +4,386 @@
 		"selected_items":
 		[
 			[
+				"GetPr",
+				"GetProperty"
+			],
+			[
+				"Pe",
+				"PermissionSharingMode"
+			],
+			[
+				"Permi",
+				"PermissionSharingMode"
+			],
+			[
+				"Perm",
+				"PermissionStatus"
+			],
+			[
+				"GetC",
+				"GetCurrentThreadUID"
+			],
+			[
+				"GET_PR",
+				"GET_PROPERTY_PROC_VAL"
+			],
+			[
+				"ThreadState",
+				"ThreadState_Exiting"
+			],
+			[
+				"Proce",
+				"ProcessStatus_Stopped"
+			],
+			[
+				"GET_",
+				"GET_PROPERTY_PROC_VAL"
+			],
+			[
+				"ProcessError",
+				"ProcessErrors_UIDNotFound"
+			],
+			[
+				"exi",
+				"exit_code"
+			],
+			[
+				"Proces",
+				"ProcessStatus_Terminating"
+			],
+			[
+				"St",
+				"Status"
+			],
+			[
+				"Get",
+				"GetErrno"
+			],
+			[
+				"IN",
+				"INITRD_INST_DIR"
+			],
+			[
+				"Pro",
+				"ProcessErrors_None"
+			],
+			[
+				"Memo",
+				"MemoryAllocationFlags_User"
+			],
+			[
+				"MemoryAllocationError",
+				"MemoryAllocationErrors_Unknown"
+			],
+			[
+				"pdp",
+				"pdpt_base"
+			],
+			[
+				"vir",
+				"virtualAddress"
+			],
+			[
+				"elf",
+				"elf_sz"
+			],
+			[
+				"el",
+				"elf_sz"
+			],
+			[
+				"targe",
+				"target_virt_addr"
+			],
+			[
+				"Memory",
+				"MemoryAllocationFlags_NoExec"
+			],
+			[
+				"phys",
+				"phys_addr"
+			],
+			[
+				"elf_",
+				"elf_entry_point"
+			],
+			[
+				"page",
+				"page_size"
+			],
+			[
+				"arg",
+				"arg_len"
+			],
+			[
+				"entr",
+				"entry_point"
+			],
+			[
+				"Ge",
+				"GetCurrentProcessUID"
+			],
+			[
+				"R0",
+				"R0_ThreadInfoType"
+			],
+			[
+				"en",
+				"entry_point"
+			],
+			[
+				"GetCur",
+				"GetCurrentProcessUID"
+			],
+			[
+				"Star",
+				"StartProcess"
+			],
+			[
+				"core",
+				"coreID"
+			],
+			[
+				"co",
+				"coreID"
+			],
+			[
+				"proces",
+				"process_lock"
+			],
+			[
+				"In",
+				"IntUnlockSpinlock"
+			],
+			[
+				"if",
+				"iflag"
+			],
+			[
+				"smp",
+				"smp_coreCount"
+			],
+			[
+				"SMP",
+				"SMP_UnlockTrampoline"
+			],
+			[
+				"sm",
+				"smp_lock"
+			],
+			[
+				"Create",
+				"CreateProcess"
+			],
+			[
+				"Vir",
+				"VirtMemMan_GetCurrent"
+			],
+			[
+				"smp_",
+				"smp_sync_init"
+			],
+			[
+				"ID",
+				"coreID"
+			],
+			[
+				"in",
+				"int_stack"
+			],
+			[
+				"regs",
+				"regs_saved"
+			],
+			[
+				"int",
+				"int_no"
+			],
+			[
+				"Cachi",
+				"CachingModeWriteBack"
+			],
+			[
+				"Virt",
+				"VirtMemMan_Map"
+			],
+			[
+				"CORE",
+				"CORE_LOCAL_MEM_ADDR"
+			],
+			[
+				"GS",
+				"GS_RELATIVE"
+			],
+			[
+				"virt",
+				"virtMemData"
+			],
+			[
+				"__",
+				"__asm__"
+			],
+			[
+				"0xC0000",
+				"0xC0000101"
+			],
+			[
+				"boo",
+				"bootstrap_malloc"
+			],
+			[
+				"ne",
+				"next_thread"
+			],
+			[
+				"List_",
+				"List_AddEntry"
+			],
+			[
+				"prim",
+				"primitive"
+			],
+			[
+				"Me",
+				"MessageLock"
+			],
+			[
+				"sy",
+				"sync_lock"
+			],
+			[
+				"brk",
+				"brk_lock"
+			],
+			[
+				"Threa",
+				"ThreadPermissionLevel_Kernel"
+			],
+			[
+				"RO",
+				"ROOT_PID"
+			],
+			[
+				"Creat",
+				"CreateThread"
+			],
+			[
+				"Sys",
+				"SyscallSetErrno"
+			],
+			[
+				"PR",
+				"ProcessErrors_InvalidParameters"
+			],
+			[
+				"param",
+				"param_num"
+			],
+			[
+				"sysca",
+				"syscall_params"
+			],
+			[
+				"syscal",
+				"syscall_num"
+			],
+			[
+				"ENO",
+				"ENOMEM"
+			],
+			[
+				"Sysca",
+				"SyscallSetErrno"
+			],
+			[
+				"Allocate",
+				"AllocatePhysicalPageCont"
+			],
+			[
+				"sysc",
+				"syscall_params"
+			],
+			[
+				"cur",
+				"cur_stack_frame"
+			],
+			[
+				"user",
+				"user_stack_base"
+			],
+			[
+				"exec",
+				"exec_loc"
+			],
+			[
+				"exe",
+				"exec_size"
+			],
+			[
+				"Process",
+				"ProcessErrors_None"
+			],
+			[
+				"pin",
+				"pinfo"
+			],
+			[
+				"PROPERT",
+				"PROPERTY_PROC_GET"
+			],
+			[
+				"GET",
+				"GET_PROPERTY_PROC_VAL"
+			],
+			[
+				"Thread",
+				"ThreadPermissionLevel_Kernel"
+			],
+			[
+				"ret",
+				"retVal"
+			],
+			[
+				"re",
+				"retVal"
+			],
+			[
+				"dst",
+				"dstPID"
+			],
+			[
+				"dest",
+				"DestinationPID"
+			],
+			[
+				"ProcessE",
+				"ProcessErrors_None"
+			],
+			[
+				"Pa",
+				"PageTable"
+			],
+			[
+				"ProcessErro",
+				"ProcessErrors"
+			],
+			[
+				"Proc",
+				"ProcessInformation"
+			],
+			[
+				"ElfL",
+				"ElfLoaderError_OutOfMemory"
+			],
+			[
+				"Init",
+				"InitrdStartAddress"
+			],
+			[
+				"init",
+				"initrd_addr"
+			],
+			[
 				"Cardin",
 				"CardinalMemoryRegionType"
 			],
@@ -38,10 +418,6 @@
 			[
 				"ElfLo",
 				"ElfLoaderError_IncompatibleBinary"
-			],
-			[
-				"Sys",
-				"Syscall_R0_SetThreadIsPaused"
 			],
 			[
 				"Syscall_",
@@ -100,10 +476,137 @@
 	"buffers":
 	[
 		{
-			"file": ".sublime-project",
+			"file": "managers/user_manager/user_manager.h",
 			"settings":
 			{
-				"buffer_size": 144,
+				"buffer_size": 412,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/namespace_man/main.c",
+			"settings":
+			{
+				"buffer_size": 15,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/namespace_man/include/namespace_db.h",
+			"settings":
+			{
+				"buffer_size": 226,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/perm_man/include/server.h",
+			"settings":
+			{
+				"buffer_size": 895,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/perm_man/main.c",
+			"settings":
+			{
+				"buffer_size": 0,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/elf_server/include/server.h",
+			"settings":
+			{
+				"buffer_size": 214,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "managers/syscall_manager/syscalls/property.c",
+			"settings":
+			{
+				"buffer_size": 5804,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libs/libCardinal/include/process.h",
+			"settings":
+			{
+				"buffer_size": 2437,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "managers/user_manager/user_manager.c",
+			"settings":
+			{
+				"buffer_size": 25,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libs/libCardinal/include/syscall_property.h",
+			"settings":
+			{
+				"buffer_size": 2158,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "managers/managers.h",
+			"settings":
+			{
+				"buffer_size": 522,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "managers/bus_manager/bus_manager.h",
+			"settings":
+			{
+				"buffer_size": 243,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "srv/namespace_man/namespace_db.c",
+			"settings":
+			{
+				"buffer_size": 0,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "libs/libCardinal/include/ipc.h",
+			"settings":
+			{
+				"buffer_size": 2790,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#include \"permissions.h\"\n\nvoid\nHandleNewProcess(UID new_pid) {\n\n}\n\nvoid\nHandlePermissionShare(UID src_pid, UID dst_pid, uint64_t key, PermissionSharingMode mode) {\n\n}\n\nvoid\nHandlePermissionStatusRequest(UID pid, uint64_t key) {\n\n}\n\nvoid\nHandleCreatePermissionRequest(UID owner, PermissionStatus status, PermissionSharingMode sharing_mode) {\n\n}",
+			"file": "srv/perm_man/permissions.c",
+			"file_size": 343,
+			"file_write_time": 131217490202980973,
+			"settings":
+			{
+				"buffer_size": 343,
 				"line_ending": "Unix"
 			}
 		}
@@ -174,69 +677,116 @@
 	"expanded_folders":
 	[
 		"/home/hgoel/Documents/Cardinal",
-		"/home/hgoel/Documents/Cardinal/target",
-		"/home/hgoel/Documents/Cardinal/target/x86_64"
+		"/home/hgoel/Documents/Cardinal/libs",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include",
+		"/home/hgoel/Documents/Cardinal/managers",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls",
+		"/home/hgoel/Documents/Cardinal/srv",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/include",
+		"/home/hgoel/Documents/Cardinal/srv/namespace_man",
+		"/home/hgoel/Documents/Cardinal/srv/namespace_man/include",
+		"/home/hgoel/Documents/Cardinal/srv/perm_man",
+		"/home/hgoel/Documents/Cardinal/srv/perm_man/include",
+		"/home/hgoel/Documents/Cardinal/sys_init"
 	],
 	"file_history":
 	[
+		"/home/hgoel/Documents/Cardinal/srv/perm_man/include/permissions.h",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/main.c",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.c",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c",
+		"/home/hgoel/Documents/Cardinal/main.c",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/process.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/thread.c",
+		"/home/hgoel/Documents/Cardinal/utils/cctool.c",
+		"/home/hgoel/Documents/Cardinal/scripts/rebuild-initrd.sh",
+		"/home/hgoel/Documents/Cardinal/userboot/main.c",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/program.c",
+		"/home/hgoel/Documents/Cardinal/sys_init/initrd.c",
+		"/home/hgoel/Documents/Cardinal/sys_init/include/initrd.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_property.h",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/Makefile",
+		"/home/hgoel/Documents/Cardinal/userboot/program.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c",
+		"/home/hgoel/Documents/Cardinal/userboot/elf.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.h",
+		"/home/hgoel/Documents/Cardinal/cardinal.sublime-project",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/x86_64_common.h",
+		"/home/hgoel/Documents/Cardinal/userboot/initrd.c",
+		"/home/hgoel/Documents/Cardinal/userboot/Makefile",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/archDefs.inc",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_list.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/synchronization.c",
+		"/home/hgoel/Documents/Cardinal/target/hal/synchronization.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic_init.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/smp/smp.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager/phys_mem_manager.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/linker.ld",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts/interrupt_man.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/thread.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/memory.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/memory.h",
+		"/home/hgoel/Documents/Cardinal/boot_information/multiboot2/parseMultiboot2.c",
+		"/home/hgoel/Documents/Cardinal/userboot/linker.ld",
+		"/home/hgoel/Documents/Cardinal/Makefile",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/smp/smp.c",
+		"/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c",
+		"/home/hgoel/Documents/Cardinal/userboot/include/program.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/GDT/gdt.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_types.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/program.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/program.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/fpu/fpu.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/Makefile",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/thread.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/syscalls/syscalls.c",
+		"/home/hgoel/Documents/Cardinal/userboot/include/elf.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/ipc.h",
+		"/home/hgoel/Documents/Cardinal/common/list.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.c",
+		"/home/hgoel/Documents/Cardinal/userboot/include/initrd.h",
+		"/home/hgoel/Documents/Cardinal/grub.cfg",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/ipc.c",
 		"/home/hgoel/Documents/Cardinal/.sublime-project",
 		"/home/hgoel/.config/sublime-text-3/Packages/IntelliDocs/IntelliDocs.sublime-settings",
 		"/home/hgoel/Documents/Cardinal/Doxyfile",
 		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/README.md",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall.h",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.h",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h",
 		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/Base File.sublime-settings",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_types.h",
-		"/home/hgoel/Documents/Cardinal/sys_init/initrd.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/debug_gfx.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager/phys_mem_manager.c",
-		"/home/hgoel/Documents/Cardinal/userboot/initrd.c",
-		"/home/hgoel/Documents/Cardinal/main.c",
 		"/home/hgoel/Documents/Cardinal/sys_init/sys_init.elf",
 		"/home/hgoel/Documents/Cardinal/sys_init/Makefile",
-		"/home/hgoel/Documents/Cardinal/userboot/Makefile",
-		"/home/hgoel/Documents/Cardinal/userboot/elf.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/memory.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/ipc.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/thread.c",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/errno.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c",
-		"/home/hgoel/Documents/Cardinal/userboot/include/program.h",
-		"/home/hgoel/Documents/Cardinal/userboot/include/elf.h",
-		"/home/hgoel/Documents/Cardinal/userboot/main.c",
-		"/home/hgoel/Documents/Cardinal/Makefile",
-		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h",
 		"/home/hgoel/Documents/Cardinal/target/hal/syscall.h",
-		"/home/hgoel/Documents/Cardinal/target/hal/thread.h",
 		"/home/hgoel/Documents/Cardinal/acpi/acpi_tables.c",
 		"/home/hgoel/Documents/Cardinal/target/hal/interrupts.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/process.h",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/thread.h",
 		"/home/hgoel/Documents/Cardinal/.gitignore",
 		"/home/hgoel/Documents/Cardinal/target/hal/timer.h",
-		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c",
-		"/home/hgoel/Documents/Cardinal/target/hal/synchronization.h",
-		"/home/hgoel/Documents/Cardinal/target/hal/memory.h",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/time.c",
 		"/home/hgoel/Documents/Cardinal/Sources.inc",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.h",
 		"/home/hgoel/Documents/Cardinal/initrd/Makefile",
-		"/home/hgoel/Documents/Cardinal/scripts/rebuild-initrd.sh",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/archDefs.inc",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/Sources.inc",
-		"/home/hgoel/Documents/Cardinal/target/hal/program.h",
 		"/home/hgoel/Documents/Cardinal/root/sys/src/Cardinal_directory_server-master/Makefile"
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 34.0
 	},
 	"find_in_files":
 	{
@@ -249,9 +799,56 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"HaltProcessor",
+			"FreeThread",
+			"GetBootInfo",
+			"InitrdLength",
+			"VirtMemMan_FindFreeAddress",
+			"VirtMemMan_FindFreeVirtualAddress",
+			"shootdown",
+			"cli",
+			"\"cli",
+			"MemMan_Alloc",
+			"Autounlock",
+			"LockSpinlock",
+			"THREAD_LOCAL_STORAGE_SIZE",
+			"APLS_SIZE",
+			"SetGSBase",
+			"%gs",
+			"swapgs",
+			"coreState",
+			"AllocateAPLS",
+			"%gs",
+			"swapgs",
+			"(*virtMemData)->",
+			"coreState->",
+			"AllocateAPLSMemory",
+			"virtMemData->",
+			"(*virtMemData)->",
+			"virtMemData->",
+			"(*virtMemData)->",
+			"virtMemData.",
+			"virtMemData->",
+			"GetPhysicalAddress",
+			"virtMemData",
+			"TaskSwitch",
+			"neutral",
+			"LockSpinlock",
+			"sti",
+			"LockSpinlock",
+			"FreeSpinlock",
+			"UnlockSpinlock",
+			"cli",
+			"Yield",
+			"YieldThread",
+			"0x400000",
+			"UN",
+			"VirtMemMan_Map(",
+			"CreateVirtualMemoryInstance",
+			"AdditionalData",
 			"GetProperty",
 			"///",
 			"multiboot_tag_m",
@@ -306,6 +903,16 @@
 		"regex": false,
 		"replace_history":
 		[
+			"SpinlockUnlocker",
+			"((volatile CoreThreadState*)GetAPLS(coreState))",
+			"virtMemData->",
+			"(*coreState)->",
+			"(*virtMemData)->",
+			"virtMemData->",
+			"(*virtMemData)->",
+			"virtMemData->",
+			"(*virtMemData)->",
+			"virtMemData.",
 			"//!",
 			"CardinalMemoryMapLength",
 			"CardinalMemoryMap",
@@ -354,29 +961,435 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": ".sublime-project",
-					"semi_transient": true,
+					"file": "managers/user_manager/user_manager.h",
+					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 144,
+						"buffer_size": 412,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								144,
-								144
+								222,
+								222
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "srv/namespace_man/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								15,
+								15
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "srv/namespace_man/include/namespace_db.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 226,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								218,
+								218
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "srv/perm_man/include/server.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 895,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								459,
+								459
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "srv/perm_man/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "srv/elf_server/include/server.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 214,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								214,
+								214
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "managers/syscall_manager/syscalls/property.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5804,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3559,
+								3559
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1864.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "libs/libCardinal/include/process.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2437,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2173,
+								2173
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 585.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 6,
+			"sheets":
+			[
+				{
+					"buffer": 8,
+					"file": "managers/user_manager/user_manager.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 25,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								25,
+								25
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "libs/libCardinal/include/syscall_property.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2158,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1755,
+								1755
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 315.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "managers/managers.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 522,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								348,
+								348
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "managers/bus_manager/bus_manager.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 243,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								243,
+								243
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "srv/namespace_man/namespace_db.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "libs/libCardinal/include/ipc.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2790,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1043,
+								1043
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 315.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "srv/perm_man/permissions.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 343,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								63,
+								63
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -405,11 +1418,18 @@
 				0,
 				1,
 				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
 			]
 		],
 		"cols":
 		[
 			0.0,
+			0.5,
 			1.0
 		],
 		"rows":
@@ -431,7 +1451,7 @@
 	"project": "cardinal.sublime-project",
 	"replace":
 	{
-		"height": 42.0
+		"height": 62.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -465,11 +1485,11 @@
 	"settings":
 	{
 	},
-	"show_minimap": true,
-	"show_open_files": true,
+	"show_minimap": false,
+	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 201.0,
+	"side_bar_width": 212.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

@@ -26,11 +26,11 @@ typedef enum {
     MemoryAllocationType_MMap = (1 << 1),                   //!< Memory Mapped.
     MemoryAllocationType_Fork = (1 << 2),                   //!< Forked.
     MemoryAllocationType_Paged = (1 << 3),                  //!< Paged from Disk.
-    MemoryAllocationType_Shared = (1 << 4),                 //!< Shared Memory.
+    MemoryAllocationType_ReservedAllocation = (1 << 4),     //!< Physical backing memory is not allocated until page fault.
     MemoryAllocationType_Global = (1 << 5),                 //!< Shared between all cores.
     MemoryAllocationType_Application = (1 << 6),            //!< Process related Read Only information, removed on Execve.
     MemoryAllocationType_MMapLo = (1 << 7),                 //!< Memory Mapped (32 bit address).
-    MemoryAllocationType_ApplicationProtected = (1 << 8)    //!< Process related user RW information, persists on Execve.
+    MemoryAllocationType_ApplicationProtected = (1 << 8),   //!< Process related user RW information, persists on Execve.
 } MemoryAllocationType;
 
 //! Memory Allocation Flags.

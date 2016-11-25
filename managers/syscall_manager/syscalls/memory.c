@@ -60,7 +60,7 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
     uint64_t area_top = GetMemoryAllocationTypeTop(MemoryAllocationType_Heap, MemoryAllocationFlags_User);
 
     if(area_base <= (uint64_t)targ_brk_address && area_top > (uint64_t)targ_brk_address) {
-        //TODO expand the heap by a few pages and return the new heap break
+        //expand the heap by a few pages and return the new heap break
 
         LockSpinlock(p_info->lock);
 
@@ -79,11 +79,11 @@ Brk_Syscall(uint64_t UNUSED(instruction_pointer),
         p_info->HeapBreak += size;
 
         MapPage(GetActiveVirtualMemoryInstance(),
-                AllocatePhysicalPageCont(size/PAGE_SIZE),
+                0,
                 prev_heap_break,
                 size,
                 CachingModeWriteBack,
-                MemoryAllocationType_Heap,
+                MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation, //Don't actually map in the page until it's used
                 MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
         UnlockSpinlock(p_info->lock);

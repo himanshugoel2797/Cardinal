@@ -14,7 +14,7 @@ ArchPrctl_Syscall(uint64_t target,
     else if(target == ARCH_SET_FS) SetFSBase((void*)val);
     else if(target == ARCH_GET_GS) {
         MemoryAllocationFlags flags = 0;
-        CheckAddressPermissions(GetActiveVirtualMemoryInstance(), val, NULL, &flags);
+        GetAddressPermissions(GetActiveVirtualMemoryInstance(), val, NULL, &flags, NULL);
 
         if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
             return -EINVAL;
@@ -23,7 +23,7 @@ ArchPrctl_Syscall(uint64_t target,
         *gs_base_target = (uint64_t)GetGSBase();
     } else if(target == ARCH_GET_FS) {
         MemoryAllocationFlags flags = 0;
-        CheckAddressPermissions(GetActiveVirtualMemoryInstance(), val, NULL, &flags);
+        GetAddressPermissions(GetActiveVirtualMemoryInstance(), val, NULL, &flags, NULL);
 
         if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
             return -EINVAL;

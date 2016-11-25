@@ -33,6 +33,9 @@
 //! Signal notification message.
 #define CARDINAL_MSG_TYPE_SIGNAL 2
 
+//! Error notification message.
+#define CARDINAL_MSG_TYPE_ERROR 0
+
 //! IPC Message.
 typedef struct Message {
     UID SourcePID;          //!< The sender PID

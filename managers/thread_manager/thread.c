@@ -164,11 +164,11 @@ AllocateStack(UID parentProcess,
     if(user_stack_base == 0)while(1);
 
     MapPage(pInfo->PageTable,
-            AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+            0,
             user_stack_base,
             STACK_SIZE,
             CachingModeWriteBack,
-            MemoryAllocationType_Stack,
+            MemoryAllocationType_Stack | MemoryAllocationType_ReservedAllocation,
             MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
            );
 
@@ -662,10 +662,11 @@ GetNextThread(ThreadInfo *prevThread) {
 
                 CachingMode cMode = 0;
                 MemoryAllocationFlags cFlags = 0;
-                CheckAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
                                         (uint64_t)next_thread->SetChildTID,
                                         &cMode,
-                                        &cFlags);
+                                        &cFlags,
+                                        NULL);
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)
@@ -783,10 +784,11 @@ TaskSwitch(uint32_t int_no,
 
             CachingMode cMode = 0;
             MemoryAllocationFlags cFlags = 0;
-            CheckAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
+            GetAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
                                     (uint64_t)coreState->cur_thread->SetChildTID,
                                     &cMode,
-                                    &cFlags);
+                                    &cFlags,
+                                    NULL);
 
             if(cMode != 0 && cFlags != 0) {
                 if(cFlags & MemoryAllocationFlags_User)
@@ -794,10 +796,11 @@ TaskSwitch(uint32_t int_no,
             }
 
             if(coreState->cur_thread->ParentProcess->Parent != NULL) {
-                CheckAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
+                GetAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
                                         (uint64_t)coreState->cur_thread->SetParentTID,
                                         &cMode,
-                                        &cFlags);
+                                        &cFlags,
+                                        NULL);
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)

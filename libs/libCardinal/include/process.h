@@ -79,6 +79,19 @@ GetCurrentProcessUID(void) {
     return id;
 }
 
+/**
+ * @brief      Gets the process group id.
+ *
+ * @param[in]  pid   The pid
+ * @param      val   The value
+ *
+ * @return     Error code on failure, 0 on success.
+ */
+static __inline uint64_t
+GetProcessGroupID(UID pid, uint64_t* val) {
+    return GetProperty(CardinalProperty_R0_GroupID, pid, val);
+}
+
 /**@}*/
 
 //TODO implement the following without having to export all the kernel's structures:

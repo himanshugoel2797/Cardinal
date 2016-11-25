@@ -108,7 +108,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                            MEM_SECURITY_PERMS sec_perms);
 
 void
-VirtMemMan_CheckAddressPermissions(PML_Instance inst,
+VirtMemMan_GetAddressPermissions(PML_Instance inst,
                                    uint64_t addr,
                                    MEM_TYPES *cacheType,
                                    MEM_ACCESS_PERMS *access_perm,
@@ -123,5 +123,9 @@ VirtMemMan_FreePageTable(PML_Instance inst);
 void
 VirtMemMan_HandlePageFault(uint32_t int_no,
                            uint32_t err_code);
+
+uint64_t
+VirtMemMan_GetPageSize(PML_Instance inst,
+                       uint64_t vaddr);
 
 #endif
