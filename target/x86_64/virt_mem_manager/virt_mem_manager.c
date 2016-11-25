@@ -856,7 +856,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
 
     for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && pml_i < 512 && cur_score < needed_score; ++pml_i) {
-        if((inst[pml_i] & 1) == 0) {
+        if(inst[pml_i] == 0) {  //An entry is available if it's blank
             //Check the pml4 table for free entries if more than 256GiB of space is requested
             BUILD_ADDR(pml_i, 0, 0, 0);
             prev_val = pml_i;
@@ -870,7 +870,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
             for(uint64_t pdpt_i = pdpt_base; pdpt_i < 512 && cur_score < needed_score; ++pdpt_i) {
 
-                if(((pdpt[pdpt_i] & 1) == 0)) {
+                if(pdpt[pdpt_i] == 0) {
                     //Check the pdpt table if more than 1GiB of space is requested
                     BUILD_ADDR(pml_i, pdpt_i, 0, 0);
                     cur_score += GiB(1);
@@ -885,7 +885,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
                     for(uint64_t pd_i = 0; pd_i < 512 && cur_score < needed_score; ++pd_i) {
 
-                        if((pd[pd_i] & 1) == 0) {
+                        if(pd[pd_i] == 0) {
 
                             //Check the pd table if more than 2MiB of space is requested
                             BUILD_ADDR(pml_i, pdpt_i, pd_i, 0);
@@ -956,6 +956,8 @@ VirtMemMan_ReturnPermissions(uint64_t entry,
             access |= MEM_EXEC;
 
         cache = GET_CACHEMODE(entry);
+
+        access |= MEM_PRESENT;
     }
 
     if(cacheType != NULL)*cacheType = cache;

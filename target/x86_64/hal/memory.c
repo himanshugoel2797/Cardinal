@@ -463,6 +463,7 @@ MakeReservationReal(ManagedPageTable *pageTable,
         return MemoryAllocationErrors_Unknown;
 
     LockSpinlock(pageTable->lock);
+
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
     MemoryAllocationFlags AllocationFlags = 0;
     MemoryAllocationType AllocationType = 0;
@@ -480,7 +481,6 @@ MakeReservationReal(ManagedPageTable *pageTable,
         uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE);
 
         //Mark the pages as present
-
         AllocationFlags &= ~MemoryAllocationFlags_NotPresent;
         AllocationFlags |= MemoryAllocationFlags_Present;
 
@@ -588,6 +588,8 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
         do {
             if(addr >= map->VirtualAddress && addr < (map->VirtualAddress + map->Length)) {
                 t = map->AllocationType;
+                c = map->CacheMode;
+                a = map->Flags;
                 break;
             }
             map = map->next;
@@ -596,9 +598,11 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
 
     UnlockSpinlock(pageTable->lock);
 
+    if(allocType != NULL)*allocType = t;
+
     if(cache == 0 && access_perm == 0 && sec_perm == 0) {
-        if(cacheMode != NULL)*cacheMode = 0;
-        if(flags != NULL)*flags = 0;
+        if(cacheMode != NULL)*cacheMode = c;
+        if(flags != NULL)*flags = a;
 
         return;
     }
@@ -623,12 +627,15 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
 
     if(access_perm & MEM_READ)a |= MemoryAllocationFlags_Read;
     if(access_perm & MEM_WRITE)a |= MemoryAllocationFlags_Write;
+    
+    if(access_perm & MEM_PRESENT)a |= MemoryAllocationFlags_Present;
+    else a |= MemoryAllocationFlags_NotPresent;
+
     if(access_perm & MEM_EXEC)a |= MemoryAllocationFlags_Exec;
     else a |= MemoryAllocationFlags_NoExec;
 
     if(cacheMode != NULL)*cacheMode = c;
     if(flags != NULL)*flags = a;
-    if(allocType != NULL)*allocType = t;
 
 }
 
@@ -683,7 +690,6 @@ SetupTemporaryWriteMap(ManagedPageTable *pageTable,
     for(uint64_t i = 0; i < size; i += PAGE_SIZE) {
 
         uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
-        uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
         if(target_phys_addr == 0) {
             uint64_t aligned_vaddr = (addr + i);
@@ -693,7 +699,10 @@ SetupTemporaryWriteMap(ManagedPageTable *pageTable,
             GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
             if(AllocationType & MemoryAllocationType_ReservedAllocation)
                 MakeReservationReal(pageTable, addr + i);
+
+            target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
         }
+        uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
         MapPage(GetActiveVirtualMemoryInstance(),
                 tmp_loc_phys,

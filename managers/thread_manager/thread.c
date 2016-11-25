@@ -675,8 +675,9 @@ GetNextThread(ThreadInfo *prevThread) {
                                               0);
                 }
 
-                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
-                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
+//TODO Free these as per AllocateStack's allocation
+//                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
+//                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
 
                 for(uint64_t i = 0; i < List_Length(thds); i++) {
                     ThreadInfo *tInfo = List_EntryAt(thds, i);
@@ -836,6 +837,7 @@ SwitchThread(void) {
     RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
     SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
     SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
+
 
     SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable));
     PerformArchSpecificTaskSwitch(coreState->cur_thread);

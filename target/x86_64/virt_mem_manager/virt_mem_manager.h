@@ -20,6 +20,7 @@ typedef enum {
     MEM_WRITE = 2,	//Writable
     MEM_READ = 4,	//Readable
     MEM_EXEC = 1,	//Executable
+    MEM_PRESENT = 8, //Present
 } MEM_ACCESS_PERMS;	//Memory Permissions
 
 typedef enum {
