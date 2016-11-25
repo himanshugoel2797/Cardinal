@@ -248,10 +248,10 @@ void FreeMapping(void* mem, size_t size) {
     CachingMode cMode = 0;
     MemoryAllocationFlags cFlags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(),
-                            (uint64_t)mem,
-                            &cMode,
-                            &cFlags,
-                            NULL);
+                          (uint64_t)mem,
+                          &cMode,
+                          &cFlags,
+                          NULL);
 
     if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
 
@@ -303,10 +303,10 @@ void FreeMappingCont(void* mem, size_t size) {
     CachingMode cMode = 0;
     MemoryAllocationFlags cFlags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(),
-                            (uint64_t)mem,
-                            &cMode,
-                            &cFlags,
-                            NULL);
+                          (uint64_t)mem,
+                          &cMode,
+                          &cFlags,
+                          NULL);
 
     if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {
         uint64_t addr = (uint64_t)GetPhysicalAddress(mem);

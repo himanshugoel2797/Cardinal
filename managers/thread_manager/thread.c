@@ -663,10 +663,10 @@ GetNextThread(ThreadInfo *prevThread) {
                 CachingMode cMode = 0;
                 MemoryAllocationFlags cFlags = 0;
                 GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                        (uint64_t)next_thread->SetChildTID,
-                                        &cMode,
-                                        &cFlags,
-                                        NULL);
+                                      (uint64_t)next_thread->SetChildTID,
+                                      &cMode,
+                                      &cFlags,
+                                      NULL);
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)
@@ -785,10 +785,10 @@ TaskSwitch(uint32_t int_no,
             CachingMode cMode = 0;
             MemoryAllocationFlags cFlags = 0;
             GetAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
-                                    (uint64_t)coreState->cur_thread->SetChildTID,
-                                    &cMode,
-                                    &cFlags,
-                                    NULL);
+                                  (uint64_t)coreState->cur_thread->SetChildTID,
+                                  &cMode,
+                                  &cFlags,
+                                  NULL);
 
             if(cMode != 0 && cFlags != 0) {
                 if(cFlags & MemoryAllocationFlags_User)
@@ -797,10 +797,10 @@ TaskSwitch(uint32_t int_no,
 
             if(coreState->cur_thread->ParentProcess->Parent != NULL) {
                 GetAddressPermissions(coreState->cur_thread->ParentProcess->Parent->PageTable,
-                                        (uint64_t)coreState->cur_thread->SetParentTID,
-                                        &cMode,
-                                        &cFlags,
-                                        NULL);
+                                      (uint64_t)coreState->cur_thread->SetParentTID,
+                                      &cMode,
+                                      &cFlags,
+                                      NULL);
 
                 if(cMode != 0 && cFlags != 0) {
                     if(cFlags & MemoryAllocationFlags_User)

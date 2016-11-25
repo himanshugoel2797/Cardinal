@@ -965,10 +965,10 @@ VirtMemMan_ReturnPermissions(uint64_t entry,
 
 void
 VirtMemMan_GetAddressPermissions(PML_Instance inst,
-                                   uint64_t addr,
-                                   MEM_TYPES *cacheType,
-                                   MEM_ACCESS_PERMS *access_perm,
-                                   MEM_SECURITY_PERMS *security_perm) {
+                                 uint64_t addr,
+                                 MEM_TYPES *cacheType,
+                                 MEM_ACCESS_PERMS *access_perm,
+                                 MEM_SECURITY_PERMS *security_perm) {
 #define GET_PERM(x) return VirtMemMan_ReturnPermissions(x, cacheType, access_perm, security_perm)
 
     uint32_t pml_off = (addr >> 39) & 0x1FF;
@@ -1072,8 +1072,7 @@ VirtMemMan_HandlePageFault(uint32_t UNUSED(int_no),
 
 uint64_t
 VirtMemMan_GetPageSize(PML_Instance inst,
-                       uint64_t vaddr)
-{
+                       uint64_t vaddr) {
     uint32_t pml_off = (vaddr >> 39) & 0x1FF;
     uint32_t pdpt_off = (vaddr >> 30) & 0x1FF;
     uint32_t pd_off = (vaddr >> 21) & 0x1FF;

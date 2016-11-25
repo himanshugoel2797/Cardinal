@@ -109,10 +109,10 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
 
 void
 VirtMemMan_GetAddressPermissions(PML_Instance inst,
-                                   uint64_t addr,
-                                   MEM_TYPES *cacheType,
-                                   MEM_ACCESS_PERMS *access_perm,
-                                   MEM_SECURITY_PERMS *security_perm);
+                                 uint64_t addr,
+                                 MEM_TYPES *cacheType,
+                                 MEM_ACCESS_PERMS *access_perm,
+                                 MEM_SECURITY_PERMS *security_perm);
 
 void*
 VirtMemMan_AllocCoreLocalData(uint64_t size);

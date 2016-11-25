@@ -70,7 +70,7 @@ void
 FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         LockSpinlock(vmem_lock);
-        
+
         //The kernel expects the user mode to have freed up any and all memory as needed
 
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
@@ -118,8 +118,7 @@ MapPage(ManagedPageTable *pageTable,
     if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
 
     //If this allocation is just reserved vmem, mark the page as not present
-    if(allocType & MemoryAllocationType_ReservedAllocation)
-    {
+    if(allocType & MemoryAllocationType_ReservedAllocation) {
         flags &= ~MemoryAllocationFlags_Present;
         flags |= MemoryAllocationFlags_NotPresent;
 
@@ -402,15 +401,14 @@ FindFreeVirtualAddress(ManagedPageTable *pageTable,
 MemoryAllocationErrors
 GetPageSize(ManagedPageTable *pageTable,
             uint64_t virtualAddress,
-            uint64_t *pageSize)
-{
+            uint64_t *pageSize) {
     if(pageTable == NULL | pageSize == NULL)
         return MemoryAllocationErrors_Unknown;
 
     LockSpinlock(pageTable->lock);
 
     uint64_t result = VirtMemMan_GetPageSize((PML_Instance)pageTable->PageTable,
-                                             virtualAddress);
+                      virtualAddress);
 
     if(result == (uint64_t)-1)
         return MemoryAllocationErrors_InvalidVirtualAddress;
@@ -460,55 +458,54 @@ AllocateAPLSMemory(uint64_t size) {
 
 MemoryAllocationErrors
 MakeReservationReal(ManagedPageTable *pageTable,
-                    uint64_t virtualAddress)
-{
+                    uint64_t virtualAddress) {
     if(pageTable == NULL)
         return MemoryAllocationErrors_Unknown;
 
     LockSpinlock(pageTable->lock);
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
-                MemoryAllocationFlags AllocationFlags = 0;
-                MemoryAllocationType AllocationType = 0;
-                CachingMode CacheMode = 0;
-                GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
-    
+    MemoryAllocationFlags AllocationFlags = 0;
+    MemoryAllocationType AllocationType = 0;
+    CachingMode CacheMode = 0;
+    GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
+
     uint64_t page_size = 0;
 
-    
-    if(AllocationType & MemoryAllocationType_ReservedAllocation && GetPageSize(pageTable, 
-                               aligned_vaddr, 
-                               &page_size) == MemoryAllocationErrors_None){
 
-                //Give this page actual backing memory!
-                uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE);
+    if(AllocationType & MemoryAllocationType_ReservedAllocation && GetPageSize(pageTable,
+            aligned_vaddr,
+            &page_size) == MemoryAllocationErrors_None) {
 
-                //Mark the pages as present
+        //Give this page actual backing memory!
+        uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE);
 
-                AllocationFlags &= ~MemoryAllocationFlags_NotPresent;
-                AllocationFlags |= MemoryAllocationFlags_Present;
+        //Mark the pages as present
 
-                //Remove the reserved flag
-                AllocationType &= ~MemoryAllocationType_ReservedAllocation;
+        AllocationFlags &= ~MemoryAllocationFlags_NotPresent;
+        AllocationFlags |= MemoryAllocationFlags_Present;
 
-                //Unmap to update this entry correctly
-                UnmapPage(pageTable,
-                          aligned_vaddr,
-                          page_size);
+        //Remove the reserved flag
+        AllocationType &= ~MemoryAllocationType_ReservedAllocation;
 
-                //Map with actual memory
-                MapPage(pageTable,
-                    phys_addr,
-                    aligned_vaddr,
-                    page_size,
-                    CacheMode,
-                    AllocationType,
-                    AllocationFlags);
+        //Unmap to update this entry correctly
+        UnmapPage(pageTable,
+                  aligned_vaddr,
+                  page_size);
 
-                UnlockSpinlock(pageTable->lock);
-                return MemoryAllocationErrors_None;
-            }
-            UnlockSpinlock(pageTable->lock);
-            return MemoryAllocationErrors_Unknown;
+        //Map with actual memory
+        MapPage(pageTable,
+                phys_addr,
+                aligned_vaddr,
+                page_size,
+                CacheMode,
+                AllocationType,
+                AllocationFlags);
+
+        UnlockSpinlock(pageTable->lock);
+        return MemoryAllocationErrors_None;
+    }
+    UnlockSpinlock(pageTable->lock);
+    return MemoryAllocationErrors_Unknown;
 }
 
 int
@@ -571,10 +568,10 @@ HandlePageFault(uint64_t virtualAddress,
 
 void
 GetAddressPermissions(ManagedPageTable      *pageTable,
-                        uint64_t              addr,
-                        CachingMode           *cacheMode,
-                        MemoryAllocationFlags *flags,
-                        MemoryAllocationType *allocType) {
+                      uint64_t              addr,
+                      CachingMode           *cacheMode,
+                      MemoryAllocationFlags *flags,
+                      MemoryAllocationType *allocType) {
     MEM_TYPES cache = 0;
     MEM_ACCESS_PERMS access_perm = 0;
     MEM_SECURITY_PERMS sec_perm = 0;
@@ -586,15 +583,15 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
     LockSpinlock(pageTable->lock);
     VirtMemMan_GetAddressPermissions((PML_Instance)pageTable->PageTable, addr, &cache, &access_perm, &sec_perm);
 
-    if(allocType != NULL){
+    if(allocType != NULL) {
         MemoryAllocationsMap *map = pageTable->AllocationMap;
-        do{
+        do {
             if(addr >= map->VirtualAddress && addr < (map->VirtualAddress + map->Length)) {
                 t = map->AllocationType;
                 break;
             }
             map = map->next;
-        }while(map != NULL);
+        } while(map != NULL);
     }
 
     UnlockSpinlock(pageTable->lock);
@@ -688,14 +685,14 @@ SetupTemporaryWriteMap(ManagedPageTable *pageTable,
         uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)(addr + i));
         uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
 
-        if(target_phys_addr == 0){
-                uint64_t aligned_vaddr = (addr + i);
-                MemoryAllocationFlags AllocationFlags = 0;
-                MemoryAllocationType AllocationType = 0;
-                CachingMode CacheMode = 0;
-                GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
-                if(AllocationType & MemoryAllocationType_ReservedAllocation)
-                    MakeReservationReal(pageTable, addr + i);
+        if(target_phys_addr == 0) {
+            uint64_t aligned_vaddr = (addr + i);
+            MemoryAllocationFlags AllocationFlags = 0;
+            MemoryAllocationType AllocationType = 0;
+            CachingMode CacheMode = 0;
+            GetAddressPermissions(pageTable, aligned_vaddr, &CacheMode, &AllocationFlags, &AllocationType);
+            if(AllocationType & MemoryAllocationType_ReservedAllocation)
+                MakeReservationReal(pageTable, addr + i);
         }
 
         MapPage(GetActiveVirtualMemoryInstance(),

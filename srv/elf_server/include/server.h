@@ -6,9 +6,9 @@
 #include <cardinal/ipc.h>
 
 typedef struct {
-	Message m;
-	UID targetPID;
-	void *src;
+    Message m;
+    UID targetPID;
+    void *src;
 } ElfLoadRequest;
 
 #endif

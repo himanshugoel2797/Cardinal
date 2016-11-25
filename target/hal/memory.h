@@ -290,10 +290,10 @@ UninstallTemporaryWriteMap(uint64_t loc,
  */
 void
 GetAddressPermissions(ManagedPageTable *pageTable,
-                        uint64_t addr,
-                        CachingMode *cacheMode,
-                        MemoryAllocationFlags *flags,
-                        MemoryAllocationType *allocType);
+                      uint64_t addr,
+                      CachingMode *cacheMode,
+                      MemoryAllocationFlags *flags,
+                      MemoryAllocationType *allocType);
 
 /**
  * @brief      Writes a 64-bit value at the specified address in the specified

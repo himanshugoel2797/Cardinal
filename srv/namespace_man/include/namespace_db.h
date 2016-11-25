@@ -5,8 +5,8 @@
 #include <cardinal/ipc.h>
 
 typedef struct {
-	Message m;
-	char namespace_name[1];
+    Message m;
+    char namespace_name[1];
 } NamespaceRegistrationRequest;
 
 #endif

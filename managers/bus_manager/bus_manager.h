@@ -4,8 +4,8 @@
 #include "types.h"
 
 typedef enum {
-	BusMan_Errors_None = 0,
-	BusMan_Errors_BusDoesNotExist
+    BusMan_Errors_None = 0,
+    BusMan_Errors_BusDoesNotExist
 } BusMan_Errors;
 
 void

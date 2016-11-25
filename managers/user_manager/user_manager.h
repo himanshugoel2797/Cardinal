@@ -4,8 +4,8 @@
 #include "types.h"
 
 typedef enum {
-	UserMan_Errors_None = 0,
-	UserMan_Errors_UserDoesNotExist
+    UserMan_Errors_None = 0,
+    UserMan_Errors_UserDoesNotExist
 } UserMan_Errors;
 
 void
