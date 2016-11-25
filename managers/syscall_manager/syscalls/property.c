@@ -63,7 +63,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     break;
     case CardinalProperty_R0_Exit: {
         uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
-        if(rVal == (uint64_t)-1) {
+        if(rVal != 0) {
             SyscallSetErrno(-EPERM);
             UnlockSpinlock(set_prop_lock);
             return 0;
@@ -88,7 +88,8 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
             return 0;
             break;
         default:
-            SyscallSetErrno(0);
+            __asm__("cli\n\thlt");
+            SyscallSetErrno(-ENOSYS);
             return retVal;
         }
     }
@@ -178,22 +179,6 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         uint64_t rVal = GetProcessGroupID(data->params[1]);
         UnlockSpinlock(get_prop_lock);
         return rVal;
-    }
-    break;
-    case CardinalProperty_R0_BootInfo: {
-        if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
-            SyscallSetErrno(-EPERM);
-            UnlockSpinlock(get_prop_lock);
-            return 0;
-        }
-
-        //TODO ensure this address is valid
-        CardinalBootInfo *info = GetBootInfo();
-        __asm__("cli\n\thlt" :: "a"(data->params[1]), "b"(info));
-        memcpy((CardinalBootInfo*)data->params[1], info, sizeof(CardinalBootInfo));
-
-        UnlockSpinlock(get_prop_lock);
-        return SyscallSetErrno(0);
     }
     break;
     case CardinalProperty_R0_PhysicalAddress: {

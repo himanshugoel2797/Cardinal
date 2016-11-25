@@ -51,6 +51,7 @@ R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
     }
 
+    __asm__("cli\n\thlt");
     return 0;
 }
 

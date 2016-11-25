@@ -80,7 +80,7 @@ SyscallEmu1(uint32_t syscall_num,
         ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_SetTidAddress, 0, p0);
         break;
     case Cardinal_EmulatedSyscalls_Exit:
-        ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
+        ret_error = -1;//Syscall3(Syscall_SetProperty, CardinalProperty_Exit, 0, p0);
         break;
     default:
         __asm__("hlt" :: "a"(syscall_num));

@@ -84,6 +84,7 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();

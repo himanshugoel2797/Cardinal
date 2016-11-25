@@ -134,8 +134,8 @@ R0_Unmap(UID pid,
  */
 static __inline uint64_t
 R0_GetBootInfo(CardinalBootInfo *bInfo) {
-    uint64_t dummy = 0;
-    return GetProperty(CardinalProperty_R0_BootInfo, (uint64_t)bInfo, &dummy);
+    Syscall1(Syscall_R0_GetBootInfo, (uint64_t)bInfo);
+    return GetErrno();
 }
 
 /**

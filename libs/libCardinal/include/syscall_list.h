@@ -29,6 +29,7 @@ typedef enum {
     Syscall_R0_KillThread,              //!< Kill a thread by its TID
     Syscall_R0_ExitDeleteThread,        //!< Exit and delete the current thread.
     Syscall_R0_KillProcess,             //!< Kill a process by its PID
+    Syscall_R0_GetBootInfo,             //!< Get the boot information.
 
     Syscall_R1_PowerManagementEvent,    //Send or receive power management events
 

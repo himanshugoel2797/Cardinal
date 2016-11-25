@@ -15,7 +15,6 @@ LoadAndStartApplication(UID pid,
     ElfLoaderError err = LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, pid, &elf_info);
     if(err != ElfLoaderError_Success)
         return -1;
-
     UID tid = 0;
     int (*entry_point)(void*) = (int(*)(void*))elf_info.entry_point;
     if(R0_CreateThread(pid, entry_point, NULL, &tid) != 0)

@@ -31,7 +31,7 @@ SyscallReceived(uint64_t instruction_pointer,
     MemoryAllocationFlags flags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags, NULL);
 
-    if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User))
+    if(flags != (MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
         return -EINVAL;
 
     SyscallData k_data;
