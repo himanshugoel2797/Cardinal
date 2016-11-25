@@ -13,8 +13,7 @@ LoadProgram(char *name) {
         R0_CreateProcess(GetCurrentProcessUID(), 0, &pid);
 
         const char *argv[] = {name};
-        LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
-        return 0;
+        return LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
     }
     return -1;
 }
@@ -24,10 +23,12 @@ int _start() {
 
     ImportInitrd();
 
-    if(LoadProgram("elf_server.elf") == -1)
+    int err = LoadProgram("elf_server.elf");
+    if(err != 0)
         __asm__("hlt");
 
-    if(LoadProgram("sys_init.elf") == -1)
+    err = LoadProgram("sys_init.elf");
+    if(err != 0)
         __asm__("hlt");
 
     //Now exit the process, allowing the init process to take control of the system

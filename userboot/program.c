@@ -23,4 +23,6 @@ LoadAndStartApplication(UID pid,
     //Start the process
     if(R0_StartProcess(pid) != 0)
         return -7;
+
+    return 0;
 }

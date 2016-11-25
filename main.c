@@ -71,6 +71,7 @@ load_exec(UID pid, const char *exec) {
 
 
     CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
+
     StartProcess(pid);
     return;
 }

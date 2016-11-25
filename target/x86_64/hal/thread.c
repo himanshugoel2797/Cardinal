@@ -111,9 +111,9 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
 
 void
 SetupPreemption(void) {
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/1000);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/100);
     APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
@@ -124,7 +124,7 @@ void
 ResetPreemption(void) {
     __asm__("cli");
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

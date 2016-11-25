@@ -672,7 +672,7 @@ GetNextThread(ThreadInfo *prevThread) {
                                       NULL);
 
                 if(cMode != 0 && cFlags != 0) {
-                    if(cFlags & MemoryAllocationFlags_User)
+                    if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
                         WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
                                               (uint32_t*)next_thread->ClearChildTID,
                                               0);
@@ -795,7 +795,7 @@ TaskSwitch(uint32_t int_no,
                                   NULL);
 
             if(cMode != 0 && cFlags != 0) {
-                if(cFlags & MemoryAllocationFlags_User)
+                if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
                     *(uint32_t*)coreState->cur_thread->SetChildTID = (uint32_t)coreState->cur_thread->ID;
             }
 
@@ -807,7 +807,7 @@ TaskSwitch(uint32_t int_no,
                                       NULL);
 
                 if(cMode != 0 && cFlags != 0) {
-                    if(cFlags & MemoryAllocationFlags_User)
+                    if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
                         WriteValueAtAddress32(coreState->cur_thread->ParentProcess->Parent->PageTable,
                                               (uint32_t*)coreState->cur_thread->SetParentTID,
                                               (uint32_t)coreState->cur_thread->ID);
@@ -819,6 +819,8 @@ TaskSwitch(uint32_t int_no,
 
         UnlockSpinlock(sync_lock);
 
+        static int switchCnt = 0;
+        //if(switchCnt++ == 5)__asm__("cli\n\thlt");
         SwitchToThread(coreState->cur_thread);
     }
 }

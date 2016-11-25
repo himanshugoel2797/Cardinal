@@ -71,7 +71,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
 
         UnlockSpinlock(set_prop_lock);
         ScheduleProcessForTermination(GetCurrentProcessUID(), data->params[1]);
-        while(1);
+        while(1) YieldThread();
         return 0;
     }
     break;

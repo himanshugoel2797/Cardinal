@@ -27,7 +27,6 @@ SyscallReceived(uint64_t instruction_pointer,
     /*
     Copy the parameters over to a kernel buffer, Now function only with the kernel buffer
     */
-
     MemoryAllocationFlags flags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags, NULL);
 

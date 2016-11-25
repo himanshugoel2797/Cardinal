@@ -17,6 +17,7 @@ uint64_t
 R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                         uint64_t syscall_num,
                         uint64_t *syscall_params) {
+
     if(syscall_num != Syscall_R0_CreateProcess) {
         SyscallSetErrno(-ENOSYS);
         return 0;
@@ -51,7 +52,6 @@ R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
     }
 
-    __asm__("cli\n\thlt");
     return 0;
 }
 
