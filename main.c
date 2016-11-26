@@ -99,7 +99,7 @@ kernel_main(void) {
 
     load_exec(cpid, "userboot.bin");
 
-    while(1) YieldThread();
+    while(1);
 }
 
 void

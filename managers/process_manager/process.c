@@ -350,7 +350,12 @@ GetProcessGroupID(UID pid) {
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return -1;
 
-    return info->GroupID;
+    uint64_t res = 0;
+    LockSpinlock(info->lock);
+    res = info->GroupID;
+    UnlockSpinlock(info->lock);
+
+    return res;
 }
 
 uint64_t
@@ -359,21 +364,30 @@ SetProcessGroupID(UID pid, uint64_t id) {
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return -1;
 
+    LockSpinlock(info->lock);
+
     if(id < info->GroupID)
+    {
+        UnlockSpinlock(info->lock);
         return -2;
+    }
 
     info->GroupID = id;
 
+    UnlockSpinlock(info->lock);
     return info->GroupID;
 }
 
 uint64_t
 ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
+
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return ProcessErrors_UIDNotFound;
 
+    LockSpinlock(info->lock);
     info->Status = ProcessStatus_Terminating;
     info->ExitStatus = exit_code;
+    UnlockSpinlock(info->lock);
     return ProcessErrors_None;
 }

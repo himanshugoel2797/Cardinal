@@ -410,6 +410,8 @@ GetPageSize(ManagedPageTable *pageTable,
     uint64_t result = VirtMemMan_GetPageSize((PML_Instance)pageTable->PageTable,
                       virtualAddress);
 
+    UnlockSpinlock(pageTable->lock);
+
     if(result == (uint64_t)-1)
         return MemoryAllocationErrors_InvalidVirtualAddress;
 
@@ -739,41 +741,16 @@ WriteValueAtAddress64(ManagedPageTable *pageTable,
                       uint64_t val) {
     if((uint64_t)addr % 8 != 0)HaltProcessor();
 
-    uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)addr);
-    //align the physical address to a page boundary and map it to the current page table
-
     LockSpinlock(vmem_lock);
 
-    uint64_t tmp_loc_virt = 0;
-    uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
-
-    //First allocate the same amount of memory in another location
-    FindFreeVirtualAddress(
-        GetActiveVirtualMemoryInstance(),
-        &tmp_loc_virt,
-        PAGE_SIZE,
-        MemoryAllocationType_Heap,
-        MemoryAllocationFlags_Write);
-
+    uint64_t tmp_loc_virt = SetupTemporaryWriteMap(pageTable, *addr, PAGE_SIZE);
     uint64_t target_addr = tmp_loc_virt + (uint64_t)addr % PAGE_SIZE;
-
-    MapPage(GetActiveVirtualMemoryInstance(),
-            tmp_loc_phys,
-            tmp_loc_virt,
-            PAGE_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
 
     //Then copy over the data
     *(uint64_t*)target_addr = val;
 
     //Then undo the above mapping
-    UnmapPage(GetActiveVirtualMemoryInstance(),
-              tmp_loc_virt,
-              PAGE_SIZE);
-
-
+    UninstallTemporaryWriteMap(tmp_loc_virt, PAGE_SIZE);
 
     UnlockSpinlock(vmem_lock);
 }
@@ -784,41 +761,16 @@ WriteValueAtAddress32(ManagedPageTable *pageTable,
                       uint32_t val) {
     if((uint64_t)addr % 4 != 0)HaltProcessor();
 
-    uint64_t target_phys_addr = (uint64_t)GetPhysicalAddressPageTable(pageTable, (void*)addr);
-    //align the physical address to a page boundary and map it to the current page table
-
     LockSpinlock(vmem_lock);
 
-    uint64_t tmp_loc_virt = 0;
-    uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;
-
-    //First allocate the same amount of memory in another location
-    FindFreeVirtualAddress(
-        GetActiveVirtualMemoryInstance(),
-        &tmp_loc_virt,
-        PAGE_SIZE,
-        MemoryAllocationType_Heap,
-        MemoryAllocationFlags_Write);
-
+    uint64_t tmp_loc_virt = SetupTemporaryWriteMap(pageTable, *addr, PAGE_SIZE);
     uint64_t target_addr = tmp_loc_virt + (uint64_t)addr % PAGE_SIZE;
-
-    MapPage(GetActiveVirtualMemoryInstance(),
-            tmp_loc_phys,
-            tmp_loc_virt,
-            PAGE_SIZE,
-            CachingModeWriteBack,
-            MemoryAllocationType_Heap,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
 
     //Then copy over the data
     *(uint32_t*)target_addr = val;
 
     //Then undo the above mapping
-    UnmapPage(GetActiveVirtualMemoryInstance(),
-              tmp_loc_virt,
-              PAGE_SIZE);
-
-
+    UninstallTemporaryWriteMap(tmp_loc_virt, PAGE_SIZE);
 
     UnlockSpinlock(vmem_lock);
 }

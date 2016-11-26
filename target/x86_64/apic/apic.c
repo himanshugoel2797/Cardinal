@@ -220,6 +220,7 @@ APIC_SetVector(uint32_t interrupt,
                uint8_t vector) {
     if (interrupt < APIC_TIMER || interrupt > APIC_ERR) return;
     uint32_t val = APIC_Read(interrupt);
+    val &= ~0xFF;
     val |= vector;
     APIC_Write(interrupt, val);
 }
@@ -254,6 +255,7 @@ APIC_SetPolarity(uint32_t interrupt,
 void
 APIC_SetTimerMode(uint8_t mode) {
     uint32_t val = APIC_Read(APIC_TIMER);
+    val &= ~(3 << 17);
     val |= ((((uint32_t)mode) & 3) << 17);
     APIC_Write(APIC_TIMER, val);
 }

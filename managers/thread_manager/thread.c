@@ -197,7 +197,7 @@ CreateThread(UID parentProcess,
     regs.rdx = 0;
     regs.rsi = 0;
     regs.rdi = (uint64_t)arg;
-    regs.r8 = 0;
+    regs.r8 = (uint64_t)-1;
     regs.r9 = 0;
     regs.r10 = 0;
     regs.r11 = 0;
@@ -651,6 +651,9 @@ GetNextThread(ThreadInfo *prevThread) {
         if(next_thread != NULL)List_Remove(neutral, 0);
         UnlockSpinlock(sync_lock);
 
+
+        if(GET_PROPERTY_PROC_VAL(next_thread, ID) > 3)__asm__("cli\n\thlt");
+
         if(next_thread == NULL)continue;
 
         //If the process is terminating, terminate the thread
@@ -699,7 +702,7 @@ GetNextThread(ThreadInfo *prevThread) {
                     }
                 }
 
-                LockSpinlock(next_thread->ParentProcess->lock);
+                //LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
                 if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)) == 0) {
@@ -764,6 +767,9 @@ void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
+    static int switchCnt = 0;
+    if(switchCnt++ == 500)__asm__("cli\n\thlt");
+
     //if(coreState->coreID == 1)
     {
         err_code = 0;
@@ -819,8 +825,6 @@ TaskSwitch(uint32_t int_no,
 
         UnlockSpinlock(sync_lock);
 
-        static int switchCnt = 0;
-        //if(switchCnt++ == 5)__asm__("cli\n\thlt");
         SwitchToThread(coreState->cur_thread);
     }
 }

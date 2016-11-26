@@ -88,7 +88,7 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
 //    data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();
-    data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
+//    data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
 }
 
 void
@@ -106,14 +106,14 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
 //    SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);
-    SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
+//    SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
 }
 
 void
 SetupPreemption(void) {
-    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/100);
+    SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/10);
     APIC_SetVector(APIC_TIMER, IRQ(1));
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/10);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
@@ -122,9 +122,9 @@ SetupPreemption(void) {
 
 void
 ResetPreemption(void) {
-    __asm__("cli");
+    __asm__("cli\n\thlt");
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/100);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/10);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

@@ -144,7 +144,7 @@ MemMan_Alloc4KiBPageCont(int pageCount) {
     int b_j = 0;
 
 
-    for(uint32_t j = lastNonFullPage; j < KB4_Blocks_Count; j++) {
+    for(uint32_t j = 0; j < KB4_Blocks_Count; j++) {
         uint32_t block = ~KB4_Blocks_Bitmap[j];
         for(int i = 0; i < 32; i++) {
             if(score == pageCount)break;
