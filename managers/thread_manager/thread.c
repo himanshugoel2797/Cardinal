@@ -150,7 +150,7 @@ AllocateStack(UID parentProcess,
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
         return -1;
 
-    uint64_t STACK_SIZE = (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;
+    uint64_t stack_Size = (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;
 
     LockSpinlock(pInfo->lock);
     //Setup the user stack
@@ -159,7 +159,7 @@ AllocateStack(UID parentProcess,
     FindFreeVirtualAddress(
         pInfo->PageTable,
         &user_stack_base,
-        STACK_SIZE + 2 * PAGE_SIZE,
+        stack_Size + 2 * PAGE_SIZE,
         MemoryAllocationType_Stack,
         MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0));
 
@@ -169,16 +169,16 @@ AllocateStack(UID parentProcess,
     user_stack_base += PAGE_SIZE;
 
     MapPage(pInfo->PageTable,
-            (perm_level == ThreadPermissionLevel_User)?0:AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
+            (perm_level == ThreadPermissionLevel_User)?0:AllocatePhysicalPageCont(stack_Size/PAGE_SIZE),
             user_stack_base,
-            STACK_SIZE,
+            stack_Size,
             CachingModeWriteBack,
             MemoryAllocationType_Stack | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationType_ReservedAllocation:0),
             MemoryAllocationFlags_Write | MemoryAllocationFlags_Present |((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
            );
 
     UnlockSpinlock(pInfo->lock);
-    return user_stack_base + STACK_SIZE - 256;
+    return user_stack_base + stack_Size - 256;
 }
 
 UID
@@ -303,9 +303,6 @@ CreateThreadADV(UID parentProcess,
     cur_stack_frame[--offset] = regs->r14;
     cur_stack_frame[--offset] = regs->r15;
 
-//What happens if a page fault happens when switching to the stack in the TSS?
-//Here, on interrupt, cpu tries to switch to istack, which isn't present so it #PFs
-//Then what? it has no way to obtain a valid stack
     //push ss
     //push rsp
     //push rflags

@@ -15,9 +15,13 @@
 //TODO: For the schedule manager, make sure to delete processes if their state suggests it
 
 /**
- * The default stack size.
+ * The default stack size for kernel threads.
  */
 #define KERNEL_STACK_SIZE KiB(32)
+
+/**
+ * The default stack size for user threads.
+ */
 #define USER_STACK_SIZE MiB(8)
 
 /**
