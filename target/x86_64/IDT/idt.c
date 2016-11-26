@@ -71,7 +71,7 @@ IDT_Initialize(void) {
             //Setup the hardware interrupts
             if(i == 8 || (i >= 10 && i <= 14)) pushesToStack = 0;
             IDT_FillSWInterruptHandler(idt_handlers[i], i, pushesToStack);  //If pushesToStack is non-zero, the value will be pushed to stack
-            IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0xEE, 0);
+            IDT_SetEntry(i, (uint64_t)idt_handlers[i], 0x08, 0x8E, 0);
             pushesToStack = 1;
         }
     }
@@ -166,8 +166,16 @@ void IDT_DefaultHandler() {
     );
 }
 
+#include "utils/native.h"
+
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
+    outb(0x3f8, (regs->int_no % 1000)/100 + '0');
+    outb(0x3f8, (regs->int_no % 100)/10 + '0');
+    outb(0x3f8, (regs->int_no % 10) + '0');
+    outb(0x3f8, '\r');
+    outb(0x3f8, '\n');
+
     if(regs->useresp % 8)__asm__ volatile("cli\n\thlt" :: "a"(regs->useresp), "b"(regs->rip));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
     else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code), "c"(regs->rip));

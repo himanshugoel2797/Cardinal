@@ -65,6 +65,7 @@ static void
 APIC_TimerCallibrateRollover(uint32_t int_no,
                              uint32_t err_code) {
     if(int_no == IRQ(1))rollover_cnt++;
+    APIC_SendEOI(int_no);
     if(err_code)return;
 }
 
@@ -84,6 +85,10 @@ APIC_LocalInitialize(void) {
 
     apic_base_msr |= (1 << 11); //Enable the apic
     wrmsr(IA32_APIC_BASE, apic_base_msr);
+
+    uint32_t dfr = APIC_Read(APIC_DFR);
+    dfr &= ~(0x00);
+    APIC_Write(APIC_DFR, dfr);
 
     uint32_t tpr = APIC_Read(APIC_TPR);
     tpr &= ~(0xFF);
@@ -130,6 +135,7 @@ APIC_CallibrateTimer(void) {
 
     PIT_SetEnableMode(DISABLED);
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLED);
+    APIC_SetTimerValue(0);  //Disable the timer
 
     uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);
     //__asm__("cli\n\thlt" :: "a"(apic_ticks));
@@ -306,7 +312,14 @@ APIC_SendEOI(uint8_t int_num) {
     uint32_t isr_msr = APIC_ISR_BASE + ((int_num / 32) * 0x10);
     uint32_t val = APIC_Read(isr_msr);
     if( CHECK_BIT(val, (int_num % 32)) ) {
-        APIC_Write(APIC_EOI, 0);
+
+        outb(0x3f8, (int_num % 1000)/100 + '0');
+        outb(0x3f8, (int_num % 100)/10 + '0');
+        outb(0x3f8, (int_num % 10) + '0');
+        outb(0x3f8, '\r');
+        outb(0x3f8, '\n');
+
+        APIC_Write(APIC_EOI, APIC_Read(APIC_EOI));
     }
 }
 

@@ -57,8 +57,7 @@ SwitchToUserMode(uint64_t pc, uint64_t sp) {
     __asm__ volatile
     (
         "cli\n\t"
-        "pushfq\n\t"
-        "popq %%r11\n\t"
+        "mov $0, %%r11\n\t"
         "andq $0xFFFFFFFFFFFF0000, %%r11\n\t"
         "orq $512, %%r11\n\t"
         "mov %[sp], %%rsp\n\t"
@@ -97,7 +96,7 @@ Syscall_Initialize(void) {
     uint64_t star_val = (0x08ull << 32) | (0x18ull << 48);
     uint64_t lstar = (uint64_t)Syscall_Handler;
     //uint64_t cstar = 0;
-    uint64_t sfmask = (1 << 9);
+    uint64_t sfmask = (uint64_t)-1;
 
     wrmsr(0xC0000080, rdmsr(0xC0000080) | 1);   //Enable the syscall instruction
     wrmsr(0xC0000081, star_val);

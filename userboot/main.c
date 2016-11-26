@@ -32,6 +32,6 @@ int _start() {
         __asm__("hlt");
 
     //Now exit the process, allowing the init process to take control of the system
+    R0_ExitProcess(0);
     while(1);
-        R0_ExitProcess(0);
 }

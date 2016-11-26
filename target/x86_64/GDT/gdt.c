@@ -111,7 +111,7 @@ void GDT_Initialize() {
     GDT_SetEntry(3, 0, 0xFFFFFFFF, 0xFB, 0xD0); // User mode code segment (32bit)
     GDT_SetEntry(4, 0, 0xFFFFFFFF, 0xF3, 0x00); // User mode data segment
     GDT_SetEntry(5, 0, 0xFFFFFFFF, 0xFB, 0xA0); // User mode code segment (64bit)
-    GDT_SetTSS(6, (uint64_t)&coreLocalData->sys_tss, sizeof(tss_struct), 0xE9);
+    GDT_SetTSS(6, (uint64_t)&coreLocalData->sys_tss, sizeof(tss_struct), 0x89);
 
     __asm__ volatile ("lgdt (%0)" :: "r" (&coreLocalData->gdt_table));
 

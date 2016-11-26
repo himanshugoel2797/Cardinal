@@ -12,6 +12,7 @@
 
 #define APIC_ID 0x020
 #define APIC_EOI 0x0B0
+#define APIC_DFR 0x0E0
 #define APIC_SVR 0x0F0
 #define APIC_ISR_BASE 0x100
 #define APIC_TPR 0x080

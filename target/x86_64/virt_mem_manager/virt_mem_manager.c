@@ -904,7 +904,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
                                 //Reset the score if a block was skipped
                                 if(pt_i != 0 && prev_val != (pt_i - 1))cur_score = 0;
 
-                                if((pt[pt_i] & 1) == 0) {
+                                if(pt[pt_i] == 0) {
                                     //Check the pt table for 4KiB pages
                                     BUILD_ADDR(pml_i, pdpt_i, pd_i, pt_i);
                                     cur_score += KiB(4);

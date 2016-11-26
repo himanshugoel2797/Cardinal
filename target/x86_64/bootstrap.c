@@ -98,6 +98,14 @@ bootstrap_kernel(void *param,
     t_addr -= t_addr % 16;
     SetInterruptStack((void*)t_addr);
 
+    t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
+    t_addr -= t_addr % 16;
+
+    GDT_SetIST(0x3, t_addr);
+    for(int i = 0; i < 32; i++) {
+        IDT_ChangeEntry(i, 0x08, 0x8E, 0x3);
+    }
+
     //Setup IST for important exceptions
     t_addr = ((uint64_t)bootstrap_malloc(KiB(4)) + KiB(4));
     t_addr -= t_addr % 16;
@@ -111,7 +119,7 @@ bootstrap_kernel(void *param,
 
     GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
-
+    
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
 
@@ -123,11 +131,6 @@ bootstrap_kernel(void *param,
 
     smp_sync_base = 1;
     APIC_Initialize();
-
-
-    for(int i = 0; i < 32; i++) {
-        IDT_ChangeEntry(i, 0x08, 0x8E, 0x2);
-    }
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();

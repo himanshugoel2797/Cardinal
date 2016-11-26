@@ -183,13 +183,12 @@ MapPage(ManagedPageTable *pageTable,
                 } else kfree(top);
 
                 if(map->Length == 0) {
-                    if(pageTable->AllocationMap != map) {
+                    if(pageTable->AllocationMap != map)
                         prev->next = map->next;
-                        if(map->next != NULL)map->next->prev = prev;
-                    } else {
+                    else
                         pageTable->AllocationMap = map->next;
-                        if(map->next != NULL)map->next->prev = NULL;
-                    }
+                    
+                    if(map->next != NULL)map->next->prev = prev;
 
                     kfree(map);
                     break;
@@ -204,7 +203,6 @@ MapPage(ManagedPageTable *pageTable,
     //At this point, all parameters have been verified
     if(((virtualAddress >> 39) & 0x1FF) != 511) {
         allocMap->next = pageTable->AllocationMap;
-        if(pageTable->AllocationMap != NULL)pageTable->AllocationMap->prev = allocMap;
         allocMap->prev = NULL;
         pageTable->AllocationMap = allocMap;
     }
@@ -313,13 +311,13 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 } else kfree(top);
 
                 if(map->Length == 0) {
-                    if(pageTable->AllocationMap != map) {
+
+                    if(pageTable->AllocationMap != map)
                         prev->next = map->next;
-                        if(map->next != NULL)map->next->prev = prev;
-                    } else {
+                    else
                         pageTable->AllocationMap = map->next;
-                        if(map->next != NULL)map->next->prev = NULL;
-                    }
+
+                    if(map->next != NULL)map->next->prev = map->prev;
 
                     kfree(map);
                     break;
@@ -548,9 +546,9 @@ HandlePageFault(uint64_t virtualAddress,
                 break;
             }
 
-            if(map->AllocationType & MemoryAllocationType_Application) {
+//            if(map->AllocationType & MemoryAllocationType_Application) {
                 __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
-            }
+//            }
 
 
             break;

@@ -150,6 +150,8 @@ AllocateStack(UID parentProcess,
     if(GetProcessReference(parentProcess, &pInfo) == ProcessErrors_UIDNotFound)
         return -1;
 
+    uint64_t STACK_SIZE = (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;
+
     LockSpinlock(pInfo->lock);
     //Setup the user stack
     uint64_t user_stack_base = 0;
@@ -167,16 +169,16 @@ AllocateStack(UID parentProcess,
     user_stack_base += PAGE_SIZE;
 
     MapPage(pInfo->PageTable,
-            0,
+            (perm_level == ThreadPermissionLevel_User)?0:AllocatePhysicalPageCont(STACK_SIZE/PAGE_SIZE),
             user_stack_base,
             STACK_SIZE,
             CachingModeWriteBack,
-            MemoryAllocationType_Stack | MemoryAllocationType_ReservedAllocation,
-            MemoryAllocationFlags_Write | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
+            MemoryAllocationType_Stack | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationType_ReservedAllocation:0),
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present |((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
            );
 
     UnlockSpinlock(pInfo->lock);
-    return user_stack_base + STACK_SIZE - 16;
+    return user_stack_base + STACK_SIZE - 256;
 }
 
 UID
@@ -185,19 +187,20 @@ CreateThread(UID parentProcess,
              ThreadEntryPoint entry_point,
              void *arg) {
 
+
     uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
 
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
     regs.rsp = user_stack_base;
-    regs.rbp = user_stack_base;
+    regs.rbp = 0;
     regs.rax = 0;
     regs.rbx = 0;
     regs.rcx = 0;
     regs.rdx = 0;
     regs.rsi = 0;
     regs.rdi = (uint64_t)arg;
-    regs.r8 = (uint64_t)-1;
+    regs.r8 = 0;
     regs.r9 = 0;
     regs.r10 = 0;
     regs.r11 = 0;
@@ -274,8 +277,6 @@ CreateThreadADV(UID parentProcess,
 
     SetupArchSpecificData(thd, regs);
 
-
-
     uint64_t cur_stack_frame_vaddr = SetupTemporaryWriteMap(pInfo->PageTable, kstack - kstack % PAGE_SIZE, PAGE_SIZE);
     uint64_t *cur_stack_frame = (uint64_t*)(cur_stack_frame_vaddr + (kstack % PAGE_SIZE));
     int offset = 0;
@@ -302,6 +303,9 @@ CreateThreadADV(UID parentProcess,
     cur_stack_frame[--offset] = regs->r14;
     cur_stack_frame[--offset] = regs->r15;
 
+//What happens if a page fault happens when switching to the stack in the TSS?
+//Here, on interrupt, cpu tries to switch to istack, which isn't present so it #PFs
+//Then what? it has no way to obtain a valid stack
     //push ss
     //push rsp
     //push rflags
@@ -651,9 +655,6 @@ GetNextThread(ThreadInfo *prevThread) {
         if(next_thread != NULL)List_Remove(neutral, 0);
         UnlockSpinlock(sync_lock);
 
-
-        if(GET_PROPERTY_PROC_VAL(next_thread, ID) > 3)__asm__("cli\n\thlt");
-
         if(next_thread == NULL)continue;
 
         //If the process is terminating, terminate the thread
@@ -768,7 +769,7 @@ TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
     static int switchCnt = 0;
-    if(switchCnt++ == 500)__asm__("cli\n\thlt");
+    //if(switchCnt++ == 500)__asm__("cli\n\thlt");
 
     //if(coreState->coreID == 1)
     {
@@ -821,10 +822,9 @@ TaskSwitch(uint32_t int_no,
             }
 
         }
-        HandleInterruptNoReturn(int_no);
 
         UnlockSpinlock(sync_lock);
-
+        HandleInterruptNoReturn(int_no);
         SwitchToThread(coreState->cur_thread);
     }
 }
