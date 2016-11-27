@@ -2,7 +2,6 @@
 
 int _start() {
 
-    __asm__("cli\n\thlt");
     //First map in the initrd
     ImportInitrd();
 

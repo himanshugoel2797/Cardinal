@@ -77,6 +77,24 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     dst->HeapBreak = 0;
 
+    dst->ResponseBuffer = 0;
+
+    FindFreeVirtualAddress(
+        dst->PageTable,
+        &dst->ResponseBuffer,
+        MAX_RESPONSE_BUFFER_LEN,
+        MemoryAllocationType_Application,
+        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
+
+    MapPage(dst->PageTable,
+            0,
+            dst->ResponseBuffer,
+            MAX_RESPONSE_BUFFER_LEN,
+            CachingModeWriteBack,
+            MemoryAllocationType_Application | MemoryAllocationType_ReservedAllocation,
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present | MemoryAllocationFlags_User
+           );
+
     dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
     dst->MessageLock = CreateSpinlock();

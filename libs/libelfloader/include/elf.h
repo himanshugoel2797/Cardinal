@@ -4,6 +4,8 @@
 #include <cardinal/cardinal_types.h>
 #include <elf.h>
 
+//Message to load an elf from memory by requesting a copy
+
 typedef enum ElfLoaderError {
     ElfLoaderError_Success,
     ElfLoaderError_IncompatibleBinary,

@@ -312,14 +312,8 @@ APIC_SendEOI(uint8_t int_num) {
     uint32_t isr_msr = APIC_ISR_BASE + ((int_num / 32) * 0x10);
     uint32_t val = APIC_Read(isr_msr);
     if( CHECK_BIT(val, (int_num % 32)) ) {
-
-        outb(0x3f8, (int_num % 1000)/100 + '0');
-        outb(0x3f8, (int_num % 100)/10 + '0');
-        outb(0x3f8, (int_num % 10) + '0');
-        outb(0x3f8, '\r');
-        outb(0x3f8, '\n');
-
-        APIC_Write(APIC_EOI, APIC_Read(APIC_EOI));
+        APIC_Read(APIC_EOI);
+        APIC_Write(APIC_EOI, 0);
     }
 }
 

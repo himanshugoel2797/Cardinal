@@ -15,8 +15,8 @@
 void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
-    //InitializeTimer();
-    //SetTimerEnableMode(ENABLE);
+    InitializeTimer();
+    SetTimerEnableMode(ENABLE);
 
     kmalloc_init ();
     ProcessSys_Initialize();

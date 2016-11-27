@@ -31,6 +31,11 @@ typedef enum {
     Syscall_R0_KillProcess,             //!< Kill a process by its PID
     Syscall_R0_GetBootInfo,             //!< Get the boot information.
 
+    Syscall_RequestResponseBuffer,      //!< Request a buffer for responses.
+    Syscall_GetResponseKey,             //!< Get a response key for a process to use to respond.
+    Syscall_SubmitResponse,             //!< Submit response with a key to send the response to the process.
+    //NOTE: The above should then delete the response key, they are one time use.
+                                        
     Syscall_R1_PowerManagementEvent,    //Send or receive power management events
 
     Syscall_NumEnd = Syscall_R1_PowerManagementEvent,

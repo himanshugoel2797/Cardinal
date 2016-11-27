@@ -21,6 +21,9 @@
 //! The PID of the root of the process tree.
 #define ROOT_PID 1
 
+//! The maximum length of a response buffer.
+#define MAX_RESPONSE_BUFFER_LEN KiB(256)
+
 /**
  * The process status.
  */
@@ -61,6 +64,7 @@ typedef struct ProcessInformation {
     ProcessStatus               Status;                     //!< The status of the process.
     ManagedPageTable            *PageTable;                 //!< The page table.
     uint64_t                    HeapBreak;                  //!< The heap break.
+    uint64_t                    ResponseBuffer;             //!< The response buffer address.
     uint32_t                    ExitStatus;                 //!< The process exit status.
     List                        *Children;                  //!< The process's children processes.
     List                        *ThreadIDs;                 //!< The threads that belong to this process.

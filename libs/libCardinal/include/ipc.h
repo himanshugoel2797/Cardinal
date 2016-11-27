@@ -49,6 +49,11 @@ struct ErrorMessage {
     uint64_t code;          //!< The error code.
 };
 
+//! Response buffer response header.
+typedef struct Response {
+	volatile uint8_t ResponseReady;		//!< Initialized to zero. Gets set to 1 when the response is ready to read.
+};
+
 #ifndef _KERNEL_
 
 /**
@@ -90,6 +95,25 @@ GetIPCMessage(Message *m) {
 static __inline int
 PostIPCMessages(UID dstPID, Message **m, uint64_t cnt) {
     return (int)Syscall3(Syscall_PostIPCMessage, dstPID, (uint64_t)m, cnt);
+}
+
+/**
+ * @brief      Request the process's IPC response buffer.
+ *
+ * @param      address  The address of the response buffer
+ * @param      size     The size of the response buffer in bytes
+ *
+ * @return     Error code on failure, 0 on success.
+ */
+static __inline int
+RequestResponseBuffer(uint64_t *address, uint64_t *size) {
+	if(address != NULL)
+		*address = Syscall1(Syscall_RequestResponseBuffer, 0);
+
+	if(size != NULL)
+		*size = Syscall1(Syscall_RequestResponeBuffer, 1);
+
+	return GetErrno();
 }
 
 #endif
