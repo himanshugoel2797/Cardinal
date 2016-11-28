@@ -93,9 +93,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga31feaca5b311e6e965d6d58a35161077"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga31feaca5b311e6e965d6d58a35161077">StartProcess</a> (UID pid)</td></tr>
 <tr class="memdesc:ga31feaca5b311e6e965d6d58a35161077"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts a process.  <a href="#ga31feaca5b311e6e965d6d58a35161077">More...</a><br /></td></tr>
 <tr class="separator:ga31feaca5b311e6e965d6d58a35161077"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab64609ca5f040abc1f53a6f053a7cf74"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gab64609ca5f040abc1f53a6f053a7cf74">TerminateProcess</a> (UID pid, uint32_t exit_code)</td></tr>
-<tr class="memdesc:gab64609ca5f040abc1f53a6f053a7cf74"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terminate the specified process.  <a href="#gab64609ca5f040abc1f53a6f053a7cf74">More...</a><br /></td></tr>
-<tr class="separator:gab64609ca5f040abc1f53a6f053a7cf74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad7fe74f3b5a1d0507b16ac66f9b6133c"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gad7fe74f3b5a1d0507b16ac66f9b6133c">TerminateProcess</a> (UID pid)</td></tr>
+<tr class="memdesc:gad7fe74f3b5a1d0507b16ac66f9b6133c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terminate the specified process.  <a href="#gad7fe74f3b5a1d0507b16ac66f9b6133c">More...</a><br /></td></tr>
+<tr class="separator:gad7fe74f3b5a1d0507b16ac66f9b6133c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga02c289e5662d9fb0507da7cea1fa2dbe"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga02c289e5662d9fb0507da7cea1fa2dbe">GetProcessInformation</a> (UID pid, <a class="el" href="../../d4/d03/structProcessInformation.html">ProcessInformation</a> *procInfo)</td></tr>
 <tr class="memdesc:ga02c289e5662d9fb0507da7cea1fa2dbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the process information.  <a href="#ga02c289e5662d9fb0507da7cea1fa2dbe">More...</a><br /></td></tr>
 <tr class="separator:ga02c289e5662d9fb0507da7cea1fa2dbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +124,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:ga3e67059bf0c8eb22b024d2ce7ff30560"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga3e67059bf0c8eb22b024d2ce7ff30560">SetProcessGroupID</a> (UID pid, uint64_t id)</td></tr>
 <tr class="memdesc:ga3e67059bf0c8eb22b024d2ce7ff30560"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the process group id.  <a href="#ga3e67059bf0c8eb22b024d2ce7ff30560">More...</a><br /></td></tr>
 <tr class="separator:ga3e67059bf0c8eb22b024d2ce7ff30560"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8315d4eb5c01a626ff8b4221c436282"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gad8315d4eb5c01a626ff8b4221c436282">ScheduleProcessForTermination</a> (UID pid, uint32_t exit_code)</td></tr>
+<tr class="memdesc:gad8315d4eb5c01a626ff8b4221c436282"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the process for termination.  <a href="#gad8315d4eb5c01a626ff8b4221c436282">More...</a><br /></td></tr>
+<tr class="separator:gad8315d4eb5c01a626ff8b4221c436282"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -386,6 +389,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 
 </div>
 </div>
+<a class="anchor" id="gad8315d4eb5c01a626ff8b4221c436282"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t ScheduleProcessForTermination </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>exit_code</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Schedule the process for termination. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">exit_code</td><td>The exit code</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, ProcessErros_None on success. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga3e67059bf0c8eb22b024d2ce7ff30560"></a>
 <div class="memitem">
 <div class="memproto">
@@ -478,7 +519,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 
 </div>
 </div>
-<a class="anchor" id="gab64609ca5f040abc1f53a6f053a7cf74"></a>
+<a class="anchor" id="gad7fe74f3b5a1d0507b16ac66f9b6133c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -486,18 +527,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
           <td class="memname">ProcessErrors TerminateProcess </td>
           <td>(</td>
           <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>pid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>pid</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>exit_code</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

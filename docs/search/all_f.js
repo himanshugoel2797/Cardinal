@@ -20,5 +20,7 @@ var searchData=
   ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]],
   ['processsys_5finitialize',['ProcessSys_Initialize',['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c'],['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c']]],
   ['processsys_5fisinitialized',['ProcessSys_IsInitialized',['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c'],['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c']]],
+  ['procserv_5fcreaterequest',['ProcServ_CreateRequest',['../d3/dce/structProcServ__CreateRequest.html',1,'']]],
+  ['procserv_5fcreaterequest_5fresponse',['ProcServ_CreateRequest_Response',['../d2/d35/structProcServ__CreateRequest__Response.html',1,'']]],
   ['property_20syscalls',['Property Syscalls',['../dd/dbd/group__property__syscall.html',1,'']]]
 ];

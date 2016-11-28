@@ -142,6 +142,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga056bb78e5beccb23ea293fe43962393b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga056bb78e5beccb23ea293fe43962393b">FindFreeVirtualAddress</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t *virtualAddress, size_t size, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> allocType, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags)</td></tr>
 <tr class="memdesc:ga056bb78e5beccb23ea293fe43962393b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find a free virtual address.  <a href="#ga056bb78e5beccb23ea293fe43962393b">More...</a><br /></td></tr>
 <tr class="separator:ga056bb78e5beccb23ea293fe43962393b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51daf40ff5aba5996cdd22a7c6c89cb0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga51daf40ff5aba5996cdd22a7c6c89cb0">GetPageSize</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t virtualAddress, uint64_t *pageSize)</td></tr>
+<tr class="memdesc:ga51daf40ff5aba5996cdd22a7c6c89cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the page size.  <a href="#ga51daf40ff5aba5996cdd22a7c6c89cb0">More...</a><br /></td></tr>
+<tr class="separator:ga51daf40ff5aba5996cdd22a7c6c89cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga86c40810b55a13e73f8d19a1eb8891e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga86c40810b55a13e73f8d19a1eb8891e8">HandlePageFault</a> (uint64_t virtualAddress, uint64_t instruction_pointer, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> error)</td></tr>
 <tr class="memdesc:ga86c40810b55a13e73f8d19a1eb8891e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a page fault.  <a href="#ga86c40810b55a13e73f8d19a1eb8891e8">More...</a><br /></td></tr>
 <tr class="separator:ga86c40810b55a13e73f8d19a1eb8891e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,9 +158,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:ga15cb64d29c2d42754d474b5b99c57f5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga15cb64d29c2d42754d474b5b99c57f5a">UninstallTemporaryWriteMap</a> (uint64_t loc, size_t size)</td></tr>
 <tr class="memdesc:ga15cb64d29c2d42754d474b5b99c57f5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uninstall the temporary write mapping setup by <a class="el" href="../../d0/d92/group__memory__hal.html#ga38d7d120822b48d7c31a7e52969aeecb" title="Setup a temporary writeable mapping of the virtual address in the specified page table into the curre...">SetupTemporaryWriteMap()</a>  <a href="#ga15cb64d29c2d42754d474b5b99c57f5a">More...</a><br /></td></tr>
 <tr class="separator:ga15cb64d29c2d42754d474b5b99c57f5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3c4c23cb2e658fa0213fda1d71a8fa39"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga3c4c23cb2e658fa0213fda1d71a8fa39">CheckAddressPermissions</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t addr, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *flags)</td></tr>
-<tr class="memdesc:ga3c4c23cb2e658fa0213fda1d71a8fa39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the access permissions on a mapping.  <a href="#ga3c4c23cb2e658fa0213fda1d71a8fa39">More...</a><br /></td></tr>
-<tr class="separator:ga3c4c23cb2e658fa0213fda1d71a8fa39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac13900111276ad9141d6fbd4f8d08bad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gac13900111276ad9141d6fbd4f8d08bad">GetAddressPermissions</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t addr, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *flags, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> *allocType)</td></tr>
+<tr class="memdesc:gac13900111276ad9141d6fbd4f8d08bad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the access permissions on a mapping.  <a href="#gac13900111276ad9141d6fbd4f8d08bad">More...</a><br /></td></tr>
+<tr class="separator:gac13900111276ad9141d6fbd4f8d08bad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3bd4c5b1c1c001e27aa3a26c735c64ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga3bd4c5b1c1c001e27aa3a26c735c64ca">WriteValueAtAddress64</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t *addr, uint64_t val)</td></tr>
 <tr class="memdesc:ga3bd4c5b1c1c001e27aa3a26c735c64ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes a 64-bit value at the specified address in the specified page table.  <a href="#ga3bd4c5b1c1c001e27aa3a26c735c64ca">More...</a><br /></td></tr>
 <tr class="separator:ga3bd4c5b1c1c001e27aa3a26c735c64ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,6 +182,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:gad4d70c510c0ceaaba7f3019a6639adf7"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gad4d70c510c0ceaaba7f3019a6639adf7">AllocateAPLSMemory</a> (uint64_t size)</td></tr>
 <tr class="memdesc:gad4d70c510c0ceaaba7f3019a6639adf7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate Application Processor Local Storage.  <a href="#gad4d70c510c0ceaaba7f3019a6639adf7">More...</a><br /></td></tr>
 <tr class="separator:gad4d70c510c0ceaaba7f3019a6639adf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga52a38c590d1ed6429625c5af688b008d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga52a38c590d1ed6429625c5af688b008d">MakeReservationReal</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, uint64_t virtualAddress)</td></tr>
+<tr class="memdesc:ga52a38c590d1ed6429625c5af688b008d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Makes a reservation real.  <a href="#ga52a38c590d1ed6429625c5af688b008d">More...</a><br /></td></tr>
+<tr class="separator:ga52a38c590d1ed6429625c5af688b008d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3022d9b7eccca6a47a59574f3504eefa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga3022d9b7eccca6a47a59574f3504eefa">GetCoreCount</a> (void)</td></tr>
 <tr class="memdesc:ga3022d9b7eccca6a47a59574f3504eefa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the core count.  <a href="#ga3022d9b7eccca6a47a59574f3504eefa">More...</a><br /></td></tr>
 <tr class="separator:ga3022d9b7eccca6a47a59574f3504eefa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -354,57 +360,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga3c4c23cb2e658fa0213fda1d71a8fa39"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void CheckAddressPermissions </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
-          <td class="paramname"><em>pageTable</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint64_t&#160;</td>
-          <td class="paramname"><em>addr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *&#160;</td>
-          <td class="paramname"><em>cacheMode</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *&#160;</td>
-          <td class="paramname"><em>flags</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
-
-<p>Retrieve the access permissions on a mapping. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pageTable</td><td>The page table </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>The address </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">flags</td><td>The flags </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -604,6 +559,64 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 
 </div>
 </div>
+<a class="anchor" id="gac13900111276ad9141d6fbd4f8d08bad"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void GetAddressPermissions </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
+          <td class="paramname"><em>pageTable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>addr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> *&#160;</td>
+          <td class="paramname"><em>allocType</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Retrieve the access permissions on a mapping. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pageTable</td><td>The page table </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">addr</td><td>The address </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">flags</td><td>The flags </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">allocType</td><td>The allocation type </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga3022d9b7eccca6a47a59574f3504eefa"></a>
 <div class="memitem">
 <div class="memproto">
@@ -698,6 +711,51 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The memory allocation type top address. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga51daf40ff5aba5996cdd22a7c6c89cb0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> GetPageSize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
+          <td class="paramname"><em>pageTable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>pageSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Gets the page size. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">pageTable</td><td>The page table </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">virtualAddress</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">pageSize</td><td>Returns the page size</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
 
 </div>
 </div>
@@ -845,6 +903,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="ga52a38c590d1ed6429625c5af688b008d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> MakeReservationReal </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *&#160;</td>
+          <td class="paramname"><em>pageTable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Makes a reservation real. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir"></td><td class="paramname">pageTable</td><td>The page table </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">virtualAddress</td><td>The virtual address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
 
 </div>
 </div>

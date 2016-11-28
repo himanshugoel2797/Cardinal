@@ -108,7 +108,7 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a94b0af18eec5c7fdb56037a7b92974a5">MemoryAllocationType_Fork</a> = (1 &lt;&lt; 2), 
 <br />
 &#160;&#160;<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9ab44582e79e815340ddff8934a626779c">MemoryAllocationType_Paged</a> = (1 &lt;&lt; 3), 
-<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a701ae6fdadf6ef58fb3f2a4746ebd3ec">MemoryAllocationType_Shared</a> = (1 &lt;&lt; 4), 
+<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9ae7097b85885b3e54e1ef8453632d573b">MemoryAllocationType_ReservedAllocation</a> = (1 &lt;&lt; 4), 
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a891b833fb9ce529c96289f64d720513e">MemoryAllocationType_Global</a> = (1 &lt;&lt; 5), 
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9af26186681970fda876e30fb6606ba291">MemoryAllocationType_Application</a> = (1 &lt;&lt; 6), 
 <br />
@@ -310,8 +310,8 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9ab44582e79e815340ddff8934a626779c"></a>MemoryAllocationType_Paged&#160;</td><td class="fielddoc">
 <p>Paged from Disk. </p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a701ae6fdadf6ef58fb3f2a4746ebd3ec"></a>MemoryAllocationType_Shared&#160;</td><td class="fielddoc">
-<p>Shared Memory. </p>
+<tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9ae7097b85885b3e54e1ef8453632d573b"></a>MemoryAllocationType_ReservedAllocation&#160;</td><td class="fielddoc">
+<p>Physical backing memory is not allocated until page fault. </p>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a891b833fb9ce529c96289f64d720513e"></a>MemoryAllocationType_Global&#160;</td><td class="fielddoc">
 <p>Shared between all cores. </p>

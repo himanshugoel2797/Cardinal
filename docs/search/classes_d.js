@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['pci_5fbar',['PCI_BAR',['../da/da3/structPCI__BAR.html',1,'']]],
-  ['pci_5fdevicefuncs',['PCI_DeviceFuncs',['../df/d9f/structPCI__DeviceFuncs.html',1,'']]],
-  ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]]
+  ['openrequest',['OpenRequest',['../d7/dbf/structOpenRequest.html',1,'']]],
+  ['openresponse',['OpenResponse',['../de/d94/structOpenResponse.html',1,'']]]
 ];

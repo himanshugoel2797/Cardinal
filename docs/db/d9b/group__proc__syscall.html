@@ -90,15 +90,99 @@ Functions</h2></td></tr>
 <tr class="memitem:ga625beb1d412c9b81a7d916500a74dd57"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga625beb1d412c9b81a7d916500a74dd57">R0_KillProcess</a> (UID pid)</td></tr>
 <tr class="memdesc:ga625beb1d412c9b81a7d916500a74dd57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit and delete a process. R0 process only.  <a href="#ga625beb1d412c9b81a7d916500a74dd57">More...</a><br /></td></tr>
 <tr class="separator:ga625beb1d412c9b81a7d916500a74dd57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga47b111042954995e96cc5f30bc80a628"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga47b111042954995e96cc5f30bc80a628">R0_ExitProcess</a> (uint64_t exit_code)</td></tr>
+<tr class="memdesc:ga47b111042954995e96cc5f30bc80a628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit the executing process. R0 process only.  <a href="#ga47b111042954995e96cc5f30bc80a628">More...</a><br /></td></tr>
+<tr class="separator:ga47b111042954995e96cc5f30bc80a628"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae50195172b270e385cc0ab5542fe9a91"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#gae50195172b270e385cc0ab5542fe9a91">R0_CreateProcess</a> (UID parent, UID userID, UID *uid)</td></tr>
 <tr class="memdesc:gae50195172b270e385cc0ab5542fe9a91"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new process without starting. R0 process only.  <a href="#gae50195172b270e385cc0ab5542fe9a91">More...</a><br /></td></tr>
 <tr class="separator:gae50195172b270e385cc0ab5542fe9a91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga69ad3016e720b60a8b33d2d7f875de15"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga69ad3016e720b60a8b33d2d7f875de15">R0_StartProcess</a> (UID pid)</td></tr>
 <tr class="memdesc:ga69ad3016e720b60a8b33d2d7f875de15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start a created process. R0 process only.  <a href="#ga69ad3016e720b60a8b33d2d7f875de15">More...</a><br /></td></tr>
 <tr class="separator:ga69ad3016e720b60a8b33d2d7f875de15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga832ee8cc528bd86085f67fc7224e73ca"><td class="memItemLeft" align="right" valign="top">static __inline UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga832ee8cc528bd86085f67fc7224e73ca">GetCurrentProcessUID</a> (void)</td></tr>
+<tr class="memdesc:ga832ee8cc528bd86085f67fc7224e73ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the current process uid.  <a href="#ga832ee8cc528bd86085f67fc7224e73ca">More...</a><br /></td></tr>
+<tr class="separator:ga832ee8cc528bd86085f67fc7224e73ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga843c2bd65ef930887f2b2ae7b2229789"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9b/group__proc__syscall.html#ga843c2bd65ef930887f2b2ae7b2229789">GetProcessGroupID</a> (UID pid, uint64_t *val)</td></tr>
+<tr class="memdesc:ga843c2bd65ef930887f2b2ae7b2229789"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the process group id.  <a href="#ga843c2bd65ef930887f2b2ae7b2229789">More...</a><br /></td></tr>
+<tr class="separator:ga843c2bd65ef930887f2b2ae7b2229789"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="ga832ee8cc528bd86085f67fc7224e73ca"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline UID GetCurrentProcessUID </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+
+<p>Gets the current process uid. </p>
+<dl class="section return"><dt>Returns</dt><dd>The current process uid. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga843c2bd65ef930887f2b2ae7b2229789"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t GetProcessGroupID </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>val</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+
+<p>Gets the process group id. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">val</td><td>The value</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="gae50195172b270e385cc0ab5542fe9a91"></a>
 <div class="memitem">
 <div class="memproto">
@@ -149,6 +233,41 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga47b111042954995e96cc5f30bc80a628"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t R0_ExitProcess </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>exit_code</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/process.h&gt;</code></p>
+
+<p>Exit the executing process. R0 process only. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">exit_code</td><td>The exit code</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, does not return on success. </dd></dl>
 
 </div>
 </div>

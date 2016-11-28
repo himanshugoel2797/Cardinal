@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['readrequest',['ReadRequest',['../d9/dcf/structReadRequest.html',1,'']]],
-  ['readresponse',['ReadResponse',['../dc/dbe/structReadResponse.html',1,'']]],
-  ['removerequest',['RemoveRequest',['../d6/d54/structRemoveRequest.html',1,'']]],
-  ['removeresponse',['RemoveResponse',['../d5/d1e/structRemoveResponse.html',1,'']]],
-  ['renamerequest',['RenameRequest',['../da/d94/structRenameRequest.html',1,'']]],
-  ['renameresponse',['RenameResponse',['../dc/d80/structRenameResponse.html',1,'']]],
-  ['rtc_5ftime',['RTC_Time',['../dd/d8f/structRTC__Time.html',1,'']]]
+  ['pci_5fbar',['PCI_BAR',['../da/da3/structPCI__BAR.html',1,'']]],
+  ['pci_5fdevicefuncs',['PCI_DeviceFuncs',['../df/d9f/structPCI__DeviceFuncs.html',1,'']]],
+  ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]],
+  ['procserv_5fcreaterequest',['ProcServ_CreateRequest',['../d3/dce/structProcServ__CreateRequest.html',1,'']]],
+  ['procserv_5fcreaterequest_5fresponse',['ProcServ_CreateRequest_Response',['../d2/d35/structProcServ__CreateRequest__Response.html',1,'']]]
 ];

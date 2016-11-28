@@ -17,6 +17,8 @@ var searchData=
   ['elf64_5fshdr',['Elf64_Shdr',['../de/da8/structElf64__Shdr.html',1,'']]],
   ['elf64_5fsym',['Elf64_Sym',['../de/dae/structElf64__Sym.html',1,'']]],
   ['elf_5fcommonehdr',['Elf_CommonEhdr',['../d3/dc8/structElf__CommonEhdr.html',1,'']]],
+  ['elf_5fsetup_5fparams',['elf_setup_params',['../dd/da5/structelf__setup__params.html',1,'']]],
   ['elfinformation',['ElfInformation',['../d7/de6/structElfInformation.html',1,'']]],
+  ['elfloadrequest',['ElfLoadRequest',['../d7/ddf/structElfLoadRequest.html',1,'']]],
   ['errormessage',['ErrorMessage',['../dc/dd8/structErrorMessage.html',1,'']]]
 ];

@@ -96,6 +96,9 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd8/structErrorMessage.html">ErrorMessage</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">An error message.  <a href="../../dc/dd8/structErrorMessage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db9/structResponse.html">Response</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d1/db9/structResponse.html" title="Response buffer response header. ">Response</a> buffer response header.  <a href="../../d1/db9/structResponse.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -103,6 +106,10 @@ Typedefs</h2></td></tr>
 typedef struct <a class="el" href="../../d8/dd0/structMessage.html">Message</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gac5d2505352602da27debb8163160af23">Message</a></td></tr>
 <tr class="memdesc:gac5d2505352602da27debb8163160af23"><td class="mdescLeft">&#160;</td><td class="mdescRight">IPC <a class="el" href="../../d8/dd0/structMessage.html" title="IPC Message. ">Message</a>. <br /></td></tr>
 <tr class="separator:gac5d2505352602da27debb8163160af23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga264f8d701bc399f6a1d40d1129510f75"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga264f8d701bc399f6a1d40d1129510f75"></a>
+typedef struct <a class="el" href="../../d1/db9/structResponse.html">Response</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga264f8d701bc399f6a1d40d1129510f75">Response</a></td></tr>
+<tr class="memdesc:ga264f8d701bc399f6a1d40d1129510f75"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d1/db9/structResponse.html" title="Response buffer response header. ">Response</a> buffer response header. <br /></td></tr>
+<tr class="separator:ga264f8d701bc399f6a1d40d1129510f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -115,6 +122,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga201f0870905183cbb7981308b3d2e034"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga201f0870905183cbb7981308b3d2e034">PostIPCMessages</a> (UID dstPID, <a class="el" href="../../d8/dd0/structMessage.html">Message</a> **m, uint64_t cnt)</td></tr>
 <tr class="memdesc:ga201f0870905183cbb7981308b3d2e034"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posts ipc messages.  <a href="#ga201f0870905183cbb7981308b3d2e034">More...</a><br /></td></tr>
 <tr class="separator:ga201f0870905183cbb7981308b3d2e034"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga24907f57393a3fcb3ec7d4e98adfca73">RequestResponseBuffer</a> (uint64_t *address, uint64_t *size)</td></tr>
+<tr class="memdesc:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request the process's IPC response buffer.  <a href="#ga24907f57393a3fcb3ec7d4e98adfca73">More...</a><br /></td></tr>
+<tr class="separator:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -138,6 +148,10 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gacfd25ea5c6dddd7fd0be64ef6f0e5b18">ErrorMessage::code</a></td></tr>
 <tr class="memdesc:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="mdescLeft">&#160;</td><td class="mdescRight">The error code. <br /></td></tr>
 <tr class="separator:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf2cd9c58e55215181de495c76bffa7a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaf2cd9c58e55215181de495c76bffa7a6"></a>
+volatile uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaf2cd9c58e55215181de495c76bffa7a6">Response::ResponseReady</a></td></tr>
+<tr class="memdesc:gaf2cd9c58e55215181de495c76bffa7a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialized to zero. Gets set to 1 when the response is ready to read. <br /></td></tr>
+<tr class="separator:gaf2cd9c58e55215181de495c76bffa7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -279,6 +293,52 @@ uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>-1 on failure to post any messages, the number of messages posted on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga24907f57393a3fcb3ec7d4e98adfca73"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline int RequestResponseBuffer </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>address</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/ipc.h&gt;</code></p>
+
+<p>Request the process's IPC response buffer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">address</td><td>The address of the response buffer </td></tr>
+    <tr><td class="paramname">size</td><td>The size of the response buffer in bytes</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
 
 </div>
 </div>

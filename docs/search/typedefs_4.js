@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['threadentrypoint',['ThreadEntryPoint',['../d6/d5a/group__threading.html#gadc80c3fd3adb03b4253e50f08974eda6',1,'thread.h']]],
-  ['threadinfo',['ThreadInfo',['../d6/d5a/group__threading.html#ga677d11d684c06c2113e0515aeab2adfd',1,'thread.h']]]
+  ['spinlock',['Spinlock',['../d6/d6a/group__sync__hal.html#ga2b7bd1f01b65ccbfaee98f004746ae8b',1,'synchronization.h']]]
 ];

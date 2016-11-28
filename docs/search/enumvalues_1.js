@@ -24,6 +24,6 @@ var searchData=
   ['memoryallocationtype_5fmmap',['MemoryAllocationType_MMap',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a212dc2f3585455b3bb8bd75f5ed5cd83',1,'memory.h']]],
   ['memoryallocationtype_5fmmaplo',['MemoryAllocationType_MMapLo',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a7a4d5a4b145bba23b3cf004e56f35f77',1,'memory.h']]],
   ['memoryallocationtype_5fpaged',['MemoryAllocationType_Paged',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9ab44582e79e815340ddff8934a626779c',1,'memory.h']]],
-  ['memoryallocationtype_5fshared',['MemoryAllocationType_Shared',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a701ae6fdadf6ef58fb3f2a4746ebd3ec',1,'memory.h']]],
+  ['memoryallocationtype_5freservedallocation',['MemoryAllocationType_ReservedAllocation',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9ae7097b85885b3e54e1ef8453632d573b',1,'memory.h']]],
   ['memoryallocationtype_5fstack',['MemoryAllocationType_Stack',['../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a14a467262f3df8856651c6743f8ea52f',1,'memory.h']]]
 ];

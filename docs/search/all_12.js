@@ -3,7 +3,7 @@ var searchData=
   ['targetpid',['TargetPID',['../d8/d2c/structMemoryMapParams.html#a07f7f95d27c1b2c6e34ba4e67556e717',1,'MemoryMapParams']]],
   ['tarheader',['TARHeader',['../d0/dd7/structTARHeader.html',1,'']]],
   ['taskswitch',['TaskSwitch',['../d6/d5a/group__threading.html#ga261a137d70c2ca33f48f4e88181c8138',1,'TaskSwitch(uint32_t int_no, uint32_t err_code):&#160;thread.c'],['../d6/d5a/group__threading.html#ga261a137d70c2ca33f48f4e88181c8138',1,'TaskSwitch(uint32_t int_no, uint32_t err_code):&#160;thread.c']]],
-  ['terminateprocess',['TerminateProcess',['../d3/d12/group__proc__man.html#gab64609ca5f040abc1f53a6f053a7cf74',1,'TerminateProcess(UID pid, uint32_t exit_code):&#160;process.c'],['../d3/d12/group__proc__man.html#gab64609ca5f040abc1f53a6f053a7cf74',1,'TerminateProcess(UID pid, uint32_t exit_code):&#160;process.c']]],
+  ['terminateprocess',['TerminateProcess',['../d3/d12/group__proc__man.html#gad7fe74f3b5a1d0507b16ac66f9b6133c',1,'TerminateProcess(UID pid):&#160;process.c'],['../d3/d12/group__proc__man.html#gad7fe74f3b5a1d0507b16ac66f9b6133c',1,'TerminateProcess(UID pid):&#160;process.c']]],
   ['thread_5finitialize',['Thread_Initialize',['../d6/d5a/group__threading.html#ga2876b648540d1904a14cbe08d679da5e',1,'Thread_Initialize(void):&#160;thread.c'],['../d6/d5a/group__threading.html#ga2876b648540d1904a14cbe08d679da5e',1,'Thread_Initialize(void):&#160;thread.c']]],
   ['threading_20syscalls',['Threading Syscalls',['../d8/dba/group__thread__syscall.html',1,'']]],
   ['threadentrypoint',['ThreadEntryPoint',['../d6/d5a/group__threading.html#gadc80c3fd3adb03b4253e50f08974eda6',1,'thread.h']]],

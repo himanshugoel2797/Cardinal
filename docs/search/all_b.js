@@ -8,5 +8,5 @@ var searchData=
   ['lock',['lock',['../d4/d03/structProcessInformation.html#a876a352e5328aea15bf4948c86edae8b',1,'ProcessInformation::lock()'],['../d5/dfe/structThreadInfo.html#ad0bb5157e50b78b0cfac80bfa2fb1537',1,'ThreadInfo::lock()']]],
   ['lockrequest',['LockRequest',['../d6/def/structLockRequest.html',1,'']]],
   ['lockresponse',['LockResponse',['../df/db5/structLockResponse.html',1,'']]],
-  ['lockspinlock',['LockSpinlock',['../d6/d6a/group__sync__hal.html#ga8971920c153460f5f0937730dae6e882',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#ga8971920c153460f5f0937730dae6e882',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c']]]
+  ['lockspinlock',['LockSpinlock',['../d6/d6a/group__sync__hal.html#ga22eb43ebeb4e0fb7be65f2a250ba6f2b',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#ga22eb43ebeb4e0fb7be65f2a250ba6f2b',1,'LockSpinlock(Spinlock primitive):&#160;synchronization.c']]]
 ];
