@@ -178,12 +178,19 @@ new_uid(void) {
 }
 
 
+static uint64_t rng_val = 0;
+
+void
+seed(uint64_t seed) {
+    rng_val = seed;
+}
+
 uint32_t
-rand(int seed) {
-    uint32_t a = 16807;
-    uint32_t m = 2147483647;
-    uint64_t s = (a * seed) % m;
-    return (uint32_t)(s / m);
+rand(void) {
+    const uint64_t a = 6364136223846793005;
+    const uint64_t c = 1;
+    rng_val = (a * rng_val + c);
+    return (uint32_t)(rng_val >> 32);
 }
 
 int

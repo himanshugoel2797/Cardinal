@@ -85,10 +85,13 @@ kernel_main(void) {
     // Switch to usermode
     // Execute UI
 
+    //Seed the rng with the timer value
+    seed(GetTimerValue());
 
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();
+    KeyMan_Initialize();
     //smp_unlock_cores();
     SetupPreemption();
     target_device_setup();

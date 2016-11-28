@@ -52,7 +52,7 @@ struct ErrorMessage {
 //! Response buffer response header.
 typedef struct Response {
 	volatile uint8_t ResponseReady;		//!< Initialized to zero. Gets set to 1 when the response is ready to read.
-};
+} Response;
 
 #ifndef _KERNEL_
 

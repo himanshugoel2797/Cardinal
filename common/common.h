@@ -99,8 +99,11 @@ set_bit_cnt(uint32_t bit_array);
 UID
 new_uid(void);
 
+void
+seed(uint64_t seed);
+
 uint32_t
-rand(int seed);
+rand(void);
 
 int
 ffs(uint32_t val);

@@ -33,7 +33,7 @@ cd namespace_man
 	mv *.elf $INITRD_INST_DIR 
 cd ..
 
-cd perm_man
+cd proc_server
 	make clean
 	make all
 	make install
