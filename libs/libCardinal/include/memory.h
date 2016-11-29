@@ -33,6 +33,10 @@ typedef enum {
     MemoryAllocationType_ReservedBacking = (1 << 8),        //!< Page was allocated passively by ReservedAllocation, must free as part of page table.
 } MemoryAllocationType;
 
+#ifdef _KERNEL_
+#define MAX_ALLOCATION_TYPE_BIT 8
+#endif
+
 //! Memory Allocation Flags.
 typedef enum {
     MemoryAllocationFlags_NoExec = (0 << 1),  //!< Execute Disable.

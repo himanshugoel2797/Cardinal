@@ -202,6 +202,8 @@ TerminateProcess(UID pid) {
     }
     List_Free(pinfo->PendingMessages);
     List_Free(pinfo->ThreadIDs);
+    List_Free(pinfo->Keys);
+    
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 

@@ -72,10 +72,15 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
         LockSpinlock(vmem_lock);
 
         //The kernel expects the user mode to have freed up any and all memory as needed
+        LockSpinlock(inst->lock);
 
-        //Remember to free any reserved backings
+        for(int i = MAX_ALLOCATION_TYPE_BIT; i >= 0; i--){
+            WipeMemoryTypeFromTable(inst, 1 << i);
+        }
 
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
+
+        UnlockSpinlock(inst->lock);
         UnlockSpinlock(vmem_lock);
     }
 }
@@ -779,6 +784,11 @@ WriteValueAtAddress32(ManagedPageTable *pageTable,
 void
 WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
                         MemoryAllocationType type) {
+
+    //Don't operate on flags
+    if(type & (MemoryAllocationType_ReservedAllocation | MemoryAllocationType_ReservedBacking))
+        return;
+
     //Walk the page table, unmapping anything that has the same allocation type
     LockSpinlock(pageTable->lock);
 
@@ -786,7 +796,18 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
     while(map != NULL) {
 
         MemoryAllocationsMap *n = map->next;
-        if(map->AllocationType == type) {
+
+        MemoryAllocationType allocType = map->AllocationType;
+
+        //Ignore extra flags during this process.
+        allocType &= ~(MemoryAllocationType_ReservedBacking | MemoryAllocationType_ReservedAllocation);
+
+        if(allocType == type) {
+
+            if(type & MemoryAllocationType_ReservedBacking) {
+                FreePhysicalPageCont(n->PhysicalAddress, n->Length / PAGE_SIZE);
+            }
+
             UnmapPage(pageTable,
                       n->VirtualAddress,
                       n->Length);
