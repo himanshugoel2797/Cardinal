@@ -28,7 +28,6 @@ ProcessSys_Initialize(void) {
 
     root = kmalloc(sizeof(ProcessInformation));
     root->ID = new_proc_uid();  //Root process ID is ROOT_PID
-    strcpy(root->Name, u8"Root Process");
     root->Status = ProcessStatus_Executing;
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->HeapBreak = 0;

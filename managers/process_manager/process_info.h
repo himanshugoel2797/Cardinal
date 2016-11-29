@@ -12,9 +12,6 @@
 
 #include "libs/libCardinal/include/ipc.h"
 
-//! The maximum length of a process name.
-#define MAX_PROCESS_NAME_LEN (256)
-
 //! The maximum number of pending messages.
 #define MAX_PENDING_MESSAGE_CNT 4096
 
@@ -60,7 +57,6 @@ typedef struct ProcessInformation {
     UID                         UserID;                     //!< The User ID of the owner.
     UID                         GroupID;                    //!< GroupIDs are used to control permission levels
 
-    char                        Name[MAX_PROCESS_NAME_LEN]; //!< The name of the process.
     ProcessStatus               Status;                     //!< The status of the process.
     ManagedPageTable            *PageTable;                 //!< The page table.
     uint64_t                    HeapBreak;                  //!< The heap break.

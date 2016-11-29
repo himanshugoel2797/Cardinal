@@ -789,9 +789,6 @@ VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocT
             pml_base = 0;
             pdpt_base = 1;
             break;
-        case MemoryAllocationType_ApplicationProtected:
-            pml_base = 21;
-            break;
         default:
             pml_base = 0;
             pdpt_base = 1;

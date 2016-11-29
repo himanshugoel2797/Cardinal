@@ -73,6 +73,8 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
 
         //The kernel expects the user mode to have freed up any and all memory as needed
 
+        //Remember to free any reserved backings
+
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
         UnlockSpinlock(vmem_lock);
     }
@@ -486,6 +488,7 @@ MakeReservationReal(ManagedPageTable *pageTable,
 
         //Remove the reserved flag
         AllocationType &= ~MemoryAllocationType_ReservedAllocation;
+        AllocationType |= MemoryAllocationType_ReservedBacking;
 
         //Unmap to update this entry correctly
         UnmapPage(pageTable,
