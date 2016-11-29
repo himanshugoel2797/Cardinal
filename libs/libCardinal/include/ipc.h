@@ -49,7 +49,7 @@ struct ErrorMessage {
     uint64_t code;          //!< The error code.
 };
 
-//! Response buffer response footer.
+//! Response buffer response header.
 typedef struct Response {
     volatile uint8_t ResponseReady;		//!< Initialized to zero. Gets set to 1 when the response is ready to read.
 } Response;
@@ -116,6 +116,15 @@ RequestResponseBuffer(uint64_t *address, uint64_t *size) {
     return GetErrno();
 }
 
+/**
+ * @brief      Gets the single use response key to allow writing to the response buffer.
+ *
+ * @param[in]  offset  The offset
+ * @param[in]  len     The length
+ * @param      key     The key
+ *
+ * @return     Error code on failure, 0 on success.
+ */
 static __inline int
 GetResponseKey(uint32_t offset, uint32_t len, uint64_t *key) {
     if(key == NULL)
@@ -125,6 +134,15 @@ GetResponseKey(uint32_t offset, uint32_t len, uint64_t *key) {
     return GetErrno();
 }
 
+/**
+ * @brief      Submit a response using a response key.
+ *
+ * @param[in]  key     The key
+ * @param      buffer  The buffer
+ * @param[in]  length  The length of the buffer
+ *
+ * @return     Error code on failure, 0 on success.
+ */
 static __inline int
 SubmitResponse(uint64_t key, void *buffer, uint32_t length) {
     if(buffer == NULL)
@@ -134,6 +152,14 @@ SubmitResponse(uint64_t key, void *buffer, uint32_t length) {
     return GetErrno();
 }
 
+/**
+ * @brief      Queries a response key length.
+ *
+ * @param[in]  key     The key
+ * @param      length  The length
+ *
+ * @return     Error code on failure, 0 on success.
+ */
 static __inline int
 QueryResponseKeyLength(uint64_t key, uint32_t *length) {
     if(length == NULL)

@@ -22,7 +22,32 @@ GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
-    //TODO interpret returned error codes
+    //Check bottom end of buffer
+    MemoryAllocationFlags cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[0],
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    //Check top end of buffer
+    cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[0] + MESSAGE_SIZE,
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
     uint64_t retVal = GetMessageFrom((Message*)data->params[0], (UID)data->params[1], data->params[2]);
     if(retVal == 0)
         SyscallSetErrno(-ENOMSG);
@@ -44,6 +69,32 @@ PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
     SyscallData *data = (SyscallData*)syscall_params;
 
     if(data->param_num != 3) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    //Check bottom end of buffer
+    MemoryAllocationFlags cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[1],
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    //Check top end of buffer
+    cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[1] + MESSAGE_SIZE * data->params[2],
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }
