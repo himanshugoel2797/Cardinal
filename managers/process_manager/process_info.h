@@ -69,6 +69,7 @@ typedef struct ProcessInformation {
     List                        *Children;                  //!< The process's children processes.
     List                        *ThreadIDs;                 //!< The threads that belong to this process.
     List                        *PendingMessages;           //!< The pending messages.
+    List                        *Keys;                      //!< The keys provided to or owned by this process.
 
     bool                        HandlingMessage;            //!< Is the process currently handling a message?
     Spinlock                    MessageLock;                //!< Message access synchronization.
@@ -78,6 +79,11 @@ typedef struct ProcessInformation {
     uint32_t                    reference_count;            //!< Reference count
     Spinlock                    lock;                       //!< Read/Write synchronization.
 } ProcessInformation;
+
+typedef struct ResponseBufferKeyData {
+    uint32_t offset;
+    uint32_t length;
+} ResponseBufferKeyData;
 
 /**@}*/
 

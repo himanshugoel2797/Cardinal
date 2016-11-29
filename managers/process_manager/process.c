@@ -97,6 +97,8 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
+    dst->Keys = List_Create(CreateSpinlock());
+
     dst->MessageLock = CreateSpinlock();
 
     dst->Children = List_Create(CreateSpinlock());
@@ -408,4 +410,113 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
     info->ExitStatus = exit_code;
     UnlockSpinlock(info->lock);
     return ProcessErrors_None;
+}
+
+uint64_t
+CreateResponseBufferKey(UID pid,
+                        uint32_t offset, 
+                        uint32_t length) {
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
+
+    uint64_t key = 0;
+    uint64_t id = (uint64_t)offset << 32;
+    id |= length;
+    
+    if(KeyMan_AllocateKey(pid, id, KeyFlags_SingleTransfer, &key) != KeyManagerErrors_None)
+        return 0;
+
+    LockSpinlock(info->lock);
+    List_AddEntry(info->Keys, (void*)key);
+    UnlockSpinlock(info->lock);
+
+    return key;
+}
+
+ProcessErrors
+SubmitToResponseBuffer(uint64_t key,
+                       void *buffer,
+                       uint32_t buf_len) {    
+    UID pid = 0;
+    uint64_t id = 0;
+
+    if(KeyMan_ReadKey(key, &pid, &id, NULL) != KeyManagerErrors_None)
+        return ProcessErrors_InvalidParameters;
+
+
+    uint32_t offset = (uint32_t)(id >> 32);
+    uint32_t length = (uint32_t)id;
+
+    length = (length > buf_len) ? buf_len : length;
+
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
+
+    LockSpinlock(info->lock);
+
+    for(uint64_t i = 0; i < List_Length(info->Keys); i++) {
+        if((uint64_t)List_EntryAt(info->Keys, i) == key) {
+            List_Remove(info->Keys, i);
+            KeyMan_FreeKey(key);
+
+            uint32_t write_off = offset;
+            uint32_t write_len = length;
+
+            //Round offset down to nearest page size
+            if(write_off % PAGE_SIZE)
+                write_off -= PAGE_SIZE;
+
+            //Round length up to nearest page size
+            if(write_len % PAGE_SIZE)
+                write_len += PAGE_SIZE - (write_len % PAGE_SIZE);
+
+            //Setup a temporary mapping of the response buffers and copy the response
+            uint8_t *vaddr = (uint8_t*)SetupTemporaryWriteMap(info->PageTable, info->ResponseBuffer + write_off, write_len);
+            
+            //Copy from bottom to top to account for header
+            for(;write_len > 0; write_len--)
+                vaddr[offset + write_len - 1] = ((uint8_t*)buffer)[write_len - 1]; 
+
+            UninstallTemporaryWriteMap((uint64_t)vaddr, write_len);
+
+            UnlockSpinlock(info->lock);
+            return ProcessErrors_None;
+        }
+    }
+
+    UnlockSpinlock(info->lock);
+    return ProcessErrors_InvalidParameters;
+}
+
+ProcessErrors
+QueryResponseKeyLength(uint64_t key, 
+                       uint32_t *length) {
+
+    UID pid = 0;
+    uint64_t id = 0;
+
+    if(KeyMan_ReadKey(key, &pid, &id, NULL) != KeyManagerErrors_None)
+        return ProcessErrors_InvalidParameters;
+
+
+    if(length != NULL)
+        *length = (uint32_t)id;
+
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
+
+    LockSpinlock(info->lock);
+
+    for(uint64_t i = 0; i < List_Length(info->Keys); i++) {
+        if((uint64_t)List_EntryAt(info->Keys, i) == key) {
+            UnlockSpinlock(info->lock);
+            return ProcessErrors_None;
+        }
+    }
+
+    UnlockSpinlock(info->lock);
+    return ProcessErrors_InvalidParameters;
 }

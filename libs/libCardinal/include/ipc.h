@@ -49,7 +49,7 @@ struct ErrorMessage {
     uint64_t code;          //!< The error code.
 };
 
-//! Response buffer response header.
+//! Response buffer response footer.
 typedef struct Response {
 	volatile uint8_t ResponseReady;		//!< Initialized to zero. Gets set to 1 when the response is ready to read.
 } Response;
@@ -113,6 +113,33 @@ RequestResponseBuffer(uint64_t *address, uint64_t *size) {
 	if(size != NULL)
 		*size = Syscall1(Syscall_RequestResponeBuffer, 1);
 
+	return GetErrno();
+}
+
+static __inline int
+GetResponseKey(uint32_t offset, uint32_t len, uint64_t *key) {
+	if(key == NULL)
+		return -EINVAL;
+
+	*key = Syscall2(Syscall_GetResponseKey, offset, len);
+	return GetErrno();
+}
+
+static __inline int
+SubmitResponse(uint64_t key, void *buffer, uint32_t length) {
+	if(buffer == NULL)
+		return -EINVAL;
+
+	Syscall3(Syscall_SubmitResponse, key, (uint64_t)buffer, length);
+	return GetErrno();
+}
+
+static __inline int
+QueryResponseKeyLength(uint64_t key, uint32_t *length) {
+	if(length == NULL)
+		return -EINVAL;
+
+	*length = Syscall1(Syscall_QueryResponseKeyLength, key);
 	return GetErrno();
 }
 

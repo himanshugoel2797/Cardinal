@@ -149,10 +149,50 @@ SetProcessGroupID(UID pid, uint64_t id);
  * @param[in]  pid        The pid
  * @param[in]  exit_code  The exit code
  *
- * @return     Error code on failure, ProcessErros_None on success.
+ * @return     Error code on failure, ProcessErrors_None on success.
  */
 uint64_t
 ScheduleProcessForTermination(UID pid, uint32_t exit_code);
+
+/**
+ * @brief      Creates a response buffer key.
+ *
+ * @param[in]  pid     The pid
+ * @param[in]  offset  The offset
+ * @param[in]  length  The length
+ *
+ * @return     0 on failure, key on success.
+ */
+uint64_t
+CreateResponseBufferKey(UID pid,
+                        uint32_t offset, 
+                        uint32_t length);
+
+/**
+ * @brief      Submit to a response buffer.
+ *
+ * @param[in]  key     The key
+ * @param      buffer  The buffer
+ *
+ * @return     Error code on failure, ProcessErrors_None on success.
+ */
+ProcessErrors
+SubmitToResponseBuffer(uint64_t key,
+                       void *buffer,
+                       uint32_t buf_len);
+
+
+/**
+ * @brief      Queries a response key length.
+ *
+ * @param[in]  key     The key
+ * @param      length  The length
+ *
+ * @return     Error code on failure, ProcessErrors_None on success.
+ */
+ProcessErrors
+QueryResponseKeyLength(uint64_t key, 
+					   uint32_t *length);
 
 /**@}*/
 

@@ -88,9 +88,23 @@ R0GetBootInfo_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t *syscall_params);
 
 uint64_t
-RequestResponseBuffer(uint64_t UNUSED(instruction_pointer),
+RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
                       uint64_t syscall_num,
                       uint64_t *syscall_params);
 
+uint64_t
+GetResponseKey_Syscall(uint64_t UNUSED(instruction_pointer),
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params);
+
+uint64_t
+SubmitResponse_Syscall(uint64_t UNUSED(instruction_pointer),
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params);
+
+uint64_t
+QueryResponseKeyLength_Syscall(uint64_t UNUSED(instruction_pointer),
+                               uint64_t syscall_num,
+                               uint64_t *syscall_params);
 
 #endif

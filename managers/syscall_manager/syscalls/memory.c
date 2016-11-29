@@ -262,9 +262,9 @@ R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-RequestResponseBuffer(uint64_t UNUSED(instruction_pointer),
-                      uint64_t syscall_num,
-                      uint64_t *syscall_params) {
+RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
+                              uint64_t syscall_num,
+                              uint64_t *syscall_params) {
     
     if(syscall_num != Syscall_RequestResponseBuffer) {
         SyscallSetErrno(-ENOSYS);
