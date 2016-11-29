@@ -30,7 +30,8 @@ typedef enum {
     MemoryAllocationType_Global = (1 << 5),                 //!< Shared between all cores.
     MemoryAllocationType_Application = (1 << 6),            //!< Process related Read Only information, removed on Execve.
     MemoryAllocationType_MMapLo = (1 << 7),                 //!< Memory Mapped (32 bit address).
-    MemoryAllocationType_ApplicationProtected = (1 << 8),   //!< Process related user RW information, persists on Execve.
+    MemoryAllocationType_ReservedBacking = (1 << 8),        //!< Page was allocated passively by ReservedAllocation, must free as part of page table.
+    MemoryAllocationType_Shared = (1 << 9),                 //!< Shared mapping.
 } MemoryAllocationType;
 
 //! Memory Allocation Flags.
