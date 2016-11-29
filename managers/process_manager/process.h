@@ -165,7 +165,7 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code);
  */
 uint64_t
 CreateResponseBufferKey(UID pid,
-                        uint32_t offset, 
+                        uint32_t offset,
                         uint32_t length);
 
 /**
@@ -191,8 +191,8 @@ SubmitToResponseBuffer(uint64_t key,
  * @return     Error code on failure, ProcessErrors_None on success.
  */
 ProcessErrors
-QueryResponseKeyLength(uint64_t key, 
-					   uint32_t *length);
+QueryResponseKeyLength(uint64_t key,
+                       uint32_t *length);
 
 /**@}*/
 

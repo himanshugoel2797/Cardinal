@@ -13,8 +13,8 @@
 
 uint64_t
 R0GetBootInfo_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params) {
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params) {
     if(syscall_num != Syscall_R0_GetBootInfo) {
         SyscallSetErrno(-ENOSYS);
         return 0;
@@ -33,7 +33,7 @@ R0GetBootInfo_Syscall(uint64_t UNUSED(instruction_pointer),
         return 0;
     }
 
-        //TODO ensure this address is valid
+    //TODO ensure this address is valid
     CardinalBootInfo *info = GetBootInfo();
     memcpy((CardinalBootInfo*)data->params[0], info, sizeof(CardinalBootInfo));
 

@@ -70,7 +70,7 @@ uint64_t
 GetResponseKey_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {
-   if(syscall_num != Syscall_GetResponseKey) {
+    if(syscall_num != Syscall_GetResponseKey) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
@@ -124,7 +124,7 @@ SubmitResponse_Syscall(uint64_t UNUSED(instruction_pointer),
                           &cFlags,
                           NULL);
 
-    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)){
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }
@@ -137,7 +137,7 @@ SubmitResponse_Syscall(uint64_t UNUSED(instruction_pointer),
                           &cFlags,
                           NULL);
 
-    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)){
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }

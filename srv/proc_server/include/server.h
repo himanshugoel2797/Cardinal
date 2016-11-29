@@ -6,15 +6,15 @@
 #include <cardinal/ipc.h>
 
 typedef struct {
-	Message m;
-	uint64_t response_key;
+    Message m;
+    uint64_t response_key;
 } ProcServ_CreateRequest;
 
 typedef struct {
-	union {
-	uint64_t pid;
-	uint64_t err_code;
-	}
+    union {
+        uint64_t pid;
+        uint64_t err_code;
+    }
 } ProcServ_CreateRequest_Response;
 
 

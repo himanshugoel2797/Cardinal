@@ -4,17 +4,17 @@
 #include "types.h"
 
 typedef enum {
-	KeyManagerErrors_None,
-	KeyManagerErrors_Unknown,
-	KeyManagerErrors_InvalidParams,
-	KeyManagerErrors_KeyDoesNotExist,
-	KeyManagerErrors_InvalidOperation,
+    KeyManagerErrors_None,
+    KeyManagerErrors_Unknown,
+    KeyManagerErrors_InvalidParams,
+    KeyManagerErrors_KeyDoesNotExist,
+    KeyManagerErrors_InvalidOperation,
 } KeyManagerErrors;
 
 typedef enum {
-	KeyFlags_None = 0,
-	KeyFlags_SingleTransfer = (1 << 0),
-	KeyFlags_UnlimitedTransfer = (1 << 1),
+    KeyFlags_None = 0,
+    KeyFlags_SingleTransfer = (1 << 0),
+    KeyFlags_UnlimitedTransfer = (1 << 1),
 } KeyFlags;
 
 void
@@ -32,9 +32,9 @@ KeyMan_Initialize(void);
  */
 KeyManagerErrors
 KeyMan_AllocateKey(UID pid,
-				   uint64_t identifier,
-				   KeyFlags flags,
-				   uint64_t *key);
+                   uint64_t identifier,
+                   KeyFlags flags,
+                   uint64_t *key);
 
 /**
  * @brief      Free an existing key.
@@ -78,9 +78,9 @@ KeyMan_TransferKey(uint64_t key, UID targetPID);
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_ReadKey(uint64_t key, 
-			   UID *pid, 
-			   uint64_t *identifier, 
-			   KeyFlags *keyFlags);
+KeyMan_ReadKey(uint64_t key,
+               UID *pid,
+               uint64_t *identifier,
+               KeyFlags *keyFlags);
 
 #endif

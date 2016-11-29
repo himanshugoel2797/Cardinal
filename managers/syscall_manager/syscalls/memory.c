@@ -265,7 +265,7 @@ uint64_t
 RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t syscall_num,
                               uint64_t *syscall_params) {
-    
+
     if(syscall_num != Syscall_RequestResponseBuffer) {
         SyscallSetErrno(-ENOSYS);
         return -1;
@@ -288,7 +288,7 @@ RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
 
     } else if(data->params[0] == 1) {
         retVal = MAX_RESPONSE_BUFFER_LEN;
-    } else{
+    } else {
         SyscallSetErrno(-EINVAL);
         return -1;
     }

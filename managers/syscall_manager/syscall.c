@@ -59,7 +59,7 @@ SyscallReceived(uint64_t instruction_pointer,
         return retVal;
     } else __asm__ ("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
 
-    
+
     return -ENOSYS;
 }
 

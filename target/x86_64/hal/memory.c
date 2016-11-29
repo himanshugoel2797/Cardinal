@@ -187,7 +187,7 @@ MapPage(ManagedPageTable *pageTable,
                         prev->next = map->next;
                     else
                         pageTable->AllocationMap = map->next;
-                    
+
                     if(map->next != NULL)map->next->prev = prev;
 
                     kfree(map);
@@ -547,7 +547,7 @@ HandlePageFault(uint64_t virtualAddress,
             }
 
 //            if(map->AllocationType & MemoryAllocationType_Application) {
-                __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
+            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
 //            }
 
 
@@ -627,7 +627,7 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
 
     if(access_perm & MEM_READ)a |= MemoryAllocationFlags_Read;
     if(access_perm & MEM_WRITE)a |= MemoryAllocationFlags_Write;
-    
+
     if(access_perm & MEM_PRESENT)a |= MemoryAllocationFlags_Present;
     else a |= MemoryAllocationFlags_NotPresent;
 

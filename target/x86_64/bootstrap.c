@@ -119,7 +119,7 @@ bootstrap_kernel(void *param,
 
     GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
-    
+
     ACPITables_Initialize();    //Initialize the ACPI table data
     SMP_IncrementCoreCount();
 

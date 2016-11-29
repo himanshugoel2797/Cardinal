@@ -386,8 +386,7 @@ SetProcessGroupID(UID pid, uint64_t id) {
 
     LockSpinlock(info->lock);
 
-    if(id < info->GroupID)
-    {
+    if(id < info->GroupID) {
         UnlockSpinlock(info->lock);
         return -2;
     }
@@ -414,7 +413,7 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
 
 uint64_t
 CreateResponseBufferKey(UID pid,
-                        uint32_t offset, 
+                        uint32_t offset,
                         uint32_t length) {
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
@@ -423,7 +422,7 @@ CreateResponseBufferKey(UID pid,
     uint64_t key = 0;
     uint64_t id = (uint64_t)offset << 32;
     id |= length;
-    
+
     if(KeyMan_AllocateKey(pid, id, KeyFlags_SingleTransfer, &key) != KeyManagerErrors_None)
         return 0;
 
@@ -437,7 +436,7 @@ CreateResponseBufferKey(UID pid,
 ProcessErrors
 SubmitToResponseBuffer(uint64_t key,
                        void *buffer,
-                       uint32_t buf_len) {    
+                       uint32_t buf_len) {
     UID pid = 0;
     uint64_t id = 0;
 
@@ -474,10 +473,10 @@ SubmitToResponseBuffer(uint64_t key,
 
             //Setup a temporary mapping of the response buffers and copy the response
             uint8_t *vaddr = (uint8_t*)SetupTemporaryWriteMap(info->PageTable, info->ResponseBuffer + write_off, write_len);
-            
+
             //Copy from bottom to top to account for header
-            for(;write_len > 0; write_len--)
-                vaddr[offset + write_len - 1] = ((uint8_t*)buffer)[write_len - 1]; 
+            for(; write_len > 0; write_len--)
+                vaddr[offset + write_len - 1] = ((uint8_t*)buffer)[write_len - 1];
 
             UninstallTemporaryWriteMap((uint64_t)vaddr, write_len);
 
@@ -491,7 +490,7 @@ SubmitToResponseBuffer(uint64_t key,
 }
 
 ProcessErrors
-QueryResponseKeyLength(uint64_t key, 
+QueryResponseKeyLength(uint64_t key,
                        uint32_t *length) {
 
     UID pid = 0;
