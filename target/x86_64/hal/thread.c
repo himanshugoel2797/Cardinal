@@ -12,6 +12,7 @@ const uint64_t ARCH_SPECIFIC_SPACE_SIZE = 32;
 const uint64_t ARCH_DATA_FS_OFFSET = 0;
 const uint64_t ARCH_DATA_GS_OFFSET = 1;
 const uint64_t ARCH_DATA_FLAGS_OFFSET = 2;
+const uint64_t ARCH_DATA_GS_KERN_OFFSET = 3;
 
 uint64_t
 GetRFLAGS(void);
@@ -31,10 +32,21 @@ SavePreviousThread(ThreadInfo *src) {
 
 void
 SwitchToThread(ThreadInfo *dst) {
+
+    bool swap = FALSE;
+
     LockSpinlock(dst->lock);
     uint64_t target_stack = dst->CurrentStack;
     if(target_stack & 0xf)__asm__ volatile("cli\n\thlt");
+
+    Registers *regs = (Registers*)(target_stack - 8);
+    if(regs->cs & 3)
+        swap = TRUE;
+
     UnlockSpinlock(dst->lock);
+
+    if(swap)
+        __asm__("swapgs");
 
     __asm__ volatile("movq %0, %%rsp\n\t"
                      "popq %%r15\n\t"
@@ -68,7 +80,7 @@ SetGSBase(void *base) {
 }
 
 void
-SetKernelGSBase(void *base) {
+SetBG_GSBase(void *base) {
     wrmsr(0xC0000102, (uint64_t)base);
 }
 
@@ -82,13 +94,18 @@ GetGSBase(void) {
     return (void*)rdmsr(0xC0000101);
 }
 
+void*
+GetBG_GSBase(void) {
+    return (void*)rdmsr(0xC0000102);
+}
+
 void
 PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
-//    data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();
-//    data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
+    data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetBG_GSBase();   //The user GS is in the background while in the kernel.
+    data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
 }
 
 void
@@ -105,8 +122,8 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
-//    SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);
-//    SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
+    SetBG_GSBase((void*)data[ARCH_DATA_GS_OFFSET]); //The user GS is in the background while in the kernel.
+    SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
 }
 
 void

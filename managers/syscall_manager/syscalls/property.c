@@ -49,18 +49,6 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return retVal;
     }
     break;
-    case CardinalProperty_SpecialDestination: {
-        if(SetSpecialDestinationPID(data->params[1])) {
-            SyscallSetErrno(0);
-            UnlockSpinlock(set_prop_lock);
-            return 1;
-        } else {
-            SyscallSetErrno(-ENAVAIL);
-            UnlockSpinlock(set_prop_lock);
-            return 0;
-        }
-    }
-    break;
     case CardinalProperty_R0_Exit: {
         uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
         if(rVal != 0) {

@@ -150,7 +150,6 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
         }
     }
 
-
     if(MapPage(p_info->PageTable,
                mmap_params->PhysicalAddress,
                virt_addr,

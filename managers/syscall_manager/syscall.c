@@ -48,8 +48,10 @@ SyscallReceived(uint64_t instruction_pointer,
 
     uint32_t syscall_baseNum = (uint32_t)syscall_num;
 
-    if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd))
+    if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd)){
+        __asm__("cli\n\thlt");
         return -ENOSYS;
+    }
 
     if(Syscalls[syscall_baseNum] != NULL) {
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,

@@ -27,6 +27,7 @@ RequestInterruptVectorBlock(uint32_t vectorCount) {
 
 void
 ShadowInterruptHandler(Registers *regs) {
+    
     if(regs_saved == NULL) {
         regs_saved = AllocateAPLSMemory(sizeof(Registers));
     }
@@ -41,9 +42,6 @@ ShadowInterruptHandler(Registers *regs) {
         *int_stack -= *int_stack % 16;
     }
 
-    if(regs->cs != 0x08) {
-        //__asm__("swapgs");
-    }
 
     memcpy((void*)regs_saved, regs, sizeof(Registers));
 
@@ -62,15 +60,8 @@ ShadowInterruptHandler(Registers *regs) {
 
 void
 HandleInterruptNoReturn(uint32_t vector) {
-    bool performSwap = FALSE;
-
-    if(regs_saved->cs != 0x08)
-        performSwap = TRUE;
-
     memset((void*)regs_saved, 0, sizeof(Registers));
     if(vector > 31)APIC_SendEOI(vector);
-
-    //__asm__("swapgs");
 }
 
 uint32_t

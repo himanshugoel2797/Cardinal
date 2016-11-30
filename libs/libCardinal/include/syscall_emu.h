@@ -15,6 +15,8 @@
 #include "file_server.h"
 #include "ipc.h"
 
+#include <memserver/server.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -194,8 +196,10 @@ SyscallEmu6(uint32_t syscall_num,
 
     switch(syscall_num) {
     case Cardinal_EmulatedSyscalls_MMap:
-        //TODO Implement IPC path
-        break;
+    {
+        
+    }
+    break;
     default:
         __asm__("hlt" :: "a"(syscall_num));
         break;

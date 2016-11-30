@@ -7,8 +7,6 @@
 static List *processes;
 static ProcessInformation *root = NULL;
 static volatile _Atomic UID baseID = ROOT_PID;
-static UID specialDestinationPIDs[CARDINAL_IPCDEST_NUM];
-static Spinlock specialPIDLock = NULL;
 
 
 static UID
@@ -20,12 +18,6 @@ new_proc_uid(void) {
 
 void
 ProcessSys_Initialize(void) {
-
-    for(int i = 0; i < CARDINAL_IPCDEST_NUM; i++)
-        specialDestinationPIDs[i] = 0;
-
-    specialPIDLock = CreateSpinlock();
-
     root = kmalloc(sizeof(ProcessInformation));
     root->ID = new_proc_uid();  //Root process ID is ROOT_PID
     root->Status = ProcessStatus_Executing;
@@ -265,8 +257,6 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
     UID DestinationPID = dstPID;
 
     int index = (int)DestinationPID;
-    if((uint64_t)index != DestinationPID && index < CARDINAL_IPCDEST_NUM)
-        DestinationPID = specialDestinationPIDs[index];
 
     ProcessInformation *pInfo = NULL;
     if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
@@ -316,8 +306,6 @@ GetMessageFrom(Message *msg,
                uint32_t msg_id) {
 
     int index = (int)SourcePID;
-    if((uint64_t)index != SourcePID && index < CARDINAL_IPCDEST_NUM)
-        SourcePID = specialDestinationPIDs[index];
 
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
@@ -345,24 +333,6 @@ GetMessageFrom(Message *msg,
 
     UnlockSpinlock(pInfo->MessageLock);
     return FALSE;
-}
-
-
-bool
-SetSpecialDestinationPID(UID specialID) {
-    int index = (int)specialID;
-
-    if(index >= CARDINAL_IPCDEST_NUM)
-        return FALSE;
-
-    LockSpinlock(specialPIDLock);
-
-    if(specialDestinationPIDs[index] != 0 && GetProcessReference(specialDestinationPIDs[index], NULL) == ProcessErrors_None)
-        return UnlockSpinlock(specialPIDLock), FALSE;
-
-    specialDestinationPIDs[index] = GetCurrentProcessUID();
-    UnlockSpinlock(specialPIDLock);
-    return TRUE;
 }
 
 uint64_t

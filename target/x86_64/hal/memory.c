@@ -805,12 +805,12 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
         if(allocType == type) {
 
             if(type & MemoryAllocationType_ReservedBacking) {
-                FreePhysicalPageCont(n->PhysicalAddress, n->Length / PAGE_SIZE);
+                FreePhysicalPageCont(n->PhysicalAddress, map->Length / PAGE_SIZE);
             }
 
             UnmapPage(pageTable,
-                      n->VirtualAddress,
-                      n->Length);
+                      map->VirtualAddress,
+                      map->Length);
         }
         map = n;
     }

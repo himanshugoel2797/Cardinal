@@ -176,9 +176,15 @@ void IDT_MainHandler(Registers *regs) {
     outb(0x3f8, '\r');
     outb(0x3f8, '\n');
 
+    if(regs->cs & 3)
+        __asm__("swapgs");
+
     if(regs->useresp % 8)__asm__ volatile("cli\n\thlt" :: "a"(regs->useresp), "b"(regs->rip));
     if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);
     else __asm__ volatile("hlt" :: "a"(regs->int_no), "b"(regs->err_code), "c"(regs->rip));
+
+    if(regs->cs & 3)
+        __asm__("swapgs");
 }
 
 void IDT_RegisterHandler(uint8_t intNum, void (*handler)(Registers*)) {

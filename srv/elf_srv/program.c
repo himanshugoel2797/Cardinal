@@ -48,7 +48,8 @@ LoadAndStartApplication(UID pid,
               MemoryAllocationFlags_NoExec |
               MemoryAllocationFlags_Read |
               MemoryAllocationFlags_Write |
-              MemoryAllocationFlags_User))
+              MemoryAllocationFlags_User | 
+              MemoryAllocationFlags_Present))
         return -4;
 
     //Map the memory into the target process
@@ -62,7 +63,8 @@ LoadAndStartApplication(UID pid,
               MemoryAllocationFlags_NoExec |
               MemoryAllocationFlags_Read |
               MemoryAllocationFlags_Write |
-              MemoryAllocationFlags_User))
+              MemoryAllocationFlags_User |
+              MemoryAllocationFlags_Present))
         return -5;
 
     params->ver = 1;

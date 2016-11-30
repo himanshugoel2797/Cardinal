@@ -99,16 +99,6 @@ GetMessageFrom(Message *msg,
                uint32_t msg_id);
 
 /**
- * @brief      Sets the special destination pid.
- *
- * @param[in]  specialID  The special id
- *
- * @return     TRUE if the set operation succeeded, FALSE otherwise.
- */
-bool
-SetSpecialDestinationPID(UID specialID);
-
-/**
  * @brief      Initialize the process system.
  */
 void

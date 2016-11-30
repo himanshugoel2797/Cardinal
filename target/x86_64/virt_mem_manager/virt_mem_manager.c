@@ -64,7 +64,8 @@ void
 VirtMemMan_InitializeBootstrap(void) {
 
     //Assigns to virtMemData
-    SetGSBase(bootstrap_malloc(sizeof(VirtMemManData)));
+    SetBG_GSBase(bootstrap_malloc(sizeof(VirtMemManData)));
+    __asm__("swapgs");
 
     virtMemData->curPML = (uint64_t*)BOOTSTRAP_PML_ADDR;    //Where initial PML is located
     virtMemData->hugePageSupport = FALSE;

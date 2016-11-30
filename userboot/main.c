@@ -24,7 +24,7 @@ int _start() {
     ImportInitrd();
 
     //Bring up memory management services
-    int err = LoadProgram("mem_srv.elf");
+    int err = LoadProgram("mem_server.elf");
     if(err != 0)
         __asm__("hlt");
 
@@ -34,12 +34,12 @@ int _start() {
         __asm__("hlt");
 
     //Bring up the process server
-    err = LoadProgram("proc_srv.elf");
+    err = LoadProgram("proc_server.elf");
     if(err != 0)
         __asm__("hlt");
 
     //Bring up the elf server
-    err = LoadProgram("elf_srv.elf");
+    err = LoadProgram("elf_server.elf");
     if(err != 0)
         __asm__("hlt");
 

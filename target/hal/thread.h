@@ -71,12 +71,20 @@ void*
 GetFSBase(void);
 
 /**
- * @brief      Sets the kernel gs base.
+ * @brief      Sets the background gs base.
  *
  * @param      base  The base
  */
 void
-SetKernelGSBase(void *base);
+SetBG_GSBase(void *base);
+
+/**
+ * @brief      Gets the background gs base.
+ *
+ * @return     The background gs base.
+ */
+void*
+GetBG_GSBase(void);
 
 /**
  * @brief      Gets the gs base.

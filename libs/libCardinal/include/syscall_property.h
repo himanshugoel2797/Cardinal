@@ -24,7 +24,6 @@ typedef enum {
     CardinalProperty_PID,               //!< Get Process ID.
     CardinalProperty_SetTidAddress,     //!< Set the TID write address.
     CardinalProperty_Time,              //!< Get the time.
-    CardinalProperty_SpecialDestination,//!< Set a special destination.
     CardinalProperty_R0_Exit,           //!< Exit the process, setting an exit code.
     CardinalProperty_GroupID,           //!< Get/Set the Group ID, can increase it.
     CardinalProperty_R0_GroupID,        //!< Get the Group ID for any process.

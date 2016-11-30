@@ -53,7 +53,7 @@ typedef enum {
     //Syscall_SignalKey,                  //!< Signal a key.
     //Syscall_ReturnKey,                  //!< Free a key owned by the calling process.
 
-    Syscall_NumEnd = Syscall_R0_GetBootInfo,
+    Syscall_NumEnd = Syscall_R0_GetPhysicalAddress,
 } SyscallFunctions;
 
 #ifdef __cplusplus
