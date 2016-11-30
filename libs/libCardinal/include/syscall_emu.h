@@ -15,6 +15,10 @@
 #include "file_server.h"
 #include "ipc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_FILE_DESCRIPTORS 1024
 
 typedef enum {
@@ -200,5 +204,8 @@ SyscallEmu6(uint32_t syscall_num,
     return ret_error;
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

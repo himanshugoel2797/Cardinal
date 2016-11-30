@@ -3,6 +3,10 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(x86_64)
 typedef struct {
     uint64_t rip;
@@ -31,6 +35,11 @@ typedef struct {
     void *tls;
 } CRegisters;
 
+#endif
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

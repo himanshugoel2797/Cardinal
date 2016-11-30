@@ -296,3 +296,40 @@ RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
     SyscallSetErrno(0);
     return retVal;
 }
+
+uint64_t
+R0GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params) {
+
+    if(syscall_num != Syscall_R0_GetPhysicalAddress) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 2) {
+        SyscallSetErrno(-ENOSYS);
+        return 0;
+    }
+
+    if(GetProcessGroupID(data->params[0]) != 0) {
+        SyscallSetErrno(-EPERM);
+        return 0;
+    }
+
+    ProcessInformation *p_info = NULL;
+    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
+
+    LockSpinlock(p_info->lock);
+
+    SyscallSetErrno(0);
+    uint64_t retVal = (uint64_t)GetPhysicalAddressPageTable(p_info->PageTable, (void*)(uint64_t*)data->params[1]);
+
+    UnlockSpinlock(p_info->lock);
+    return retVal;
+}

@@ -7,6 +7,10 @@
 #include "syscall_property.h"
 #include "syscall.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * \defgroup property_syscall Property Syscalls
  * @{
@@ -24,7 +28,6 @@ typedef enum {
     CardinalProperty_R0_Exit,           //!< Exit the process, setting an exit code.
     CardinalProperty_GroupID,           //!< Get/Set the Group ID, can increase it.
     CardinalProperty_R0_GroupID,        //!< Get the Group ID for any process.
-    CardinalProperty_R0_PhysicalAddress,//!< Translate a virtual address to a physical address.
 #ifdef __x86_64__
     CardinalProperty_ArchPrctl,         //!< Perform architecture specific operations.
     CardinalProperty_IOPL               //!< Change the IO privilege level.
@@ -68,5 +71,9 @@ SetProperty(CardinalProperties prop, uint64_t type, uint64_t val) {
 #endif
 
 /**@}*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

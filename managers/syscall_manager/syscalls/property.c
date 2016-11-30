@@ -180,19 +180,6 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return rVal;
     }
     break;
-    case CardinalProperty_R0_PhysicalAddress: {
-        if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
-            SyscallSetErrno(-EPERM);
-            UnlockSpinlock(get_prop_lock);
-            return 0;
-        }
-
-        SyscallSetErrno(0);
-        uint64_t retVal = (uint64_t)GetPhysicalAddress((void*)(uint64_t*)data->params[1]);
-        UnlockSpinlock(get_prop_lock);
-        return retVal;
-    }
-    break;
     default:
         SyscallSetErrno(-EINVAL);
         UnlockSpinlock(get_prop_lock);

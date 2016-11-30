@@ -4,6 +4,234 @@
 		"selected_items":
 		[
 			[
+				"elf_l",
+				"elf_load_req"
+			],
+			[
+				"XXX",
+				"XXX_0"
+			],
+			[
+				"M",
+				"MESSAGE_SIZE"
+			],
+			[
+				"NamespaceRegist",
+				"NamespaceRegistrationResponse"
+			],
+			[
+				"Names",
+				"NamespaceRegistrationRequest"
+			],
+			[
+				"Name",
+				"NamespaceDirectoryMessageType"
+			],
+			[
+				"elf",
+				"elfData"
+			],
+			[
+				"err",
+				"error"
+			],
+			[
+				"ElfL",
+				"ElfLimitations"
+			],
+			[
+				"Ms",
+				"MsgID"
+			],
+			[
+				"loa",
+				"load_req"
+			],
+			[
+				"El",
+				"ElfLoadResponse"
+			],
+			[
+				"lo",
+				"load_resp"
+			],
+			[
+				"el",
+				"elf_loader_pid"
+			],
+			[
+				"un",
+				"uninstall"
+			],
+			[
+				"ElfLo",
+				"ElfLoaderError"
+			],
+			[
+				"__",
+				"__cplusplus"
+			],
+			[
+				"MemoryAllocationType_Rese",
+				"MemoryAllocationType_ReservedBacking"
+			],
+			[
+				"Memo",
+				"MemoryAllocationType_Heap"
+			],
+			[
+				"_",
+				"_KERNEL_"
+			],
+			[
+				"Pa",
+				"PageTable"
+			],
+			[
+				"MemoryAllocationType_",
+				"MemoryAllocationType_ReservedAllocation"
+			],
+			[
+				"Fre",
+				"FreePhysicalPageCont"
+			],
+			[
+				"ProcessErrors_",
+				"ProcessErrors_InvalidParameters"
+			],
+			[
+				"buf",
+				"buf_len"
+			],
+			[
+				"write",
+				"write_len"
+			],
+			[
+				"RES",
+				"MAX_RESPONSE_BUFFER_LEN"
+			],
+			[
+				"Proce",
+				"ProcessErrors_None"
+			],
+			[
+				"List_",
+				"List_EntryAt"
+			],
+			[
+				"key",
+				"keyTable"
+			],
+			[
+				"Create",
+				"CreateSpinlock"
+			],
+			[
+				"Proces",
+				"ProcessErrors_None"
+			],
+			[
+				"Resp",
+				"ResponseBufferKey"
+			],
+			[
+				"KeyF",
+				"KeyFlags"
+			],
+			[
+				"KEyMana",
+				"KeyManagerErrors_None"
+			],
+			[
+				"Ke",
+				"KeyManagerErrors"
+			],
+			[
+				"Key",
+				"KeyManagerErrors"
+			],
+			[
+				"KeyManagerErrors_",
+				"KeyManagerErrors_KeyDoesNotExist"
+			],
+			[
+				"KeyFlag",
+				"KeyFlags_SingleTransfer"
+			],
+			[
+				"KeyMana",
+				"KeyManagerErrors"
+			],
+			[
+				"ke",
+				"keyTable"
+			],
+			[
+				"rng",
+				"rng_val"
+			],
+			[
+				"MemoryAl",
+				"MemoryAllocationFlags_Write"
+			],
+			[
+				"Memory",
+				"MemoryAllocationType_Global"
+			],
+			[
+				"Process",
+				"ProcessInformation"
+			],
+			[
+				"Syscal",
+				"SyscallSetErrno"
+			],
+			[
+				"Threa",
+				"ThreadPermissionLevel_User"
+			],
+			[
+				"user",
+				"user_stack_base"
+			],
+			[
+				"in",
+				"int_no"
+			],
+			[
+				"int",
+				"int_stack"
+			],
+			[
+				"Interrup",
+				"InterruptStacks"
+			],
+			[
+				"Interr",
+				"InterruptStacks"
+			],
+			[
+				"IDT",
+				"IDT_Initialize"
+			],
+			[
+				"MemoryAllocati",
+				"MemoryAllocationType_Stack"
+			],
+			[
+				"_r",
+				"_region_kernel_end_"
+			],
+			[
+				"mem",
+				"mem_pool"
+			],
+			[
+				"APIC_Se",
+				"APIC_SendEOI"
+			],
+			[
 				"Get",
 				"GetCurrentProcessUID"
 			],
@@ -14,10 +242,6 @@
 			[
 				"PRoces",
 				"ProcessErrors_None"
-			],
-			[
-				"Memo",
-				"MemoryAllocationFlags_Present"
 			],
 			[
 				"MEm",
@@ -160,10 +384,6 @@
 				"ThreadState_Exiting"
 			],
 			[
-				"Proce",
-				"ProcessStatus_Stopped"
-			],
-			[
 				"GET_",
 				"GET_PROPERTY_PROC_VAL"
 			],
@@ -174,10 +394,6 @@
 			[
 				"exi",
 				"exit_code"
-			],
-			[
-				"Proces",
-				"ProcessStatus_Terminating"
 			],
 			[
 				"St",
@@ -204,20 +420,8 @@
 				"virtualAddress"
 			],
 			[
-				"elf",
-				"elf_sz"
-			],
-			[
-				"el",
-				"elf_sz"
-			],
-			[
 				"targe",
 				"target_virt_addr"
-			],
-			[
-				"Memory",
-				"MemoryAllocationFlags_NoExec"
 			],
 			[
 				"elf_",
@@ -284,10 +488,6 @@
 				"smp_lock"
 			],
 			[
-				"Create",
-				"CreateProcess"
-			],
-			[
 				"Vir",
 				"VirtMemMan_GetCurrent"
 			],
@@ -300,16 +500,8 @@
 				"coreID"
 			],
 			[
-				"in",
-				"int_stack"
-			],
-			[
 				"regs",
 				"regs_saved"
-			],
-			[
-				"int",
-				"int_no"
 			],
 			[
 				"Cachi",
@@ -322,316 +514,70 @@
 			[
 				"CORE",
 				"CORE_LOCAL_MEM_ADDR"
-			],
-			[
-				"GS",
-				"GS_RELATIVE"
-			],
-			[
-				"virt",
-				"virtMemData"
-			],
-			[
-				"__",
-				"__asm__"
-			],
-			[
-				"0xC0000",
-				"0xC0000101"
-			],
-			[
-				"boo",
-				"bootstrap_malloc"
-			],
-			[
-				"ne",
-				"next_thread"
-			],
-			[
-				"List_",
-				"List_AddEntry"
-			],
-			[
-				"prim",
-				"primitive"
-			],
-			[
-				"Me",
-				"MessageLock"
-			],
-			[
-				"sy",
-				"sync_lock"
-			],
-			[
-				"brk",
-				"brk_lock"
-			],
-			[
-				"Threa",
-				"ThreadPermissionLevel_Kernel"
-			],
-			[
-				"RO",
-				"ROOT_PID"
-			],
-			[
-				"Creat",
-				"CreateThread"
-			],
-			[
-				"Sys",
-				"SyscallSetErrno"
-			],
-			[
-				"PR",
-				"ProcessErrors_InvalidParameters"
-			],
-			[
-				"param",
-				"param_num"
-			],
-			[
-				"sysca",
-				"syscall_params"
-			],
-			[
-				"syscal",
-				"syscall_num"
-			],
-			[
-				"ENO",
-				"ENOMEM"
-			],
-			[
-				"Sysca",
-				"SyscallSetErrno"
-			],
-			[
-				"Allocate",
-				"AllocatePhysicalPageCont"
-			],
-			[
-				"sysc",
-				"syscall_params"
-			],
-			[
-				"cur",
-				"cur_stack_frame"
-			],
-			[
-				"user",
-				"user_stack_base"
-			],
-			[
-				"exec",
-				"exec_loc"
-			],
-			[
-				"exe",
-				"exec_size"
-			],
-			[
-				"Process",
-				"ProcessErrors_None"
-			],
-			[
-				"pin",
-				"pinfo"
-			],
-			[
-				"PROPERT",
-				"PROPERTY_PROC_GET"
-			],
-			[
-				"GET",
-				"GET_PROPERTY_PROC_VAL"
-			],
-			[
-				"Thread",
-				"ThreadPermissionLevel_Kernel"
-			],
-			[
-				"ret",
-				"retVal"
-			],
-			[
-				"re",
-				"retVal"
-			],
-			[
-				"dst",
-				"dstPID"
-			],
-			[
-				"dest",
-				"DestinationPID"
-			],
-			[
-				"ProcessE",
-				"ProcessErrors_None"
-			],
-			[
-				"Pa",
-				"PageTable"
-			],
-			[
-				"ProcessErro",
-				"ProcessErrors"
-			],
-			[
-				"Proc",
-				"ProcessInformation"
-			],
-			[
-				"ElfL",
-				"ElfLoaderError_OutOfMemory"
-			],
-			[
-				"Init",
-				"InitrdStartAddress"
-			],
-			[
-				"init",
-				"initrd_addr"
-			],
-			[
-				"Cardin",
-				"CardinalMemoryRegionType"
-			],
-			[
-				"Card",
-				"CardinalMemoryRegionType"
-			],
-			[
-				"PROPE",
-				"PROPERTY_GET_SET"
-			],
-			[
-				"Syscall",
-				"SyscallSetErrno"
-			],
-			[
-				"E",
-				"ENOSYS"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "main.c",
+			"file": "libs/libCardinal/include/ipc.h",
 			"settings":
 			{
-				"buffer_size": 3370,
+				"buffer_size": 4586,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "target/x86_64/IDT/idt.c",
+			"file": "srv/mem_srv/main.c",
 			"settings":
 			{
-				"buffer_size": 5792,
+				"buffer_size": 702,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "managers/thread_manager/thread.c",
+			"file": "libs/libCardinal/include/thread.h",
 			"settings":
 			{
-				"buffer_size": 29453,
+				"buffer_size": 2867,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "managers/syscall_manager/syscalls/syscall_main.c",
+			"file": "srv/elf_srv/lib/elf.c",
 			"settings":
 			{
-				"buffer_size": 1147,
+				"buffer_size": 1687,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "target/x86_64/hal/thread.c",
+			"file": "srv/elf_server/program.c",
 			"settings":
 			{
-				"buffer_size": 3267,
+				"buffer_size": 2897,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "target/x86_64/apic/apic.h",
+			"file": "srv/proc_server/include/server.h",
 			"settings":
 			{
-				"buffer_size": 2169,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "common/common.h",
-			"settings":
-			{
-				"buffer_size": 1715,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "libs/libCardinal/include/memory.h",
-			"settings":
-			{
-				"buffer_size": 6631,
+				"buffer_size": 399,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "userboot/elf.c",
+			"file": "srv/elf_server/program.h",
 			"settings":
 			{
-				"buffer_size": 4902,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "managers/syscall_manager/syscalls/boot_info.c",
-			"settings":
-			{
-				"buffer_size": 1027,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Searching 252 files for \"cli\"\n\n/home/hgoel/Documents/Cardinal/Doxyfile:\n  312  BUILTIN_STL_SUPPORT    = NO\n  313  \n  314: # If you use Microsoft's C++/CLI language, you should set this option to YES to\n  315  # enable parsing support.\n  316  # The default value is: NO.\n  317  \n  318: CPP_CLI_SUPPORT        = NO\n  319  \n  320  # Set the SIP_SUPPORT tag to YES if your project consists of sip (see:\n  ...\n 1353  QHG_LOCATION           =\n 1354  \n 1355: # If the GENERATE_ECLIPSEHELP tag is set to YES, additional index files will be\n 1356: # generated, together with the HTML files, they form an Eclipse help plugin. To\n 1357  # install this plugin and make it available under the help contents menu in\n 1358: # Eclipse, the contents of the directory containing the HTML and XML files needs\n 1359: # to be copied into the plugins directory of eclipse. The name of the directory\n 1360: # within the plugins directory should be the same as the ECLIPSE_DOC_ID value.\n 1361: # After copying Eclipse needs to be restarted before the help appears.\n 1362  # The default value is: NO.\n 1363  # This tag requires that the tag GENERATE_HTML is set to YES.\n 1364  \n 1365: GENERATE_ECLIPSEHELP   = NO\n 1366  \n 1367: # A unique identifier for the Eclipse help plugin. When installing the plugin\n 1368  # the directory name containing the HTML and XML files should also have this\n 1369  # name. Each documentation set should have its own identifier.\n 1370  # The default value is: org.doxygen.Project.\n 1371: # This tag requires that the tag GENERATE_ECLIPSEHELP is set to YES.\n 1372  \n 1373: ECLIPSE_DOC_ID         = org.doxygen.Project\n 1374  \n 1375  # If you want full control over the layout of the generated HTML pages it might\n ....\n 1446  \n 1447  # Enable the USE_MATHJAX option to render LaTeX formulas using MathJax (see\n 1448: # http://www.mathjax.org) which uses client side Javascript for the rendering\n 1449  # instead of using pre-rendered bitmaps. Use this if you do not have LaTeX\n 1450  # installed or if you want to formulas look prettier in the HTML output. When\n ....\n 1516  \n 1517  # When the SERVER_BASED_SEARCH tag is enabled the search engine will be\n 1518: # implemented using a web server instead of a web client using Javascript. There\n 1519  # are two flavors of web server based searching depending on the EXTERNAL_SEARCH\n 1520  # setting. When disabled, doxygen will generate a PHP script for searching and\n\n/home/hgoel/Documents/Cardinal/ISO/isodir/boot/initrd:\n    <binary>\n\n/home/hgoel/Documents/Cardinal/common/types.h:\n   34  \n   35  #if defined(x86_64)\n   36: #define ASSERT(x) if(!(x))__asm__ volatile(\"cli\\n\\thlt\")\n   37  #endif\n   38  \n\n/home/hgoel/Documents/Cardinal/initrd/boot_screen.data:\n    <binary>\n\n/home/hgoel/Documents/Cardinal/initrd/initrd:\n    <binary>\n\n/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c:\n   92  #if defined(DEBUG)\n   93  static void* ksetup_instrumentation(void* addr, size_t size) {\n   94:     if(addr == NULL)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(size), \"b\"(__builtin_return_address(1)));\n   95      size -= 8 * 6;\n   96  \n   ..\n  194  #if defined(DEBUG)\n  195      uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);\n  196:     if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(addr), \"b\"(__builtin_return_address(0)));\n  197  #endif\n  198  \n\n/home/hgoel/Documents/Cardinal/managers/bootstrap_mem_pool/bootstrap_mem_pool.c:\n   11      if(size % 4 != 0)size = (size/4 + 1) * 4;\n   12      if( (pos + size) > BOOTSTRAP_MEM_POOL )\n   13:         __asm__(\"cli\\n\\thlt\");\n   14  \n   15      void *ptr = &mem_pool[pos];\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.c:\n   59  \n   60          return retVal;\n   61:     } else __asm__ (\"cli\\n\\thlt\" :: \"a\"(syscall_num), \"b\"(instruction_pointer));\n   62  \n   63      return -ENOSYS;\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c:\n   89              break;\n   90          default:\n   91:             __asm__(\"cli\\n\\thlt\");\n   92              SyscallSetErrno(-ENOSYS);\n   93              return retVal;\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  330      UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);\n  331      //Update the thread list\n  332:     //__asm__(\"cli\\n\\thlt\" :: \"a\"(kstack), \"b\"(cur_stack_frame));\n  333      SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)(&kstack_p[offset]));\n  334  \n  ...\n  821  \n  822          static int switchCnt = 0;\n  823:         if(switchCnt++ == 5)__asm__(\"cli\\n\\thlt\");\n  824          SwitchToThread(coreState->cur_thread);\n  825      }\n\n/home/hgoel/Documents/Cardinal/sys_init/boot_screen.data:\n    <binary>\n\n/home/hgoel/Documents/Cardinal/sys_init/main.c:\n    3  int _start() {\n    4  \n    5:     __asm__(\"cli\\n\\thlt\");\n    6      //First map in the initrd\n    7      ImportInitrd();\n\n/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c:\n   40      regs->int_no *= 16;\n   41      bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));\n   42:     __asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(regs->rip), \"b\"(regs->int_no / 16), \"c\"(regs->err_code), \"d\"(GetCurrentThreadUID()), \"S\"(regs->useresp), \"D\"(regs->rax));\n   43  }\n   44  \n   ..\n  145      //When threading is up again, call kernel on new thread\n  146      kernel_main_init();\n  147:     __asm__ volatile(\"cli\\n\\thlt\\n\\t\");\n  148  \n  149      //We aren't supposed to reach here!\n  ...\n  212      __asm__ volatile(\"sti\");\n  213      APIC_CallibrateTimer();\n  214:     __asm__ volatile(\"cli\");\n  215  \n  216      ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/GDT/gdt.c:\n   47  void\n   48  GDT_Bootstrap(void) {\n   49:     __asm__ (\"cli\");\n   50      coreLocalData = bootstrap_malloc(sizeof(GDT_CoreData));\n   51  \n   ..\n   95  void GDT_Initialize() {\n   96      //Make sure interrupts are disabled\n   97:     __asm__ (\"cli\");\n   98  \n   99      memset((void*)coreLocalData, 0, sizeof(GDT_CoreData));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.c:\n   55  \n   56      //ensure interrupts are disabled\n   57:     __asm__ volatile(\"cli\");\n   58      __asm__ volatile(\"lidt (%%rax)\" :: \"a\" (physAddr));         //Load the IDT\n   59      //__asm__ volatile(\"hlt\");\n   ..\n  169  void IDT_MainHandler(Registers *regs) {\n  170      //__asm__ volatile(\"hlt\" :: \"a\"(regs->err_code));\n  171:     if(regs->useresp % 8)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(regs->useresp), \"b\"(regs->rip));\n  172      if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);\n  173      else __asm__ volatile(\"hlt\" :: \"a\"(regs->int_no), \"b\"(regs->err_code), \"c\"(regs->rip));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c:\n  133  \n  134      uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);\n  135:     //__asm__(\"cli\\n\\thlt\" :: \"a\"(apic_ticks));\n  136  \n  137      apic_ticks *= PIT_FREQUENCY_HZ;\n\n/home/hgoel/Documents/Cardinal/target/x86_64/fpu/fpu.c:\n   13      err_no = 0;\n   14  \n   15:     __asm__ volatile(\"cli\\n\\tmov %0, %%rax\\n\\thlt\" :: \"a\"((uint64_t)0xB00B1E5));\n   16  \n   17  }\n   ..\n   22      if(int_no != 0x10)return;\n   23      err_no = 0;\n   24:     __asm__ volatile(\"cli\\n\\tmov %0, %%rax\\n\\thlt\" :: \"a\"((uint64_t)0xB00B5));\n   25  }\n   26  \n   ..\n   96  \n   97      if((uint64_t)target % 64)\n   98:         __asm__(\"cli\\n\\thlt\");\n   99  \n  100      if(xsave_available)\n  ...\n  108  \n  109      if((uint64_t)source % 64)\n  110:         __asm__(\"cli\\n\\thlt\");\n  111  \n  112      if(xsave_available)\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c:\n  116      if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;\n  117  \n  118:     if(virtualAddress % 4096)__asm__ (\"cli\\n\\thlt\" :: \"a\"(virtualAddress));\n  119  \n  120      //If this allocation is just reserved vmem, mark the page as not present\n  ...\n  523  \n  524      if(!ProcessSys_IsInitialized()) {\n  525:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer));\n  526      }\n  527      //Check the current process's memory info table\n  ...\n  529      GetProcessReference(GetCurrentProcessUID(), &procInfo);\n  530      if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {\n  531:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(1), \"c\"(procInfo->ID));\n  532          //while(1)debug_gfx_writeLine(\"Error: Page Fault\");\n  533      }\n  ...\n  548  \n  549              if(map->AllocationType & MemoryAllocationType_Application) {\n  550:                 __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(3), \"c\"(error));\n  551              }\n  552  \n  ...\n  561  \n  562      if(map == NULL) {\n  563:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(virtualAddress), \"c\"(GetCurrentProcessUID()));\n  564      }\n  565      UnlockSpinlock(procInfo->PageTable->lock);\n  ...\n  642  void\n  643  HaltProcessor(void) {\n  644:     __asm__ volatile(\"cli\\n\\thlt\");\n  645  }\n  646  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/synchronization.c:\n   34          \"mfence\\n\\t\"\n   35          \"pushfq\\n\\t\"\n   36:         \"cli\\n\\t\"\n   37          \"popq %[rcx]\\n\\t\"\n   38          \"shlq $16, %[rcx]\\n\\t\"\n   ..\n  152      bool locked = FALSE;\n  153      uint64_t iflag = 0;\n  154:     __asm__ volatile(\"pushfq\\n\\tcli\\n\\tpopq %0\" : \"=r\"(iflag) :: \"cc\");\n  155  \n  156      IntLockSpinlock(primitive);\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c:\n   34          \"sti\\n\\t\"\n   35          \"callq (SyscallReceived)\\n\\t\"\n   36:         \"cli\\n\\t\"\n   37          \"movq %%rax, %%rsi\\n\\t\"\n   38          \"popq %%r11\\n\\t\"\n   ..\n   57      __asm__ volatile\n   58      (\n   59:         \"cli\\n\\t\"\n   60          \"pushfq\\n\\t\"\n   61          \"popq %%r11\\n\\t\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n   34      LockSpinlock(dst->lock);\n   35      uint64_t target_stack = dst->CurrentStack;\n   36:     if(target_stack & 0xf)__asm__ volatile(\"cli\\n\\thlt\");\n   37      UnlockSpinlock(dst->lock);\n   38  \n   ..\n  123  void\n  124  ResetPreemption(void) {\n  125:     __asm__(\"cli\");\n  126      APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);\n  127      APIC_SetTimerValue(APIC_GetTimerFrequency()/100);\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/timer.c:\n    7      if(APIC_IsTSCReliable())return;\n    8      if(HPET_Initialize() == HPETError_NotPresent) {\n    9:         __asm__ volatile(\"cli\\n\\thlt\");\n   10      }\n   11  }\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hpet/hpet.c:\n   19      HPET_SetCounterEnableStatus(ENABLE);\n   20  \n   21:     __asm__ (\"cli\\n\\thlt\" :: \"a\"(hpet_regs->Capabilities.LegacyReplacementCapable));\n   22  \n   23      return HPETError_None;\n\n/home/hgoel/Documents/Cardinal/target/x86_64/pci/pci_devices_names.h:\n 3674      { 0x067B, 0x2393, \"prolific\", \"prolificz\" } ,\n 3675      { 0x067B, 0x2506, \"PL-2506\", \"Hi-Speed USB to IDE Bridge Controller\" } ,\n 3676:     { 0x067B, 0x25a1, \"PL-2501\", \"Prolific PCLinq3 USB Transfer Cable Driver\" } ,\n 3677      { 0x067B, 0x9876, \"067B\", \"TES\" } ,\n 3678      { 0x8080, 0x1040, \"VIA 82C259 rev 0\", \"PCI\\\\VEN_8086&DEV_0084&SUBSYS_13158086&REV_00\" } ,\n ....\n 5142      { 0x166D, 0x0001, \"BCM1125/BCM1250 PCI Configuration Header\", \"\" } ,\n 5143      { 0x166D, 0x0002, \"BCM1125/BCM1250 HyperTransport Configuration Heade\", \"MIPS BCM1125/BCM1250 processors\" } ,\n 5144:     { 0x100E, 0x0564, \"STPC Client\", \"Host Bridge\" } ,\n 5145:     { 0x100E, 0x55CC, \"STPC Client\", \"South Bridge\" } ,\n 5146      { 0x100E, 0x9000, \"P9000\", \"WeitekPower GUI Accelerator\" } ,\n 5147      { 0x100E, 0x9001, \"P9000\", \"GUI Accelerator\" } ,\n ....\n 6355      { 0x1397, 0xB00C, \"B00C\", \"HCF-PCI card\" } ,\n 6356      { 0x1397, 0xB100, \"B100\", \"HCF-PCI card\" } ,\n 6357:     { 0x13C0, 0x0010, \"SyncLink Adapter\", \"single port multiprotocol serial adapter\" } ,\n 6358:     { 0x13C0, 0x0020, \"SyncLink SCC\", \"low speed single port multiprotocol serial adapter\" } ,\n 6359:     { 0x13C0, 0x0030, \"SyncLink 4 Port Adapter\", \"4 port multiprotocol serial adapter\" } ,\n 6360:     { 0x13C0, 0x0070, \"SyncLink GT Adapter\", \"single port multiprotocol serial adapter\" } ,\n 6361:     { 0x13C0, 0x0080, \"SyncLink GT4 Adapter\", \"4 port multiprotocol serial adapter\" } ,\n 6362:     { 0x13C0, 0x0090, \"SyncLink AC Adapter\", \"one port asynchronous serial adapter\" } ,\n 6363:     { 0x13C0, 0x00a0, \"SyncLink GT2 Adapter\", \"2 port multiprotocol serial adapter\" } ,\n 6364:     { 0x13C0, 0x0210, \"SyncLink Serial Adapter version 2\", \"single port multiprotocol serial adapter\" } ,\n 6365      { 0x13C1, 0x1000, \"9548qad\", \"ATA-RAID Controller\" } ,\n 6366      { 0x13C1, 0x1001, \"7000/8000 series\", \"ATA-133 Storage Controller\" } ,\n\n/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.c:\n  406                      MEM_SECURITY_PERMS sec_perms) {\n  407      if(phys_addr % GiB(1) | virt_addr % GiB(1))\n  408:         __asm__ (\"cli\\n\\thlt\");\n  409  \n  410      if(!virtMemData->hugePageSupport) {\n  ...\n  455  \n  456      if(phys_addr % MiB(2) | virt_addr % MiB(2))\n  457:         __asm__ (\"cli\\n\\thlt\");\n  458  \n  459      uint32_t pml_off = (virt_addr >> 39) & 0x1FF;\n  ...\n  496  \n  497      if(phys_addr % KiB(4) | virt_addr % KiB(4))\n  498:         __asm__ (\"cli\\n\\thlt\");\n  499  \n  500      uint32_t pml_off = (virt_addr >> 39) & 0x1FF;\n  ...\n  638  \n  639      if(phys_addr % KiB(4) != 0 | virt_addr % KiB(4) != 0)\n  640:         __asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(phys_addr), \"b\"(virt_addr));\n  641  \n  642      while(size > 0) {\n\n68 matches across 25 files\n\n\nSearching 252 files for \"\"cli\"\n\n/home/hgoel/Documents/Cardinal/common/types.h:\n   34  \n   35  #if defined(x86_64)\n   36: #define ASSERT(x) if(!(x))__asm__ volatile(\"cli\\n\\thlt\")\n   37  #endif\n   38  \n\n/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c:\n   92  #if defined(DEBUG)\n   93  static void* ksetup_instrumentation(void* addr, size_t size) {\n   94:     if(addr == NULL)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(size), \"b\"(__builtin_return_address(1)));\n   95      size -= 8 * 6;\n   96  \n   ..\n  194  #if defined(DEBUG)\n  195      uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);\n  196:     if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(addr), \"b\"(__builtin_return_address(0)));\n  197  #endif\n  198  \n\n/home/hgoel/Documents/Cardinal/managers/bootstrap_mem_pool/bootstrap_mem_pool.c:\n   11      if(size % 4 != 0)size = (size/4 + 1) * 4;\n   12      if( (pos + size) > BOOTSTRAP_MEM_POOL )\n   13:         __asm__(\"cli\\n\\thlt\");\n   14  \n   15      void *ptr = &mem_pool[pos];\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.c:\n   59  \n   60          return retVal;\n   61:     } else __asm__ (\"cli\\n\\thlt\" :: \"a\"(syscall_num), \"b\"(instruction_pointer));\n   62  \n   63      return -ENOSYS;\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c:\n   89              break;\n   90          default:\n   91:             __asm__(\"cli\\n\\thlt\");\n   92              SyscallSetErrno(-ENOSYS);\n   93              return retVal;\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  330      UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);\n  331      //Update the thread list\n  332:     //__asm__(\"cli\\n\\thlt\" :: \"a\"(kstack), \"b\"(cur_stack_frame));\n  333      SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)(&kstack_p[offset]));\n  334  \n  ...\n  821  \n  822          static int switchCnt = 0;\n  823:         if(switchCnt++ == 5)__asm__(\"cli\\n\\thlt\");\n  824          SwitchToThread(coreState->cur_thread);\n  825      }\n\n/home/hgoel/Documents/Cardinal/sys_init/main.c:\n    3  int _start() {\n    4  \n    5:     __asm__(\"cli\\n\\thlt\");\n    6      //First map in the initrd\n    7      ImportInitrd();\n\n/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c:\n   40      regs->int_no *= 16;\n   41      bootstrap_render ((regs->int_no & 0xff) | (regs->int_no & 0xff << 8)| (regs->int_no & 0xff << 16)| (regs->int_no & 0xff << 24));\n   42:     __asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(regs->rip), \"b\"(regs->int_no / 16), \"c\"(regs->err_code), \"d\"(GetCurrentThreadUID()), \"S\"(regs->useresp), \"D\"(regs->rax));\n   43  }\n   44  \n   ..\n  145      //When threading is up again, call kernel on new thread\n  146      kernel_main_init();\n  147:     __asm__ volatile(\"cli\\n\\thlt\\n\\t\");\n  148  \n  149      //We aren't supposed to reach here!\n  ...\n  212      __asm__ volatile(\"sti\");\n  213      APIC_CallibrateTimer();\n  214:     __asm__ volatile(\"cli\");\n  215  \n  216      ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/GDT/gdt.c:\n   47  void\n   48  GDT_Bootstrap(void) {\n   49:     __asm__ (\"cli\");\n   50      coreLocalData = bootstrap_malloc(sizeof(GDT_CoreData));\n   51  \n   ..\n   95  void GDT_Initialize() {\n   96      //Make sure interrupts are disabled\n   97:     __asm__ (\"cli\");\n   98  \n   99      memset((void*)coreLocalData, 0, sizeof(GDT_CoreData));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.c:\n   55  \n   56      //ensure interrupts are disabled\n   57:     __asm__ volatile(\"cli\");\n   58      __asm__ volatile(\"lidt (%%rax)\" :: \"a\" (physAddr));         //Load the IDT\n   59      //__asm__ volatile(\"hlt\");\n   ..\n  169  void IDT_MainHandler(Registers *regs) {\n  170      //__asm__ volatile(\"hlt\" :: \"a\"(regs->err_code));\n  171:     if(regs->useresp % 8)__asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(regs->useresp), \"b\"(regs->rip));\n  172      if(idt_handler_calls[regs->int_no] != NULL) idt_handler_calls[regs->int_no](regs);\n  173      else __asm__ volatile(\"hlt\" :: \"a\"(regs->int_no), \"b\"(regs->err_code), \"c\"(regs->rip));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c:\n  133  \n  134      uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);\n  135:     //__asm__(\"cli\\n\\thlt\" :: \"a\"(apic_ticks));\n  136  \n  137      apic_ticks *= PIT_FREQUENCY_HZ;\n\n/home/hgoel/Documents/Cardinal/target/x86_64/fpu/fpu.c:\n   13      err_no = 0;\n   14  \n   15:     __asm__ volatile(\"cli\\n\\tmov %0, %%rax\\n\\thlt\" :: \"a\"((uint64_t)0xB00B1E5));\n   16  \n   17  }\n   ..\n   22      if(int_no != 0x10)return;\n   23      err_no = 0;\n   24:     __asm__ volatile(\"cli\\n\\tmov %0, %%rax\\n\\thlt\" :: \"a\"((uint64_t)0xB00B5));\n   25  }\n   26  \n   ..\n   96  \n   97      if((uint64_t)target % 64)\n   98:         __asm__(\"cli\\n\\thlt\");\n   99  \n  100      if(xsave_available)\n  ...\n  108  \n  109      if((uint64_t)source % 64)\n  110:         __asm__(\"cli\\n\\thlt\");\n  111  \n  112      if(xsave_available)\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c:\n  116      if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;\n  117  \n  118:     if(virtualAddress % 4096)__asm__ (\"cli\\n\\thlt\" :: \"a\"(virtualAddress));\n  119  \n  120      //If this allocation is just reserved vmem, mark the page as not present\n  ...\n  523  \n  524      if(!ProcessSys_IsInitialized()) {\n  525:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer));\n  526      }\n  527      //Check the current process's memory info table\n  ...\n  529      GetProcessReference(GetCurrentProcessUID(), &procInfo);\n  530      if(procInfo == NULL | procInfo->PageTable->AllocationMap == NULL) {\n  531:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(1), \"c\"(procInfo->ID));\n  532          //while(1)debug_gfx_writeLine(\"Error: Page Fault\");\n  533      }\n  ...\n  548  \n  549              if(map->AllocationType & MemoryAllocationType_Application) {\n  550:                 __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(3), \"c\"(error));\n  551              }\n  552  \n  ...\n  561  \n  562      if(map == NULL) {\n  563:         __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(virtualAddress), \"c\"(GetCurrentProcessUID()));\n  564      }\n  565      UnlockSpinlock(procInfo->PageTable->lock);\n  ...\n  642  void\n  643  HaltProcessor(void) {\n  644:     __asm__ volatile(\"cli\\n\\thlt\");\n  645  }\n  646  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/synchronization.c:\n   34          \"mfence\\n\\t\"\n   35          \"pushfq\\n\\t\"\n   36:         \"cli\\n\\t\"\n   37          \"popq %[rcx]\\n\\t\"\n   38          \"shlq $16, %[rcx]\\n\\t\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c:\n   34          \"sti\\n\\t\"\n   35          \"callq (SyscallReceived)\\n\\t\"\n   36:         \"cli\\n\\t\"\n   37          \"movq %%rax, %%rsi\\n\\t\"\n   38          \"popq %%r11\\n\\t\"\n   ..\n   57      __asm__ volatile\n   58      (\n   59:         \"cli\\n\\t\"\n   60          \"pushfq\\n\\t\"\n   61          \"popq %%r11\\n\\t\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n   34      LockSpinlock(dst->lock);\n   35      uint64_t target_stack = dst->CurrentStack;\n   36:     if(target_stack & 0xf)__asm__ volatile(\"cli\\n\\thlt\");\n   37      UnlockSpinlock(dst->lock);\n   38  \n   ..\n  123  void\n  124  ResetPreemption(void) {\n  125:     __asm__(\"cli\");\n  126      APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);\n  127      APIC_SetTimerValue(APIC_GetTimerFrequency()/100);\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/timer.c:\n    7      if(APIC_IsTSCReliable())return;\n    8      if(HPET_Initialize() == HPETError_NotPresent) {\n    9:         __asm__ volatile(\"cli\\n\\thlt\");\n   10      }\n   11  }\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hpet/hpet.c:\n   19      HPET_SetCounterEnableStatus(ENABLE);\n   20  \n   21:     __asm__ (\"cli\\n\\thlt\" :: \"a\"(hpet_regs->Capabilities.LegacyReplacementCapable));\n   22  \n   23      return HPETError_None;\n\n/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.c:\n  406                      MEM_SECURITY_PERMS sec_perms) {\n  407      if(phys_addr % GiB(1) | virt_addr % GiB(1))\n  408:         __asm__ (\"cli\\n\\thlt\");\n  409  \n  410      if(!virtMemData->hugePageSupport) {\n  ...\n  455  \n  456      if(phys_addr % MiB(2) | virt_addr % MiB(2))\n  457:         __asm__ (\"cli\\n\\thlt\");\n  458  \n  459      uint32_t pml_off = (virt_addr >> 39) & 0x1FF;\n  ...\n  496  \n  497      if(phys_addr % KiB(4) | virt_addr % KiB(4))\n  498:         __asm__ (\"cli\\n\\thlt\");\n  499  \n  500      uint32_t pml_off = (virt_addr >> 39) & 0x1FF;\n  ...\n  638  \n  639      if(phys_addr % KiB(4) != 0 | virt_addr % KiB(4) != 0)\n  640:         __asm__ volatile(\"cli\\n\\thlt\" :: \"a\"(phys_addr), \"b\"(virt_addr));\n  641  \n  642      while(size > 0) {\n\n38 matches across 19 files\n\n\nSearching 252 files for \"LockSpinlock\"\n\n/home/hgoel/Documents/Cardinal/common/list.c:\n   20  List_Create(Spinlock spin) {\n   21      List* t = kmalloc(sizeof(List));\n   22:     LockSpinlock(spin);\n   23      t->nodes = NULL;\n   24      t->last = NULL;\n   ..\n   27      t->entry_count = 0;\n   28      t->spin = spin;\n   29:     UnlockSpinlock(spin);\n   30      return t;\n   31  }\n   ..\n   38  \n   39  \n   40:     LockSpinlock(a->spin);\n   41      l->prev = a->last;\n   42      l->value = value;\n   ..\n   50      }\n   51      a->entry_count++;\n   52:     UnlockSpinlock(a->spin);\n   53      return ListError_None;\n   54  }\n   ..\n   56  uint64_t\n   57  List_Length(List *a) {\n   58:     LockSpinlock(a->spin);\n   59      uint64_t val = a->entry_count;\n   60:     UnlockSpinlock(a->spin);\n   61      return val;\n   62  }\n   ..\n   65  List_Remove(List *a,\n   66              uint64_t index) {\n   67:     LockSpinlock(a->spin);\n   68      if(a->entry_count == 0 | index >= a->entry_count) {\n   69:         UnlockSpinlock(a->spin);\n   70          return;\n   71      }\n   ..\n  105  \n  106      a->entry_count--;\n  107:     UnlockSpinlock(a->spin);\n  108  }\n  109  \n  ...\n  122               uint64_t index) {\n  123  \n  124:     LockSpinlock(a->spin);\n  125      if(a->last_accessed_index >= a->entry_count) {\n  126          a->last_accessed_index = 0;\n  ...\n  129  \n  130      if(index >= a->entry_count) {\n  131:         UnlockSpinlock(a->spin);\n  132          return NULL;\n  133      }\n  ...\n  144  \n  145      void *val = a->last_accessed_node->value;\n  146:     UnlockSpinlock(a->spin);\n  147      return val;\n  148  }\n  ...\n  150  void*\n  151  List_Next(List *a) {\n  152:     LockSpinlock(a->spin);\n  153      if(a->last_accessed_index < a->entry_count - 1) {\n  154          a->last_accessed_index++;\n  ...\n  156      }\n  157      void *val = a->last_accessed_node->value;\n  158:     UnlockSpinlock(a->spin);\n  159      return val;\n  160  }\n  ...\n  162  void*\n  163  List_Prev(List *a) {\n  164:     LockSpinlock(a->spin);\n  165      if(a->last_accessed_index > 0) {\n  166          a->last_accessed_index--;\n  ...\n  168      }\n  169      void *val = a->last_accessed_node->value;\n  170:     UnlockSpinlock(a->spin);\n  171      return val;\n  172  }\n\n/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c:\n  112  bool retry = FALSE;\n  113  void *kmalloc(size_t size) {\n  114:     SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);\n  115  \n  116      if(allocation_info == NULL) {\n  ...\n  180  \n  181  void kfree(void *addr) {\n  182:     SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);\n  183  \n  184      //Find the block that matches the address specified\n\n/home/hgoel/Documents/Cardinal/managers/process_manager/process.c:\n  103          return err;\n  104  \n  105:     LockSpinlock(pinfo->lock);\n  106      pinfo->Status = ProcessStatus_Executing;\n  107:     UnlockSpinlock(pinfo->lock);\n  108  \n  109      return ProcessErrors_None;\n  ...\n  120          return err;\n  121  \n  122:     LockSpinlock(pinfo->lock);\n  123  \n  124      //Stop this process\n  ...\n  174  \n  175      //Now free all the memory related to this process\n  176:     LockSpinlock(pinfo->lock);\n  177:     LockSpinlock(pinfo->MessageLock);\n  178      for(uint64_t i = 0; i < List_Length(pinfo->PendingMessages); i++) {\n  179          void *message = List_EntryAt(pinfo->PendingMessages, i);\n  ...\n  184      List_Free(pinfo->PendingMessages);\n  185      List_Free(pinfo->ThreadIDs);\n  186:     UnlockSpinlock(pinfo->MessageLock);\n  187      FreeSpinlock(pinfo->MessageLock);\n  188  \n  ...\n  191  \n  192      //TODO Inspect this to make sure the entire process information data is being freed\n  193:     UnlockSpinlock(pinfo->lock);\n  194      FreeSpinlock(pinfo->lock);\n  195      kfree(pinfo);\n  ...\n  204          ProcessInformation *pInf = List_EntryAt(processes, i);\n  205  \n  206:         LockSpinlock(pInf->lock);\n  207          UID pInfID = pInf->ID;\n  208:         UnlockSpinlock(pInf->lock);\n  209  \n  210          if(pInfID == pid) {\n  211:             LockSpinlock(pInf->lock);\n  212              memcpy(procInfo, pInf, sizeof(ProcessInformation));\n  213:             UnlockSpinlock(pInf->lock);\n  214              return ProcessErrors_None;\n  215          }\n  ...\n  224          ProcessInformation *pInf = List_EntryAt(processes, i);\n  225  \n  226:         LockSpinlock(pInf->lock);\n  227          UID pInfID = pInf->ID;\n  228:         UnlockSpinlock(pInf->lock);\n  229  \n  230          if(pInfID == pid) {\n  ...\n  263          Message *m = NULL;\n  264  \n  265:         LockSpinlock(pInfo->MessageLock);\n  266  \n  267          {\n  268              if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT) {\n  269:                 UnlockSpinlock(pInfo->MessageLock);\n  270                  return i;\n  271              }\n  ...\n  274  \n  275              if(m == NULL) {\n  276:                 UnlockSpinlock(pInfo->MessageLock);\n  277                  return i;\n  278              }\n  ...\n  281          }\n  282  \n  283:         UnlockSpinlock(pInfo->MessageLock);\n  284  \n  285          m->SourcePID = GetCurrentProcessUID();\n  ...\n  304      if(List_Length(pInfo->PendingMessages) == 0)return FALSE;\n  305  \n  306:     LockSpinlock(pInfo->MessageLock);\n  307      Message *tmp = NULL;\n  308  \n  ...\n  317                  kfree(tmp);\n  318  \n  319:                 UnlockSpinlock(pInfo->MessageLock);\n  320              }\n  321              return TRUE;\n  ...\n  323      }\n  324  \n  325:     UnlockSpinlock(pInfo->MessageLock);\n  326      return FALSE;\n  327  }\n  ...\n  335          return FALSE;\n  336  \n  337:     LockSpinlock(specialPIDLock);\n  338  \n  339      if(specialDestinationPIDs[index] != 0 && GetProcessReference(specialDestinationPIDs[index], NULL) == ProcessErrors_None)\n  340:         return UnlockSpinlock(specialPIDLock), FALSE;\n  341  \n  342      specialDestinationPIDs[index] = GetCurrentProcessUID();\n  343:     UnlockSpinlock(specialPIDLock);\n  344      return TRUE;\n  345  }\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.c:\n   65  uint64_t\n   66  AllocateSyscall(void) {\n   67:     LockSpinlock(syscall_lock);\n   68      uint64_t ret = free_syscall_index++;\n   69:     UnlockSpinlock(syscall_lock);\n   70      return ret;\n   71  }\n   ..\n   75                  SyscallHandler handler) {\n   76      if(syscall_num < MAX_SYSCALL_COUNT) {\n   77:         LockSpinlock(syscall_lock);\n   78          Syscalls[syscall_num] = handler;\n   79:         UnlockSpinlock(syscall_lock);\n   80      }\n   81  }\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c:\n   34      void* targ_brk_address = (void*)data->params[0];\n   35  \n   36:     LockSpinlock(brk_lock);\n   37  \n   38      ProcessInformation *p_info;\n   ..\n   47                                 MemoryAllocationFlags_Write | MemoryAllocationFlags_User);\n   48  \n   49:         LockSpinlock(p_info->lock);\n   50          if(p_info->HeapBreak == 0)p_info->HeapBreak = addr;\n   51          else addr = p_info->HeapBreak;\n   52:         UnlockSpinlock(p_info->lock);\n   53  \n   54          SyscallSetErrno(0);\n   55:         UnlockSpinlock(brk_lock);\n   56          return addr;\n   57      }\n   ..\n   63          //expand the heap by a few pages and return the new heap break\n   64  \n   65:         LockSpinlock(p_info->lock);\n   66  \n   67          if((uint64_t)targ_brk_address <= p_info->HeapBreak) {\n   68  \n   69:             UnlockSpinlock(p_info->lock);\n   70              SyscallSetErrno(0);\n   71:             UnlockSpinlock(brk_lock);\n   72              return (uint64_t)targ_brk_address;\n   73          }\n   ..\n   87                  MemoryAllocationFlags_Write | MemoryAllocationFlags_User);\n   88  \n   89:         UnlockSpinlock(p_info->lock);\n   90  \n   91          SyscallSetErrno(0);\n   92:         UnlockSpinlock(brk_lock);\n   93          return (uint64_t)targ_brk_address;\n   94      }\n   95  \n   96      SyscallSetErrno(-ENOMEM);\n   97:     UnlockSpinlock(brk_lock);\n   98      return p_info->HeapBreak;\n   99  }\n  ...\n  131      }\n  132  \n  133:     LockSpinlock(map_lock);\n  134  \n  135      //Prevent any attempts to map into kernel space\n  ...\n  146                                    mmap_params->AllocationFlags) != MemoryAllocationErrors_None) {\n  147              SyscallSetErrno(-ENOMEM);\n  148:             UnlockSpinlock(map_lock);\n  149              return 0;\n  150          }\n  ...\n  161  \n  162          SyscallSetErrno(-ENOMEM);\n  163:         UnlockSpinlock(map_lock);\n  164          return 0;\n  165      } else {\n  166  \n  167          SyscallSetErrno(0);\n  168:         UnlockSpinlock(map_lock);\n  169          return virt_addr;\n  170      }\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c:\n   40      }\n   41  \n   42:     LockSpinlock(set_prop_lock);\n   43  \n   44      switch(data->params[0]) {\n   ..\n   46          uint64_t retVal = set_tid_address((void*)data->params[2]);\n   47          SyscallSetErrno(0);\n   48:         UnlockSpinlock(set_prop_lock);\n   49          return retVal;\n   50      }\n   ..\n   53          if(SetSpecialDestinationPID(data->params[1])) {\n   54              SyscallSetErrno(0);\n   55:             UnlockSpinlock(set_prop_lock);\n   56              return 1;\n   57          } else {\n   58              SyscallSetErrno(-ENAVAIL);\n   59:             UnlockSpinlock(set_prop_lock);\n   60              return 0;\n   61          }\n   ..\n   66          if(rVal != 0) {\n   67              SyscallSetErrno(-EPERM);\n   68:             UnlockSpinlock(set_prop_lock);\n   69              return 0;\n   70          }\n   71  \n   72:         UnlockSpinlock(set_prop_lock);\n   73          ScheduleProcessForTermination(GetCurrentProcessUID(), data->params[1]);\n   74          while(1) YieldThread();\n   ..\n   78      case CardinalProperty_GroupID: {\n   79          uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), data->params[2]);\n   80:         UnlockSpinlock(set_prop_lock);\n   81          switch(retVal) {\n   82          case -1:\n   ..\n   98      case CardinalProperty_ArchPrctl: {\n   99          uint64_t retVal = ArchPrctl_Syscall(data->params[1], data->params[2]);\n  100:         UnlockSpinlock(set_prop_lock);\n  101          return retVal;\n  102      }\n  ...\n  105          if(GetProcessGroupID(GetCurrentProcessUID()) > 1) {\n  106              SyscallSetErrno(-EPERM);\n  107:             UnlockSpinlock(set_prop_lock);\n  108              return 0;\n  109          }\n  110  \n  111          SecurityMonitor_IOPL(data->params[2]);\n  112:         UnlockSpinlock(set_prop_lock);\n  113          return SyscallSetErrno(0);\n  114      }\n  ...\n  117      default:\n  118          SyscallSetErrno(-EINVAL);\n  119:         UnlockSpinlock(set_prop_lock);\n  120          return 0;\n  121          break;\n  ...\n  139      }\n  140  \n  141:     LockSpinlock(get_prop_lock);\n  142  \n  143      switch(data->params[0]) {\n  ...\n  145          SyscallSetErrno(0);\n  146          uint64_t retVal = GetCurrentProcessUID();\n  147:         UnlockSpinlock(get_prop_lock);\n  148          return retVal;\n  149      }\n  ...\n  152          SyscallSetErrno(0);\n  153          uint64_t retVal = GetCurrentThreadUID();\n  154:         UnlockSpinlock(get_prop_lock);\n  155          return retVal;\n  156      }\n  ...\n  160          if(rVal == (uint64_t)-1) {\n  161              SyscallSetErrno(-EPERM);\n  162:             UnlockSpinlock(get_prop_lock);\n  163              return 0;\n  164          } else {\n  165              SyscallSetErrno(0);\n  166:             UnlockSpinlock(get_prop_lock);\n  167              return rVal;\n  168          }\n  ...\n  172          if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {\n  173              SyscallSetErrno(-EPERM);\n  174:             UnlockSpinlock(get_prop_lock);\n  175              return 0;\n  176          }\n  ...\n  178          SyscallSetErrno(0);\n  179          uint64_t rVal = GetProcessGroupID(data->params[1]);\n  180:         UnlockSpinlock(get_prop_lock);\n  181          return rVal;\n  182      }\n  ...\n  185          if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {\n  186              SyscallSetErrno(-EPERM);\n  187:             UnlockSpinlock(get_prop_lock);\n  188              return 0;\n  189          }\n  ...\n  191          SyscallSetErrno(0);\n  192          uint64_t retVal = (uint64_t)GetPhysicalAddress((void*)(uint64_t*)data->params[1]);\n  193:         UnlockSpinlock(get_prop_lock);\n  194          return retVal;\n  195      }\n  ...\n  197      default:\n  198          SyscallSetErrno(-EINVAL);\n  199:         UnlockSpinlock(get_prop_lock);\n  200          return 0;\n  201          break;\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n   29                               { \\\n   30                                  type tmp = default_val ; \\\n   31:                                 LockSpinlock(t->lock);  \\\n   32                                  tmp = t-> name ; \\\n   33:                                 UnlockSpinlock(t->lock);    \\\n   34                                  return tmp; \\\n   35                               }\n   ..\n   37  #define PROPERTY_SET(type, name) void set_thread_##name (ThreadInfo *t, type v) \\\n   38                              { \\\n   39:                                 LockSpinlock(t->lock); \\\n   40                                  t-> name = v; \\\n   41:                                 UnlockSpinlock(t->lock); \\\n   42                              }\n   43  \n   ..\n   53                               { \\\n   54                                  type tmp = default_val ; \\\n   55:                                 LockSpinlock(t->lock);  \\\n   56                                  tmp = t-> name ; \\\n   57:                                 UnlockSpinlock(t->lock);    \\\n   58                                  return tmp; \\\n   59                               }\n   ..\n   61  #define PROPERTY_PROC_SET(type, name) void set_proc_##name (ProcessInformation *t, type v) \\\n   62                              { \\\n   63:                                 LockSpinlock(t->lock); \\\n   64                                  t-> name = v; \\\n   65:                                 UnlockSpinlock(t->lock); \\\n   66                              }\n   67  \n   ..\n  151          return -1;\n  152  \n  153:     LockSpinlock(pInfo->lock);\n  154      //Setup the user stack\n  155      uint64_t user_stack_base = 0;\n  ...\n  176             );\n  177  \n  178:     UnlockSpinlock(pInfo->lock);\n  179      return user_stack_base + STACK_SIZE - 16;\n  180  }\n  ...\n  234      ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));\n  235      thd->lock = CreateSpinlock();\n  236:     LockSpinlock(thd->lock);\n  237:     LockSpinlock(sync_lock);\n  238  \n  239      SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);\n  ...\n  339      List_AddEntry(neutral, thd);\n  340  \n  341:     UnlockSpinlock(sync_lock);\n  342:     UnlockSpinlock(thd->lock);\n  343      return GET_PROPERTY_VAL(thd, ID);\n  344  \n  345  error_exit:\n  346:     UnlockSpinlock(sync_lock);\n  347:     UnlockSpinlock(thd->lock);\n  348      FreeSpinlock(thd->lock);\n  349      kfree(thd);\n  ...\n  634      */\n  635  \n  636:     LockSpinlock(sync_lock);\n  637  \n  638      if(prevThread != NULL) {\n  639:         LockSpinlock(sync_lock);\n  640          List_AddEntry(neutral, prevThread);\n  641:         UnlockSpinlock(sync_lock);\n  642      }\n  643  \n  ...\n  647      while(!exit_loop) {\n  648  \n  649:         LockSpinlock(sync_lock);\n  650          next_thread = List_EntryAt(neutral, 0);\n  651          if(next_thread != NULL)List_Remove(neutral, 0);\n  652:         UnlockSpinlock(sync_lock);\n  653  \n  654          if(next_thread == NULL)continue;\n  ...\n  662          case ThreadState_Exiting:\n  663              if(GetSpinlockContenderCount(next_thread->lock) == 0) {\n  664:                 LockSpinlock(next_thread->lock);\n  665  \n  666                  CachingMode cMode = 0;\n  ...\n  700                  }\n  701  \n  702:                 LockSpinlock(next_thread->ParentProcess->lock);\n  703  \n  704                  AtomicDecrement32(&next_thread->ParentProcess->reference_count);\n  ...\n  706                      TerminateProcess(GET_PROPERTY_PROC_VAL(next_thread, ID));\n  707                  }\n  708:                 UnlockSpinlock(next_thread->lock);\n  709                  FreeSpinlock(next_thread->lock);\n  710  \n  ...\n  713                  next_thread = NULL;\n  714              } else {\n  715:                 LockSpinlock(sync_lock);\n  716                  List_AddEntry(neutral, next_thread);\n  717:                 UnlockSpinlock(sync_lock);\n  718              }\n  719              break;\n  ...\n  721              break;\n  722          case ThreadState_Sleep:\n  723:             LockSpinlock(next_thread->lock);\n  724              uint64_t cur_time = GetTimerValue();\n  725              if(next_thread->WakeCondition == ThreadWakeCondition_SleepEnd) {\n  ...\n  727                      next_thread->State = ThreadState_Running;\n  728                      exit_loop = TRUE;\n  729:                     UnlockSpinlock(next_thread->lock);\n  730                  } else {\n  731:                     UnlockSpinlock(next_thread->lock);\n  732:                     LockSpinlock(sync_lock);\n  733                      List_AddEntry(neutral, next_thread);\n  734:                     UnlockSpinlock(sync_lock);\n  735                  }\n  736              } else {\n  737:                 UnlockSpinlock(next_thread->lock);\n  738:                 LockSpinlock(sync_lock);\n  739                  List_AddEntry(neutral, next_thread);\n  740:                 UnlockSpinlock(sync_lock);\n  741              }\n  742              break;\n  ...\n  745                  exit_loop = TRUE;\n  746              else {\n  747:                 LockSpinlock(sync_lock);\n  748                  List_AddEntry(neutral, next_thread);\n  749:                 UnlockSpinlock(sync_lock);\n  750              }\n  751          }\n  ...\n  755      }\n  756  \n  757:     UnlockSpinlock(sync_lock);\n  758      return next_thread;\n  759  }\n  ...\n  769          err_code = 0;\n  770  \n  771:         LockSpinlock(sync_lock);\n  772  \n  773          SaveFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));\n  ...\n  818          HandleInterruptNoReturn(int_no);\n  819  \n  820:         UnlockSpinlock(sync_lock);\n  821  \n  822          static int switchCnt = 0;\n  ...\n  837  SwitchThread(void) {\n  838  \n  839:     LockSpinlock(sync_lock);\n  840      coreState->cur_thread = GetNextThread(NULL);\n  841  \n  ...\n  852          SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Running);\n  853  \n  854:         UnlockSpinlock(sync_lock);\n  855          SwitchToThread(coreState->cur_thread);\n  856      }\n\n/home/hgoel/Documents/Cardinal/target/hal/synchronization.h:\n   16  \n   17  void\n   18: AutounlockSpinlock(Spinlock *prim);\n   19  \n   20: #define SpinlockUnlocker __attribute__((cleanup(AutounlockSpinlock))) Spinlock\n   21  \n   22  /**\n   ..\n   44   */\n   45  Spinlock\n   46: LockSpinlock(Spinlock primitive);\n   47  \n   48  /**\n   ..\n   64   */\n   65  bool\n   66: UnlockSpinlock(Spinlock primitive);\n   67  \n   68  /**\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c:\n   48  GetPhysicalAddressPageTable(ManagedPageTable \t*src,\n   49                              void \t*virtualAddress) {\n   50:     LockSpinlock(src->lock);\n   51      void *ret = VirtMemMan_GetPhysicalAddress((PML_Instance)src->PageTable, virtualAddress);\n   52:     UnlockSpinlock(src->lock);\n   53      return ret;\n   54  }\n   ..\n   57  CreateVirtualMemoryInstance(ManagedPageTable *inst) {\n   58      if(inst != NULL) {\n   59:         LockSpinlock(vmem_lock);\n   60          inst->PageTable = (UID)VirtMemMan_CreateInstance();\n   61          inst->lock = CreateSpinlock();\n   62          inst->reference_count = 1;\n   63:         UnlockSpinlock(vmem_lock);\n   64          return MemoryAllocationErrors_None;\n   65      }\n   ..\n   70  FreeVirtualMemoryInstance(ManagedPageTable *inst) {\n   71      if(inst != NULL) {\n   72:         LockSpinlock(vmem_lock);\n   73  \n   74          //The kernel expects the user mode to have freed up any and all memory as needed\n   75  \n   76          VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);\n   77:         UnlockSpinlock(vmem_lock);\n   78      }\n   79  }\n   ..\n   85      ManagedPageTable *tmp = (ManagedPageTable*)*curPageTable;\n   86      *curPageTable = inst;\n   87:     LockSpinlock(vmem_lock);\n   88:     LockSpinlock(inst->lock);\n   89      inst->reference_count++;\n   90      VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);\n   91:     UnlockSpinlock(inst->lock);\n   92  \n   93      if(tmp != NULL) {\n   ..\n   95      }\n   96  \n   97:     UnlockSpinlock(vmem_lock);\n   98      return (ManagedPageTable*)tmp;\n   99  }\n  ...\n  155      }\n  156  \n  157:     LockSpinlock(pageTable->lock);\n  158  \n  159      if(pageTable->AllocationMap != NULL) {\n  ...\n  219                     perms);\n  220  \n  221:     UnlockSpinlock(pageTable->lock);\n  222  \n  223      return MemoryAllocationErrors_None;\n  ...\n  247      if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;\n  248  \n  249:     LockSpinlock(pageTable->lock);\n  250  \n  251      MemoryAllocationsMap *map = pageTable->AllocationMap;\n  ...\n  259  \n  260      if(map == NULL)\n  261:         return UnlockSpinlock(pageTable->lock), MemoryAllocationErrors_InvalidFlags;\n  262  \n  263      map->CacheMode = cacheMode;\n  ...\n  274                     perms);\n  275  \n  276:     UnlockSpinlock(pageTable->lock);\n  277  \n  278      return MemoryAllocationErrors_None;\n  ...\n  285            size_t \t\t     size) {\n  286  \n  287:     LockSpinlock(pageTable->lock);\n  288  \n  289      if(pageTable->AllocationMap != NULL) {\n  ...\n  336                       (uint64_t)size);\n  337  \n  338:     UnlockSpinlock(pageTable->lock);\n  339      return MemoryAllocationErrors_None;\n  340  }\n  ...\n  372      if(virtualAddress == NULL)return MemoryAllocationErrors_Unknown;\n  373  \n  374:     LockSpinlock(pageTable->lock);\n  375  \n  376      MEM_SECURITY_PERMS perms = 0;\n  ...\n  394      if(addr != 0)*virtualAddress = addr;\n  395  \n  396:     UnlockSpinlock(pageTable->lock);\n  397  \n  398      return MemoryAllocationErrors_None;\n  ...\n  406          return MemoryAllocationErrors_Unknown;\n  407  \n  408:     LockSpinlock(pageTable->lock);\n  409  \n  410      uint64_t result = VirtMemMan_GetPageSize((PML_Instance)pageTable->PageTable,\n  ...\n  420  uint64_t\n  421  AllocatePhysicalPage(void) {\n  422:     LockSpinlock(vmem_lock);\n  423      uint64_t ret = MemMan_Alloc();\n  424:     UnlockSpinlock(vmem_lock);\n  425      return ret;\n  426  }\n  ...\n  428  void\n  429  FreePhysicalPage(uint64_t ptr) {\n  430:     LockSpinlock(vmem_lock);\n  431      MemMan_Free(ptr);\n  432:     UnlockSpinlock(vmem_lock);\n  433  }\n  434  \n  435  uint64_t\n  436  AllocatePhysicalPageCont(int pageCount) {\n  437:     LockSpinlock(vmem_lock);\n  438      uint64_t ret = MemMan_Alloc4KiBPageCont(pageCount);\n  439:     UnlockSpinlock(vmem_lock);\n  440      return ret;\n  441  }\n  ...\n  444  FreePhysicalPageCont(uint64_t ptr,\n  445                       int pageCount) {\n  446:     LockSpinlock(vmem_lock);\n  447      MemMan_FreeCont(ptr, pageCount);\n  448:     UnlockSpinlock(vmem_lock);\n  449  }\n  450  \n  451  void*\n  452  AllocateAPLSMemory(uint64_t size) {\n  453:     LockSpinlock(vmem_lock);\n  454      void* ret = VirtMemMan_AllocCoreLocalData(size);\n  455:     UnlockSpinlock(vmem_lock);\n  456      return ret;\n  457  }\n  ...\n  463          return MemoryAllocationErrors_Unknown;\n  464  \n  465:     LockSpinlock(pageTable->lock);\n  466  \n  467      uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;\n  ...\n  502                  AllocationFlags);\n  503  \n  504:         UnlockSpinlock(pageTable->lock);\n  505          return MemoryAllocationErrors_None;\n  506      }\n  507:     UnlockSpinlock(pageTable->lock);\n  508      return MemoryAllocationErrors_Unknown;\n  509  }\n  ...\n  535      uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;\n  536  \n  537:     LockSpinlock(procInfo->lock);\n  538:     LockSpinlock(procInfo->PageTable->lock);\n  539      MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;\n  540      while(map != NULL) {\n  ...\n  563          __asm__(\"cli\\n\\thlt\" :: \"a\"(instruction_pointer), \"b\"(virtualAddress), \"c\"(GetCurrentProcessUID()));\n  564      }\n  565:     UnlockSpinlock(procInfo->PageTable->lock);\n  566:     UnlockSpinlock(procInfo->lock);\n  567  }\n  568  \n  ...\n  581      MemoryAllocationType t = 0;\n  582  \n  583:     LockSpinlock(pageTable->lock);\n  584      VirtMemMan_GetAddressPermissions((PML_Instance)pageTable->PageTable, addr, &cache, &access_perm, &sec_perm);\n  585  \n  ...\n  597      }\n  598  \n  599:     UnlockSpinlock(pageTable->lock);\n  600  \n  601      if(allocType != NULL)*allocType = t;\n  ...\n  672      if(size == 0)return 0;\n  673  \n  674:     LockSpinlock(vmem_lock);\n  675  \n  676      if(size % PAGE_SIZE)size += PAGE_SIZE - size % PAGE_SIZE;\n  ...\n  714      }\n  715  \n  716:     UnlockSpinlock(vmem_lock);\n  717      return tmp_loc_virt;\n  718  }\n  ...\n  721  UninstallTemporaryWriteMap(uint64_t loc,\n  722                             size_t size) {\n  723:     LockSpinlock(vmem_lock);\n  724  \n  725      if(size % PAGE_SIZE)size += PAGE_SIZE - size % PAGE_SIZE;\n  ...\n  730                size);\n  731  \n  732:     UnlockSpinlock(vmem_lock);\n  733  }\n  734  \n  ...\n  743      //align the physical address to a page boundary and map it to the current page table\n  744  \n  745:     LockSpinlock(vmem_lock);\n  746  \n  747      uint64_t tmp_loc_virt = 0;\n  ...\n  776  \n  777  \n  778:     UnlockSpinlock(vmem_lock);\n  779  }\n  780  \n  ...\n  788      //align the physical address to a page boundary and map it to the current page table\n  789  \n  790:     LockSpinlock(vmem_lock);\n  791  \n  792      uint64_t tmp_loc_virt = 0;\n  ...\n  821  \n  822  \n  823:     UnlockSpinlock(vmem_lock);\n  824  }\n  825  \n  ...\n  828                          MemoryAllocationType type) {\n  829      //Walk the page table, unmapping anything that has the same allocation type\n  830:     LockSpinlock(pageTable->lock);\n  831  \n  832      MemoryAllocationsMap *map = pageTable->AllocationMap;\n  ...\n  842      }\n  843  \n  844:     UnlockSpinlock(pageTable->lock);\n  845  }\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/synchronization.c:\n   21  \n   22  bool\n   23: IntLockSpinlock(Spinlock primitive) {\n   24      if(primitive == NULL)return FALSE;\n   25  \n   ..\n   88  \n   89  bool\n   90: IntUnlockSpinlock(Spinlock primitive) {\n   91      if(primitive == NULL)return FALSE;\n   92  \n   ..\n  139      int cnt = 0;\n  140  \n  141:     IntLockSpinlock(primitive);\n  142      volatile uint64_t *prim = (volatile uint64_t*)primitive;\n  143      cnt = prim[2];\n  144:     IntUnlockSpinlock(primitive);\n  145  \n  146      return cnt;\n  ...\n  149  \n  150  bool\n  151: TryLockSpinlock(Spinlock primitive) {\n  152      bool locked = FALSE;\n  153      uint64_t iflag = 0;\n  154      __asm__ volatile(\"pushfq\\n\\tcli\\n\\tpopq %0\" : \"=r\"(iflag) :: \"cc\");\n  155  \n  156:     IntLockSpinlock(primitive);\n  157      volatile uint64_t *prim = (volatile uint64_t*)primitive;\n  158      if(prim[1] == (APIC_GetID() + 1)) {\n  ...\n  167  \n  168      __asm__ volatile(\"\":::\"memory\");\n  169:     IntUnlockSpinlock(primitive);\n  170  \n  171      if(!locked)\n  ...\n  176  \n  177  Spinlock\n  178: LockSpinlock(Spinlock primitive) {\n  179:     while(!TryLockSpinlock(primitive));\n  180      return primitive;\n  181  }\n  182  \n  183  void\n  184: AutounlockSpinlock(Spinlock *prim) {\n  185:     UnlockSpinlock(*prim);\n  186  }\n  187  \n  188  bool\n  189: UnlockSpinlock(Spinlock primitive) {\n  190      bool locked = FALSE;\n  191      uint64_t iflag = 0;\n  192  \n  193:     IntLockSpinlock(primitive);\n  194      volatile uint64_t *prim = (volatile uint64_t*)primitive;\n  195      if(prim[1] == (APIC_GetID() + 1)) {\n  ...\n  202      }\n  203      __asm__ volatile(\"\":::\"memory\");\n  204:     IntUnlockSpinlock(primitive);\n  205  \n  206      if(iflag != 0)\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n   24      Registers *regs = GetSavedInterruptState();\n   25      if(src != NULL) {\n   26:         LockSpinlock(src->lock);\n   27          src->CurrentStack = regs->rsp;\n   28:         UnlockSpinlock(src->lock);\n   29      }\n   30  }\n   ..\n   32  void\n   33  SwitchToThread(ThreadInfo *dst) {\n   34:     LockSpinlock(dst->lock);\n   35      uint64_t target_stack = dst->CurrentStack;\n   36      if(target_stack & 0xf)__asm__ volatile(\"cli\\n\\thlt\");\n   37:     UnlockSpinlock(dst->lock);\n   38  \n   39      __asm__ volatile(\"movq %0, %%rsp\\n\\t\"\n\n192 matches across 11 files\n\n\nSearching 252 files for \"MapPage\"\n\n/home/hgoel/Documents/Cardinal/main.c:\n   51          uint64_t v_addr = (EXEC_ENTRY_POINT - EXEC_ENTRY_POINT % PAGE_SIZE) + i * PAGE_SIZE;\n   52  \n   53:         MapPage(pinfo->PageTable,\n   54                  p_addr,\n   55                  v_addr,\n\n/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c:\n   46      uint64_t phys_addr = AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE);\n   47  \n   48:     MapPage(GetActiveVirtualMemoryInstance(),\n   49              phys_addr,\n   50              virtBaseAddr_base,\n   ..\n  229              vaddr += PAGE_SIZE) {\n  230  \n  231:         MapPage(GetActiveVirtualMemoryInstance(),\n  232                  AllocatePhysicalPage(),\n  233                  vaddr,\n  ...\n  261  \n  262              uint64_t addr = (uint64_t)GetPhysicalAddress((void*)vaddr);\n  263:             UnmapPage(GetActiveVirtualMemoryInstance(),\n  264                        vaddr,\n  265                        PAGE_SIZE);\n  ...\n  285      if(user_stack_base == 0)while(1);\n  286  \n  287:     MapPage(GetActiveVirtualMemoryInstance(),\n  288              AllocatePhysicalPageCont(size/PAGE_SIZE),\n  289              user_stack_base,\n  ...\n  311      if(cMode != 0 && cFlags != 0 && (cFlags == (MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write))) {\n  312          uint64_t addr = (uint64_t)GetPhysicalAddress(mem);\n  313:         UnmapPage(GetActiveVirtualMemoryInstance(),\n  314                    (uint64_t)mem,\n  315                    size);\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c:\n   79          p_info->HeapBreak += size;\n   80  \n   81:         MapPage(GetActiveVirtualMemoryInstance(),\n   82                  0,\n   83                  prev_heap_break,\n   ..\n  152  \n  153  \n  154:     if(MapPage(p_info->PageTable,\n  155                 mmap_params->PhysicalAddress,\n  156                 virt_addr,\n  ...\n  199      }\n  200  \n  201:     UnmapPage(p_info->PageTable,\n  202                data->params[1],\n  203                data->params[2]);\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  167      user_stack_base += PAGE_SIZE;\n  168  \n  169:     MapPage(pInfo->PageTable,\n  170              0,\n  171              user_stack_base,\n\n/home/hgoel/Documents/Cardinal/target/hal/memory.h:\n  140   */\n  141  MemoryAllocationErrors\n  142: MapPage(ManagedPageTable *pageTable,\n  143          uint64_t \t\tphysicalAddress,\n  144          uint64_t \t\tvirtualAddress,\n  ...\n  176   */\n  177  MemoryAllocationErrors\n  178: UnmapPage(ManagedPageTable* \t\t\tpageTable,\n  179            uint64_t \t\tvirtualAddress,\n  180            size_t \t\tsize);\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c:\n  106  \n  107  MemoryAllocationErrors\n  108: MapPage(ManagedPageTable *pageTable,\n  109          uint64_t \t\tphysicalAddress,\n  110          uint64_t \t\tvirtualAddress,\n  ...\n  281  \n  282  MemoryAllocationErrors\n  283: UnmapPage(ManagedPageTable \t*pageTable,\n  284            uint64_t \t\t     virtualAddress,\n  285            size_t \t\t     size) {\n  ...\n  491  \n  492          //Unmap to update this entry correctly\n  493:         UnmapPage(pageTable,\n  494                    aligned_vaddr,\n  495                    page_size);\n  496  \n  497          //Map with actual memory\n  498:         MapPage(pageTable,\n  499                  phys_addr,\n  500                  aligned_vaddr,\n  ...\n  707          uint64_t tmp_loc_phys = target_phys_addr/PAGE_SIZE * PAGE_SIZE;\n  708  \n  709:         MapPage(GetActiveVirtualMemoryInstance(),\n  710                  tmp_loc_phys,\n  711                  tmp_loc_virt + i,\n  ...\n  728  \n  729      loc -= loc % PAGE_SIZE;\n  730:     UnmapPage(GetActiveVirtualMemoryInstance(),\n  731                loc,\n  732                size);\n  ...\n  760      uint64_t target_addr = tmp_loc_virt + (uint64_t)addr % PAGE_SIZE;\n  761  \n  762:     MapPage(GetActiveVirtualMemoryInstance(),\n  763              tmp_loc_phys,\n  764              tmp_loc_virt,\n  ...\n  772  \n  773      //Then undo the above mapping\n  774:     UnmapPage(GetActiveVirtualMemoryInstance(),\n  775                tmp_loc_virt,\n  776                PAGE_SIZE);\n  ...\n  805      uint64_t target_addr = tmp_loc_virt + (uint64_t)addr % PAGE_SIZE;\n  806  \n  807:     MapPage(GetActiveVirtualMemoryInstance(),\n  808              tmp_loc_phys,\n  809              tmp_loc_virt,\n  ...\n  817  \n  818      //Then undo the above mapping\n  819:     UnmapPage(GetActiveVirtualMemoryInstance(),\n  820                tmp_loc_virt,\n  821                PAGE_SIZE);\n  ...\n  837          MemoryAllocationsMap *n = map->next;\n  838          if(map->AllocationType == type) {\n  839:             UnmapPage(pageTable,\n  840                        n->VirtualAddress,\n  841                        n->Length);\n\n23 matches across 6 files\n\n\nSearching 252 files for \"YieldThread\"\n\n/home/hgoel/Documents/Cardinal/main.c:\n  100      load_exec(cpid, \"userboot.bin\");\n  101  \n  102:     while(1) YieldThread();\n  103  }\n  104  \n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c:\n   72          UnlockSpinlock(set_prop_lock);\n   73          ScheduleProcessForTermination(GetCurrentProcessUID(), data->params[1]);\n   74:         while(1) YieldThread();\n   75          return 0;\n   76      }\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  460          SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());\n  461          SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);\n  462:         YieldThread();\n  463          return;\n  464      }\n  ...\n  620  \n  621  void\n  622: YieldThread(void) {\n  623      ResetPreemption();\n  624      RaiseInterrupt(preempt_vector);\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h:\n  315   */\n  316  void\n  317: YieldThread(void);\n  318  \n  319  /**\n\n5 matches across 4 files\n\n\nSearching 252 files for \"ProcessStatus\"\n\n/home/hgoel/Documents/Cardinal/managers/process_manager/process.c:\n   30      root->ID = new_proc_uid();  //Root process ID is ROOT_PID\n   31      strcpy(root->Name, u8\"Root Process\");\n   32:     root->Status = ProcessStatus_Executing;\n   33      root->PageTable = GetActiveVirtualMemoryInstance();\n   34      root->HeapBreak = 0;\n   ..\n   70      dst->UserID = userID;\n   71      dst->GroupID = 0;           //All processes start as group 0, the program loader lowers their permissions.\n   72:     dst->Status = ProcessStatus_Stopped;\n   73  \n   74      dst->PageTable = kmalloc(sizeof(ManagedPageTable));\n   ..\n  104  \n  105      LockSpinlock(pinfo->lock);\n  106:     pinfo->Status = ProcessStatus_Executing;\n  107      UnlockSpinlock(pinfo->lock);\n  108  \n  ...\n  124  \n  125      //Stop this process\n  126:     pinfo->Status = ProcessStatus_Terminating;\n  127  \n  128      //Remove this process from the list of processes\n  ...\n  387  \n  388      LockSpinlock(info->lock);\n  389:     info->Status = ProcessStatus_Terminating;\n  390      info->ExitStatus = exit_code;\n  391      UnlockSpinlock(info->lock);\n\n/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h:\n   26   */\n   27  typedef enum {\n   28:     ProcessStatus_Stopped,      //!< The process is stopped.\n   29:     ProcessStatus_Sleeping,     //!< The process is sleeping.\n   30:     ProcessStatus_Terminating,  //!< The process is terminating.\n   31:     ProcessStatus_Executing     //!< The process is executing.\n   32: } ProcessStatus;\n   33  \n   34  /**\n   ..\n   59  \n   60      char                        Name[MAX_PROCESS_NAME_LEN]; //!< The name of the process.\n   61:     ProcessStatus               Status;                     //!< The status of the process.\n   62      ManagedPageTable            *PageTable;                 //!< The page table.\n   63      uint64_t                    HeapBreak;                  //!< The heap break.\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n   81  PROPERTY_PROC_GET(List*, PendingMessages, NULL)\n   82  PROPERTY_PROC_GET(List*, ThreadIDs, NULL)\n   83: PROPERTY_PROC_GET(ProcessStatus, Status, ProcessStatus_Stopped)\n   84  \n   85  PROPERTY_GET_SET(UID, ID, 0)\n   ..\n  655  \n  656          //If the process is terminating, terminate the thread\n  657:         if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)) {\n  658              SET_PROPERTY_VAL(next_thread, State, ThreadState_Exiting);\n  659          }\n  ...\n  742              break;\n  743          default: {\n  744:             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)\n  745                  exit_loop = TRUE;\n  746              else {\n\n15 matches across 3 files\n\n\nSearching 252 files for \"YieldThread\"\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  460          SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());\n  461          SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);\n  462:         YieldThread();\n  463          return;\n  464      }\n  ...\n  620  \n  621  void\n  622: YieldThread(void) {\n  623      ResetPreemption();\n  624      RaiseInterrupt(preempt_vector);\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h:\n  315   */\n  316  void\n  317: YieldThread(void);\n  318  \n  319  /**\n\n3 matches across 2 files\n\n\nSearching 252 files for \"YieldThread\"\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  460          SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());\n  461          SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);\n  462:         YieldThread();\n  463          return;\n  464      }\n  ...\n  620  \n  621  void\n  622: YieldThread(void) {\n  623      ResetPreemption();\n  624      RaiseInterrupt(preempt_vector);\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h:\n  315   */\n  316  void\n  317: YieldThread(void);\n  318  \n  319  /**\n\n3 matches across 2 files\n\n\nSearching 252 files for \"ResetPreemption\"\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  621  void\n  622  YieldThread(void) {\n  623:     ResetPreemption();\n  624      RaiseInterrupt(preempt_vector);\n  625  }\n\n/home/hgoel/Documents/Cardinal/target/hal/thread.h:\n  129   */\n  130  void\n  131: ResetPreemption(void);\n  132  \n  133  /**\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n  122  \n  123  void\n  124: ResetPreemption(void) {\n  125      __asm__(\"cli\");\n  126      APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);\n\n3 matches across 3 files\n\n\nSearching 252 files for \"PropertyInitLocks\"\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h:\n    8  \n    9  void\n   10: PropertyInitLocks(void);\n   11  \n   12  uint64_t\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c:\n   17  \n   18  void\n   19: PropertyInitLocks(void) {\n   20      set_prop_lock = CreateSpinlock();\n   21      get_prop_lock = CreateSpinlock();\n\n/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c:\n    7  \n    8      MemoryInitLocks();\n    9:     PropertyInitLocks();\n   10  \n   11      RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);\n\n3 matches across 3 files\n\n\nSearching 252 files for \"rflags\"\n\n/home/hgoel/Documents/Cardinal/libs/libCardinal/include/registers.h:\n   23      uint64_t r14;\n   24      uint64_t r15;\n   25:     uint8_t rflags;\n   26      uint8_t ss;\n   27      uint8_t cs;\n\n/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c:\n  206      regs.r14 = 0;\n  207      regs.r15 = 0;\n  208:     regs.rflags = 0;\n  209      regs.tls = NULL;\n  210      regs.p_tid = NULL;\n  ...\n  282      cur_stack_frame[--offset] = regs->ss;\n  283      cur_stack_frame[--offset] = regs->rsp;\n  284:     cur_stack_frame[--offset] = (uint64_t)regs->rflags | (1 << 9);\n  285      cur_stack_frame[--offset] = regs->cs;\n  286      cur_stack_frame[--offset] = regs->rip;\n  ...\n  305      //push ss\n  306      //push rsp\n  307:     //push rflags\n  308      //push cs\n  309      //push rip\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c:\n    6  typedef struct CoreKernelStackInfo {\n    7      uint8_t *k_stack;\n    8:     uint64_t rflags;\n    9  } CoreKernelStackInfo;\n   10  \n   ..\n   84  \n   85  uint64_t\n   86: GetRFLAGS(void) {\n   87:     return k_stack_info->rflags;\n   88  }\n   89  \n   90  void\n   91: SetRFLAGS(uint64_t val) {\n   92:     k_stack_info->rflags = val;\n   93  }\n   94  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n   15  \n   16  uint64_t\n   17: GetRFLAGS(void);\n   18  \n   19  void\n   20: SetRFLAGS(uint64_t);\n   21  \n   22  void\n   ..\n   89      data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();\n   90  //    data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetGSBase();\n   91:     data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();\n   92  }\n   93  \n   ..\n  107      SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);\n  108  //    SetGSBase((void*)data[ARCH_DATA_GS_OFFSET]);\n  109:     SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);\n  110  }\n  111  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/syscalls/arch_syscalls.h:\n    5  \n    6  uint64_t\n    7: GetRFLAGS(void);\n    8  \n    9  void\n   10: SetRFLAGS(uint64_t val);\n   11  \n   12  uint64_t\n\n/home/hgoel/Documents/Cardinal/target/x86_64/syscalls/syscalls.c:\n    6  uint64_t\n    7  SecurityMonitor_IOPL(uint64_t val) {\n    8:     uint64_t rflag = GetRFLAGS();\n    9      rflag = rflag & ~(3 << 12);\n   10  \n   11:     SetRFLAGS(rflag | (val << 12));\n   12  \n   13      return 0;\n\n17 matches across 6 files\n\n\nSearching 252 files for \"eflags\"\n\n/home/hgoel/Documents/Cardinal/acpi/fadt.h:\n   53  \n   54      // reserved in ACPI 1.0; used since ACPI 2.0+\n   55:     uint16_t BootArchitectureFlags;\n   56  \n   57      uint8_t Reserved2;\n\n/home/hgoel/Documents/Cardinal/target/hal/memory.h:\n  160   */\n  161  MemoryAllocationErrors\n  162: ChangePageFlags(ManagedPageTable *pageTable,\n  163                  uint64_t        virtualAddress,\n  164                  CachingMode         cacheMode,\n\n/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.h:\n   12      uint64_t rsp, r15, r14, r13, r12, r11, r10, r9, r8, rdi, rsi, rbp, rdx, rcx, rbx, rax; // Pushed by pusha.\n   13      uint64_t int_no, err_code; // Interrupt number and error code (if applicable)\n   14:     uint64_t rip, cs, eflags, useresp, ss; // Pushed by the processor automatically.\n   15  } __attribute__((packed)) Registers;\n   16  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c:\n  225  \n  226  MemoryAllocationErrors\n  227: ChangePageFlags(ManagedPageTable *pageTable,\n  228                  uint64_t        virtualAddress,\n  229                  CachingMode         cacheMode,\n\n4 matches across 4 files\n\n\nSearching 252 files for \"SetupPreemption\"\n\n/home/hgoel/Documents/Cardinal/main.c:\n   91      DeviceManager_Initialize();\n   92      //smp_unlock_cores();\n   93:     SetupPreemption();\n   94      target_device_setup();\n   95  \n   ..\n  125      StartProcess(cpid);\n  126  \n  127:     SetupPreemption();\n  128      CoreUpdate();\n  129      while(1);\n\n/home/hgoel/Documents/Cardinal/target/hal/thread.h:\n  123   */\n  124  void\n  125: SetupPreemption(void);\n  126  \n  127  /**\n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n  111  \n  112  void\n  113: SetupPreemption(void) {\n  114      SetPeriodicPreemptVector(IRQ(1), APIC_GetTimerFrequency()/10000);\n  115      APIC_SetVector(APIC_TIMER, IRQ(1));\n\n4 matches across 3 files\n\n\nSearching 252 files for \"APIC_SetEnableInterrupt\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c:\n  122  \n  123      PIT_SetEnableMode(ENABLED);\n  124:     APIC_SetEnableInterrupt(APIC_TIMER, ENABLED);\n  125      uint64_t init_tsc_value = APIC_GetTSCValue();\n  126  \n  ...\n  130  \n  131      PIT_SetEnableMode(DISABLED);\n  132:     APIC_SetEnableInterrupt(APIC_TIMER, DISABLED);\n  133  \n  134      uint64_t apic_ticks = rollover_cnt * 0xFFFFFFFF + (0xFFFFFFFF - apic_timer_value);\n  ...\n  208  \n  209  void\n  210: APIC_SetEnableInterrupt(uint32_t interrupt,\n  211                          int enableMode) {\n  212      if (interrupt < APIC_TIMER || interrupt > APIC_ERR) return;\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.h:\n   87  \n   88  void\n   89: APIC_SetEnableInterrupt(uint32_t interrupt,\n   90                          int enableMode);\n   91  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c:\n  117      APIC_SetTimerMode(APIC_TIMER_PERIODIC);\n  118      __asm__(\"sti\");\n  119:     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);\n  120  \n  121  }\n  ...\n  124  ResetPreemption(void) {\n  125      __asm__(\"cli\");\n  126:     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);\n  127      APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);\n  128      __asm__(\"sti\");\n  129:     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);\n  130  }\n\n7 matches across 3 files\n\n\nSearching 252 files for \"APIC_SetEnableMode\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c:\n   95      APIC_Write(APIC_SVR, svr);\n   96  \n   97:     APIC_SetEnableMode(TRUE);\n   98      return 0;\n   99  }\n  ...\n  287  \n  288  void\n  289: APIC_SetEnableMode(uint8_t enabled) {\n  290      uint32_t svr = APIC_Read(APIC_SVR);\n  291      svr = SET_VAL_BIT(svr, 8, (enabled & 1));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.h:\n   54  \n   55  void\n   56: APIC_SetEnableMode(uint8_t enabled);\n   57  \n   58  uint8_t\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/io_apic/io_apic.c:\n  117  \n  118  void\n  119: IOAPIC_SetEnableMode(uint8_t vector,\n  120                       bool active) {\n  121      //Make sure this interrupt has even been mapped to something!\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/io_apic/io_apic.h:\n   25  \n   26  void\n   27: IOAPIC_SetEnableMode(uint8_t vector,\n   28                       bool active);\n   29  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts/interrupt_man.c:\n  100  void\n  101  SetInterruptEnableMode(uint32_t vector, bool enableMode) {\n  102:     IOAPIC_SetEnableMode((uint8_t)vector, enableMode);\n  103  }\n  104  \n\n6 matches across 5 files\n\n\nSearching 252 files for \"APIC_SetEnableMode\"\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c:\n   95      APIC_Write(APIC_SVR, svr);\n   96  \n   97:     APIC_SetEnableMode(TRUE);\n   98      return 0;\n   99  }\n  ...\n  287  \n  288  void\n  289: APIC_SetEnableMode(uint8_t enabled) {\n  290      uint32_t svr = APIC_Read(APIC_SVR);\n  291      svr = SET_VAL_BIT(svr, 8, (enabled & 1));\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.h:\n   54  \n   55  void\n   56: APIC_SetEnableMode(uint8_t enabled);\n   57  \n   58  uint8_t\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/io_apic/io_apic.c:\n  117  \n  118  void\n  119: IOAPIC_SetEnableMode(uint8_t vector,\n  120                       bool active) {\n  121      //Make sure this interrupt has even been mapped to something!\n\n/home/hgoel/Documents/Cardinal/target/x86_64/apic/io_apic/io_apic.h:\n   25  \n   26  void\n   27: IOAPIC_SetEnableMode(uint8_t vector,\n   28                       bool active);\n   29  \n\n/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts/interrupt_man.c:\n  100  void\n  101  SetInterruptEnableMode(uint32_t vector, bool enableMode) {\n  102:     IOAPIC_SetEnableMode((uint8_t)vector, enableMode);\n  103  }\n  104  \n\n6 matches across 5 files\n",
-			"settings":
-			{
-				"buffer_size": 70277,
-				"line_ending": "Unix",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"file": "managers/syscall_manager/syscall.c",
-			"settings":
-			{
-				"buffer_size": 2414,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "userboot/program.c",
-			"settings":
-			{
-				"buffer_size": 806,
-				"encoding": "UTF-8",
+				"buffer_size": 552,
 				"line_ending": "Unix"
 			}
 		},
@@ -639,87 +585,7 @@
 			"file": "sys_init/main.c",
 			"settings":
 			{
-				"buffer_size": 262,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Sources.inc",
-			"settings":
-			{
-				"buffer_size": 927,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "libs/libCardinal/include/syscall_property.h",
-			"settings":
-			{
-				"buffer_size": 2087,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "libs/libCardinal/include/syscall_list.h",
-			"settings":
-			{
-				"buffer_size": 1776,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "userboot/initrd.c",
-			"settings":
-			{
-				"buffer_size": 4771,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "managers/syscall_manager/syscalls/priv_syscalls.h",
-			"settings":
-			{
-				"buffer_size": 2539,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/hal/memory.c",
-			"settings":
-			{
-				"buffer_size": 24911,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "managers/syscall_manager/syscalls/property.c",
-			"settings":
-			{
-				"buffer_size": 5333,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "managers/process_manager/process.c",
-			"settings":
-			{
-				"buffer_size": 10990,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "libs/libCardinal/include/syscall_emu.h",
-			"settings":
-			{
-				"buffer_size": 5126,
+				"buffer_size": 232,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -728,61 +594,7 @@
 			"file": "userboot/main.c",
 			"settings":
 			{
-				"buffer_size": 777,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "managers/thread_manager/thread.h",
-			"settings":
-			{
-				"buffer_size": 9646,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/apic/apic.c",
-			"settings":
-			{
-				"buffer_size": 8392,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/virt_mem_manager/virt_mem_manager.h",
-			"settings":
-			{
-				"buffer_size": 3842,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/virt_mem_manager/virt_mem_manager.c",
-			"settings":
-			{
-				"buffer_size": 37785,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/page_manager/phys_mem_manager.c",
-			"settings":
-			{
-				"buffer_size": 5258,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "target/x86_64/hal/syscall.c",
-			"settings":
-			{
-				"buffer_size": 2492,
+				"buffer_size": 1208,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -854,134 +666,155 @@
 	"expanded_folders":
 	[
 		"/home/hgoel/Documents/Cardinal",
-		"/home/hgoel/Documents/Cardinal/common",
-		"/home/hgoel/Documents/Cardinal/kmalloc",
 		"/home/hgoel/Documents/Cardinal/libs",
 		"/home/hgoel/Documents/Cardinal/libs/libCardinal",
 		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include",
-		"/home/hgoel/Documents/Cardinal/managers",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager",
+		"/home/hgoel/Documents/Cardinal/libs/libcserver",
+		"/home/hgoel/Documents/Cardinal/libs/libipc",
+		"/home/hgoel/Documents/Cardinal/libs/libipc/include",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls",
-		"/home/hgoel/Documents/Cardinal/managers/thread_manager",
-		"/home/hgoel/Documents/Cardinal/srv/elf_server",
-		"/home/hgoel/Documents/Cardinal/srv/elf_server/include",
-		"/home/hgoel/Documents/Cardinal/srv/namespace_man",
-		"/home/hgoel/Documents/Cardinal/srv/namespace_man/include",
-		"/home/hgoel/Documents/Cardinal/srv/perm_man",
-		"/home/hgoel/Documents/Cardinal/srv/perm_man/include",
-		"/home/hgoel/Documents/Cardinal/target",
+		"/home/hgoel/Documents/Cardinal/srv",
+		"/home/hgoel/Documents/Cardinal/srv/elf_srv/lib",
+		"/home/hgoel/Documents/Cardinal/srv/mem_srv",
+		"/home/hgoel/Documents/Cardinal/target/hal",
 		"/home/hgoel/Documents/Cardinal/target/x86_64",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/IDT",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/apic",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/hal",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/utils",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager",
 		"/home/hgoel/Documents/Cardinal/userboot"
 	],
 	"file_history":
 	[
-		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.c",
+		"/home/hgoel/Documents/Cardinal/libs/libcserver/Makefile",
+		"/home/hgoel/Documents/Cardinal/scripts/rebuild-initrd.sh",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/lib/elf.c",
+		"/home/hgoel/Documents/Cardinal/srv/elf_srv/Makefile",
+		"/home/hgoel/Documents/Cardinal/srv/elf_srv/lib/Makefile",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/include/server.h",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/lib/Makefile",
 		"/home/hgoel/Documents/Cardinal/srv/elf_server/main.c",
+		"/home/hgoel/Documents/Cardinal/scripts/build-libs.sh",
+		"/home/hgoel/Documents/Cardinal/srv/namespace_man/include/server.h",
+		"/home/hgoel/Documents/Cardinal/srv/namespace_man/Makefile",
+		"/home/hgoel/Documents/Cardinal/srv/namespace_man/namespace_db.c",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/Makefile",
+		"/home/hgoel/Documents/Cardinal/libs/libipc/include/ipc.h",
+		"/home/hgoel/Documents/Cardinal/libs/libipc/ipc.c",
+		"/home/hgoel/Documents/Cardinal/libs/libipc/Makefile",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.c",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_io.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_types.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/file_server.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/process.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/signal.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_emu.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/bootinfo.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/memory.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/registers.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_property.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_list.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/limits.h",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/keyman.h",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/elf.h",
+		"/home/hgoel/Documents/Cardinal/srv/elf_server/lib/include/elf.h",
+		"/home/hgoel/Documents/Cardinal/libs/libelfloader/elf.c",
+		"/home/hgoel/Documents/Cardinal/libs/libelfloader/include/elf.h",
+		"/home/hgoel/Documents/Cardinal/scripts/rebuild-musl.sh",
+		"/home/hgoel/Documents/Cardinal/sys_init/main.c",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h",
+		"/home/hgoel/Documents/Cardinal/target/hal/memory.h",
+		"/home/hgoel/Documents/Cardinal/srv/proc_server/Makefile",
+		"/home/hgoel/Documents/Cardinal/srv/root_srv/Makefile",
+		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/ipc.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c",
+		"/home/hgoel/Documents/Cardinal/managers/key_manager/key_manager.h",
+		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.c",
+		"/home/hgoel/Documents/Cardinal/main.c",
+		"/home/hgoel/Documents/Cardinal/srv/proc_server/include/server.h",
+		"/home/hgoel/Documents/Cardinal/managers/key_manager/key_manager.c",
+		"/home/hgoel/Documents/Cardinal/common/common.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/ipc.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/memory.c",
+		"/home/hgoel/Documents/Cardinal/Sources.inc",
+		"/home/hgoel/Documents/Cardinal/userboot/main.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/keyman.h",
+		"/home/hgoel/Documents/Cardinal/sys_init/Makefile",
+		"/home/hgoel/Documents/Cardinal/common/common.h",
+		"/home/hgoel/Documents/Cardinal/Makefile",
+		"/home/hgoel/Documents/Cardinal/initrd/Makefile",
+		"/home/hgoel/Documents/Cardinal/managers/managers.h",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.c",
+		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts/interrupt_man.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager/phys_mem_manager.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.c",
+		"/home/hgoel/Documents/Cardinal/userboot/initrd.c",
+		"/home/hgoel/Documents/Cardinal/userboot/program.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.c",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/boot_info.c",
+		"/home/hgoel/Documents/Cardinal/userboot/elf.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/apic/priv_apic.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic.h",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.c",
+		"/home/hgoel/Documents/Cardinal/managers/bootstrap_mem_pool/bootstrap_mem_pool.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.h",
+		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/thread.c",
+		"/home/hgoel/Documents/Cardinal/target/x86_64/GDT/gdt.c",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/thread.c",
 		"/home/hgoel/Documents/Cardinal/kmalloc/kmalloc.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/bootstrap.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/syscalls/arch_prctl.c",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.c",
-		"/home/hgoel/Documents/Cardinal/userboot/elf.c",
 		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscalls_all.h",
-		"/home/hgoel/Documents/Cardinal/target/hal/memory.h",
 		"/home/hgoel/Documents/Cardinal/managers/user_manager/user_manager.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_property.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/property.c",
-		"/home/hgoel/Documents/Cardinal/managers/managers.h",
 		"/home/hgoel/Documents/Cardinal/managers/bus_manager/bus_manager.h",
-		"/home/hgoel/Documents/Cardinal/srv/namespace_man/namespace_db.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/ipc.h",
 		"/home/hgoel/Documents/Cardinal/srv/perm_man/permissions.c",
-		"/home/hgoel/Documents/Cardinal/userboot/main.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/memory.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/virt_mem_manager/virt_mem_manager.c",
 		"/home/hgoel/Documents/Cardinal/managers/user_manager/user_manager.h",
 		"/home/hgoel/Documents/Cardinal/srv/namespace_man/main.c",
 		"/home/hgoel/Documents/Cardinal/srv/namespace_man/include/namespace_db.h",
 		"/home/hgoel/Documents/Cardinal/srv/perm_man/include/server.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/memory.c",
 		"/home/hgoel/Documents/Cardinal/srv/perm_man/main.c",
-		"/home/hgoel/Documents/Cardinal/srv/elf_server/include/server.h",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/process.h",
-		"/home/hgoel/Documents/Cardinal/main.c",
 		"/home/hgoel/Documents/Cardinal/srv/perm_man/include/permissions.h",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager/process.h",
 		"/home/hgoel/Documents/Cardinal/utils/cctool.c",
-		"/home/hgoel/Documents/Cardinal/scripts/rebuild-initrd.sh",
 		"/home/hgoel/Documents/Cardinal/srv/elf_server/program.c",
 		"/home/hgoel/Documents/Cardinal/sys_init/initrd.c",
 		"/home/hgoel/Documents/Cardinal/sys_init/include/initrd.h",
-		"/home/hgoel/Documents/Cardinal/srv/elf_server/Makefile",
-		"/home/hgoel/Documents/Cardinal/userboot/program.c",
 		"/home/hgoel/Documents/Cardinal/cardinal.sublime-project",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/x86_64_common.h",
-		"/home/hgoel/Documents/Cardinal/userboot/initrd.c",
 		"/home/hgoel/Documents/Cardinal/userboot/Makefile",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/archDefs.inc",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall_list.h",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/synchronization.c",
 		"/home/hgoel/Documents/Cardinal/target/hal/synchronization.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/syscall_main.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/apic/apic_init.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/smp/smp.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/page_manager/phys_mem_manager.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/linker.ld",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/interrupts/interrupt_man.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/syscall.c",
 		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/thread.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/priv_syscalls.h",
 		"/home/hgoel/Documents/Cardinal/boot_information/multiboot2/parseMultiboot2.c",
 		"/home/hgoel/Documents/Cardinal/userboot/linker.ld",
-		"/home/hgoel/Documents/Cardinal/Makefile",
-		"/home/hgoel/Documents/Cardinal/managers/thread_manager/thread.h",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/smp/smp.c",
 		"/home/hgoel/Documents/Cardinal/userboot/include/program.h",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/GDT/gdt.c",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/cardinal_types.h",
-		"/home/hgoel/Documents/Cardinal/libs/libCardinal/include/syscall.h",
 		"/home/hgoel/Documents/Cardinal/target/hal/program.h",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/hal/program.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/fpu/fpu.c",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/Makefile",
-		"/home/hgoel/Documents/Cardinal/managers/process_manager/process_info.h",
 		"/home/hgoel/Documents/Cardinal/target/hal/thread.h",
 		"/home/hgoel/Documents/Cardinal/target/x86_64/syscalls/syscalls.c",
 		"/home/hgoel/Documents/Cardinal/userboot/include/elf.h",
 		"/home/hgoel/Documents/Cardinal/common/list.c",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/IDT/idt.c",
 		"/home/hgoel/Documents/Cardinal/userboot/include/initrd.h",
 		"/home/hgoel/Documents/Cardinal/grub.cfg",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/ipc.c",
 		"/home/hgoel/Documents/Cardinal/.sublime-project",
 		"/home/hgoel/.config/sublime-text-3/Packages/IntelliDocs/IntelliDocs.sublime-settings",
 		"/home/hgoel/Documents/Cardinal/Doxyfile",
 		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/README.md",
-		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/Base File.sublime-settings",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/debug_gfx.c",
-		"/home/hgoel/Documents/Cardinal/sys_init/sys_init.elf",
-		"/home/hgoel/Documents/Cardinal/sys_init/Makefile",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/errno.c",
-		"/home/hgoel/Documents/Cardinal/target/hal/syscall.h",
-		"/home/hgoel/Documents/Cardinal/acpi/acpi_tables.c",
-		"/home/hgoel/Documents/Cardinal/target/hal/interrupts.h",
-		"/home/hgoel/Documents/Cardinal/.gitignore",
-		"/home/hgoel/Documents/Cardinal/target/hal/timer.h",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscalls/time.c",
-		"/home/hgoel/Documents/Cardinal/Sources.inc",
-		"/home/hgoel/Documents/Cardinal/managers/syscall_manager/syscall.h",
-		"/home/hgoel/Documents/Cardinal/initrd/Makefile",
-		"/home/hgoel/Documents/Cardinal/target/x86_64/Sources.inc",
-		"/home/hgoel/Documents/Cardinal/root/sys/src/Cardinal_directory_server-master/Makefile"
+		"/home/hgoel/.config/sublime-text-3/Packages/DocBlockr/Base File.sublime-settings"
 	],
 	"find":
 	{
@@ -998,9 +831,35 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"TODO",
+			"CARDINAL_MSG_TYPE_SIGNAL",
+			"CARDINAL_MSG_TYPE_IO",
+			"CARDINAL_MSG_TYPE_ERROR",
+			"PhysicalAddress",
+			"AllocationType_ApplicationProtected",
+			"AllocationType",
+			"STACK_SIZE",
+			"HandlePageFault",
+			"getthreaduserstack",
+			"getthreduserstack",
+			"STACK_SIZE",
+			"KiB",
+			"STACK_SIZE",
+			"ReservedAllocation",
+			"RegisterInterruptHandler",
+			"switchtousermode",
+			"iretq",
+			"\"sti",
+			"sti",
+			"APIC_SendEOI",
+			"wrmsr",
+			"%gs",
+			"swapgs",
+			"SetGSBase",
+			"GS",
 			"APIC_SetEnableMode",
 			"APIC_SetEnableInterrupt",
 			"SetupPreemption",
@@ -1102,24 +961,7 @@
 			"clear_child_tid",
 			"set_child_tid",
 			"core_affinity",
-			"sleep_start_time",
-			"sleep_duration_ns",
-			"current_stack",
-			"kernel_stack_base",
-			"kernel_stack_aligned",
-			"interrupt_stack_aligned",
-			"interrupt_stack_base",
-			"priority",
-			"wakeCondition",
-			"fpu_state",
-			"state",
-			"SetSyscallErrno",
-			"TODO",
-			"ProcessStatus_Stopped",
-			"seek",
-			"getdents64",
-			"dir",
-			"read"
+			"sleep_start_time"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1127,6 +969,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"stack_Size",
 			"GetAddressPermissions",
 			"SpinlockUnlocker",
 			"((volatile CoreThreadState*)GetAPLS(coreState))",
@@ -1186,174 +1029,177 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "main.c",
+					"file": "libs/libCardinal/include/ipc.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3370,
+						"buffer_size": 4586,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1025,
-								1025
+								816,
+								816
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C.sublime-syntax",
+							"syntax": "Packages/C++/C++.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 450.0,
+						"translation.y": 185.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "target/x86_64/IDT/idt.c",
+					"file": "srv/mem_srv/main.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5792,
+						"buffer_size": 702,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4530,
-								4530
+								537,
+								537
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 450.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "managers/thread_manager/thread.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 29453,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8986,
-								8986
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3580.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "managers/syscall_manager/syscalls/syscall_main.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1147,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								550,
-								550
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/C++/C.sublime-syntax"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "target/x86_64/hal/thread.c",
+					"buffer": 2,
+					"file": "libs/libCardinal/include/thread.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3267,
+						"buffer_size": 2867,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2464,
-								2464
+								2562,
+								2562
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 1350.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 5,
+			"sheets":
+			[
+				{
+					"buffer": 3,
+					"file": "srv/elf_srv/lib/elf.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1687,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1687,
+								1687
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 270.0,
+						"translation.y": 349.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "target/x86_64/apic/apic.h",
+					"buffer": 4,
+					"file": "srv/elf_server/program.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2169,
+						"buffer_size": 2897,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								173,
-								173
+								146,
+								146
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "srv/proc_server/include/server.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 399,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								391,
+								391
 							]
 						],
 						"settings":
@@ -1364,54 +1210,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
-					"file": "common/common.h",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 1715,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								132,
-								132
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "libs/libCardinal/include/memory.h",
+					"file": "srv/elf_server/program.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6631,
+						"buffer_size": 552,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								851,
-								851
+								461,
+								461
 							]
 						],
 						"settings":
@@ -1420,1760 +1236,28 @@
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": -0.0,
-						"translation.y": 180.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 17,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "userboot/elf.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4902,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2232,
-								2232
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
 						"translation.x": 0.0,
-						"translation.y": 695.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 25,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "managers/syscall_manager/syscalls/boot_info.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1027,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								650,
-								650
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 135.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 24,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 70277,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										151,
-										154
-									],
-									[
-										289,
-										292
-									],
-									[
-										471,
-										474
-									],
-									[
-										596,
-										599
-									],
-									[
-										712,
-										715
-									],
-									[
-										843,
-										846
-									],
-									[
-										942,
-										945
-									],
-									[
-										987,
-										990
-									],
-									[
-										1170,
-										1173
-									],
-									[
-										1234,
-										1237
-									],
-									[
-										1537,
-										1540
-									],
-									[
-										1579,
-										1582
-									],
-									[
-										1859,
-										1862
-									],
-									[
-										2217,
-										2220
-									],
-									[
-										2625,
-										2628
-									],
-									[
-										2982,
-										2985
-									],
-									[
-										3234,
-										3237
-									],
-									[
-										3527,
-										3530
-									],
-									[
-										3722,
-										3725
-									],
-									[
-										3973,
-										3976
-									],
-									[
-										4263,
-										4266
-									],
-									[
-										4500,
-										4503
-									],
-									[
-										4752,
-										4755
-									],
-									[
-										5089,
-										5092
-									],
-									[
-										5380,
-										5383
-									],
-									[
-										5559,
-										5562
-									],
-									[
-										5778,
-										5781
-									],
-									[
-										5965,
-										5968
-									],
-									[
-										6184,
-										6187
-									],
-									[
-										6479,
-										6482
-									],
-									[
-										6907,
-										6910
-									],
-									[
-										7108,
-										7111
-									],
-									[
-										7279,
-										7282
-									],
-									[
-										7428,
-										7431
-									],
-									[
-										7556,
-										7559
-									],
-									[
-										7796,
-										7799
-									],
-									[
-										8008,
-										8011
-									],
-									[
-										8298,
-										8301
-									],
-									[
-										8573,
-										8576
-									],
-									[
-										8731,
-										8734
-									],
-									[
-										8966,
-										8969
-									],
-									[
-										9138,
-										9141
-									],
-									[
-										9326,
-										9329
-									],
-									[
-										9560,
-										9563
-									],
-									[
-										9703,
-										9706
-									],
-									[
-										9973,
-										9976
-									],
-									[
-										10102,
-										10105
-									],
-									[
-										10421,
-										10424
-									],
-									[
-										10593,
-										10596
-									],
-									[
-										10969,
-										10972
-									],
-									[
-										11397,
-										11400
-									],
-									[
-										11459,
-										11462
-									],
-									[
-										11770,
-										11773
-									],
-									[
-										11866,
-										11869
-									],
-									[
-										11968,
-										11971
-									],
-									[
-										12066,
-										12069
-									],
-									[
-										12165,
-										12168
-									],
-									[
-										12260,
-										12263
-									],
-									[
-										12355,
-										12358
-									],
-									[
-										12450,
-										12453
-									],
-									[
-										12900,
-										12903
-									],
-									[
-										13063,
-										13066
-									],
-									[
-										13236,
-										13239
-									],
-									[
-										13427,
-										13430
-									],
-									[
-										13706,
-										13710
-									],
-									[
-										13933,
-										13937
-									],
-									[
-										14185,
-										14189
-									],
-									[
-										14478,
-										14482
-									],
-									[
-										14673,
-										14677
-									],
-									[
-										14924,
-										14928
-									],
-									[
-										15214,
-										15218
-									],
-									[
-										15451,
-										15455
-									],
-									[
-										15631,
-										15635
-									],
-									[
-										15968,
-										15972
-									],
-									[
-										16259,
-										16263
-									],
-									[
-										16438,
-										16442
-									],
-									[
-										16657,
-										16661
-									],
-									[
-										16844,
-										16848
-									],
-									[
-										17063,
-										17067
-									],
-									[
-										17358,
-										17362
-									],
-									[
-										17786,
-										17790
-									],
-									[
-										17987,
-										17991
-									],
-									[
-										18158,
-										18162
-									],
-									[
-										18307,
-										18311
-									],
-									[
-										18435,
-										18439
-									],
-									[
-										18675,
-										18679
-									],
-									[
-										18887,
-										18891
-									],
-									[
-										19177,
-										19181
-									],
-									[
-										19452,
-										19456
-									],
-									[
-										19610,
-										19614
-									],
-									[
-										19845,
-										19849
-									],
-									[
-										20017,
-										20021
-									],
-									[
-										20244,
-										20248
-									],
-									[
-										20387,
-										20391
-									],
-									[
-										20657,
-										20661
-									],
-									[
-										20786,
-										20790
-									],
-									[
-										21105,
-										21109
-									],
-									[
-										21277,
-										21281
-									],
-									[
-										21612,
-										21616
-									],
-									[
-										21775,
-										21779
-									],
-									[
-										21948,
-										21952
-									],
-									[
-										22139,
-										22143
-									],
-									[
-										22432,
-										22444
-									],
-									[
-										22584,
-										22596
-									],
-									[
-										22667,
-										22679
-									],
-									[
-										22810,
-										22822
-									],
-									[
-										22939,
-										22951
-									],
-									[
-										23017,
-										23029
-									],
-									[
-										23154,
-										23166
-									],
-									[
-										23257,
-										23269
-									],
-									[
-										23372,
-										23384
-									],
-									[
-										23475,
-										23487
-									],
-									[
-										23671,
-										23683
-									],
-									[
-										23815,
-										23827
-									],
-									[
-										23928,
-										23940
-									],
-									[
-										24138,
-										24150
-									],
-									[
-										24251,
-										24263
-									],
-									[
-										24444,
-										24456
-									],
-									[
-										24652,
-										24664
-									],
-									[
-										24812,
-										24824
-									],
-									[
-										25023,
-										25035
-									],
-									[
-										25115,
-										25127
-									],
-									[
-										25240,
-										25252
-									],
-									[
-										25392,
-										25404
-									],
-									[
-										25430,
-										25442
-									],
-									[
-										25720,
-										25732
-									],
-									[
-										25929,
-										25941
-									],
-									[
-										26118,
-										26130
-									],
-									[
-										26199,
-										26211
-									],
-									[
-										26287,
-										26299
-									],
-									[
-										26405,
-										26417
-									],
-									[
-										26593,
-										26605
-									],
-									[
-										26674,
-										26686
-									],
-									[
-										26806,
-										26818
-									],
-									[
-										26994,
-										27006
-									],
-									[
-										27156,
-										27168
-									],
-									[
-										27292,
-										27304
-									],
-									[
-										27482,
-										27494
-									],
-									[
-										27630,
-										27642
-									],
-									[
-										27757,
-										27769
-									],
-									[
-										27879,
-										27891
-									],
-									[
-										28073,
-										28085
-									],
-									[
-										28198,
-										28210
-									],
-									[
-										28387,
-										28399
-									],
-									[
-										28476,
-										28488
-									],
-									[
-										28655,
-										28667
-									],
-									[
-										28748,
-										28760
-									],
-									[
-										28953,
-										28965
-									],
-									[
-										29150,
-										29162
-									],
-									[
-										29308,
-										29320
-									],
-									[
-										29396,
-										29408
-									],
-									[
-										29568,
-										29580
-									],
-									[
-										29702,
-										29714
-									],
-									[
-										29790,
-										29802
-									],
-									[
-										29998,
-										30010
-									],
-									[
-										30086,
-										30098
-									],
-									[
-										30231,
-										30243
-									],
-									[
-										30339,
-										30351
-									],
-									[
-										30607,
-										30619
-									],
-									[
-										30749,
-										30761
-									],
-									[
-										30878,
-										30890
-									],
-									[
-										31058,
-										31070
-									],
-									[
-										31264,
-										31276
-									],
-									[
-										31465,
-										31477
-									],
-									[
-										31614,
-										31626
-									],
-									[
-										31791,
-										31803
-									],
-									[
-										31891,
-										31903
-									],
-									[
-										32206,
-										32218
-									],
-									[
-										32446,
-										32458
-									],
-									[
-										32656,
-										32668
-									],
-									[
-										32810,
-										32822
-									],
-									[
-										32978,
-										32990
-									],
-									[
-										33092,
-										33104
-									],
-									[
-										33281,
-										33293
-									],
-									[
-										33467,
-										33479
-									],
-									[
-										33652,
-										33664
-									],
-									[
-										33794,
-										33806
-									],
-									[
-										34011,
-										34023
-									],
-									[
-										34211,
-										34223
-									],
-									[
-										34420,
-										34432
-									],
-									[
-										34651,
-										34663
-									],
-									[
-										34807,
-										34819
-									],
-									[
-										35094,
-										35106
-									],
-									[
-										35219,
-										35231
-									],
-									[
-										35511,
-										35523
-									],
-									[
-										35632,
-										35644
-									],
-									[
-										35853,
-										35865
-									],
-									[
-										35978,
-										35990
-									],
-									[
-										36281,
-										36293
-									],
-									[
-										36402,
-										36414
-									],
-									[
-										36523,
-										36535
-									],
-									[
-										36673,
-										36685
-									],
-									[
-										36878,
-										36890
-									],
-									[
-										36914,
-										36926
-									],
-									[
-										37079,
-										37091
-									],
-									[
-										37117,
-										37129
-									],
-									[
-										37227,
-										37239
-									],
-									[
-										37265,
-										37277
-									],
-									[
-										37388,
-										37400
-									],
-									[
-										37472,
-										37484
-									],
-									[
-										37565,
-										37577
-									],
-									[
-										37671,
-										37683
-									],
-									[
-										37831,
-										37843
-									],
-									[
-										38057,
-										38069
-									],
-									[
-										38206,
-										38218
-									],
-									[
-										38491,
-										38503
-									],
-									[
-										38688,
-										38700
-									],
-									[
-										38798,
-										38810
-									],
-									[
-										38960,
-										38972
-									],
-									[
-										39282,
-										39294
-									],
-									[
-										39376,
-										39388
-									],
-									[
-										39436,
-										39448
-									],
-									[
-										39554,
-										39566
-									],
-									[
-										39657,
-										39669
-									],
-									[
-										39713,
-										39725
-									],
-									[
-										39823,
-										39835
-									],
-									[
-										39991,
-										40003
-									],
-									[
-										40101,
-										40113
-									],
-									[
-										40204,
-										40216
-									],
-									[
-										40327,
-										40339
-									],
-									[
-										40519,
-										40531
-									],
-									[
-										40646,
-										40658
-									],
-									[
-										40850,
-										40862
-									],
-									[
-										41037,
-										41049
-									],
-									[
-										41136,
-										41148
-									],
-									[
-										41220,
-										41232
-									],
-									[
-										41311,
-										41323
-									],
-									[
-										41554,
-										41566
-									],
-									[
-										41692,
-										41704
-									],
-									[
-										41861,
-										41873
-									],
-									[
-										42058,
-										42070
-									],
-									[
-										42257,
-										42269
-									],
-									[
-										42483,
-										42495
-									],
-									[
-										42649,
-										42661
-									],
-									[
-										42685,
-										42697
-									],
-									[
-										42825,
-										42837
-									],
-									[
-										42928,
-										42940
-									],
-									[
-										43042,
-										43054
-									],
-									[
-										43192,
-										43204
-									],
-									[
-										43403,
-										43415
-									],
-									[
-										43572,
-										43584
-									],
-									[
-										43748,
-										43760
-									],
-									[
-										43898,
-										43910
-									],
-									[
-										44059,
-										44071
-									],
-									[
-										44247,
-										44259
-									],
-									[
-										44402,
-										44414
-									],
-									[
-										44567,
-										44579
-									],
-									[
-										44763,
-										44775
-									],
-									[
-										44843,
-										44855
-									],
-									[
-										44969,
-										44981
-									],
-									[
-										45036,
-										45048
-									],
-									[
-										45154,
-										45166
-									],
-									[
-										45255,
-										45267
-									],
-									[
-										45416,
-										45428
-									],
-									[
-										45498,
-										45510
-									],
-									[
-										45607,
-										45619
-									],
-									[
-										45705,
-										45717
-									],
-									[
-										45841,
-										45853
-									],
-									[
-										46022,
-										46034
-									],
-									[
-										46130,
-										46142
-									],
-									[
-										46315,
-										46327
-									],
-									[
-										46356,
-										46368
-									],
-									[
-										46652,
-										46664
-									],
-									[
-										46706,
-										46718
-									],
-									[
-										46817,
-										46829
-									],
-									[
-										47016,
-										47028
-									],
-									[
-										47162,
-										47174
-									],
-									[
-										47304,
-										47316
-									],
-									[
-										47484,
-										47496
-									],
-									[
-										47641,
-										47653
-									],
-									[
-										47804,
-										47816
-									],
-									[
-										47910,
-										47922
-									],
-									[
-										48073,
-										48085
-									],
-									[
-										48179,
-										48191
-									],
-									[
-										48385,
-										48397
-									],
-									[
-										48529,
-										48541
-									],
-									[
-										48668,
-										48680
-									],
-									[
-										48795,
-										48807
-									],
-									[
-										48936,
-										48948
-									],
-									[
-										49071,
-										49083
-									],
-									[
-										49163,
-										49175
-									],
-									[
-										49362,
-										49374
-									],
-									[
-										49576,
-										49588
-									],
-									[
-										49669,
-										49681
-									],
-									[
-										49725,
-										49737
-									],
-									[
-										49822,
-										49834
-									],
-									[
-										49866,
-										49878
-									],
-									[
-										49925,
-										49937
-									],
-									[
-										50045,
-										50057
-									],
-									[
-										50264,
-										50276
-									],
-									[
-										50482,
-										50494
-									],
-									[
-										50570,
-										50582
-									],
-									[
-										50687,
-										50699
-									],
-									[
-										50844,
-										50856
-									],
-									[
-										51154,
-										51161
-									],
-									[
-										51392,
-										51399
-									],
-									[
-										51572,
-										51579
-									],
-									[
-										51805,
-										51812
-									],
-									[
-										51994,
-										52001
-									],
-									[
-										52341,
-										52348
-									],
-									[
-										52596,
-										52603
-									],
-									[
-										52740,
-										52747
-									],
-									[
-										52892,
-										52899
-									],
-									[
-										53122,
-										53129
-									],
-									[
-										53307,
-										53314
-									],
-									[
-										53485,
-										53492
-									],
-									[
-										53707,
-										53714
-									],
-									[
-										53882,
-										53889
-									],
-									[
-										54093,
-										54100
-									],
-									[
-										54252,
-										54259
-									],
-									[
-										54451,
-										54458
-									],
-									[
-										54633,
-										54640
-									],
-									[
-										54831,
-										54838
-									],
-									[
-										55007,
-										55014
-									],
-									[
-										55219,
-										55226
-									],
-									[
-										55395,
-										55402
-									],
-									[
-										55633,
-										55640
-									],
-									[
-										55920,
-										55931
-									],
-									[
-										56187,
-										56198
-									],
-									[
-										56496,
-										56507
-									],
-									[
-										56580,
-										56591
-									],
-									[
-										56769,
-										56780
-									],
-									[
-										57087,
-										57100
-									],
-									[
-										57389,
-										57402
-									],
-									[
-										57562,
-										57575
-									],
-									[
-										57707,
-										57720
-									],
-									[
-										57879,
-										57892
-									],
-									[
-										58103,
-										58116
-									],
-									[
-										58171,
-										58184
-									],
-									[
-										58240,
-										58253
-									],
-									[
-										58312,
-										58325
-									],
-									[
-										58380,
-										58393
-									],
-									[
-										58536,
-										58549
-									],
-									[
-										58995,
-										59008
-									],
-									[
-										59018,
-										59031
-									],
-									[
-										59232,
-										59245
-									],
-									[
-										59550,
-										59563
-									],
-									[
-										59965,
-										59976
-									],
-									[
-										60049,
-										60060
-									],
-									[
-										60238,
-										60249
-									],
-									[
-										60598,
-										60609
-									],
-									[
-										60682,
-										60693
-									],
-									[
-										60871,
-										60882
-									],
-									[
-										61095,
-										61110
-									],
-									[
-										61249,
-										61264
-									],
-									[
-										61378,
-										61393
-									],
-									[
-										61668,
-										61685
-									],
-									[
-										61822,
-										61839
-									],
-									[
-										62069,
-										62086
-									],
-									[
-										62364,
-										62370
-									],
-									[
-										62550,
-										62556
-									],
-									[
-										62780,
-										62786
-									],
-									[
-										62965,
-										62971
-									],
-									[
-										63169,
-										63175
-									],
-									[
-										63255,
-										63261
-									],
-									[
-										63302,
-										63308
-									],
-									[
-										63349,
-										63355
-									],
-									[
-										63397,
-										63403
-									],
-									[
-										63522,
-										63528
-									],
-									[
-										63566,
-										63572
-									],
-									[
-										63791,
-										63797
-									],
-									[
-										63952,
-										63958
-									],
-									[
-										64113,
-										64119
-									],
-									[
-										64157,
-										64163
-									],
-									[
-										64361,
-										64367
-									],
-									[
-										64432,
-										64438
-									],
-									[
-										64697,
-										64703
-									],
-									[
-										64853,
-										64859
-									],
-									[
-										65291,
-										65297
-									],
-									[
-										65520,
-										65526
-									],
-									[
-										65858,
-										65873
-									],
-									[
-										65975,
-										65990
-									],
-									[
-										66123,
-										66138
-									],
-									[
-										66252,
-										66267
-									],
-									[
-										66595,
-										66618
-									],
-									[
-										66771,
-										66794
-									],
-									[
-										66953,
-										66976
-									],
-									[
-										67203,
-										67226
-									],
-									[
-										67452,
-										67475
-									],
-									[
-										67589,
-										67612
-									],
-									[
-										67735,
-										67758
-									],
-									[
-										67978,
-										67996
-									],
-									[
-										68067,
-										68085
-									],
-									[
-										68291,
-										68309
-									],
-									[
-										68450,
-										68468
-									],
-									[
-										68700,
-										68718
-									],
-									[
-										68954,
-										68972
-									],
-									[
-										69209,
-										69227
-									],
-									[
-										69298,
-										69316
-									],
-									[
-										69522,
-										69540
-									],
-									[
-										69681,
-										69699
-									],
-									[
-										69931,
-										69949
-									],
-									[
-										70185,
-										70203
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								69045,
-								69045
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 16,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 32475.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
-					"file": "managers/syscall_manager/syscall.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2414,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1982,
-								1982
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 540.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 13,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "userboot/program.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 806,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								308,
-								308
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 23,
-					"type": "text"
-				},
-				{
-					"buffer": 13,
+					"buffer": 7,
 					"file": "sys_init/main.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 262,
+						"buffer_size": 232,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								63,
-								63
+								171,
+								171
 							]
 						],
 						"settings":
@@ -3184,299 +1268,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
-					"file": "Sources.inc",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 927,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								604,
-								604
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 21,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "libs/libCardinal/include/syscall_property.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2087,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1571,
-								1571
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 22,
-					"type": "text"
-				},
-				{
-					"buffer": 16,
-					"file": "libs/libCardinal/include/syscall_list.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1776,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1557,
-								1557
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 26,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "userboot/initrd.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4771,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1859,
-								1859
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 720.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 27,
-					"type": "text"
-				},
-				{
-					"buffer": 18,
-					"file": "managers/syscall_manager/syscalls/priv_syscalls.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2539,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								142,
-								142
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 20,
-					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 2,
-			"sheets":
-			[
-				{
-					"buffer": 19,
-					"file": "target/x86_64/hal/memory.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 24911,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								14650,
-								14650
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 6665.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 11,
-					"type": "text"
-				},
-				{
-					"buffer": 20,
-					"file": "managers/syscall_manager/syscalls/property.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5333,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1933,
-								1933
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 630.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 21,
-					"file": "managers/process_manager/process.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10990,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								891,
-								891
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3060.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 22,
-					"file": "libs/libCardinal/include/syscall_emu.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5126,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1413,
-								1413
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 270.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 28,
-					"type": "text"
-				},
-				{
-					"buffer": 23,
+					"buffer": 8,
 					"file": "userboot/main.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 777,
+						"buffer_size": 1208,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								128,
-								128
+								803,
+								803
 							]
 						],
 						"settings":
@@ -3489,187 +1298,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 24,
-					"file": "managers/thread_manager/thread.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 9646,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								71,
-								71
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 12,
-					"type": "text"
-				},
-				{
-					"buffer": 25,
-					"file": "target/x86_64/apic/apic.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8392,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6935,
-								6935
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3015.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 26,
-					"file": "target/x86_64/virt_mem_manager/virt_mem_manager.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3842,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								540,
-								540
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 29,
-					"type": "text"
-				},
-				{
-					"buffer": 27,
-					"file": "target/x86_64/virt_mem_manager/virt_mem_manager.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 37785,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								30489,
-								30489
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 12755.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 19,
-					"type": "text"
-				},
-				{
-					"buffer": 28,
-					"file": "target/x86_64/page_manager/phys_mem_manager.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5258,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								4165,
-								4165
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1910.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 18,
-					"type": "text"
-				},
-				{
-					"buffer": 29,
-					"file": "target/x86_64/hal/syscall.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2492,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1300,
-								1300
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 15,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -3755,7 +1384,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},

@@ -5,6 +5,10 @@
 #include <stddef.h>
 #include "syscall_list.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_PARAM_COUNT 6
 
 #define EPERM            1
@@ -337,5 +341,9 @@ static __inline uint64_t
 GetErrno(void) {
     return Syscall0(Syscall_GetErrno);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

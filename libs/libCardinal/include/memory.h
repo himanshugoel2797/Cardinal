@@ -7,6 +7,10 @@
 #include "bootinfo.h"
 #include "ipc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * \defgroup memory_syscall Memory Syscalls
  * @{
@@ -35,6 +39,9 @@ typedef enum {
 
 #ifdef _KERNEL_
 #define MAX_ALLOCATION_TYPE_BIT 8
+
+#else
+#define PAGE_SIZE 4096
 #endif
 
 //! Memory Allocation Flags.
@@ -98,6 +105,10 @@ R0_Map(UID pid,
        CachingMode cacheMode,
        MemoryAllocationType type,
        MemoryAllocationFlags flags) {
+
+    if(virt == NULL)
+        return -EINVAL;
+
     struct MemoryMapParams p;
 
     p.TargetPID = pid;
@@ -146,15 +157,18 @@ R0_GetBootInfo(CardinalBootInfo *bInfo) {
  * @brief      Translate a virtual address to a physical address. R0 process
  *             only.
  *
+ * @param[in]  pid     The pid
  * @param[in]  v_addr  The virtual address
  * @param[out] p_addr  The physical address
  *
  * @return     The error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_GetPhysicalAddress(uint64_t v_addr, uint64_t *p_addr) {
+R0_GetPhysicalAddress(UID pid, uint64_t v_addr, uint64_t *p_addr) {
     if(p_addr != NULL)
-        GetProperty(CardinalProperty_R0_PhysicalAddress, v_addr, p_addr);
+        *p_addr = Syscall2(Syscall_R0_GetPhysicalAddress, pid, v_addr);
+    else
+        return -EINVAL;
 
     return GetErrno();
 }
@@ -193,5 +207,9 @@ R0_FreePages(uint64_t p_addr, uint64_t cnt) {
 #endif
 
 /**@}*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

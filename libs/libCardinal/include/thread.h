@@ -122,6 +122,12 @@ R0_GetThreadUserStack(UID tid) {
     return addr;
 }
 
+static __inline void
+SleepThread(uint64_t ns_time) {
+    Syscall1(Syscall_Nanosleep, ns_time);
+    return GetErrno();
+}
+
 /**@}*/
 
 #endif

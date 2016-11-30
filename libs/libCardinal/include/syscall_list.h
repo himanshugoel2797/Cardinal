@@ -1,6 +1,10 @@
 #ifndef _LIB_CARDINAL_SYSCALL_LIST
 #define _LIB_CARDINAL_SYSCALL_LIST
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     Syscall_NumStart = 1,
     Syscall_Brk = Syscall_NumStart,
@@ -36,6 +40,8 @@ typedef enum {
     Syscall_SubmitResponse,             //!< Submit response with a key to send the response to the process.
     Syscall_QueryResponseKeyLength,     //!< Query the length of a response key.
 
+    Syscall_R0_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
+
     //Syscall_RequestMappingKeyPair,      //!< Request a key pair to authorize other processes to read from and a single process to write to a region of specified length.
     //Syscall_ReturnMappingKey,           //!< Free a mapping key, freeing the associated areas, in the case of a write area key, freeing the read keys as well.
     //Syscall_ActivateMappingKey,         //!< Activate a mapping key.
@@ -49,5 +55,9 @@ typedef enum {
 
     Syscall_NumEnd = Syscall_R0_GetBootInfo,
 } SyscallFunctions;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

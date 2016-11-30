@@ -3,6 +3,10 @@
 
 #include "cardinal_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //! The physical memory regions
 typedef enum {
     CardinalMemoryRegionType_Free = 1,  //!< The region is free
@@ -41,5 +45,10 @@ typedef struct {
     uint8_t FramebufferBlueFieldPosition;    //!< The bit position of the blue component of a pixel.
     uint8_t FramebufferBlueMaskSize;         //!< The bit count of the blue component of a pixel.
 } CardinalBootInfo;
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

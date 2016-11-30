@@ -20,36 +20,29 @@ cd $SRC_DIR/userboot
 
 cd $SRC_DIR/srv
 
-cd elf_server
+cd elf_srv
 	make clean
 	make all
 	make install INSTALL_DIR=$INITRD_INST_DIR
 cd ..
 
-cd namespace_man
+cd namespace_dir
 	make clean
 	make all
-	make install
+	make install INSTALL_DIR=$INITRD_INST_DIR
 	mv *.elf $INITRD_INST_DIR 
 cd ..
 
-cd proc_server
+cd proc_srv
 	make clean
 	make all
-	make install
+	make install INSTALL_DIR=$INITRD_INST_DIR
 	mv *.elf $INITRD_INST_DIR
 cd ..
 
-cd root_srv
+cd mem_srv
 	make clean
 	make all
-	make install
-	mv *.elf $INITRD_INST_DIR
-cd ..
-
-cd shmem
-	make clean
-	make all
-	make install
+	make install INSTALL_DIR=$INITRD_INST_DIR
 	mv *.elf $INITRD_INST_DIR
 cd ..

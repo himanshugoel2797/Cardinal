@@ -5,6 +5,10 @@
 #include "syscall.h"
 #include "syscall_property.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * \defgroup proc_syscall Process Management Syscalls
  * @{
@@ -97,5 +101,10 @@ GetProcessGroupID(UID pid, uint64_t* val) {
 //TODO implement the following without having to export all the kernel's structures:
 //    Syscall_R0_GetProcessInfo,          //Get the kernel's process information
 //    Syscall_R0_SetProcessInfo,          //Set the kernel's process information
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

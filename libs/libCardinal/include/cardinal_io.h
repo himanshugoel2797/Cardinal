@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include "cardinal_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct StatData {
     uint64_t dev_id;
     uint64_t unique_id;
@@ -29,5 +33,9 @@ struct DirEntryData {
     uint8_t type;
     char    name[1];
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

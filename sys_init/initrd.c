@@ -86,17 +86,17 @@ ImportInitrd(void) {
         return -1;
 
     uint64_t initrd_addr = 0;
+    uint64_t pid = 0;
 
-    if(R0_GetPhysicalAddress(b_info.InitrdStartAddress, &initrd_addr) != 0)
+    if(GetProperty(CardinalProperty_PID, 0, &pid) != 0)
+        return -1;
+
+    if(R0_GetPhysicalAddress(pid, b_info.InitrdStartAddress, &initrd_addr) != 0)
         return -1;
 
     uint64_t InitrdLength = b_info.InitrdLength;
 
     InitrdStartAddress = 0;
-    uint64_t pid = 0;
-
-    if(GetProperty(CardinalProperty_PID, 0, &pid) != 0)
-        return -1;
 
     if(R0_Map(pid,
               initrd_addr,

@@ -7,6 +7,10 @@
 #include "cardinal_types.h"
 #include "syscall_list.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * \defgroup ipc_api IPC API
  * @{
@@ -15,33 +19,27 @@
 //! The maximum size of a message.
 #define MESSAGE_SIZE (128)
 
-//! The maximum number of special destinations.
-#define CARDINAL_IPCDEST_NUM 512
+//! The process ID of the memory server.
+#define MEM_SRV_PID 2
 
-//! Identifies a system reserved destination.
-#define CARDINAL_IPCDEST_SPECIAL (1ull << 32)
+//! The process ID of the namespace server.
+#define NAMESPACE_SRV_PID 3
 
-#define CARDINAL_IPCDEST_LOCAL (1ull << 33)
-#define CARDINAL_IPCDEST_LOCAL_NAMESPACEREGISTRY ((CARDINAL_IPCDEST_LOCAL) | (CARDINAL_IPCDEST_SPECIAL) | 1)
-#define CARDINAL_IPCDEST_GLOBAL_NAMESPACEREGISTRY ((CARDINAL_IPCDEST_SPECIAL) | 1)
-#define CARDINAL_IPCDEST_GLOBAL_DISPLAYSERVER ((CARDINAL_IPCDEST_SPECIAL) | 2)
-#define CARDINAL_IPCDEST_GLOBAL_MEMORYSERVER ((CARDINAL_IPCDEST_SPECIAL) | 3)
-
-//! I/O request message.
-#define CARDINAL_MSG_TYPE_IO 1
-
-//! Signal notification message.
-#define CARDINAL_MSG_TYPE_SIGNAL 2
-
-//! Error notification message.
-#define CARDINAL_MSG_TYPE_ERROR 0
+typedef enum {
+    CardinalMsgType_Request,
+    CardinalMsgType_Error,
+    CardinalMsgType_IO,
+    CardinalMsgType_Signal,
+    CardinalMsgType_Response,
+} CardinalMsgType;
 
 //! IPC Message.
 typedef struct Message {
     UID SourcePID;          //!< The sender PID
     uint32_t MsgID;         //!< The message ID, uniquely identifies a conversation.
-    uint32_t MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
+    CardinalMsgType MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
+
 
 //! An error message.
 struct ErrorMessage {
@@ -51,15 +49,21 @@ struct ErrorMessage {
 
 //! Response buffer response header.
 typedef struct Response {
-    volatile uint8_t ResponseReady;		//!< Initialized to zero. Gets set to 1 when the response is ready to read.
+    volatile uint8_t ResponseReady;     //!< Initialized to zero. Gets set to 1 when the response is ready to read.
 } Response;
 
 #ifndef _KERNEL_
 
+struct CardinalFullMessage {
+    char data[MESSAGE_SIZE];
+};
+
+#define CREATE_NEW_MESSAGE_PTR(XXX) struct CardinalFullMessage XXX_0; Message *XXX = (Message*)&XXX_0
+
 /**
  * @brief      Gets the ipc message from the source.
  *
- * @param      m          A preallocated message buffer of size MAX_MESSAGE_SIZE
+ * @param      m          A preallocated message buffer of size MESSAGE_SIZE
  * @param[in]  sourcePID  The source pid (0 for any)
  * @param[in]  msg_id     The message identifier (0 for any)
  *
@@ -73,7 +77,7 @@ GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
 /**
  * @brief      Gets the ipc message.
  *
- * @param      m     A preallocated message buffer of size MAX_MESSAGE_SIZE
+ * @param      m     A preallocated message buffer of size MESSAGE_SIZE
  *
  * @return     0 if no message to return, 1 if a message has been returned.
  */
@@ -172,5 +176,9 @@ QueryResponseKeyLength(uint64_t key, uint32_t *length) {
 #endif
 
 /**}@*/
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

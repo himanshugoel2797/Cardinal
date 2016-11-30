@@ -174,7 +174,7 @@ TerminateProcess(UID pid) {
             memset(exit_msg, 0, sizeof(struct SigChild));
             exit_msg->m.SourcePID = pid;
             exit_msg->m.MsgID = 0;
-            exit_msg->m.MsgType = CARDINAL_MSG_TYPE_SIGNAL;
+            exit_msg->m.MsgType = CardinalMsgType_Signal;
             exit_msg->signal_type = CARDINAL_SIGNAL_TYPE_SIGCHILD;
             exit_msg->exit_code = pinfo->ExitStatus;
 
