@@ -47,6 +47,7 @@ R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
     case ProcessErrors_UIDNotFound:
     case ProcessErrors_InvalidParameters:
+    case ProcessErrors_OutOfMemory:
         SyscallSetErrno(-EINVAL);
         return 0;
         break;
@@ -128,6 +129,7 @@ R0StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
         break;
     case ProcessErrors_UIDNotFound:
     case ProcessErrors_InvalidParameters:
+    case ProcessErrors_OutOfMemory:
         SyscallSetErrno(-EINVAL);
         return -1;
         break;

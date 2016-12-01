@@ -17,6 +17,4 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/errno.o \
 		managers/syscall_manager/syscalls/boot_info.o \
 		managers/key_manager/key_manager.o \
-		drivers/usb/controller.o \
-		drivers/usb/uhci/uhci_controller.o \
 		Sibyl/sec_mon.o

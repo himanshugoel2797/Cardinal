@@ -198,8 +198,8 @@ MapPage(ManagedPageTable *pageTable,
                     if(map->next != NULL)map->next->prev = prev;
 
                     kfree(map);
-                    break;
                 }
+                break;
             }
 
             prev = map;
@@ -327,8 +327,8 @@ UnmapPage(ManagedPageTable 	*pageTable,
                     if(map->next != NULL)map->next->prev = map->prev;
 
                     kfree(map);
-                    break;
                 }
+                break;
             }
 
             prev = map;

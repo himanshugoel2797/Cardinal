@@ -298,13 +298,4 @@ struct UnlockResponse {
 #define MAX_PATH_LEN ((4096))
 #define MAX_BUF_LEN ((MAX_MESSAGE_SIZE - sizeof(struct WriteRequest)))
 
-#ifndef _KERNEL_
-
-static __inline bool
-RegisterSpecialDestination(uint64_t dst) {
-    return SetProperty(CardinalProperty_SpecialDestination, dst, 0);
-}
-
-#endif
-
 #endif

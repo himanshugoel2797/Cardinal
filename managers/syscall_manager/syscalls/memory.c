@@ -261,42 +261,6 @@ R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-RequestResponseBuffer_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_RequestResponseBuffer) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 1) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-
-    uint64_t retVal = 0;
-
-    if(data->params[0] == 0) {
-        ProcessInformation *p_info;
-        GetProcessReference(GetCurrentProcessUID(), &p_info);
-        retVal = p_info->ResponseBuffer;
-
-    } else if(data->params[0] == 1) {
-        retVal = MAX_RESPONSE_BUFFER_LEN;
-    } else {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
-
-    SyscallSetErrno(0);
-    return retVal;
-}
-
-uint64_t
 R0GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                              uint64_t syscall_num,
                              uint64_t *syscall_params) {

@@ -9,4 +9,10 @@
 void 
 mmap_handler(Message *m);
 
+void
+grant_create_handler(Message *m);
+
+void
+grant_request_handler(Message *m);
+
 #endif

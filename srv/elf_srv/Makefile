@@ -9,7 +9,7 @@ LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
 CFLAGS=-Iinclude -std=c11
-LDFLAGS=-nostartfiles
+LDFLAGS=
 
 .PHONY:all
 

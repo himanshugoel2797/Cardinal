@@ -5,7 +5,6 @@
 
 #include "server.h"
 
-static UID mem_server_pid = 0;
 
 MemoryAllocationErrors
 MMap(uint64_t *address, 
@@ -51,7 +50,7 @@ RequestMMap(uint64_t address,
 
 	Message *msg_p = (Message*)&request;
 
-	int err = PostIPCMessages(mem_server_pid, &msg_p, 1);
+	int err = PostIPCMessages(MEMORY_SRV_PID, &msg_p, 1);
 
 	if(err != 1)
 		return err;
@@ -70,7 +69,7 @@ IsMMapped(uint32_t id,
 	CREATE_NEW_MESSAGE_PTR(msg_buf);
 	MMapResponse *mmap_resp = (MMapResponse*)msg_buf;
 
-	int err = GetIPCMessageFrom((Message*)mmap_resp, mem_server_pid, id);
+	int err = GetIPCMessageFrom((Message*)mmap_resp, MEMORY_SRV_PID, id);
 
 	if(err == 1){
 		*error = mmap_resp->error;

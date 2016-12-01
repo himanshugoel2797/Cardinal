@@ -21,11 +21,11 @@ typedef struct{
 	MemoryServerMessageType MsgType;
 } MsgHeader;
 
-int _start() {
+int main() {
 	while(1) {
 
 		CREATE_NEW_MESSAGE_PTR(msg);
-
+		while(1);
 		while(!GetIPCMessage(msg));
 
 		if(msg->MsgType == CardinalMsgType_Request){
@@ -38,6 +38,15 @@ int _start() {
 					mmap_handler(msg);
 				}
 				break;
+				case MemoryServerMessageType_GrantCreationRequest:
+				{
+					grant_create_handler(msg);
+				}
+				break;
+				case MemoryServerMessageType_GrantRequest:
+				{
+					grant_request_handler(msg);
+				}
 			}
 
 

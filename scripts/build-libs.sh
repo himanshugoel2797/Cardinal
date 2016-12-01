@@ -20,6 +20,13 @@ cd $SRC_DIR/libs/libipc
 	make install
 cd ..
 
+cd $SRC_DIR/libs/liblist
+	make uninstall 
+	make clean
+	make all
+	make install
+cd ..
+
 cd $SRC_DIR/srv/elf_srv/lib
 	make uninstall 
 	make clean

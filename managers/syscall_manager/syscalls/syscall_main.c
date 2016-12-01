@@ -29,10 +29,6 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
     RegisterSyscall(Syscall_R0_CreateThread, R0CreateThread_Syscall);
     RegisterSyscall(Syscall_R0_GetBootInfo, R0GetBootInfo_Syscall);
-    //RegisterSyscall(Syscall_RequestResponseBuffer, RequestResponseBuffer_Syscall);
-    //RegisterSyscall(Syscall_GetResponseKey, GetResponseKey_Syscall);
-    //RegisterSyscall(Syscall_SubmitResponse, SubmitResponse_Syscall);
-    //RegisterSyscall(Syscall_QueryResponseKeyLength, QueryResponseKeyLength_Syscall);
     
 
     RegisterSyscall(Syscall_R0_GetPhysicalAddress, R0GetPhysicalAddress_Syscall);

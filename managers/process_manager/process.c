@@ -68,27 +68,12 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     dst->HeapBreak = 0;
 
-    dst->ResponseBuffer = 0;
-
-    FindFreeVirtualAddress(
-        dst->PageTable,
-        &dst->ResponseBuffer,
-        MAX_RESPONSE_BUFFER_LEN,
-        MemoryAllocationType_Application,
-        MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
-
-    MapPage(dst->PageTable,
-            0,
-            dst->ResponseBuffer,
-            MAX_RESPONSE_BUFFER_LEN,
-            CachingModeWriteBack,
-            MemoryAllocationType_Application | MemoryAllocationType_ReservedAllocation,
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present | MemoryAllocationFlags_User
-           );
-
     dst->ThreadIDs = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
-    dst->Keys = List_Create(CreateSpinlock());
+
+    dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(uint64_t));
+    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++)
+        dst->Keys[i] = 0;
 
     dst->MessageLock = CreateSpinlock();
 
@@ -134,6 +119,13 @@ TerminateProcess(UID pid) {
 
     //Stop this process
     pinfo->Status = ProcessStatus_Terminating;
+
+    //Free keys
+    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
+        if(pinfo->Keys[i] != 0)
+            KeyMan_DecrementRefCount(pinfo->Keys[i]);
+    }
+    kfree(pinfo->Keys);
 
     //Remove this process from the list of processes
     for(uint64_t i = 0; i < List_Length(processes); i++) {
@@ -194,7 +186,6 @@ TerminateProcess(UID pid) {
     }
     List_Free(pinfo->PendingMessages);
     List_Free(pinfo->ThreadIDs);
-    List_Free(pinfo->Keys);
     
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
@@ -382,43 +373,10 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
     return ProcessErrors_None;
 }
 
-uint64_t
-CreateResponseBufferKey(UID pid,
-                        uint32_t offset,
-                        uint32_t length) {
-    ProcessInformation *info;
-    if(GetProcessReference(pid, &info) != ProcessErrors_None)
-        return ProcessErrors_UIDNotFound;
-
-    uint64_t key = 0;
-    uint64_t id = (uint64_t)offset << 32;
-    id |= length;
-
-    if(KeyMan_AllocateKey(pid, id, KeyFlags_SingleTransfer, &key) != KeyManagerErrors_None)
-        return 0;
-
-    LockSpinlock(info->lock);
-    List_AddEntry(info->Keys, (void*)key);
-    UnlockSpinlock(info->lock);
-
-    return key;
-}
-
 ProcessErrors
-SubmitToResponseBuffer(uint64_t key,
-                       void *buffer,
-                       uint32_t buf_len) {
-    UID pid = 0;
-    uint64_t id = 0;
-
-    if(KeyMan_ReadKey(key, &pid, &id, NULL) != KeyManagerErrors_None)
-        return ProcessErrors_InvalidParameters;
-
-
-    uint32_t offset = (uint32_t)(id >> 32);
-    uint32_t length = (uint32_t)id;
-
-    length = (length > buf_len) ? buf_len : length;
+AllocateDescriptor(UID pid,
+                   uint64_t key,
+                   uint32_t *index) {
 
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
@@ -426,67 +384,96 @@ SubmitToResponseBuffer(uint64_t key,
 
     LockSpinlock(info->lock);
 
-    for(uint64_t i = 0; i < List_Length(info->Keys); i++) {
-        if((uint64_t)List_EntryAt(info->Keys, i) == key) {
-            List_Remove(info->Keys, i);
-            KeyMan_FreeKey(key);
+    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS)
+    {
+        UnlockSpinlock(info->lock);
+        return ProcessErrors_OutOfMemory;
+    }
 
-            uint32_t write_off = offset;
-            uint32_t write_len = length;
+    info->Keys[info->LowestFreeKeyIndex] = key;
+    KeyMan_IncrementRefCount(key);
 
-            //Round offset down to nearest page size
-            if(write_off % PAGE_SIZE)
-                write_off -= PAGE_SIZE;
+    *index = info->LowestFreeKeyIndex;
 
-            //Round length up to nearest page size
-            if(write_len % PAGE_SIZE)
-                write_len += PAGE_SIZE - (write_len % PAGE_SIZE);
-
-            //Setup a temporary mapping of the response buffers and copy the response
-            uint8_t *vaddr = (uint8_t*)SetupTemporaryWriteMap(info->PageTable, info->ResponseBuffer + write_off, write_len);
-
-            //Copy from bottom to top to account for header
-            for(; write_len > 0; write_len--)
-                vaddr[offset + write_len - 1] = ((uint8_t*)buffer)[write_len - 1];
-
-            UninstallTemporaryWriteMap((uint64_t)vaddr, write_len);
-
-            UnlockSpinlock(info->lock);
-            return ProcessErrors_None;
-        }
+    while(info->Keys[info->LowestFreeKeyIndex] != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS){
+        info->LowestFreeKeyIndex++;
     }
 
     UnlockSpinlock(info->lock);
-    return ProcessErrors_InvalidParameters;
+    return ProcessErrors_None;
 }
 
 ProcessErrors
-QueryResponseKeyLength(uint64_t key,
-                       uint32_t *length) {
+CopyDescriptor(UID src_pid,
+               UID dst_pid,
+               uint32_t index,
+               uint32_t *new_index) {
+    
+    ProcessInformation *info;
+    if(GetProcessReference(src_pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
 
-    UID pid = 0;
-    uint64_t id = 0;
-
-    if(KeyMan_ReadKey(key, &pid, &id, NULL) != KeyManagerErrors_None)
+    if(index >= MAX_KEYS_PER_PROCESS)
         return ProcessErrors_InvalidParameters;
 
+    LockSpinlock(info->lock);
 
-    if(length != NULL)
-        *length = (uint32_t)id;
+    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS)
+    {
+        UnlockSpinlock(info->lock);
+        return ProcessErrors_OutOfMemory;
+    }
+    
+    uint64_t key = info->Keys[index];
+    UnlockSpinlock(info->lock);
 
+    return AllocateDescriptor(dst_pid, key, new_index);
+}
+
+ProcessErrors
+GetIndexOfKey(UID pid,
+              uint64_t key,
+              uint32_t *index) {
+
+    ProcessInformation *info;
+    if(GetProcessReference(pid, &info) != ProcessErrors_None)
+        return ProcessErrors_UIDNotFound;
+
+    if(index == NULL)
+        return ProcessErrors_InvalidParameters;
+
+    LockSpinlock(info->lock);
+
+    *index = (uint32_t)-1;
+
+    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++){
+        if(info->Keys[i] == key)
+            *index = i;
+    }
+
+    UnlockSpinlock(info->lock);
+
+    if(*index == (uint32_t)-1)
+        return ProcessErrors_InvalidParameters;
+    return ProcessErrors_None;
+}
+
+ProcessErrors
+DeleteDescriptor(UID pid,
+                 uint32_t index) {
+    
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return ProcessErrors_UIDNotFound;
 
     LockSpinlock(info->lock);
 
-    for(uint64_t i = 0; i < List_Length(info->Keys); i++) {
-        if((uint64_t)List_EntryAt(info->Keys, i) == key) {
-            UnlockSpinlock(info->lock);
-            return ProcessErrors_None;
-        }
-    }
+    info->Keys[index] = 0;
+    KeyMan_DecrementRefCount(info->Keys[index]);
+
+    if(index < info->LowestFreeKeyIndex)
+        info->LowestFreeKeyIndex = index;
 
     UnlockSpinlock(info->lock);
-    return ProcessErrors_InvalidParameters;
+    return ProcessErrors_None;
 }

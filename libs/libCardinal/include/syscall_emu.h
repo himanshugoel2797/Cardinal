@@ -132,11 +132,6 @@ SyscallEmu3(uint32_t syscall_num,
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    case Cardinal_EmulatedSyscalls_Execve:
-
-        //TODO Perform the actual syscall
-
-        break;
     default:
         __asm__("hlt" :: "a"(syscall_num));
         break;
@@ -158,6 +153,7 @@ SyscallEmu4(uint32_t syscall_num,
     parameters[2] = p2;
     parameters[3] = p3;
 
+    __asm__("hlt" :: "a"(syscall_num));
     uint64_t ret_error = -ENOSYS;
 
     return ret_error;
@@ -178,6 +174,7 @@ SyscallEmu5(uint32_t syscall_num,
     parameters[3] = p3;
     parameters[4] = p4;
 
+    __asm__("hlt" :: "a"(syscall_num));
     uint64_t ret_error = -ENOSYS;
 
     return ret_error;
@@ -195,11 +192,6 @@ SyscallEmu6(uint32_t syscall_num,
     uint64_t ret_error = -ENOSYS;
 
     switch(syscall_num) {
-    case Cardinal_EmulatedSyscalls_MMap:
-    {
-        
-    }
-    break;
     default:
         __asm__("hlt" :: "a"(syscall_num));
         break;

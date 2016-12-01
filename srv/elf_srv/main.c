@@ -1,8 +1,7 @@
 #include "server.h"
 #include <cardinal/process.h>
 
-__attribute__((section(".entry_point")))
-int _start() {
+int main() {
 
     //TODO Register to the program loader target
 

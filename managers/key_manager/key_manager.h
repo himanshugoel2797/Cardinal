@@ -9,6 +9,7 @@ typedef enum {
     KeyManagerErrors_InvalidParams,
     KeyManagerErrors_KeyDoesNotExist,
     KeyManagerErrors_InvalidOperation,
+    KeyManagerErrors_NonZeroReferenceCount,
 } KeyManagerErrors;
 
 typedef enum {
@@ -23,17 +24,13 @@ KeyMan_Initialize(void);
 /**
  * @brief      Allocate a new key.
  *
- * @param[in]  pid         The parent pid
  * @param[in]  identifier  The identifier
- * @param[in]  flags       The key flags
  * @param      key         The key
  *
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_AllocateKey(UID pid,
-                   uint64_t identifier,
-                   KeyFlags flags,
+KeyMan_AllocateKey(uint64_t identifier,
                    uint64_t *key);
 
 /**
@@ -57,17 +54,6 @@ bool
 KeyMan_KeyExists(uint64_t key);
 
 /**
- * @brief      Transfer the key.
- *
- * @param[in]  key        The key
- * @param[in]  targetPID  The target pid
- *
- * @return     Error code on failure, KeyManagerErrors_None on success.
- */
-KeyManagerErrors
-KeyMan_TransferKey(uint64_t key, UID targetPID);
-
-/**
  * @brief      Read a key.
  *
  * @param[in]  key         The key
@@ -79,8 +65,26 @@ KeyMan_TransferKey(uint64_t key, UID targetPID);
  */
 KeyManagerErrors
 KeyMan_ReadKey(uint64_t key,
-               UID *pid,
-               uint64_t *identifier,
-               KeyFlags *keyFlags);
+               uint64_t *identifier);
+
+/**
+ * @brief      Increment the key reference count.
+ *
+ * @param[in]  key   The key
+ *
+ * @return     { description_of_the_return_value }
+ */
+KeyManagerErrors
+KeyMan_IncrementRefCount(uint64_t key);
+
+/**
+ * @brief      Decrement the key reference count.
+ *
+ * @param[in]  key   The key
+ *
+ * @return     { description_of_the_return_value }
+ */
+KeyManagerErrors
+KeyMan_DecrementRefCount(uint64_t key);
 
 #endif

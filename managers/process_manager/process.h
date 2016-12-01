@@ -145,44 +145,60 @@ uint64_t
 ScheduleProcessForTermination(UID pid, uint32_t exit_code);
 
 /**
- * @brief      Creates a response buffer key.
+ * @brief      Creates a key.
  *
- * @param[in]  pid     The pid
- * @param[in]  offset  The offset
- * @param[in]  length  The length
+ * @param[in]  pid    The pid
+ * @param      key    The key
+ * @param      index  The index
  *
- * @return     0 on failure, key on success.
- */
-uint64_t
-CreateResponseBufferKey(UID pid,
-                        uint32_t offset,
-                        uint32_t length);
-
-/**
- * @brief      Submit to a response buffer.
- *
- * @param[in]  key     The key
- * @param      buffer  The buffer
- *
- * @return     Error code on failure, ProcessErrors_None on success.
+ * @return     { description_of_the_return_value }
  */
 ProcessErrors
-SubmitToResponseBuffer(uint64_t key,
-                       void *buffer,
-                       uint32_t buf_len);
-
+AllocateDescriptor(UID pid,
+                   uint64_t key,
+                   uint32_t *index);
 
 /**
- * @brief      Queries a response key length.
+ * @brief      Copies a descriptor from src_pid to dst_pid
  *
- * @param[in]  key     The key
- * @param      length  The length
+ * @param[in]  src_pid    The source pid
+ * @param[in]  dst_pid    The destination pid
+ * @param[in]  index      The descriptor index
+ * @param      new_index  The new descriptor index
  *
- * @return     Error code on failure, ProcessErrors_None on success.
+ * @return     { description_of_the_return_value }
  */
 ProcessErrors
-QueryResponseKeyLength(uint64_t key,
-                       uint32_t *length);
+CopyDescriptor(UID src_pid,
+               UID dst_pid,
+               uint32_t index,
+               uint32_t *new_index);
+
+/**
+ * @brief      Get the descriptor index of the key.
+ *
+ * @param[in]  pid    The pid
+ * @param[in]  key    The key
+ * @param      index  The key index
+ *
+ * @return     The index of key.
+ */
+ProcessErrors
+GetIndexOfKey(UID pid,
+              uint64_t key,
+              uint32_t *index);
+
+/**
+ * @brief      Delete a descriptor from a process.
+ *
+ * @param[in]  pid    The pid
+ * @param[in]  index  The index
+ *
+ * @return     { description_of_the_return_value }
+ */
+ProcessErrors
+DeleteDescriptor(UID pid,
+                 uint32_t index);
 
 /**@}*/
 

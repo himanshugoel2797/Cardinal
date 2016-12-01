@@ -35,23 +35,7 @@ typedef enum {
     Syscall_R0_KillProcess,             //!< Kill a process by its PID.
     Syscall_R0_GetBootInfo,             //!< Get the boot information.
 
-    Syscall_RequestResponseBuffer,      //!< Request a buffer for responses.
-    Syscall_GetResponseKey,             //!< Get a response key for a process to use to respond.
-    Syscall_SubmitResponse,             //!< Submit response with a key to send the response to the process.
-    Syscall_QueryResponseKeyLength,     //!< Query the length of a response key.
-
     Syscall_R0_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
-
-    //Syscall_RequestMappingKeyPair,      //!< Request a key pair to authorize other processes to read from and a single process to write to a region of specified length.
-    //Syscall_ReturnMappingKey,           //!< Free a mapping key, freeing the associated areas, in the case of a write area key, freeing the read keys as well.
-    //Syscall_ActivateMappingKey,         //!< Activate a mapping key.
-    //Syscall_DeactivateMappingKey,       //!< Deactivate a mapping key.
-    //Syscall_QueryMappingKey,            //!< Get mapping key length and permissions.
-
-    //Syscall_RequestKey,                 //!< Request a key to signal on a specific action.
-    //Syscall_WaitForKey,                 //!< Wait for a key to be signalled.
-    //Syscall_SignalKey,                  //!< Signal a key.
-    //Syscall_ReturnKey,                  //!< Free a key owned by the calling process.
 
     Syscall_NumEnd = Syscall_R0_GetPhysicalAddress,
 } SyscallFunctions;

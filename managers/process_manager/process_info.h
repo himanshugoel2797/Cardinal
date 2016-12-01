@@ -18,8 +18,8 @@
 //! The PID of the root of the process tree.
 #define ROOT_PID 1
 
-//! The maximum length of a response buffer.
-#define MAX_RESPONSE_BUFFER_LEN KiB(256)
+//! The maximum number of keys a process may have for itself.
+#define MAX_KEYS_PER_PROCESS 4096
 
 /**
  * The process status.
@@ -47,6 +47,7 @@ typedef enum {
     ProcessErrors_Unknown = (1 << 0),           //!< Unknown Error.
     ProcessErrors_UIDNotFound = (1 << 1),       //!< Invalid UID.
     ProcessErrors_InvalidParameters = (1 << 2), //!< Invalid parameter.
+    ProcessErrors_OutOfMemory = (1 << 3),       //!< Out of memory.
 } ProcessErrors;
 
 /**
@@ -60,12 +61,12 @@ typedef struct ProcessInformation {
     ProcessStatus               Status;                     //!< The status of the process.
     ManagedPageTable            *PageTable;                 //!< The page table.
     uint64_t                    HeapBreak;                  //!< The heap break.
-    uint64_t                    ResponseBuffer;             //!< The response buffer address.
     uint32_t                    ExitStatus;                 //!< The process exit status.
     List                        *Children;                  //!< The process's children processes.
     List                        *ThreadIDs;                 //!< The threads that belong to this process.
     List                        *PendingMessages;           //!< The pending messages.
-    List                        *Keys;                      //!< The keys provided to or owned by this process.
+    uint64_t                    *Keys;                      //!< The keys provided to or owned by this process.
+    uint32_t                    LowestFreeKeyIndex;
 
     bool                        HandlingMessage;            //!< Is the process currently handling a message?
     Spinlock                    MessageLock;                //!< Message access synchronization.

@@ -7,9 +7,8 @@
 
 typedef struct {
     uint32_t key;
-    KeyFlags flags;
+    uint32_t ref_count;
     uint64_t identifier;
-    UID parent_pid;
 } KeyEntry;
 
 static KeyEntry* keyTable = NULL;
@@ -48,9 +47,7 @@ KeyMan_Initialize(void) {
 
 
 KeyManagerErrors
-KeyMan_AllocateKey(UID pid,
-                   uint64_t identifier,
-                   KeyFlags flags,
+KeyMan_AllocateKey(uint64_t identifier,
                    uint64_t *key) {
 
     if(key == NULL)
@@ -64,9 +61,8 @@ KeyMan_AllocateKey(UID pid,
     *key = *key << 32 | lastFreeKeyIndex;
 
     keyTable[lastFreeKeyIndex].key = rng_key;
-    keyTable[lastFreeKeyIndex].flags = flags;
     keyTable[lastFreeKeyIndex].identifier = identifier;
-    keyTable[lastFreeKeyIndex].parent_pid = pid;
+    keyTable[lastFreeKeyIndex].ref_count = 1;
 
     while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
@@ -90,10 +86,14 @@ KeyMan_FreeKey(uint64_t key) {
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
+    if(keyTable[index].ref_count != 0) {
+        UnlockSpinlock(keyman_lock);
+        return KeyManagerErrors_NonZeroReferenceCount;
+    }
+
     keyTable[index].key = 0;
-    keyTable[index].flags = 0;
     keyTable[index].identifier = 0;
-    keyTable[index].parent_pid = 0;
+    keyTable[index].ref_count = 0;
 
     if(index < lastFreeKeyIndex)
         lastFreeKeyIndex = index;
@@ -119,43 +119,9 @@ KeyMan_KeyExists(uint64_t key) {
     return 1;
 }
 
-
-KeyManagerErrors
-KeyMan_TransferKey(uint64_t key, UID targetPID) {
-
-    uint32_t index = (uint32_t)key;
-    if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
-        return KeyManagerErrors_InvalidParams;
-
-    LockSpinlock(keyman_lock);
-
-    if(keyTable[index].key == 0) {
-        UnlockSpinlock(keyman_lock);
-        return KeyManagerErrors_KeyDoesNotExist;
-    }
-
-    if(keyTable[index].flags & KeyFlags_SingleTransfer) {
-        keyTable[index].parent_pid = targetPID;
-        keyTable[index].flags &= ~KeyFlags_SingleTransfer;
-
-        UnlockSpinlock(keyman_lock);
-        return KeyManagerErrors_None;
-    } else if(keyTable[index].flags & KeyFlags_UnlimitedTransfer) {
-        keyTable[index].parent_pid = targetPID;
-
-        UnlockSpinlock(keyman_lock);
-        return KeyManagerErrors_None;
-    }
-
-    UnlockSpinlock(keyman_lock);
-    return KeyManagerErrors_InvalidOperation;
-}
-
 KeyManagerErrors
 KeyMan_ReadKey(uint64_t key,
-               UID *pid,
-               uint64_t *identifier,
-               KeyFlags *keyFlags) {
+               uint64_t *identifier) {
 
     uint32_t index = (uint32_t)key;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
@@ -167,15 +133,61 @@ KeyMan_ReadKey(uint64_t key,
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
-
-    if(pid != NULL)
-        *pid = keyTable[index].parent_pid;
 
     if(identifier != NULL)
         *identifier = keyTable[index].identifier;
 
-    if(keyFlags != NULL)
-        *keyFlags = keyTable[index].flags;
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+}
+
+KeyManagerErrors
+KeyMan_IncrementRefCount(uint64_t key) {
+    
+    uint32_t index = (uint32_t)key;
+    if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
+        return KeyManagerErrors_InvalidParams;
+
+    LockSpinlock(keyman_lock);
+
+    if(keyTable[index].key == 0) {
+        UnlockSpinlock(keyman_lock);
+        return KeyManagerErrors_KeyDoesNotExist;
+    }
+
+    //Prevent overflow
+    if(keyTable[index].ref_count == (uint32_t)-1)
+        return KeyManagerErrors_Unknown;
+
+    keyTable[index].ref_count++;
+
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+}
+
+KeyManagerErrors
+KeyMan_DecrementRefCount(uint64_t key) {
+    uint32_t index = (uint32_t)key;
+    if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
+        return KeyManagerErrors_InvalidParams;
+
+    LockSpinlock(keyman_lock);
+
+    if(keyTable[index].key == 0) {
+        UnlockSpinlock(keyman_lock);
+        return KeyManagerErrors_KeyDoesNotExist;
+    }
+
+    //Prevent underflow
+    if(keyTable[index].ref_count == 0)
+        return KeyManagerErrors_Unknown;
+
+    keyTable[index].ref_count--;
+
+    if(keyTable[index].ref_count == 0)
+    {
+        KeyMan_FreeKey(key);
+    }
 
     UnlockSpinlock(keyman_lock);
     return KeyManagerErrors_None;

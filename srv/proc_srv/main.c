@@ -1,7 +1,6 @@
 #include <cardinal/process.h>
 
-__attribute__((section(".entry_point")))
-int _start() {
+int main() {
 
     //Register to the program loader target
 
