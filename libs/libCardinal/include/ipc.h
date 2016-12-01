@@ -34,6 +34,7 @@ typedef enum {
     CardinalMsgType_IO,
     CardinalMsgType_Signal,
     CardinalMsgType_Response,
+    CardinalMsgType_Notification,
 } CardinalMsgType;
 
 //! IPC Message.
@@ -43,11 +44,10 @@ typedef struct Message {
     CardinalMsgType MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
-
 //! An error message.
 struct ErrorMessage {
-    Message m;              //!< Standard required message header.
-    uint64_t code;          //!< The error code.
+    Message m;     //!< Standard required message header.
+    int64_t code;  //!< The error code.
 };
 
 //! Response buffer response header.

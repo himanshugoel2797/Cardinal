@@ -1,4 +1,5 @@
 #include "server.h"
+#include "mem_db.h"
 #include <cardinal/memory.h>
 #include <cardinal/ipc.h>
 
@@ -62,12 +63,19 @@ mmap_handler(Message *m) {
 		//Ok, this virtual address is safe to continue with.
 	}
 
+	uint64_t address = 0;
+	error = MemDB_AllocateMemory(m->SourcePID, sz, &address);
+	if(error != 0)
+	{
+		SendErrorMessage(0, MemoryAllocationErrors_Unknown, m->SourcePID, m->MsgID);
+	}
+
 	error = R0_Map(m->SourcePID,
-				   0,
+				   address,
 				   &addr,
 				   sz,
 				   cacheMode,
-				   MemoryAllocationType_MMap | MemoryAllocationType_ReservedAllocation,
+				   MemoryAllocationType_MMap,
 				   flags
 				  );
 

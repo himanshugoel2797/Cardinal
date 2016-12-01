@@ -1,15 +1,15 @@
 TARGET=proc_server.elf
 
-OBJS=main.o
+OBJS=main.o proc_db.o proc_create.o
 
-LIBS=
+LIBS=-llist
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
 CFLAGS=-Iinclude -std=c11
-LDFLAGS=-nostartfiles
+LDFLAGS=
 
 .PHONY:all
 
@@ -19,8 +19,8 @@ $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
 
 install:
-	mkdir -p $(shell cctool --srv)/elf
-	cp $(TARGET) $(shell cctool --srv)/elf/server.elf
+	mkdir -p $(shell cctool --srv)/proc
+	cp $(TARGET) $(shell cctool --srv)/proc/server.elf
 	cp $(TARGET) $(INSTALL_DIR)
 
 clean:

@@ -1,5 +1,6 @@
 #include "server.h"
 #include "common.h"
+#include "mem_db.h"
 
 #include <cardinal/ipc.h>
 
@@ -13,7 +14,14 @@
 
 void
 HandleSystemMessages(Message *m){
-
+	switch(m->MsgType){
+		case CardinalMsgType_Notification:
+			//Check if it is a process creation or process deletion notification
+			//Update the mount database appropriately.
+		break;
+		default:
+		return;
+	}
 }
 
 typedef struct{
@@ -22,10 +30,10 @@ typedef struct{
 } MsgHeader;
 
 int main() {
-	while(1) {
 
+	MemDB_Initialize();
+	while(1) {
 		CREATE_NEW_MESSAGE_PTR(msg);
-		while(1);
 		while(!GetIPCMessage(msg));
 
 		if(msg->MsgType == CardinalMsgType_Request){
