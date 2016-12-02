@@ -6,6 +6,7 @@
 #include "syscall.h"
 #include "cardinal_types.h"
 #include "syscall_list.h"
+#include "memory.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,9 +40,9 @@ typedef enum {
 
 //! IPC Message.
 typedef struct Message {
-    UID SourcePID;          //!< The sender PID
-    uint32_t MsgID;         //!< The message ID, uniquely identifies a conversation.
-    CardinalMsgType MsgType;       //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
+    UID SourcePID;                      //!< The sender PID
+    uint32_t MsgID;                     //!< The message ID, uniquely identifies a conversation.
+    CardinalMsgType MsgType;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
 //! An error message.

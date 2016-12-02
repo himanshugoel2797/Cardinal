@@ -204,6 +204,35 @@ R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
     return SyscallSetErrno(0);
 }
 
+uint64_t
+Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
+              uint64_t syscall_num,
+              uint64_t *syscall_params) {
+
+    if(syscall_num != Syscall_Unmap) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 2) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    ProcessInformation *p_info;
+    if(GetProcessReference(GetCurrentProcessUID(), &p_info) != ProcessErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    UnmapPage(p_info->PageTable,
+              data->params[0],
+              data->params[1]);
+
+    return SyscallSetErrno(0);
+}
 
 uint64_t
 R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),

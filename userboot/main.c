@@ -23,23 +23,18 @@ int _start() {
 
     ImportInitrd();
 
+    //Bring up the process server
+    int err = LoadProgram("proc_server.elf");
+    if(err != 0)
+        __asm__("hlt");
+
     //Bring up memory management services
-    int err = LoadProgram("mem_server.elf");
+    err = LoadProgram("mem_server.elf");
     if(err != 0)
         __asm__("hlt");
 
     //Bring up the service/namespace directory
     err = LoadProgram("namespace_dir.elf");
-    if(err != 0)
-        __asm__("hlt");
-
-    //Bring up the process server
-    err = LoadProgram("proc_server.elf");
-    if(err != 0)
-        __asm__("hlt");
-
-    //Bring up the elf server
-    err = LoadProgram("elf_server.elf");
     if(err != 0)
         __asm__("hlt");
 

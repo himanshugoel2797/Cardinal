@@ -8,12 +8,10 @@
 extern "C" {
 #endif
 
-#define MAX_PROCESS_NAME_LEN 256
+#define MAX_PROCESS_NAME_LEN 512
 
 typedef enum {
-	ProcessServerMessageType_R0_CreateProcessNoShmemRequest,
 	ProcessServerMessageType_R0_ProcessExistenceNotification,
-
 	ProcessServerMessageType_CreateProcessRequest,
 } ProcessServerMessageType;
 
@@ -25,10 +23,7 @@ typedef enum {
 typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
-    void *exec;
     uint32_t exec_len;
-    char** argv;
-    int argc;
 } ProcessServer_CreateRequest;
 
 typedef struct {

@@ -37,7 +37,13 @@ typedef enum {
 
     Syscall_R0_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
 
-    Syscall_NumEnd = Syscall_R0_GetPhysicalAddress,
+    Syscall_Unmap,
+    Syscall_AllocateSharedMemory,
+    Syscall_GetSharedMemoryKey,
+    Syscall_ApplySharedMemoryKey,
+    Syscall_FreeSharedMemoryKey,
+
+    Syscall_NumEnd = Syscall_FreeSharedMemoryKey,
 } SyscallFunctions;
 
 #ifdef __cplusplus

@@ -22,6 +22,8 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_R0_Map, R0Map_Syscall);
     RegisterSyscall(Syscall_R0_Unmap, R0Unmap_Syscall);
 
+    RegisterSyscall(Syscall_Unmap, Unmap_Syscall);
+
     RegisterSyscall(Syscall_R0_AllocatePages, R0AllocatePages_Syscall);
     RegisterSyscall(Syscall_R0_FreePages, R0FreePages_Syscall);
 
@@ -29,7 +31,11 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
     RegisterSyscall(Syscall_R0_CreateThread, R0CreateThread_Syscall);
     RegisterSyscall(Syscall_R0_GetBootInfo, R0GetBootInfo_Syscall);
-    
 
     RegisterSyscall(Syscall_R0_GetPhysicalAddress, R0GetPhysicalAddress_Syscall);
+
+    RegisterSyscall(Syscall_AllocateSharedMemory, AllocateSharedMemory_Syscall);
+    RegisterSyscall(Syscall_GetSharedMemoryKey, GetSharedMemoryKey_Syscall);
+    RegisterSyscall(Syscall_ApplySharedMemoryKey, ApplySharedMemoryKey_Syscall);
+    RegisterSyscall(Syscall_FreeSharedMemoryKey, FreeSharedMemoryKey_Syscall);
 }

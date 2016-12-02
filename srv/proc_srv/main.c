@@ -46,12 +46,6 @@ int main() {
             MsgHeader *msg_h = (MsgHeader*)msg;
 
             switch(msg_h->MsgType) {
-                case ProcessServerMessageType_R0_CreateProcessNoShmemRequest:
-                {
-                    if(checkGroup(0, msg->SourcePID, msg->MsgType))
-                        create_process_noshmem_handler(msg);
-                }
-                break;
                 case ProcessServerMessageType_R0_ProcessExistenceNotification:
                 {
                     if(checkGroup(0, msg->SourcePID, msg->MsgType))

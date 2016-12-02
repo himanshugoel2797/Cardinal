@@ -35,6 +35,7 @@ typedef enum {
     MemoryAllocationType_Application = (1 << 6),            //!< Process related Read Only information, removed on Execve.
     MemoryAllocationType_MMapLo = (1 << 7),                 //!< Memory Mapped (32 bit address).
     MemoryAllocationType_ReservedBacking = (1 << 8),        //!< Page was allocated passively by ReservedAllocation, must free as part of page table.
+    MemoryAllocationType_Shared = (1 << 9),                 //!< Shared memory.
 } MemoryAllocationType;
 
 #ifdef _KERNEL_
@@ -65,7 +66,9 @@ typedef enum {
     MemoryAllocationErrors_InvalidFlags = (1 << 3),           //!< The Flags parameter is invalid.
     MemoryAllocationErrors_InvalidVirtualAddress = (1 << 4),  //!< Invalid Virtual Address.
     MemoryAllocationErrors_InvalidPhysicalAddress = (1 << 5), //!< Invalid Physical Address.
-    MemoryAllocationErrors_Unknown = (1 << 6)                 //!< Unknown Error.
+    MemoryAllocationErrors_Unknown = (1 << 6),                //!< Unknown Error.
+    MemoryAllocationErrors_InvalidParameters = (1 << 7),      //!< Invalid Parameters
+    MemoryAllocationErrors_OutOfMemory = (1 << 8),            //!< Out of Memory.
 } MemoryAllocationErrors;
 
 //!Memory Map operation parameters.
@@ -137,6 +140,21 @@ R0_Unmap(UID pid,
          uint64_t virt,
          uint64_t size) {
     Syscall3(Syscall_R0_Unmap, pid, virt, size);
+    return GetErrno();
+}
+
+/**
+ * @brief      Unmap a virtual address in the current process.
+ *
+ * @param[in]  virt  The virtual address
+ * @param[in]  size  The size
+ *
+ * @return     An error code on failure, 0 on success.
+ */
+static __inline uint64_t
+Unmap(uint64_t virt,
+      uint64_t size) {
+    Syscall2(Syscall_Unmap, virt, size);
     return GetErrno();
 }
 

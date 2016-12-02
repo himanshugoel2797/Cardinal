@@ -2,9 +2,8 @@
 #include "proc_db.h"
 #include "server.h"
 
-
-void 
-create_process_noshmem_handler(Message *m) {
+void
+send_existence_notification(UID pid) {
 
 }
 
@@ -15,5 +14,8 @@ create_process_handler(Message *m) {
 
 void
 existence_notification_handler(Message *m) {
-	
+	ProcessServer_R0NotifyProcessExistence *msg = (ProcessServer_R0NotifyProcessExistence*)m;
+
+
+//	ProcDB_AddProcess(msg->pid, )	
 }

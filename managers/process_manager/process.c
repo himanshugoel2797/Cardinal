@@ -316,6 +316,10 @@ GetMessageFrom(Message *msg,
                 if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
                 kfree(tmp);
 
+                //Copy the mapping over to the other process.
+                //Add the sharing info to the source's data.
+
+
                 UnlockSpinlock(pInfo->MessageLock);
             }
             return TRUE;
@@ -393,7 +397,8 @@ AllocateDescriptor(UID pid,
     info->Keys[info->LowestFreeKeyIndex] = key;
     KeyMan_IncrementRefCount(key);
 
-    *index = info->LowestFreeKeyIndex;
+    if(index != NULL)
+        *index = info->LowestFreeKeyIndex;
 
     while(info->Keys[info->LowestFreeKeyIndex] != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS){
         info->LowestFreeKeyIndex++;
@@ -447,7 +452,7 @@ GetIndexOfKey(UID pid,
     *index = (uint32_t)-1;
 
     for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++){
-        if(info->Keys[i] == key)
+        if(info->Keys[i] == key && info->Keys[i] != 0)
             *index = i;
     }
 

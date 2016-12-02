@@ -29,6 +29,12 @@
 #define CORE_LOCAL __attribute__((address_space(256)))
 #endif
 
+typedef struct SharedMemoryData {
+      uint64_t PhysicalAddress;
+      uint64_t Length;
+      _Atomic uint64_t ReferenceCount;
+} SharedMemoryData;
+
 /**
  * Describes a memory allocation in an address space.
  */
@@ -39,6 +45,7 @@ typedef struct MemoryAllocationsMap {
     uint64_t    Length;                   //!< The length, in bytes, of this allocation
     MemoryAllocationFlags Flags;          //!< The MemoryAllocationFlags of this allocation.
     MemoryAllocationType  AllocationType; //!< The MemoryAllocationType of this allocation.
+    SharedMemoryData *SharedMemoryInfo;   //!< Track shared memory related information if this allocation is shared.
 
     struct MemoryAllocationsMap *next;    //!< The next allocation in the list.
     struct MemoryAllocationsMap *prev;    //!< The previous allocation in the list.
@@ -403,6 +410,79 @@ HaltProcessor(void);
 void
 WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
                         MemoryAllocationType type);
+
+
+/**
+ * @brief      Allocate a region of shared memory.
+ *
+ * @param[in]  pid             The pid
+ * @param[in]  length          The length
+ * @param[in]  cacheMode       The cache mode
+ * @param[in]  allocType       The allocate type
+ * @param[in]  flags           The flags
+ * @param      virtualAddress  The virtual address
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+AllocateSharedMemory(UID pid,
+                     uint64_t length,
+                     CachingMode cacheMode,
+                     MemoryAllocationType allocType,
+                     MemoryAllocationFlags flags,
+                     uint64_t *virtualAddress);
+
+/**
+ * @brief      Gets the shared memory key.
+ *
+ * @param[in]  pid             The pid
+ * @param[in]  virtualAddress  The virtual address
+ * @param[in]  length          The length
+ * @param[in]  cacheMode       The cache mode
+ * @param[in]  flags           The flags
+ * @param      key             The key
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+GetSharedMemoryKey(UID pid,
+                   uint64_t virtualAddress,
+                   uint64_t length,
+                   CachingMode cacheMode,
+                   MemoryAllocationFlags flags,
+                   uint64_t *key);
+
+/**
+ * @brief      Apply a shared memory key.
+ *
+ * @param[in]  pid             The pid
+ * @param[in]  key             The key
+ * @param      virtualAddress  The virtual address
+ * @param      flags           The flags
+ * @param      cacheMode       The cache mode
+ * @param      length          The length
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+ApplySharedMemoryKey(UID pid,
+                     uint64_t key,
+                     uint64_t *virtualAddress,
+                     MemoryAllocationFlags *flags,
+                     CachingMode *cacheMode,
+                     uint64_t *length);
+
+/**
+ * @brief      Free the provided shared memory key.
+ *
+ * @param[in]  parentPID  The parent pid
+ * @param[in]  key        The key
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+FreeSharedMemoryKey(UID parentPID,
+                    uint64_t key);
 
 /**@}*/
 

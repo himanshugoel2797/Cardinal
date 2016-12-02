@@ -5,10 +5,6 @@
 #include <cardinal/ipc.h>
 #include "server.h"
 
-
-void 
-create_process_noshmem_handler(Message *m);
-
 void
 create_process_handler(Message *m);
 

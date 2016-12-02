@@ -9,7 +9,6 @@
 #include "interrupts.h"
 #include "managers.h"
 #include "target/x86_64/apic/apic.h"
-#include "libs/libCardinal/include/shared_memory.h"
 
 static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
@@ -126,6 +125,10 @@ MapPage(ManagedPageTable *pageTable,
 
     //If this allocation is just reserved vmem, mark the page as not present
     if(allocType & MemoryAllocationType_ReservedAllocation) {
+
+        if(allocType & MemoryAllocationType_Shared)
+            return MemoryAllocationErrors_InvalidFlags;
+
         flags &= ~MemoryAllocationFlags_Present;
         flags |= MemoryAllocationFlags_NotPresent;
 
@@ -297,7 +300,11 @@ UnmapPage(ManagedPageTable 	*pageTable,
         do {
 
             if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size)) {
-                //TODO define the possible situations and update the allocation map appropriately
+                
+                //Shared memory explicitly requires full length match!
+                if(size != map->Length && (map->AllocationType & MemoryAllocationType_Shared))
+                    return MemoryAllocationErrors_InvalidFlags;
+
                 MemoryAllocationsMap *top = kmalloc(sizeof(MemoryAllocationsMap));
 
                 top->CacheMode = map->CacheMode;
@@ -318,6 +325,18 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 } else kfree(top);
 
                 if(map->Length == 0) {
+
+                    if(map->AllocationType & MemoryAllocationType_Shared)
+                    {
+                        map->SharedMemoryInfo->ReferenceCount--;
+
+                        if(map->SharedMemoryInfo->ReferenceCount == 0){
+                            //Delete the mapping and free the memory
+                            //TODO Is this a good idea? Freeing shouldn't be mixed in here if allocation isn't
+                            FreePhysicalPageCont(map->SharedMemoryInfo->PhysicalAddress, map->SharedMemoryInfo->Length / PAGE_SIZE);
+                            kfree(map->SharedMemoryInfo);
+                        }
+                    }
 
                     if(pageTable->AllocationMap != map)
                         prev->next = map->next;
@@ -816,4 +835,239 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
     }
 
     UnlockSpinlock(pageTable->lock);
+}
+
+MemoryAllocationErrors
+AllocateSharedMemory(UID pid,
+                     uint64_t length,
+                     CachingMode cacheMode,
+                     MemoryAllocationType allocType,
+                     MemoryAllocationFlags flags,
+                     uint64_t *virtualAddress) {
+
+    if(virtualAddress == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if((length % PAGE_SIZE) | (length == 0))
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(allocType & (MemoryAllocationType_ReservedAllocation | MemoryAllocationType_ReservedBacking))
+        return MemoryAllocationErrors_InvalidFlags;
+    
+    ProcessInformation *procInfo = NULL;
+    if(GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+
+    LockSpinlock(procInfo->lock);
+    LockSpinlock(procInfo->PageTable->lock);
+    
+    FindFreeVirtualAddress(
+        procInfo->PageTable,
+        virtualAddress,
+        length,
+        allocType,
+        flags);
+
+    if(*virtualAddress == 0){
+        UnlockSpinlock(procInfo->PageTable->lock);
+        UnlockSpinlock(procInfo->lock);
+        return MemoryAllocationErrors_OutOfMemory;
+    }
+
+    uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE);
+    if(mem == 0){
+        UnlockSpinlock(procInfo->PageTable->lock);
+        UnlockSpinlock(procInfo->lock);
+        return MemoryAllocationErrors_OutOfMemory;
+    }
+        
+    MapPage(procInfo->PageTable,
+            mem,
+            *virtualAddress,
+            length,
+            cacheMode,
+            allocType,
+            flags | MemoryAllocationFlags_Present);
+
+    MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
+    while(map != NULL) {
+        if(*virtualAddress == map->VirtualAddress && length == map->Length) {
+
+            map->AllocationType |= MemoryAllocationType_Shared;
+
+            map->SharedMemoryInfo = kmalloc(sizeof(SharedMemoryData));
+            map->SharedMemoryInfo->PhysicalAddress = mem;
+            map->SharedMemoryInfo->Length = length;
+            map->SharedMemoryInfo->ReferenceCount = 1;
+
+            break;
+        }
+        map = map->next;
+    }
+
+    UnlockSpinlock(procInfo->PageTable->lock);
+    UnlockSpinlock(procInfo->lock);
+    return MemoryAllocationErrors_None;
+
+}
+
+MemoryAllocationErrors
+GetSharedMemoryKey(UID pid,
+                   uint64_t virtualAddress,
+                   uint64_t length,
+                   CachingMode cacheMode,
+                   MemoryAllocationFlags flags,
+                   uint64_t *key) {
+
+    if(key == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    ProcessInformation *procInfo = NULL;
+    if(GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    LockSpinlock(procInfo->lock);
+    LockSpinlock(procInfo->PageTable->lock);
+    MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
+    while(map != NULL) {
+        if(virtualAddress == map->VirtualAddress && length == map->Length) {
+
+            if(!(map->AllocationType & MemoryAllocationType_Shared)) {
+                UnlockSpinlock(procInfo->PageTable->lock);
+                UnlockSpinlock(procInfo->lock);
+                return MemoryAllocationErrors_InvalidParameters;
+            }
+
+            //Store the address of the mapping info and the flags in a key
+            uint64_t identifiers[IDENTIFIER_COUNT];
+            identifiers[0] = (uint64_t)map->SharedMemoryInfo;
+            identifiers[1] = (uint64_t)flags;
+            identifiers[2] = (uint64_t)cacheMode;
+            identifiers[IDENTIFIER_COUNT - 1] = KeyType_SharedMemoryKey;
+
+            if(KeyMan_AllocateKey(identifiers, key) != KeyManagerErrors_None)
+            {
+                UnlockSpinlock(procInfo->PageTable->lock);
+                UnlockSpinlock(procInfo->lock);
+                return MemoryAllocationErrors_Unknown;
+            }
+            if(AllocateDescriptor(pid, *key, NULL) != ProcessErrors_None) {
+                KeyMan_FreeKey(*key);
+                UnlockSpinlock(procInfo->PageTable->lock);
+                UnlockSpinlock(procInfo->lock);
+                return MemoryAllocationErrors_OutOfMemory;
+            }
+
+            break;
+        }
+        map = map->next;
+    }
+
+    UnlockSpinlock(procInfo->PageTable->lock);
+    UnlockSpinlock(procInfo->lock);
+    return MemoryAllocationErrors_None;
+}
+
+MemoryAllocationErrors
+ApplySharedMemoryKey(UID pid,
+                     uint64_t key,
+                     uint64_t *virtualAddress,
+                     MemoryAllocationFlags *flags,
+                     CachingMode *cacheMode,
+                     uint64_t *length) {
+
+    if(length == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(cacheMode == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(flags == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(virtualAddress == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    uint64_t identifiers[IDENTIFIER_COUNT];
+    if(KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    ProcessInformation *procInfo = NULL;
+    if(GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+
+    SharedMemoryData *shmem_info = (SharedMemoryData*)identifiers[0];
+    
+    *flags = (MemoryAllocationFlags)identifiers[1];
+    *cacheMode = (CachingMode)identifiers[2];
+    *length = shmem_info->Length;
+
+    LockSpinlock(procInfo->lock);
+    LockSpinlock(procInfo->PageTable->lock);
+    
+    FindFreeVirtualAddress(
+        procInfo->PageTable,
+        virtualAddress,
+        *length,
+        MemoryAllocationType_MMap,
+        *flags);
+
+    if(*virtualAddress == 0){
+        UnlockSpinlock(procInfo->PageTable->lock);
+        UnlockSpinlock(procInfo->lock);
+        return MemoryAllocationErrors_OutOfMemory;
+    }
+        
+    MapPage(procInfo->PageTable,
+            shmem_info->PhysicalAddress,
+            *virtualAddress,
+            *length,
+            *cacheMode,
+            MemoryAllocationType_MMap,
+            *flags | MemoryAllocationFlags_Present);
+
+    MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
+    while(map != NULL) {
+        if(*virtualAddress == map->VirtualAddress && *length == map->Length) {
+
+            map->AllocationType |= MemoryAllocationType_Shared;
+
+            map->SharedMemoryInfo = shmem_info;
+            map->SharedMemoryInfo->ReferenceCount++;
+
+            break;
+        }
+        map = map->next;
+    }
+
+    UnlockSpinlock(procInfo->PageTable->lock);
+    UnlockSpinlock(procInfo->lock);
+    return MemoryAllocationErrors_None;
+}
+
+MemoryAllocationErrors
+FreeSharedMemoryKey(UID parentPID,
+                    uint64_t key) {
+
+    uint32_t index = 0;
+    
+    if(GetIndexOfKey(parentPID, key, &index) != ProcessErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    uint64_t identifiers[IDENTIFIER_COUNT];
+    if(KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(DeleteDescriptor(parentPID, index) != ProcessErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+    
+    return MemoryAllocationErrors_None;
 }

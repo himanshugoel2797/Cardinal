@@ -8,7 +8,7 @@
 typedef struct {
     uint32_t key;
     uint32_t ref_count;
-    uint64_t identifier;
+    uint64_t identifier[IDENTIFIER_COUNT];
 } KeyEntry;
 
 static KeyEntry* keyTable = NULL;
@@ -47,7 +47,7 @@ KeyMan_Initialize(void) {
 
 
 KeyManagerErrors
-KeyMan_AllocateKey(uint64_t identifier,
+KeyMan_AllocateKey(uint64_t *identifier,
                    uint64_t *key) {
 
     if(key == NULL)
@@ -61,8 +61,11 @@ KeyMan_AllocateKey(uint64_t identifier,
     *key = *key << 32 | lastFreeKeyIndex;
 
     keyTable[lastFreeKeyIndex].key = rng_key;
-    keyTable[lastFreeKeyIndex].identifier = identifier;
-    keyTable[lastFreeKeyIndex].ref_count = 1;
+
+    for(int i = 0; i < IDENTIFIER_COUNT; i++)
+        keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
+    
+    keyTable[lastFreeKeyIndex].ref_count = 0;
 
     while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
@@ -81,7 +84,7 @@ KeyMan_FreeKey(uint64_t key) {
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key == 0) {
+    if(keyTable[index].key != (uint32_t)(key >> 32)) {
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
@@ -92,8 +95,10 @@ KeyMan_FreeKey(uint64_t key) {
     }
 
     keyTable[index].key = 0;
-    keyTable[index].identifier = 0;
     keyTable[index].ref_count = 0;
+
+    for(int i = 0; i < IDENTIFIER_COUNT; i++)
+        keyTable[index].identifier[i] = 0;
 
     if(index < lastFreeKeyIndex)
         lastFreeKeyIndex = index;
@@ -116,7 +121,7 @@ KeyMan_KeyExists(uint64_t key) {
     if(k == 0)
         return 0;
 
-    return 1;
+    return (k == (uint32_t)(key >> 32));
 }
 
 KeyManagerErrors
@@ -129,13 +134,16 @@ KeyMan_ReadKey(uint64_t key,
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key == 0) {
+    if(keyTable[index].key != (uint32_t)(key >> 32)) {
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
     if(identifier != NULL)
-        *identifier = keyTable[index].identifier;
+    {
+        for(int i = 0; i < IDENTIFIER_COUNT; i++)
+            identifier[i] = keyTable[index].identifier[i];
+    }
 
     UnlockSpinlock(keyman_lock);
     return KeyManagerErrors_None;
@@ -150,7 +158,7 @@ KeyMan_IncrementRefCount(uint64_t key) {
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key == 0) {
+    if(keyTable[index].key != (uint32_t)(key >> 32)) {
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
@@ -173,16 +181,13 @@ KeyMan_DecrementRefCount(uint64_t key) {
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key == 0) {
+    if(keyTable[index].key != (uint32_t)(key >> 32)) {
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
-    //Prevent underflow
-    if(keyTable[index].ref_count == 0)
-        return KeyManagerErrors_Unknown;
-
-    keyTable[index].ref_count--;
+    if(keyTable[index].ref_count != 0)
+        keyTable[index].ref_count--;
 
     if(keyTable[index].ref_count == 0)
     {

@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#define IDENTIFIER_COUNT 4
+
 typedef enum {
     KeyManagerErrors_None,
     KeyManagerErrors_Unknown,
@@ -18,6 +20,10 @@ typedef enum {
     KeyFlags_UnlimitedTransfer = (1 << 1),
 } KeyFlags;
 
+typedef enum {
+    KeyType_SharedMemoryKey = 1
+} KeyType;
+
 void
 KeyMan_Initialize(void);
 
@@ -30,7 +36,7 @@ KeyMan_Initialize(void);
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_AllocateKey(uint64_t identifier,
+KeyMan_AllocateKey(uint64_t *identifier,
                    uint64_t *key);
 
 /**
