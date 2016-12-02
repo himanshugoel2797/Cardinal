@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['kcompact',['kcompact',['../d1/dd7/group__kmalloc.html#ga2e55df57a359c2d24eb9b17f814fec51',1,'kcompact():&#160;kmalloc.c'],['../d1/dd7/group__kmalloc.html#ga2e55df57a359c2d24eb9b17f814fec51',1,'kcompact():&#160;kmalloc.c']]],
-  ['kfree',['kfree',['../d1/dd7/group__kmalloc.html#gaa3ff6401026972fc396bda649a01c994',1,'kfree(void *addr):&#160;kmalloc.c'],['../d1/dd7/group__kmalloc.html#gaa3ff6401026972fc396bda649a01c994',1,'kfree(void *addr):&#160;kmalloc.c']]],
-  ['kmalloc',['kmalloc',['../d1/dd7/group__kmalloc.html#ga5f52d7c56b7d67dc2f96b2e93dfdc7be',1,'kmalloc(size_t size):&#160;kmalloc.c'],['../d1/dd7/group__kmalloc.html#ga5f52d7c56b7d67dc2f96b2e93dfdc7be',1,'kmalloc(size_t size):&#160;kmalloc.c']]],
-  ['kmalloc_5finit',['kmalloc_init',['../d1/dd7/group__kmalloc.html#ga63480a95a307ab439fa8d58df704a4ea',1,'kmalloc_init(void):&#160;kmalloc.c'],['../d1/dd7/group__kmalloc.html#ga63480a95a307ab439fa8d58df704a4ea',1,'kmalloc_init(void):&#160;kmalloc.c']]]
+  ['initializetimer',['InitializeTimer',['../dc/d8f/group__timer__hal.html#gaa04f3990c781274ac259facaa575bc44',1,'InitializeTimer(void):&#160;timer.c'],['../dc/d8f/group__timer__hal.html#gaa04f3990c781274ac259facaa575bc44',1,'InitializeTimer(void):&#160;timer.c']]],
+  ['ioapic_5fread',['IOAPIC_Read',['../d4/d5c/group__ioapic__driver.html#gafbbecbb604eb53ebd03c05f38e811215',1,'IOAPIC_Read(uint32_t volatile *io_apic_baseAddr, uint32_t index):&#160;io_apic.c'],['../d4/d5c/group__ioapic__driver.html#gafbbecbb604eb53ebd03c05f38e811215',1,'IOAPIC_Read(uint32_t volatile *io_apic_baseAddr, uint32_t index):&#160;io_apic.c']]],
+  ['ioapic_5fwrite',['IOAPIC_Write',['../d4/d5c/group__ioapic__driver.html#gadc1df43ab4f7ea0081be5d730261500b',1,'IOAPIC_Write(uint32_t volatile *io_apic_baseAddr, uint32_t index, uint32_t val):&#160;io_apic.c'],['../d4/d5c/group__ioapic__driver.html#gadc1df43ab4f7ea0081be5d730261500b',1,'IOAPIC_Write(uint32_t volatile *io_apic_baseAddr, uint32_t index, uint32_t val):&#160;io_apic.c']]]
 ];

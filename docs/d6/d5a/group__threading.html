@@ -267,9 +267,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:gafa6ab94b66d9d502f82eee51ecd34461"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d5a/group__threading.html#gafa6ab94b66d9d502f82eee51ecd34461">GetFSBase</a> (void)</td></tr>
 <tr class="memdesc:gafa6ab94b66d9d502f82eee51ecd34461"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the fs base.  <a href="#gafa6ab94b66d9d502f82eee51ecd34461">More...</a><br /></td></tr>
 <tr class="separator:gafa6ab94b66d9d502f82eee51ecd34461"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2a8589b87f815d9ffb5a21ce197ade7c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d5a/group__threading.html#ga2a8589b87f815d9ffb5a21ce197ade7c">SetKernelGSBase</a> (void *base)</td></tr>
-<tr class="memdesc:ga2a8589b87f815d9ffb5a21ce197ade7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the kernel gs base.  <a href="#ga2a8589b87f815d9ffb5a21ce197ade7c">More...</a><br /></td></tr>
-<tr class="separator:ga2a8589b87f815d9ffb5a21ce197ade7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad4765491d0a2e9e8ecfbbf46db94c58c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d5a/group__threading.html#gad4765491d0a2e9e8ecfbbf46db94c58c">SetBG_GSBase</a> (void *base)</td></tr>
+<tr class="memdesc:gad4765491d0a2e9e8ecfbbf46db94c58c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the background gs base.  <a href="#gad4765491d0a2e9e8ecfbbf46db94c58c">More...</a><br /></td></tr>
+<tr class="separator:gad4765491d0a2e9e8ecfbbf46db94c58c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga45b56a56064da8c151806b808e65f58a"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d5a/group__threading.html#ga45b56a56064da8c151806b808e65f58a">GetBG_GSBase</a> (void)</td></tr>
+<tr class="memdesc:ga45b56a56064da8c151806b808e65f58a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the background gs base.  <a href="#ga45b56a56064da8c151806b808e65f58a">More...</a><br /></td></tr>
+<tr class="separator:ga45b56a56064da8c151806b808e65f58a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga294a8015b35b546fb48ba727b705229c"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d5a/group__threading.html#ga294a8015b35b546fb48ba727b705229c">GetGSBase</a> (void)</td></tr>
 <tr class="memdesc:ga294a8015b35b546fb48ba727b705229c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the gs base.  <a href="#ga294a8015b35b546fb48ba727b705229c">More...</a><br /></td></tr>
 <tr class="separator:ga294a8015b35b546fb48ba727b705229c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -624,6 +627,27 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="ga45b56a56064da8c151806b808e65f58a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* GetBG_GSBase </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/thread.h&gt;</code></p>
+
+<p>Gets the background gs base. </p>
+<dl class="section return"><dt>Returns</dt><dd>The background gs base. </dd></dl>
 
 </div>
 </div>
@@ -1259,6 +1283,32 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gad4765491d0a2e9e8ecfbbf46db94c58c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SetBG_GSBase </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>base</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/thread.h&gt;</code></p>
+
+<p>Sets the background gs base. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">base</td><td>The base </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga99f4064572d19883b54e6e5033ad7fc6"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1405,32 +1455,6 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sp</td><td>The interrupt stack </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga2a8589b87f815d9ffb5a21ce197ade7c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void SetKernelGSBase </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>base</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;target/hal/thread.h&gt;</code></p>
-
-<p>Sets the kernel gs base. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">base</td><td>The base </td></tr>
   </table>
   </dd>
 </dl>

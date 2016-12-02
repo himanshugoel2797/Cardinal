@@ -17,10 +17,15 @@ var searchData=
   ['priority',['Priority',['../d5/dfe/structThreadInfo.html#a7aadd81b1420e832b7c6378653abea84',1,'ThreadInfo']]],
   ['process_20management',['Process Management',['../d3/d12/group__proc__man.html',1,'']]],
   ['process_20management_20syscalls',['Process Management Syscalls',['../db/d9b/group__proc__syscall.html',1,'']]],
+  ['processentry',['ProcessEntry',['../de/d4d/structProcessEntry.html',1,'']]],
   ['processinformation',['ProcessInformation',['../d4/d03/structProcessInformation.html',1,'']]],
+  ['processmemoryallocation',['ProcessMemoryAllocation',['../db/d8f/structProcessMemoryAllocation.html',1,'']]],
+  ['processmemorydata',['ProcessMemoryData',['../dc/db3/structProcessMemoryData.html',1,'']]],
+  ['processserver_5fcreaterequest',['ProcessServer_CreateRequest',['../df/d9e/structProcessServer__CreateRequest.html',1,'']]],
+  ['processserver_5fcreaterequest_5fresponse',['ProcessServer_CreateRequest_Response',['../d4/d26/structProcessServer__CreateRequest__Response.html',1,'']]],
+  ['processserver_5fr0notifyprocessexistence',['ProcessServer_R0NotifyProcessExistence',['../da/dda/structProcessServer__R0NotifyProcessExistence.html',1,'']]],
+  ['processservernotificationtype_5fnotification',['ProcessServerNotificationType_Notification',['../d1/d55/structProcessServerNotificationType__Notification.html',1,'']]],
   ['processsys_5finitialize',['ProcessSys_Initialize',['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c'],['../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3',1,'ProcessSys_Initialize(void):&#160;process.c']]],
   ['processsys_5fisinitialized',['ProcessSys_IsInitialized',['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c'],['../d3/d12/group__proc__man.html#ga3357a9af2ef7cebefe9a47ca62c9f219',1,'ProcessSys_IsInitialized(void):&#160;process.c']]],
-  ['procserv_5fcreaterequest',['ProcServ_CreateRequest',['../d3/dce/structProcServ__CreateRequest.html',1,'']]],
-  ['procserv_5fcreaterequest_5fresponse',['ProcServ_CreateRequest_Response',['../d2/d35/structProcServ__CreateRequest__Response.html',1,'']]],
   ['property_20syscalls',['Property Syscalls',['../dd/dbd/group__property__syscall.html',1,'']]]
 ];

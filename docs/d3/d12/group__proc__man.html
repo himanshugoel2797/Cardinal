@@ -108,9 +108,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga0f3b96d1956059581fbf9de22098b4f1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga0f3b96d1956059581fbf9de22098b4f1">GetMessageFrom</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *msg, UID SourcePID, uint32_t msg_id)</td></tr>
 <tr class="memdesc:ga0f3b96d1956059581fbf9de22098b4f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the ipc message from the source.  <a href="#ga0f3b96d1956059581fbf9de22098b4f1">More...</a><br /></td></tr>
 <tr class="separator:ga0f3b96d1956059581fbf9de22098b4f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga486f60c214bc3ba1aa2f948348e47b71"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga486f60c214bc3ba1aa2f948348e47b71">SetSpecialDestinationPID</a> (UID specialID)</td></tr>
-<tr class="memdesc:ga486f60c214bc3ba1aa2f948348e47b71"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the special destination pid.  <a href="#ga486f60c214bc3ba1aa2f948348e47b71">More...</a><br /></td></tr>
-<tr class="separator:ga486f60c214bc3ba1aa2f948348e47b71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae9ce449e59986c5fbb25a8ad7fa811a3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gae9ce449e59986c5fbb25a8ad7fa811a3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gae9ce449e59986c5fbb25a8ad7fa811a3">ProcessSys_Initialize</a> (void)</td></tr>
 <tr class="memdesc:gae9ce449e59986c5fbb25a8ad7fa811a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the process system. <br /></td></tr>
@@ -127,9 +124,118 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:gad8315d4eb5c01a626ff8b4221c436282"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gad8315d4eb5c01a626ff8b4221c436282">ScheduleProcessForTermination</a> (UID pid, uint32_t exit_code)</td></tr>
 <tr class="memdesc:gad8315d4eb5c01a626ff8b4221c436282"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the process for termination.  <a href="#gad8315d4eb5c01a626ff8b4221c436282">More...</a><br /></td></tr>
 <tr class="separator:gad8315d4eb5c01a626ff8b4221c436282"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae9bc68decfd99c25d0887723bbae6c85"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gae9bc68decfd99c25d0887723bbae6c85">AllocateDescriptor</a> (UID pid, uint64_t key, uint32_t *index)</td></tr>
+<tr class="memdesc:gae9bc68decfd99c25d0887723bbae6c85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a key.  <a href="#gae9bc68decfd99c25d0887723bbae6c85">More...</a><br /></td></tr>
+<tr class="separator:gae9bc68decfd99c25d0887723bbae6c85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacbbe1fd2a7cbc41c9760d668b2b79f18"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gacbbe1fd2a7cbc41c9760d668b2b79f18">CopyDescriptor</a> (UID src_pid, UID dst_pid, uint32_t index, uint32_t *new_index)</td></tr>
+<tr class="memdesc:gacbbe1fd2a7cbc41c9760d668b2b79f18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies a descriptor from src_pid to dst_pid.  <a href="#gacbbe1fd2a7cbc41c9760d668b2b79f18">More...</a><br /></td></tr>
+<tr class="separator:gacbbe1fd2a7cbc41c9760d668b2b79f18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0c6a379151691c97883943172f5e2ad3"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga0c6a379151691c97883943172f5e2ad3">GetIndexOfKey</a> (UID pid, uint64_t key, uint32_t *index)</td></tr>
+<tr class="memdesc:ga0c6a379151691c97883943172f5e2ad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the descriptor index of the key.  <a href="#ga0c6a379151691c97883943172f5e2ad3">More...</a><br /></td></tr>
+<tr class="separator:ga0c6a379151691c97883943172f5e2ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad1eafd287e34b1870e9f54dd518491d1"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gad1eafd287e34b1870e9f54dd518491d1">DeleteDescriptor</a> (UID pid, uint32_t index)</td></tr>
+<tr class="memdesc:gad1eafd287e34b1870e9f54dd518491d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete a descriptor from a process.  <a href="#gad1eafd287e34b1870e9f54dd518491d1">More...</a><br /></td></tr>
+<tr class="separator:gad1eafd287e34b1870e9f54dd518491d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="gae9bc68decfd99c25d0887723bbae6c85"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ProcessErrors AllocateDescriptor </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Creates a key. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">key</td><td>The key </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">index</td><td>The index</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>{ description_of_the_return_value } </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gacbbe1fd2a7cbc41c9760d668b2b79f18"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ProcessErrors CopyDescriptor </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>src_pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>dst_pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>new_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Copies a descriptor from src_pid to dst_pid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">src_pid</td><td>The source pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dst_pid</td><td>The destination pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>The descriptor index </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">new_index</td><td>The new descriptor index</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>{ description_of_the_return_value } </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="ga7aa37247152a5583811095f00d71c15c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -172,6 +278,89 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Error code on failure, ProcessErrors_None on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gad1eafd287e34b1870e9f54dd518491d1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ProcessErrors DeleteDescriptor </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Delete a descriptor from a process. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>The index</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>{ description_of_the_return_value } </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga0c6a379151691c97883943172f5e2ad3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ProcessErrors GetIndexOfKey </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t *&#160;</td>
+          <td class="paramname"><em>index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Get the descriptor index of the key. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">index</td><td>The key index</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The index of key. </dd></dl>
 
 </div>
 </div>
@@ -423,7 +612,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Error code on failure, ProcessErros_None on success. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, ProcessErrors_None on success. </dd></dl>
 
 </div>
 </div>
@@ -462,33 +651,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The process group id. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga486f60c214bc3ba1aa2f948348e47b71"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool SetSpecialDestinationPID </td>
-          <td>(</td>
-          <td class="paramtype">UID&#160;</td>
-          <td class="paramname"><em>specialID</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
-
-<p>Sets the special destination pid. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">specialID</td><td>The special id</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>TRUE if the set operation succeeded, FALSE otherwise. </dd></dl>
 
 </div>
 </div>

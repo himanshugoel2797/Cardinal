@@ -113,7 +113,8 @@ Enumerations</h2></td></tr>
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9af26186681970fda876e30fb6606ba291">MemoryAllocationType_Application</a> = (1 &lt;&lt; 6), 
 <br />
 &#160;&#160;<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a7a4d5a4b145bba23b3cf004e56f35f77">MemoryAllocationType_MMapLo</a> = (1 &lt;&lt; 7), 
-<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a4479fcf36ca20b22deff013501a48f34">MemoryAllocationType_ApplicationProtected</a> = (1 &lt;&lt; 8)
+<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a05286ab5a6fad6659ca6327425f8a0d8">MemoryAllocationType_ReservedBacking</a> = (1 &lt;&lt; 8), 
+<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga7cb66cb28d1e2e145faed0b3ac4feef9a701ae6fdadf6ef58fb3f2a4746ebd3ec">MemoryAllocationType_Shared</a> = (1 &lt;&lt; 9)
 <br />
  }<tr class="memdesc:ga7cb66cb28d1e2e145faed0b3ac4feef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory Allocation Type.  <a href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">More...</a><br /></td></tr>
 </td></tr>
@@ -141,7 +142,10 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a6a2c1df702007a3a2f7633e16b21c27b">MemoryAllocationErrors_InvalidFlags</a> = (1 &lt;&lt; 3), 
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a526fc3fcd492e15a7f9c3fa826cf38c5">MemoryAllocationErrors_InvalidVirtualAddress</a> = (1 &lt;&lt; 4), 
 <a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a817cb5e19628b4892e2676ec2e72b0d1">MemoryAllocationErrors_InvalidPhysicalAddress</a> = (1 &lt;&lt; 5), 
-<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a4142b4f7729ccb08c0f5046f1c9c29a7">MemoryAllocationErrors_Unknown</a> = (1 &lt;&lt; 6)
+<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a4142b4f7729ccb08c0f5046f1c9c29a7">MemoryAllocationErrors_Unknown</a> = (1 &lt;&lt; 6), 
+<br />
+&#160;&#160;<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a18f5ac4f20459720021e9252046815ae">MemoryAllocationErrors_InvalidParameters</a> = (1 &lt;&lt; 7), 
+<a class="el" href="../../d9/d2d/group__memory__syscall.html#gga1c37324a30e01fffd90ff594a6e2fe00a8192e3902f0f15ba697d45b75b5e25ec">MemoryAllocationErrors_OutOfMemory</a> = (1 &lt;&lt; 8)
 <br />
  }<tr class="memdesc:ga1c37324a30e01fffd90ff594a6e2fe00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Memory Allocation Errors.  <a href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">More...</a><br /></td></tr>
 </td></tr>
@@ -155,12 +159,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ga518764eb321eed796a4143b0c9d58be9"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga518764eb321eed796a4143b0c9d58be9">R0_Unmap</a> (UID pid, uint64_t virt, uint64_t size)</td></tr>
 <tr class="memdesc:ga518764eb321eed796a4143b0c9d58be9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmap a virtual address in any process. R0 process only.  <a href="#ga518764eb321eed796a4143b0c9d58be9">More...</a><br /></td></tr>
 <tr class="separator:ga518764eb321eed796a4143b0c9d58be9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga19ce5becc6a5be20ea526fc4c96e8ae4"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga19ce5becc6a5be20ea526fc4c96e8ae4">Unmap</a> (uint64_t virt, uint64_t size)</td></tr>
+<tr class="memdesc:ga19ce5becc6a5be20ea526fc4c96e8ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unmap a virtual address in the current process.  <a href="#ga19ce5becc6a5be20ea526fc4c96e8ae4">More...</a><br /></td></tr>
+<tr class="separator:ga19ce5becc6a5be20ea526fc4c96e8ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gaad9ba4788ae5a1a191a1df9307bbb31d">R0_GetBootInfo</a> (<a class="el" href="../../dc/d07/structCardinalBootInfo.html">CardinalBootInfo</a> *bInfo)</td></tr>
 <tr class="memdesc:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the boot information structure. R0 process only.  <a href="#gaad9ba4788ae5a1a191a1df9307bbb31d">More...</a><br /></td></tr>
 <tr class="separator:gaad9ba4788ae5a1a191a1df9307bbb31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6dea5316a98d587293e6011114c43e04"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga6dea5316a98d587293e6011114c43e04">R0_GetPhysicalAddress</a> (uint64_t v_addr, uint64_t *p_addr)</td></tr>
-<tr class="memdesc:ga6dea5316a98d587293e6011114c43e04"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate a virtual address to a physical address. R0 process only.  <a href="#ga6dea5316a98d587293e6011114c43e04">More...</a><br /></td></tr>
-<tr class="separator:ga6dea5316a98d587293e6011114c43e04"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5216266de6dadc23f8eab26ebd8db074"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga5216266de6dadc23f8eab26ebd8db074">R0_GetPhysicalAddress</a> (UID pid, uint64_t v_addr, uint64_t *p_addr)</td></tr>
+<tr class="memdesc:ga5216266de6dadc23f8eab26ebd8db074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Translate a virtual address to a physical address. R0 process only.  <a href="#ga5216266de6dadc23f8eab26ebd8db074">More...</a><br /></td></tr>
+<tr class="separator:ga5216266de6dadc23f8eab26ebd8db074"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1b91e86506299c305e9f71c049b2dd16"><td class="memItemLeft" align="right" valign="top">static __inline uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1b91e86506299c305e9f71c049b2dd16">R0_AllocatePages</a> (uint64_t cnt, uint64_t *p_addr)</td></tr>
 <tr class="memdesc:ga1b91e86506299c305e9f71c049b2dd16"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a continuous range of physical pages. R0 process only.  <a href="#ga1b91e86506299c305e9f71c049b2dd16">More...</a><br /></td></tr>
 <tr class="separator:ga1b91e86506299c305e9f71c049b2dd16"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,6 +241,12 @@ Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga1c37324a30e01fffd90ff594a6e2fe00a4142b4f7729ccb08c0f5046f1c9c29a7"></a>MemoryAllocationErrors_Unknown&#160;</td><td class="fielddoc">
 <p>Unknown Error. </p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="gga1c37324a30e01fffd90ff594a6e2fe00a18f5ac4f20459720021e9252046815ae"></a>MemoryAllocationErrors_InvalidParameters&#160;</td><td class="fielddoc">
+<p>Invalid Parameters. </p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="gga1c37324a30e01fffd90ff594a6e2fe00a8192e3902f0f15ba697d45b75b5e25ec"></a>MemoryAllocationErrors_OutOfMemory&#160;</td><td class="fielddoc">
+<p>Out of Memory. </p>
 </td></tr>
 </table>
 
@@ -322,8 +335,11 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a7a4d5a4b145bba23b3cf004e56f35f77"></a>MemoryAllocationType_MMapLo&#160;</td><td class="fielddoc">
 <p>Memory Mapped (32 bit address). </p>
 </td></tr>
-<tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a4479fcf36ca20b22deff013501a48f34"></a>MemoryAllocationType_ApplicationProtected&#160;</td><td class="fielddoc">
-<p>Process related user RW information, persists on Execve. </p>
+<tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a05286ab5a6fad6659ca6327425f8a0d8"></a>MemoryAllocationType_ReservedBacking&#160;</td><td class="fielddoc">
+<p>Page was allocated passively by ReservedAllocation, must free as part of page table. </p>
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="gga7cb66cb28d1e2e145faed0b3ac4feef9a701ae6fdadf6ef58fb3f2a4746ebd3ec"></a>MemoryAllocationType_Shared&#160;</td><td class="fielddoc">
+<p>Shared memory. </p>
 </td></tr>
 </table>
 
@@ -457,7 +473,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6dea5316a98d587293e6011114c43e04"></a>
+<a class="anchor" id="ga5216266de6dadc23f8eab26ebd8db074"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -467,6 +483,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">static __inline uint64_t R0_GetPhysicalAddress </td>
           <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>v_addr</em>, </td>
         </tr>
@@ -494,6 +516,7 @@ Functions</h2></td></tr>
 <p>Translate a virtual address to a physical address. R0 process only. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">v_addr</td><td>The virtual address </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">p_addr</td><td>The physical address</td></tr>
   </table>
@@ -628,6 +651,52 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">virt</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>The size</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>An error code on failure, 0 on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga19ce5becc6a5be20ea526fc4c96e8ae4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static __inline uint64_t Unmap </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>virt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;libs/libCardinal/include/memory.h&gt;</code></p>
+
+<p>Unmap a virtual address in the current process. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">virt</td><td>The virtual address </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>The size</td></tr>
   </table>

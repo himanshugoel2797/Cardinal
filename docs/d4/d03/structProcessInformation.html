@@ -108,10 +108,6 @@ UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../..
 UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a3a34d1bc21f65a73b1a7b6852ba1044b">GroupID</a></td></tr>
 <tr class="memdesc:a3a34d1bc21f65a73b1a7b6852ba1044b"><td class="mdescLeft">&#160;</td><td class="mdescRight">GroupIDs are used to control permission levels. <br /></td></tr>
 <tr class="separator:a3a34d1bc21f65a73b1a7b6852ba1044b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a912bea277ead35d49596c85b41741364"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a912bea277ead35d49596c85b41741364"></a>
-char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a912bea277ead35d49596c85b41741364">Name</a> [MAX_PROCESS_NAME_LEN]</td></tr>
-<tr class="memdesc:a912bea277ead35d49596c85b41741364"><td class="mdescLeft">&#160;</td><td class="mdescRight">The name of the process. <br /></td></tr>
-<tr class="separator:a912bea277ead35d49596c85b41741364"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a59f80490c08ec417e82e6e4bd057f0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9a59f80490c08ec417e82e6e4bd057f0"></a>
 ProcessStatus&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a9a59f80490c08ec417e82e6e4bd057f0">Status</a></td></tr>
 <tr class="memdesc:a9a59f80490c08ec417e82e6e4bd057f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The status of the process. <br /></td></tr>
@@ -124,10 +120,6 @@ ProcessStatus&#160;</td><td class="memItemRight" valign="bottom"><a class="el" h
 uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a61cb33f39714fe70956f9cc5a7c9ca9c">HeapBreak</a></td></tr>
 <tr class="memdesc:a61cb33f39714fe70956f9cc5a7c9ca9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The heap break. <br /></td></tr>
 <tr class="separator:a61cb33f39714fe70956f9cc5a7c9ca9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adc0e5a72614f362405b56c870469608b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adc0e5a72614f362405b56c870469608b"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#adc0e5a72614f362405b56c870469608b">ResponseBuffer</a></td></tr>
-<tr class="memdesc:adc0e5a72614f362405b56c870469608b"><td class="mdescLeft">&#160;</td><td class="mdescRight">The response buffer address. <br /></td></tr>
-<tr class="separator:adc0e5a72614f362405b56c870469608b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79eae1fc9e6a327d6ecc9b35848d5543"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a79eae1fc9e6a327d6ecc9b35848d5543"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a79eae1fc9e6a327d6ecc9b35848d5543">ExitStatus</a></td></tr>
 <tr class="memdesc:a79eae1fc9e6a327d6ecc9b35848d5543"><td class="mdescLeft">&#160;</td><td class="mdescRight">The process exit status. <br /></td></tr>
@@ -144,6 +136,13 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <a class="el" href="../../d0/d13/structList.html">List</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a2b2e3a595afce3ee471eb547a97eb515">PendingMessages</a></td></tr>
 <tr class="memdesc:a2b2e3a595afce3ee471eb547a97eb515"><td class="mdescLeft">&#160;</td><td class="mdescRight">The pending messages. <br /></td></tr>
 <tr class="separator:a2b2e3a595afce3ee471eb547a97eb515"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c24ee0a079d3505353fe4b2f04883b4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a2c24ee0a079d3505353fe4b2f04883b4"></a>
+uint64_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a2c24ee0a079d3505353fe4b2f04883b4">Keys</a></td></tr>
+<tr class="memdesc:a2c24ee0a079d3505353fe4b2f04883b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">The keys provided to or owned by this process. <br /></td></tr>
+<tr class="separator:a2c24ee0a079d3505353fe4b2f04883b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1002b1ae317b95647acfc8b75f449fa7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1002b1ae317b95647acfc8b75f449fa7"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>LowestFreeKeyIndex</b></td></tr>
+<tr class="separator:a1002b1ae317b95647acfc8b75f449fa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a0dfc7e679df7ecfc7576cd0cc078fe"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6a0dfc7e679df7ecfc7576cd0cc078fe"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d03/structProcessInformation.html#a6a0dfc7e679df7ecfc7576cd0cc078fe">HandlingMessage</a></td></tr>
 <tr class="memdesc:a6a0dfc7e679df7ecfc7576cd0cc078fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is the process currently handling a message? <br /></td></tr>

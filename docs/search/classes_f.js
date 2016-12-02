@@ -7,5 +7,6 @@ var searchData=
   ['renamerequest',['RenameRequest',['../da/d94/structRenameRequest.html',1,'']]],
   ['renameresponse',['RenameResponse',['../dc/d80/structRenameResponse.html',1,'']]],
   ['response',['Response',['../d1/db9/structResponse.html',1,'']]],
+  ['responsebufferkeydata',['ResponseBufferKeyData',['../db/de2/structResponseBufferKeyData.html',1,'']]],
   ['rtc_5ftime',['RTC_Time',['../dd/d8f/structRTC__Time.html',1,'']]]
 ];

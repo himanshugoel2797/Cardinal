@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['uninstalltemporarywritemap',['UninstallTemporaryWriteMap',['../d0/d92/group__memory__hal.html#ga15cb64d29c2d42754d474b5b99c57f5a',1,'UninstallTemporaryWriteMap(uint64_t loc, size_t size):&#160;memory.c'],['../d0/d92/group__memory__hal.html#ga15cb64d29c2d42754d474b5b99c57f5a',1,'UninstallTemporaryWriteMap(uint64_t loc, size_t size):&#160;memory.c']]],
-  ['unlockspinlock',['UnlockSpinlock',['../d6/d6a/group__sync__hal.html#gae01c05d68d0a41e8dd03da6f7e2b8bbe',1,'UnlockSpinlock(Spinlock primitive):&#160;synchronization.c'],['../d6/d6a/group__sync__hal.html#gae01c05d68d0a41e8dd03da6f7e2b8bbe',1,'UnlockSpinlock(Spinlock primitive):&#160;synchronization.c']]],
-  ['unmappage',['UnmapPage',['../d0/d92/group__memory__hal.html#gaeadb7160dc7c72db80b7d2e63525dec5',1,'UnmapPage(ManagedPageTable *pageTable, uint64_t virtualAddress, size_t size):&#160;memory.c'],['../d0/d92/group__memory__hal.html#gaeadb7160dc7c72db80b7d2e63525dec5',1,'UnmapPage(ManagedPageTable *pageTable, uint64_t virtualAddress, size_t size):&#160;memory.c']]]
+  ['taskswitch',['TaskSwitch',['../d6/d5a/group__threading.html#ga261a137d70c2ca33f48f4e88181c8138',1,'TaskSwitch(uint32_t int_no, uint32_t err_code):&#160;thread.c'],['../d6/d5a/group__threading.html#ga261a137d70c2ca33f48f4e88181c8138',1,'TaskSwitch(uint32_t int_no, uint32_t err_code):&#160;thread.c']]],
+  ['terminateprocess',['TerminateProcess',['../d3/d12/group__proc__man.html#gad7fe74f3b5a1d0507b16ac66f9b6133c',1,'TerminateProcess(UID pid):&#160;process.c'],['../d3/d12/group__proc__man.html#gad7fe74f3b5a1d0507b16ac66f9b6133c',1,'TerminateProcess(UID pid):&#160;process.c']]],
+  ['thread_5finitialize',['Thread_Initialize',['../d6/d5a/group__threading.html#ga2876b648540d1904a14cbe08d679da5e',1,'Thread_Initialize(void):&#160;thread.c'],['../d6/d5a/group__threading.html#ga2876b648540d1904a14cbe08d679da5e',1,'Thread_Initialize(void):&#160;thread.c']]]
 ];

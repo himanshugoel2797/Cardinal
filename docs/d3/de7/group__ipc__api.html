@@ -81,6 +81,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#enumval-members">Enumerator</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -99,6 +101,8 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db9/structResponse.html">Response</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d1/db9/structResponse.html" title="Response buffer response header. ">Response</a> buffer response header.  <a href="../../d1/db9/structResponse.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d28/structCardinalFullMessage.html">CardinalFullMessage</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -111,6 +115,20 @@ typedef struct <a class="el" href="../../d1/db9/structResponse.html">Response</a
 <tr class="memdesc:ga264f8d701bc399f6a1d40d1129510f75"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d1/db9/structResponse.html" title="Response buffer response header. ">Response</a> buffer response header. <br /></td></tr>
 <tr class="separator:ga264f8d701bc399f6a1d40d1129510f75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:gaad89eebc8b3ba8a00cf2d5390d0e56f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaad89eebc8b3ba8a00cf2d5390d0e56f3"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>CardinalMsgType</b> { <br />
+&#160;&#160;<b>CardinalMsgType_Request</b>, 
+<b>CardinalMsgType_Error</b>, 
+<b>CardinalMsgType_IO</b>, 
+<b>CardinalMsgType_Signal</b>, 
+<br />
+&#160;&#160;<b>CardinalMsgType_Response</b>, 
+<b>CardinalMsgType_Notification</b>
+<br />
+ }</td></tr>
+<tr class="separator:gaad89eebc8b3ba8a00cf2d5390d0e56f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga0fc4d62e43c595436d2dfc20f23902ec"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga0fc4d62e43c595436d2dfc20f23902ec">GetIPCMessageFrom</a> (<a class="el" href="../../d8/dd0/structMessage.html">Message</a> *m, UID sourcePID, uint32_t msg_id)</td></tr>
@@ -122,9 +140,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga201f0870905183cbb7981308b3d2e034"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga201f0870905183cbb7981308b3d2e034">PostIPCMessages</a> (UID dstPID, <a class="el" href="../../d8/dd0/structMessage.html">Message</a> **m, uint64_t cnt)</td></tr>
 <tr class="memdesc:ga201f0870905183cbb7981308b3d2e034"><td class="mdescLeft">&#160;</td><td class="mdescRight">Posts ipc messages.  <a href="#ga201f0870905183cbb7981308b3d2e034">More...</a><br /></td></tr>
 <tr class="separator:ga201f0870905183cbb7981308b3d2e034"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="memItemLeft" align="right" valign="top">static __inline int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga24907f57393a3fcb3ec7d4e98adfca73">RequestResponseBuffer</a> (uint64_t *address, uint64_t *size)</td></tr>
-<tr class="memdesc:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request the process's IPC response buffer.  <a href="#ga24907f57393a3fcb3ec7d4e98adfca73">More...</a><br /></td></tr>
-<tr class="separator:ga24907f57393a3fcb3ec7d4e98adfca73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -136,22 +151,25 @@ UID&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../..
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga841846fbc1e35bc8af275dd9a80dd047">Message::MsgID</a></td></tr>
 <tr class="memdesc:ga841846fbc1e35bc8af275dd9a80dd047"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message ID, uniquely identifies a conversation. <br /></td></tr>
 <tr class="separator:ga841846fbc1e35bc8af275dd9a80dd047"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga3e0fe0b022a77c62f6f212839ff9e3b5"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga3e0fe0b022a77c62f6f212839ff9e3b5">Message::MsgType</a></td></tr>
-<tr class="memdesc:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message type (CARDINAL_MSG_TYPE_XXXXX). <br /></td></tr>
-<tr class="separator:ga3e0fe0b022a77c62f6f212839ff9e3b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga11776bcb455e6b5f5a2c03a4049bd093"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga11776bcb455e6b5f5a2c03a4049bd093"></a>
+CardinalMsgType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#ga11776bcb455e6b5f5a2c03a4049bd093">Message::MsgType</a></td></tr>
+<tr class="memdesc:ga11776bcb455e6b5f5a2c03a4049bd093"><td class="mdescLeft">&#160;</td><td class="mdescRight">The message type (CARDINAL_MSG_TYPE_XXXXX). <br /></td></tr>
+<tr class="separator:ga11776bcb455e6b5f5a2c03a4049bd093"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaedd9812fb8bc7bcdc64291c50d160269"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaedd9812fb8bc7bcdc64291c50d160269"></a>
 <a class="el" href="../../d8/dd0/structMessage.html">Message</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaedd9812fb8bc7bcdc64291c50d160269">ErrorMessage::m</a></td></tr>
 <tr class="memdesc:gaedd9812fb8bc7bcdc64291c50d160269"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard required message header. <br /></td></tr>
 <tr class="separator:gaedd9812fb8bc7bcdc64291c50d160269"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gacfd25ea5c6dddd7fd0be64ef6f0e5b18"></a>
-uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gacfd25ea5c6dddd7fd0be64ef6f0e5b18">ErrorMessage::code</a></td></tr>
-<tr class="memdesc:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="mdescLeft">&#160;</td><td class="mdescRight">The error code. <br /></td></tr>
-<tr class="separator:gacfd25ea5c6dddd7fd0be64ef6f0e5b18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab4c27e11b30738e97ee5031ee4453b6c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gab4c27e11b30738e97ee5031ee4453b6c"></a>
+int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gab4c27e11b30738e97ee5031ee4453b6c">ErrorMessage::code</a></td></tr>
+<tr class="memdesc:gab4c27e11b30738e97ee5031ee4453b6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The error code. <br /></td></tr>
+<tr class="separator:gab4c27e11b30738e97ee5031ee4453b6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf2cd9c58e55215181de495c76bffa7a6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaf2cd9c58e55215181de495c76bffa7a6"></a>
 volatile uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/de7/group__ipc__api.html#gaf2cd9c58e55215181de495c76bffa7a6">Response::ResponseReady</a></td></tr>
 <tr class="memdesc:gaf2cd9c58e55215181de495c76bffa7a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialized to zero. Gets set to 1 when the response is ready to read. <br /></td></tr>
 <tr class="separator:gaf2cd9c58e55215181de495c76bffa7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1ba0f5a43b6eae7a0989b7252b0eb116"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga1ba0f5a43b6eae7a0989b7252b0eb116"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><b>CardinalFullMessage::data</b> [MESSAGE_SIZE]</td></tr>
+<tr class="separator:ga1ba0f5a43b6eae7a0989b7252b0eb116"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -182,7 +200,7 @@ volatile uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 <p>Gets the ipc message. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">m</td><td>A preallocated message buffer of size MAX_MESSAGE_SIZE</td></tr>
+    <tr><td class="paramname">m</td><td>A preallocated message buffer of size MESSAGE_SIZE</td></tr>
   </table>
   </dd>
 </dl>
@@ -233,7 +251,7 @@ volatile uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el
 <p>Gets the ipc message from the source. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir"></td><td class="paramname">m</td><td>A preallocated message buffer of size MAX_MESSAGE_SIZE </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">m</td><td>A preallocated message buffer of size MESSAGE_SIZE </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sourcePID</td><td>The source pid (0 for any) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">msg_id</td><td>The message identifier (0 for any)</td></tr>
   </table>
@@ -293,52 +311,6 @@ volatile uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>-1 on failure to post any messages, the number of messages posted on success. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga24907f57393a3fcb3ec7d4e98adfca73"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static __inline int RequestResponseBuffer </td>
-          <td>(</td>
-          <td class="paramtype">uint64_t *&#160;</td>
-          <td class="paramname"><em>address</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint64_t *&#160;</td>
-          <td class="paramname"><em>size</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p><code>#include &lt;libs/libCardinal/include/ipc.h&gt;</code></p>
-
-<p>Request the process's IPC response buffer. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">address</td><td>The address of the response buffer </td></tr>
-    <tr><td class="paramname">size</td><td>The size of the response buffer in bytes</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Error code on failure, 0 on success. </dd></dl>
 
 </div>
 </div>

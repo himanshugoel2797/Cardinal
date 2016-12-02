@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['sharedmemorydata',['SharedMemoryData',['../d0/dab/structSharedMemoryData.html',1,'']]],
   ['sigaction',['sigaction',['../d7/def/structsigaction.html',1,'']]],
   ['sigchild',['SigChild',['../dc/d0f/structSigChild.html',1,'']]],
   ['siginfo_5ft',['siginfo_t',['../dc/dbc/structsiginfo__t.html',1,'']]],

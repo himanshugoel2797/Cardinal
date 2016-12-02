@@ -89,6 +89,8 @@ var searchBox = new SearchBox("searchBox", "../../search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dab/structSharedMemoryData.html">SharedMemoryData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d3a/structMemoryAllocationsMap.html">MemoryAllocationsMap</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a></td></tr>
@@ -96,6 +98,9 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:ga9f96295b490c671a6d3c53ae66bcec3b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga9f96295b490c671a6d3c53ae66bcec3b"></a>
+typedef struct <a class="el" href="../../d0/dab/structSharedMemoryData.html">SharedMemoryData</a>&#160;</td><td class="memItemRight" valign="bottom"><b>SharedMemoryData</b></td></tr>
+<tr class="separator:ga9f96295b490c671a6d3c53ae66bcec3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga91c66252a28d011008224fc4dc01885e"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d5/d3a/structMemoryAllocationsMap.html">MemoryAllocationsMap</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga91c66252a28d011008224fc4dc01885e">MemoryAllocationsMap</a></td></tr>
 <tr class="separator:ga91c66252a28d011008224fc4dc01885e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad2397dbb839987d0753da093f7549f66"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gad2397dbb839987d0753da093f7549f66">ManagedPageTable</a></td></tr>
@@ -195,6 +200,21 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:gaeacbe2fb33e6a0df47defab0a6643fef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gaeacbe2fb33e6a0df47defab0a6643fef">WipeMemoryTypeFromTable</a> (<a class="el" href="../../d9/db1/structManagedPageTable.html">ManagedPageTable</a> *pageTable, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> type)</td></tr>
 <tr class="memdesc:gaeacbe2fb33e6a0df47defab0a6643fef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wipe all allocations of the specified type from the specified page table.  <a href="#gaeacbe2fb33e6a0df47defab0a6643fef">More...</a><br /></td></tr>
 <tr class="separator:gaeacbe2fb33e6a0df47defab0a6643fef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaa8b57f243476c673a7b2c99611fd226"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gaaa8b57f243476c673a7b2c99611fd226">AllocateSharedMemory</a> (UID pid, uint64_t length, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> allocType, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags, uint64_t *virtualAddress)</td></tr>
+<tr class="memdesc:gaaa8b57f243476c673a7b2c99611fd226"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a region of shared memory.  <a href="#gaaa8b57f243476c673a7b2c99611fd226">More...</a><br /></td></tr>
+<tr class="separator:gaaa8b57f243476c673a7b2c99611fd226"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf10b4e7b2fe21e93d8a78387fe00830"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gadf10b4e7b2fe21e93d8a78387fe00830">AllocateSharedMemoryPhys</a> (UID pid, uint64_t length, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a> allocType, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags, uint64_t physicalAddress, uint64_t *virtualAddress)</td></tr>
+<tr class="memdesc:gadf10b4e7b2fe21e93d8a78387fe00830"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a region of shared memory.  <a href="#gadf10b4e7b2fe21e93d8a78387fe00830">More...</a><br /></td></tr>
+<tr class="separator:gadf10b4e7b2fe21e93d8a78387fe00830"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaefdd7997510f71a5b8a4e8191db43150"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gaefdd7997510f71a5b8a4e8191db43150">GetSharedMemoryKey</a> (UID pid, uint64_t virtualAddress, uint64_t length, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> cacheMode, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> flags, uint64_t *key)</td></tr>
+<tr class="memdesc:gaefdd7997510f71a5b8a4e8191db43150"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the shared memory key.  <a href="#gaefdd7997510f71a5b8a4e8191db43150">More...</a><br /></td></tr>
+<tr class="separator:gaefdd7997510f71a5b8a4e8191db43150"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafb8847575a53261d36a3b7adf856809c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gafb8847575a53261d36a3b7adf856809c">ApplySharedMemoryKey</a> (UID pid, uint64_t key, uint64_t *virtualAddress, <a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *flags, <a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *cacheMode, uint64_t *length)</td></tr>
+<tr class="memdesc:gafb8847575a53261d36a3b7adf856809c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a shared memory key.  <a href="#gafb8847575a53261d36a3b7adf856809c">More...</a><br /></td></tr>
+<tr class="separator:gafb8847575a53261d36a3b7adf856809c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1e6262de4f55cea1bef568ea1e705304"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga1e6262de4f55cea1bef568ea1e705304">FreeSharedMemoryKey</a> (UID parentPID, uint64_t key)</td></tr>
+<tr class="memdesc:ga1e6262de4f55cea1bef568ea1e705304"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the provided shared memory key.  <a href="#ga1e6262de4f55cea1bef568ea1e705304">More...</a><br /></td></tr>
+<tr class="separator:ga1e6262de4f55cea1bef568ea1e705304"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Typedef Documentation</h2>
@@ -301,6 +321,210 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 on error, The physical address of the allocation on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaaa8b57f243476c673a7b2c99611fd226"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> AllocateSharedMemory </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a>&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a>&#160;</td>
+          <td class="paramname"><em>allocType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a>&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Allocate a region of shared memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>The length </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocType</td><td>The allocate type </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">virtualAddress</td><td>The virtual address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gadf10b4e7b2fe21e93d8a78387fe00830"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> AllocateSharedMemoryPhys </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a>&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga7cb66cb28d1e2e145faed0b3ac4feef9">MemoryAllocationType</a>&#160;</td>
+          <td class="paramname"><em>allocType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a>&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>physicalAddress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Allocate a region of shared memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>The length </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">allocType</td><td>The allocate type </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">virtualAddress</td><td>The virtual address</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gafb8847575a53261d36a3b7adf856809c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> ApplySharedMemoryKey </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a> *&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a> *&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Apply a shared memory key. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">virtualAddress</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">flags</td><td>The flags </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">length</td><td>The length</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
 
 </div>
 </div>
@@ -509,6 +733,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="ga1e6262de4f55cea1bef568ea1e705304"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> FreeSharedMemoryKey </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>parentPID</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Free the provided shared memory key. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">parentPID</td><td>The parent pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
 
 </div>
 </div>
@@ -821,6 +1083,72 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The physical address from the page table. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaefdd7997510f71a5b8a4e8191db43150"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> GetSharedMemoryKey </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>virtualAddress</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga3742e22d7fe8eba99cc98b5c4e685ca5">CachingMode</a>&#160;</td>
+          <td class="paramname"><em>cacheMode</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d9/d2d/group__memory__syscall.html#gacf6915d4eeca032564a0f9a94e57772e">MemoryAllocationFlags</a>&#160;</td>
+          <td class="paramname"><em>flags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Gets the shared memory key. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">virtualAddress</td><td>The virtual address </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>The length </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">key</td><td>The key</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
 
 </div>
 </div>

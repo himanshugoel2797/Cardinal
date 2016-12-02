@@ -9,9 +9,7 @@ var searchData=
   ['cardinalproperty_5fpid',['CardinalProperty_PID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2ae1cb1e4826f9f903ca60b72e7011497f',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fexit',['CardinalProperty_R0_Exit',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2aa2a549766b4fce43fbde49d4e04f39ad',1,'syscall_property.h']]],
   ['cardinalproperty_5fr0_5fgroupid',['CardinalProperty_R0_GroupID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a713f828bcf87eb1a82ac39e2df9f4985',1,'syscall_property.h']]],
-  ['cardinalproperty_5fr0_5fphysicaladdress',['CardinalProperty_R0_PhysicalAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a27f2339c5bb9fce9add74d5cf0f180fa',1,'syscall_property.h']]],
   ['cardinalproperty_5fsettidaddress',['CardinalProperty_SetTidAddress',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a5425cf6f4052b624e773e8c91148320b',1,'syscall_property.h']]],
-  ['cardinalproperty_5fspecialdestination',['CardinalProperty_SpecialDestination',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a5eea60576e4ff3f0b104fee0fcf78be8',1,'syscall_property.h']]],
   ['cardinalproperty_5ftid',['CardinalProperty_TID',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a75bf3efc5497d28706a2d35ac70e9824',1,'syscall_property.h']]],
   ['cardinalproperty_5ftime',['CardinalProperty_Time',['../dd/dbd/group__property__syscall.html#gga1c4351f0d46c7a1b8b066cc48e5c11e2a90326247188131e5d2e3e1fa218c9262',1,'syscall_property.h']]]
 ];
