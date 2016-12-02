@@ -6,7 +6,7 @@
 #include "server.h"
 
 
-void 
+void
 mmap_handler(Message *m);
 
 void

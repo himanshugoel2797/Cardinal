@@ -6,11 +6,11 @@
 #include <cardinal/process.h>
 
 void
-HandleSystemMessages(Message *m){
+HandleSystemMessages(Message *m) {
 
 }
 
-typedef struct{
+typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
 } MsgHeader;
@@ -21,8 +21,7 @@ checkGroup(uint64_t expectedGroup, UID dst, uint64_t msgID) {
     if(GetProcessGroupID(dst, &gid) != 0)
         return 0;
 
-    if(gid > expectedGroup)
-    {
+    if(gid > expectedGroup) {
         CREATE_NEW_MESSAGE_PTR(msg);
         struct ErrorMessage *err_msg = (struct ErrorMessage*)msg;
         err_msg->m.MsgID = msgID;
@@ -41,23 +40,21 @@ int main() {
         CREATE_NEW_MESSAGE_PTR(msg);
         while(!GetIPCMessage(msg));
 
-        if(msg->MsgType == CardinalMsgType_Request){
+        if(msg->MsgType == CardinalMsgType_Request) {
 
             MsgHeader *msg_h = (MsgHeader*)msg;
 
             switch(msg_h->MsgType) {
-                case ProcessServerMessageType_R0_ProcessExistenceNotification:
-                {
-                    if(checkGroup(0, msg->SourcePID, msg->MsgType))
-                        existence_notification_handler(msg);
-                }
-                break;
-                case ProcessServerMessageType_CreateProcessRequest:
-                {
-                    create_process_handler(msg);
-                }
+            case ProcessServerMessageType_R0_ProcessExistenceNotification: {
+                if(checkGroup(0, msg->SourcePID, msg->MsgType))
+                    existence_notification_handler(msg);
             }
-        }else
+            break;
+            case ProcessServerMessageType_CreateProcessRequest: {
+                create_process_handler(msg);
+            }
+            }
+        } else
             HandleSystemMessages(msg);
     }
 }

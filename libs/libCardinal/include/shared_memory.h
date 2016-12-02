@@ -7,68 +7,68 @@
 #include "memory.h"
 
 typedef struct {
-	void *VirtualAddress;
-	uint64_t Length;
-	MemoryAllocationFlags Flags;
-	CachingMode CacheMode;
+    void *VirtualAddress;
+    uint64_t Length;
+    MemoryAllocationFlags Flags;
+    CachingMode CacheMode;
 } UserSharedMemoryData;
 
 #ifndef _KERNEL_
 
 static __inline uint64_t
 AllocateSharedMemory(uint64_t length,
-					 CachingMode cacheMode,
-					 MemoryAllocationType allocType,
-					 MemoryAllocationFlags flags,
-					 uint64_t *virtualAddress) {
-	if(virtualAddress == NULL)
-		return -EINVAL;
+                     CachingMode cacheMode,
+                     MemoryAllocationType allocType,
+                     MemoryAllocationFlags flags,
+                     uint64_t *virtualAddress) {
+    if(virtualAddress == NULL)
+        return -EINVAL;
 
-	*virtualAddress = Syscall4(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags);
-	return GetErrno();
+    *virtualAddress = Syscall4(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags);
+    return GetErrno();
 }
 
 static __inline uint64_t
 R0_AllocateSharedMemory(uint64_t length,
-					 CachingMode cacheMode,
-					 MemoryAllocationType allocType,
-					 MemoryAllocationFlags flags,
-					 uint64_t physicalAddress,
-					 uint64_t *virtualAddress) {
-	if(virtualAddress == NULL)
-		return -EINVAL;
+                        CachingMode cacheMode,
+                        MemoryAllocationType allocType,
+                        MemoryAllocationFlags flags,
+                        uint64_t physicalAddress,
+                        uint64_t *virtualAddress) {
+    if(virtualAddress == NULL)
+        return -EINVAL;
 
-	*virtualAddress = Syscall5(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags, physicalAddress);
-	return GetErrno();
+    *virtualAddress = Syscall5(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags, physicalAddress);
+    return GetErrno();
 }
 
 static __inline uint64_t
 GetSharedMemoryKey(uint64_t virtualAddress,
-				   uint64_t length,
-				   CachingMode cacheMode,
-				   MemoryAllocationFlags flags,
-				   uint64_t *key) {
-	if(key == NULL)
-		return -EINVAL;
+                   uint64_t length,
+                   CachingMode cacheMode,
+                   MemoryAllocationFlags flags,
+                   uint64_t *key) {
+    if(key == NULL)
+        return -EINVAL;
 
-	*key = Syscall4(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags);
-	return GetErrno();
+    *key = Syscall4(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags);
+    return GetErrno();
 }
 
 static __inline uint64_t
 ApplySharedMemoryKey(uint64_t key,
-					 UserSharedMemoryData *data) {
-	if(data == NULL)
-		return -EINVAL;
+                     UserSharedMemoryData *data) {
+    if(data == NULL)
+        return -EINVAL;
 
-	Syscall2(Syscall_ApplySharedMemoryKey, key, (uint64_t)data);
-	return GetErrno();
+    Syscall2(Syscall_ApplySharedMemoryKey, key, (uint64_t)data);
+    return GetErrno();
 }
 
 static __inline uint64_t
 FreeSharedMemoryKey(uint64_t key) {
-	Syscall1(Syscall_FreeSharedMemoryKey, key);
-	return GetErrno();
+    Syscall1(Syscall_FreeSharedMemoryKey, key);
+    return GetErrno();
 }
 
 #endif

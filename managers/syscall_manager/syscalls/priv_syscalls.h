@@ -99,26 +99,26 @@ Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params);
 
 uint64_t
 GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+                           uint64_t syscall_num,
+                           uint64_t *syscall_params);
 
 uint64_t
 ApplySharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params);
 
 uint64_t
 FreeSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+                            uint64_t syscall_num,
+                            uint64_t *syscall_params);
 
 uint64_t
 R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+                               uint64_t syscall_num,
+                               uint64_t *syscall_params);
 #endif

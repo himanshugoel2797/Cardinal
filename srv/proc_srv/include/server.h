@@ -11,13 +11,13 @@ extern "C" {
 #define MAX_PROCESS_NAME_LEN 512
 
 typedef enum {
-	ProcessServerMessageType_R0_ProcessExistenceNotification,
-	ProcessServerMessageType_CreateProcessRequest,
+    ProcessServerMessageType_R0_ProcessExistenceNotification,
+    ProcessServerMessageType_CreateProcessRequest,
 } ProcessServerMessageType;
 
 typedef enum {
-	ProcessServerNotificationType_ProcessCreated,
-	ProcessServerNotificationType_ProcessExited,
+    ProcessServerNotificationType_ProcessCreated,
+    ProcessServerNotificationType_ProcessExited,
 } ProcessServerNotificationType;
 
 typedef struct {
@@ -28,22 +28,22 @@ typedef struct {
 } ProcessServer_CreateRequest;
 
 typedef struct {
-	Message m;
+    Message m;
     UID pid;
     uint64_t err_code;
 } ProcessServer_CreateRequest_Response;
 
 typedef struct {
-	Message m;
-	ProcessServerMessageType MsgType;
-	UID pid;
-	uint64_t process_name_key; 
+    Message m;
+    ProcessServerMessageType MsgType;
+    UID pid;
+    uint64_t process_name_key;
 } ProcessServer_R0NotifyProcessExistence;
 
 typedef struct {
-	Message m;
-	ProcessServerNotificationType MsgType;
-	UID pid;
+    Message m;
+    ProcessServerNotificationType MsgType;
+    UID pid;
 } ProcessServerNotificationType_Notification;
 
 #ifdef __cplusplus

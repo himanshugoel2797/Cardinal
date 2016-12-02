@@ -30,9 +30,9 @@
 #endif
 
 typedef struct SharedMemoryData {
-      uint64_t PhysicalAddress;
-      uint64_t Length;
-      _Atomic uint64_t ReferenceCount;
+    uint64_t PhysicalAddress;
+    uint64_t Length;
+    _Atomic uint64_t ReferenceCount;
 } SharedMemoryData;
 
 /**
@@ -446,12 +446,12 @@ AllocateSharedMemory(UID pid,
  */
 MemoryAllocationErrors
 AllocateSharedMemoryPhys(UID pid,
-                     uint64_t length,
-                     CachingMode cacheMode,
-                     MemoryAllocationType allocType,
-                     MemoryAllocationFlags flags,
-                     uint64_t physicalAddress,
-                     uint64_t *virtualAddress);
+                         uint64_t length,
+                         CachingMode cacheMode,
+                         MemoryAllocationType allocType,
+                         MemoryAllocationFlags flags,
+                         uint64_t physicalAddress,
+                         uint64_t *virtualAddress);
 
 /**
  * @brief      Gets the shared memory key.

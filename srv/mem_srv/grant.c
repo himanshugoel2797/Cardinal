@@ -5,7 +5,7 @@
 
 void
 grant_create_handler(Message *m) {
-	
+
 }
 
 void

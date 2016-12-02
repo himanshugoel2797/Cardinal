@@ -64,7 +64,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
     for(int i = 0; i < IDENTIFIER_COUNT; i++)
         keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
-    
+
     keyTable[lastFreeKeyIndex].ref_count = 0;
 
     while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
@@ -139,8 +139,7 @@ KeyMan_ReadKey(uint64_t key,
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
-    if(identifier != NULL)
-    {
+    if(identifier != NULL) {
         for(int i = 0; i < IDENTIFIER_COUNT; i++)
             identifier[i] = keyTable[index].identifier[i];
     }
@@ -151,7 +150,7 @@ KeyMan_ReadKey(uint64_t key,
 
 KeyManagerErrors
 KeyMan_IncrementRefCount(uint64_t key) {
-    
+
     uint32_t index = (uint32_t)key;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
@@ -189,8 +188,7 @@ KeyMan_DecrementRefCount(uint64_t key) {
     if(keyTable[index].ref_count != 0)
         keyTable[index].ref_count--;
 
-    if(keyTable[index].ref_count == 0)
-    {
+    if(keyTable[index].ref_count == 0) {
         KeyMan_FreeKey(key);
     }
 

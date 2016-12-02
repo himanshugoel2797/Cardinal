@@ -6,211 +6,205 @@
 static List *processes;
 
 typedef struct {
-	UID pid;
-	uint64_t totalMemory_allocated;
-	uint64_t memoryBudget;
-	List *allocations;
+    UID pid;
+    uint64_t totalMemory_allocated;
+    uint64_t memoryBudget;
+    List *allocations;
 } ProcessMemoryData;
 
 typedef struct {
-	uint64_t address;
-	uint64_t length;
-	uint32_t refCount;
+    uint64_t address;
+    uint64_t length;
+    uint32_t refCount;
 } ProcessMemoryAllocation;
 
 
 static void
 privMemDB_FreeMemory(ProcessMemoryData *mem_data,
-					 uint64_t address,
-					 uint64_t len) {
-				//Quick check for invalid arguments
-			if(mem_data->totalMemory_allocated  < len)
-				return;
+                     uint64_t address,
+                     uint64_t len) {
+    //Quick check for invalid arguments
+    if(mem_data->totalMemory_allocated  < len)
+        return;
 
-			for(uint64_t j = 0; j < List_Length(mem_data->allocations); j++) {
-				ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, j);
+    for(uint64_t j = 0; j < List_Length(mem_data->allocations); j++) {
+        ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, j);
 
-				if(alloc->address <= address && alloc->address + alloc->length >= address + len)
-				{
-					if(alloc->refCount != 1 && alloc->address != address && len != alloc->length)
-						return;	//Can't free partial sets
-					else if(alloc->refCount != 1){
-						alloc->refCount--;	//Decrement the reference count
-						return;
-					}
+        if(alloc->address <= address && alloc->address + alloc->length >= address + len) {
+            if(alloc->refCount != 1 && alloc->address != address && len != alloc->length)
+                return;	//Can't free partial sets
+            else if(alloc->refCount != 1) {
+                alloc->refCount--;	//Decrement the reference count
+                return;
+            }
 
-					ProcessMemoryAllocation *top = malloc(sizeof(ProcessMemoryAllocation));
-					top->address = address + len;
-					top->length = (alloc->address + alloc->length) - (address + len);
+            ProcessMemoryAllocation *top = malloc(sizeof(ProcessMemoryAllocation));
+            top->address = address + len;
+            top->length = (alloc->address + alloc->length) - (address + len);
 
-					alloc->length = address - alloc->address;
+            alloc->length = address - alloc->address;
 
-					if(top->length != 0)
-						List_AddEntry(mem_data->allocations,top);
-					else 
-						free(top);
+            if(top->length != 0)
+                List_AddEntry(mem_data->allocations,top);
+            else
+                free(top);
 
-					if(alloc->length == 0) {
-						List_Remove(mem_data->allocations, j);
-						free(alloc);
-					}
+            if(alloc->length == 0) {
+                List_Remove(mem_data->allocations, j);
+                free(alloc);
+            }
 
-					if(R0_FreePages(address, len / PAGE_SIZE) != 0)
-						return;
+            if(R0_FreePages(address, len / PAGE_SIZE) != 0)
+                return;
 
-					break;
-				}
-			}
+            break;
+        }
+    }
 }
 
 void
 MemDB_Initialize(void) {
-	processes = List_Create();
+    processes = List_Create();
 }
 
 void
 MemDB_AddProcess(UID pid) {
-	ProcessMemoryData *mem_data = malloc(sizeof(ProcessMemoryData));
-	mem_data->pid = pid;
-	mem_data->allocations = List_Create();
-	mem_data->totalMemory_allocated = 0;
-	mem_data->memoryBudget = GiB(1);
+    ProcessMemoryData *mem_data = malloc(sizeof(ProcessMemoryData));
+    mem_data->pid = pid;
+    mem_data->allocations = List_Create();
+    mem_data->totalMemory_allocated = 0;
+    mem_data->memoryBudget = GiB(1);
 
-	List_AddEntry(processes, mem_data);
+    List_AddEntry(processes, mem_data);
 }
 
 int
 MemDB_ProcessExists(UID pid) {
-	for(uint64_t i = 0; i < List_Length(processes); i++){
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
-		if(mem_data->pid == pid)
-			return 1;
-	}
-	return 0;
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+        if(mem_data->pid == pid)
+            return 1;
+    }
+    return 0;
 }
 
 int
-MemDB_AllocateMemory(UID pid, 
-					 uint64_t len,
-					 uint64_t *address) {
-	
-	if(len % PAGE_SIZE)
-		return -1;
+MemDB_AllocateMemory(UID pid,
+                     uint64_t len,
+                     uint64_t *address) {
 
-	if(address == NULL)
-		return -1;
+    if(len % PAGE_SIZE)
+        return -1;
 
-	for(uint64_t i = 0; i < List_Length(processes); i++){
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
-		if(mem_data->pid == pid)
-		{
-			if(mem_data->totalMemory_allocated + len > mem_data->memoryBudget)
-				return -2;
+    if(address == NULL)
+        return -1;
 
-			if(R0_AllocatePages(len / PAGE_SIZE, address) != 0)
-				return -2;
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+        if(mem_data->pid == pid) {
+            if(mem_data->totalMemory_allocated + len > mem_data->memoryBudget)
+                return -2;
 
-			ProcessMemoryAllocation *alloc = malloc(sizeof(ProcessMemoryAllocation));
-			alloc->address = *address;
-			alloc->length = len;
-			alloc->refCount = 1;
+            if(R0_AllocatePages(len / PAGE_SIZE, address) != 0)
+                return -2;
 
-			mem_data->totalMemory_allocated += len;
-			List_AddEntry(mem_data->allocations, alloc);
-			return 0;
-		}
-	}
-	return -1;
+            ProcessMemoryAllocation *alloc = malloc(sizeof(ProcessMemoryAllocation));
+            alloc->address = *address;
+            alloc->length = len;
+            alloc->refCount = 1;
+
+            mem_data->totalMemory_allocated += len;
+            List_AddEntry(mem_data->allocations, alloc);
+            return 0;
+        }
+    }
+    return -1;
 }
 
 void
-MemDB_FreeMemory(UID pid, 
-				 uint64_t address, 
-				 uint64_t len) {
+MemDB_FreeMemory(UID pid,
+                 uint64_t address,
+                 uint64_t len) {
 
-	if(len % PAGE_SIZE)
-		return;
+    if(len % PAGE_SIZE)
+        return;
 
-	if(address % PAGE_SIZE)
-		return;
+    if(address % PAGE_SIZE)
+        return;
 
-	for(uint64_t i = 0; i < List_Length(processes); i++){
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
-		if(mem_data->pid == pid)
-		{
-			privMemDB_FreeMemory(mem_data, address, len);
-		}
-	}
-	return;
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+        if(mem_data->pid == pid) {
+            privMemDB_FreeMemory(mem_data, address, len);
+        }
+    }
+    return;
 }
 
 int
-MemDB_ShareMemory(UID src, 
-				  UID dst, 
-				  uint64_t address, 
-				  uint64_t len) {
+MemDB_ShareMemory(UID src,
+                  UID dst,
+                  uint64_t address,
+                  uint64_t len) {
 
-	if(len % PAGE_SIZE)
-		return -1;
+    if(len % PAGE_SIZE)
+        return -1;
 
-	if(address % PAGE_SIZE)
-		return -1;
+    if(address % PAGE_SIZE)
+        return -1;
 
-	ProcessMemoryAllocation *sharedAlloc = NULL;
+    ProcessMemoryAllocation *sharedAlloc = NULL;
 
-	for(uint64_t i = 0; i < List_Length(processes); i++){
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
-		if(mem_data->pid == src)
-		{
-			//Quick check for invalid arguments
-			if(mem_data->totalMemory_allocated  < len)
-				return -1;
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+        if(mem_data->pid == src) {
+            //Quick check for invalid arguments
+            if(mem_data->totalMemory_allocated  < len)
+                return -1;
 
-			for(uint64_t j = 0; j < List_Length(mem_data->allocations); j++) {
-				ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, j);
+            for(uint64_t j = 0; j < List_Length(mem_data->allocations); j++) {
+                ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, j);
 
-				if(alloc->address == address && alloc->length == len) {
-					sharedAlloc = alloc;
-					sharedAlloc->refCount++;
-				}
-			}
-		}
-	}
+                if(alloc->address == address && alloc->length == len) {
+                    sharedAlloc = alloc;
+                    sharedAlloc->refCount++;
+                }
+            }
+        }
+    }
 
-	if(sharedAlloc == NULL)
-		return -1;
+    if(sharedAlloc == NULL)
+        return -1;
 
-	for(uint64_t i = 0; i < List_Length(processes); i++){
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
-		if(mem_data->pid == dst)
-		{
-			if(mem_data->totalMemory_allocated + len > mem_data->memoryBudget)
-				return -2;
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+        if(mem_data->pid == dst) {
+            if(mem_data->totalMemory_allocated + len > mem_data->memoryBudget)
+                return -2;
 
-			mem_data->totalMemory_allocated += len;
-			List_AddEntry(mem_data->allocations, sharedAlloc);
-			return 0;
-		}
-	}
+            mem_data->totalMemory_allocated += len;
+            List_AddEntry(mem_data->allocations, sharedAlloc);
+            return 0;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 void
 MemDB_FreeProcess(UID pid) {
-	for(uint64_t i = 0; i < List_Length(processes); i++) {
-		ProcessMemoryData *mem_data = List_EntryAt(processes, i);
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessMemoryData *mem_data = List_EntryAt(processes, i);
 
-		if(mem_data->pid == pid) {
+        if(mem_data->pid == pid) {
 
-			uint64_t len = List_Length(mem_data->allocations);
+            uint64_t len = List_Length(mem_data->allocations);
 
-			for(uint64_t j = 0; j < len; j++)
-			{
-				ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, 0);
-				privMemDB_FreeMemory(mem_data, alloc->address, alloc->length);
-			}
+            for(uint64_t j = 0; j < len; j++) {
+                ProcessMemoryAllocation *alloc = List_EntryAt(mem_data->allocations, 0);
+                privMemDB_FreeMemory(mem_data, alloc->address, alloc->length);
+            }
 
-		}
-	}
+        }
+    }
 }

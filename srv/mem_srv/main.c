@@ -13,52 +13,49 @@
 //TODO enable keys once again, but first determine exactly how they are to be used.
 
 void
-HandleSystemMessages(Message *m){
-	switch(m->MsgType){
-		case CardinalMsgType_Notification:
-			//Check if it is a process creation or process deletion notification
-			//Update the mount database appropriately.
-		break;
-		default:
-		return;
-	}
+HandleSystemMessages(Message *m) {
+    switch(m->MsgType) {
+    case CardinalMsgType_Notification:
+        //Check if it is a process creation or process deletion notification
+        //Update the mount database appropriately.
+        break;
+    default:
+        return;
+    }
 }
 
-typedef struct{
-	Message m;
-	MemoryServerMessageType MsgType;
+typedef struct {
+    Message m;
+    MemoryServerMessageType MsgType;
 } MsgHeader;
 
 int main() {
 
-	MemDB_Initialize();
-	while(1) {
-		CREATE_NEW_MESSAGE_PTR(msg);
-		while(!GetIPCMessage(msg));
+    MemDB_Initialize();
+    while(1) {
+        CREATE_NEW_MESSAGE_PTR(msg);
+        while(!GetIPCMessage(msg));
 
-		if(msg->MsgType == CardinalMsgType_Request){
+        if(msg->MsgType == CardinalMsgType_Request) {
 
-			MsgHeader *msg_h = (MsgHeader*)msg;
+            MsgHeader *msg_h = (MsgHeader*)msg;
 
-			switch(msg_h->MsgType) {
-				case MemoryServerMessageType_MMapRequest:
-				{
-					mmap_handler(msg);
-				}
-				break;
-				case MemoryServerMessageType_GrantCreationRequest:
-				{
-					grant_create_handler(msg);
-				}
-				break;
-				case MemoryServerMessageType_GrantRequest:
-				{
-					grant_request_handler(msg);
-				}
-			}
+            switch(msg_h->MsgType) {
+            case MemoryServerMessageType_MMapRequest: {
+                mmap_handler(msg);
+            }
+            break;
+            case MemoryServerMessageType_GrantCreationRequest: {
+                grant_create_handler(msg);
+            }
+            break;
+            case MemoryServerMessageType_GrantRequest: {
+                grant_request_handler(msg);
+            }
+            }
 
 
-		}else
-			HandleSystemMessages(msg);
-	}
+        } else
+            HandleSystemMessages(msg);
+    }
 }

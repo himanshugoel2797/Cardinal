@@ -27,7 +27,7 @@ RequestInterruptVectorBlock(uint32_t vectorCount) {
 
 void
 ShadowInterruptHandler(Registers *regs) {
-    
+
     if(regs_saved == NULL) {
         regs_saved = AllocateAPLSMemory(sizeof(Registers));
     }

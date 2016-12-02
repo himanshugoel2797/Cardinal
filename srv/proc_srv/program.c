@@ -48,7 +48,7 @@ LoadAndStartApplication(UID pid,
               MemoryAllocationFlags_NoExec |
               MemoryAllocationFlags_Read |
               MemoryAllocationFlags_Write |
-              MemoryAllocationFlags_User | 
+              MemoryAllocationFlags_User |
               MemoryAllocationFlags_Present))
         return -4;
 

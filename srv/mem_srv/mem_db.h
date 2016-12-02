@@ -13,20 +13,20 @@ int
 MemDB_ProcessExists(UID pid);
 
 int
-MemDB_AllocateMemory(UID pid, 
-					 uint64_t len,
-					 uint64_t *address);
+MemDB_AllocateMemory(UID pid,
+                     uint64_t len,
+                     uint64_t *address);
 
 void
-MemDB_FreeMemory(UID pid, 
-				 uint64_t address, 
-				 uint64_t len);
+MemDB_FreeMemory(UID pid,
+                 uint64_t address,
+                 uint64_t len);
 
 int
-MemDB_ShareMemory(UID src, 
-				  UID dst, 
-				  uint64_t address, 
-				  uint64_t len);
+MemDB_ShareMemory(UID src,
+                  UID dst,
+                  uint64_t address,
+                  uint64_t len);
 
 void
 MemDB_FreeProcess(UID pid);

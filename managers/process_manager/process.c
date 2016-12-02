@@ -186,7 +186,7 @@ TerminateProcess(UID pid) {
     }
     List_Free(pinfo->PendingMessages);
     List_Free(pinfo->ThreadIDs);
-    
+
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 
@@ -388,8 +388,7 @@ AllocateDescriptor(UID pid,
 
     LockSpinlock(info->lock);
 
-    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS)
-    {
+    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS) {
         UnlockSpinlock(info->lock);
         return ProcessErrors_OutOfMemory;
     }
@@ -400,7 +399,7 @@ AllocateDescriptor(UID pid,
     if(index != NULL)
         *index = info->LowestFreeKeyIndex;
 
-    while(info->Keys[info->LowestFreeKeyIndex] != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS){
+    while(info->Keys[info->LowestFreeKeyIndex] != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS) {
         info->LowestFreeKeyIndex++;
     }
 
@@ -413,7 +412,7 @@ CopyDescriptor(UID src_pid,
                UID dst_pid,
                uint32_t index,
                uint32_t *new_index) {
-    
+
     ProcessInformation *info;
     if(GetProcessReference(src_pid, &info) != ProcessErrors_None)
         return ProcessErrors_UIDNotFound;
@@ -423,12 +422,11 @@ CopyDescriptor(UID src_pid,
 
     LockSpinlock(info->lock);
 
-    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS)
-    {
+    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS) {
         UnlockSpinlock(info->lock);
         return ProcessErrors_OutOfMemory;
     }
-    
+
     uint64_t key = info->Keys[index];
     UnlockSpinlock(info->lock);
 
@@ -451,7 +449,7 @@ GetIndexOfKey(UID pid,
 
     *index = (uint32_t)-1;
 
-    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++){
+    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
         if(info->Keys[i] == key && info->Keys[i] != 0)
             *index = i;
     }
@@ -466,7 +464,7 @@ GetIndexOfKey(UID pid,
 ProcessErrors
 DeleteDescriptor(UID pid,
                  uint32_t index) {
-    
+
     ProcessInformation *info;
     if(GetProcessReference(pid, &info) != ProcessErrors_None)
         return ProcessErrors_UIDNotFound;

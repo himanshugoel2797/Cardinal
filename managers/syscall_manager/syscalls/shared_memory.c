@@ -9,8 +9,8 @@
 
 uint64_t
 AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params) {
     if(syscall_num != Syscall_AllocateSharedMemory) {
         SyscallSetErrno(-ENOSYS);
         return -1;
@@ -28,24 +28,22 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     MemoryAllocationType allocType = data->params[2];
     MemoryAllocationFlags flags = data->params[3];
 
-    if(flags & MemoryAllocationFlags_Kernel)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(flags & MemoryAllocationFlags_Kernel) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     uint64_t vAddress = 0;
     MemoryAllocationErrors err = AllocateSharedMemory(GetCurrentProcessUID(),
-    												  length,
-    												  cacheMode,
-    												  allocType,
-    												  flags,
-    												  &vAddress);
+                                 length,
+                                 cacheMode,
+                                 allocType,
+                                 flags,
+                                 &vAddress);
 
-    if(err != MemoryAllocationErrors_None)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     SyscallSetErrno(0);
@@ -54,8 +52,8 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
+                               uint64_t syscall_num,
+                               uint64_t *syscall_params) {
     if(syscall_num != Syscall_AllocateSharedMemory) {
         SyscallSetErrno(-ENOSYS);
         return -1;
@@ -69,8 +67,8 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
-    	SyscallSetErrno(-ENOSYS);
-    	return -1;
+        SyscallSetErrno(-ENOSYS);
+        return -1;
     }
 
     uint64_t length = data->params[0];
@@ -79,25 +77,23 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     MemoryAllocationFlags flags = data->params[3];
     uint64_t phys_addr = data->params[4];
 
-    if(flags & MemoryAllocationFlags_Kernel)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(flags & MemoryAllocationFlags_Kernel) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     uint64_t vAddress = 0;
     MemoryAllocationErrors err = AllocateSharedMemoryPhys(GetCurrentProcessUID(),
-    												  length,
-    												  cacheMode,
-    												  allocType,
-    												  flags,
-    												  phys_addr,
-    												  &vAddress);
+                                 length,
+                                 cacheMode,
+                                 allocType,
+                                 flags,
+                                 phys_addr,
+                                 &vAddress);
 
-    if(err != MemoryAllocationErrors_None)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     SyscallSetErrno(0);
@@ -106,8 +102,8 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
+                           uint64_t syscall_num,
+                           uint64_t *syscall_params) {
     if(syscall_num != Syscall_GetSharedMemoryKey) {
         SyscallSetErrno(-ENOSYS);
         return -1;
@@ -125,24 +121,22 @@ GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
     CachingMode cacheMode = data->params[2];
     MemoryAllocationFlags flags = data->params[3];
 
-    if(flags & MemoryAllocationFlags_Kernel)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(flags & MemoryAllocationFlags_Kernel) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     uint64_t key = 0;
     MemoryAllocationErrors err = GetSharedMemoryKey(GetCurrentProcessUID(),
-    												  vAddress,
-    												  length,
-    												  cacheMode,
-    												  flags,
-    												  &key);
+                                 vAddress,
+                                 length,
+                                 cacheMode,
+                                 flags,
+                                 &key);
 
-    if(err != MemoryAllocationErrors_None)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     SyscallSetErrno(0);
@@ -151,8 +145,8 @@ GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 ApplySharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params) {
     if(syscall_num != Syscall_ApplySharedMemoryKey) {
         SyscallSetErrno(-ENOSYS);
         return -1;
@@ -171,16 +165,15 @@ ApplySharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
     CachingMode cacheMode = 0;
 
     MemoryAllocationErrors err = ApplySharedMemoryKey(GetCurrentProcessUID(),
-    												  data->params[0],
-    												  &vAddress,
-    												  &flags,
-    												  &cacheMode,
-    												  &length);
+                                 data->params[0],
+                                 &vAddress,
+                                 &flags,
+                                 &cacheMode,
+                                 &length);
 
-    if(err != MemoryAllocationErrors_None)
-    {
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     //TODO check the address to make sure it's safe!
@@ -195,9 +188,9 @@ ApplySharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 FreeSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
-	if(syscall_num != Syscall_FreeSharedMemoryKey) {
+                            uint64_t syscall_num,
+                            uint64_t *syscall_params) {
+    if(syscall_num != Syscall_FreeSharedMemoryKey) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
@@ -210,11 +203,11 @@ FreeSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     MemoryAllocationErrors err = FreeSharedMemoryKey(GetCurrentProcessUID(),
-    												 data->params[0]);
+                                 data->params[0]);
 
-    if(err != MemoryAllocationErrors_None){
-    	SyscallSetErrno(-EINVAL);
-    	return -1;
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
     }
 
     return SyscallSetErrno(0);

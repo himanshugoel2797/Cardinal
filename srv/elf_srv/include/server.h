@@ -54,18 +54,18 @@ LoadElf(void *loc,
 
 int
 RequestLoadElf(void *loc,
-			 uint64_t size,
-			 ElfLimitations limits,
-			 UID pid,
-			 uint32_t *key);
+               uint64_t size,
+               ElfLimitations limits,
+               UID pid,
+               uint32_t *key);
 
 int
 IsElfLoaded(uint32_t id,
-			ElfLoaderError *error,
-			ElfInformation *elfData);
+            ElfLoaderError *error,
+            ElfInformation *elfData);
 
 typedef enum {
-	ElfLoaderMessageType_LoadRequest
+    ElfLoaderMessageType_LoadRequest
 } ElfLoaderMessageType;
 
 typedef struct {
@@ -78,9 +78,9 @@ typedef struct {
 } ElfLoadRequest;
 
 typedef struct {
-	Message m;
-	ElfLoaderError result;
-	ElfInformation info;
+    Message m;
+    ElfLoaderError result;
+    ElfInformation info;
 } ElfLoadResponse;
 
 #ifdef __cplusplus

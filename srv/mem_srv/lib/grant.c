@@ -6,57 +6,57 @@
 #include "server.h"
 
 MemoryAllocationErrors
-CreateGrant(uint64_t address, 
-			uint32_t length) {
+CreateGrant(uint64_t address,
+            uint32_t length) {
 
 }
 
 int
 RequestCreateGrant(uint64_t address,
-				   uint32_t length,
-				   uint32_t *key) {
-	if(key == NULL | length == 0 | address == 0)
-		return -1;
+                   uint32_t length,
+                   uint32_t *key) {
+    if(key == NULL | length == 0 | address == 0)
+        return -1;
 
-	GrantCreationRequest create_req;
-	create_req.m.MsgID = RequestMessageID();
-	create_req.m.MsgType = CardinalMsgType_Request;
-	create_req.MsgType = MemoryServerMessageType_GrantCreationRequest;
-	create_req.Length = length;
-	create_req.Address = address;
+    GrantCreationRequest create_req;
+    create_req.m.MsgID = RequestMessageID();
+    create_req.m.MsgType = CardinalMsgType_Request;
+    create_req.MsgType = MemoryServerMessageType_GrantCreationRequest;
+    create_req.Length = length;
+    create_req.Address = address;
 
-	Message *msg_p = (Message*)&create_req;
+    Message *msg_p = (Message*)&create_req;
 
-	int err = PostIPCMessages(MEMORY_SRV_PID, &msg_p, 1);
+    int err = PostIPCMessages(MEMORY_SRV_PID, &msg_p, 1);
 
-	if(err != 1)
-		return err;
+    if(err != 1)
+        return err;
 
-	*key = create_req.m.MsgID;
-	return 0;
+    *key = create_req.m.MsgID;
+    return 0;
 }
 
 int
 IsGrantCreated(uint32_t key,
-			   MemoryAllocationErrors *error,
-			   uint64_t *read_key,
-			   uint64_t *write_key) {
-	
-	if(read_key == NULL | write_key == NULL | error == NULL)
-		return -1;
+               MemoryAllocationErrors *error,
+               uint64_t *read_key,
+               uint64_t *write_key) {
 
-	CREATE_NEW_MESSAGE_PTR(msg_buf);
-	GrantCreationResponse *resp = (GrantCreationResponse*)msg_buf;
+    if(read_key == NULL | write_key == NULL | error == NULL)
+        return -1;
 
-	int err = GetIPCMessageFrom((Message*)resp, MEMORY_SRV_PID, key);
+    CREATE_NEW_MESSAGE_PTR(msg_buf);
+    GrantCreationResponse *resp = (GrantCreationResponse*)msg_buf;
 
-	if(err == 1){
-		*error = resp->error;
-		*write_key = resp->WriteKey;
-		*read_key = resp->ReadKey;
-	}
+    int err = GetIPCMessageFrom((Message*)resp, MEMORY_SRV_PID, key);
 
-	return (err == 1);
+    if(err == 1) {
+        *error = resp->error;
+        *write_key = resp->WriteKey;
+        *read_key = resp->ReadKey;
+    }
+
+    return (err == 1);
 }
 
 
@@ -67,15 +67,15 @@ ApplyGrant(uint64_t key) {
 
 int
 RequestApplyGrant(uint64_t grant_key,
-				uint32_t *key) {
+                  uint32_t *key) {
 
 }
 
 int
 IsGrantApplied(uint32_t key,
-			   MemoryAllocationErrors *error,
-			   uint64_t *address,
-			   MemoryAllocationFlags *access_perms) {
+               MemoryAllocationErrors *error,
+               uint64_t *address,
+               MemoryAllocationFlags *access_perms) {
 
 }
 
@@ -87,13 +87,13 @@ UnapplyGrant(uint64_t key) {
 
 int
 RequestUnapplyGrant(uint64_t grant_key,
-				  uint32_t *key) {
+                    uint32_t *key) {
 
 }
 
 int
 IsGrantUnapplied(uint32_t key,
-			     MemoryAllocationErrors *error) {
+                 MemoryAllocationErrors *error) {
 
 }
 
@@ -104,12 +104,12 @@ DestroyGrant(uint64_t key) {
 
 int
 RequestDestroyGrant(uint64_t grant_key,
-				  uint32_t *key) {
+                    uint32_t *key) {
 
 }
 
 int
 IsGrantDestroyed(uint32_t key,
-			     MemoryAllocationErrors *error) {
+                 MemoryAllocationErrors *error) {
 
 }

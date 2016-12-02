@@ -16,71 +16,71 @@ LoadElf(void *loc,
         ElfInformation *elfData
        ) {
 
-	if(elfData == NULL)
-		return -1;
+    if(elfData == NULL)
+        return -1;
 
-	uint32_t key = 0;
-	int err = RequestLoadElf(loc, size, limits, pid, &key);
-	if(err != 0)
-		return err;
-	
-	ElfLoaderError error = 0;
+    uint32_t key = 0;
+    int err = RequestLoadElf(loc, size, limits, pid, &key);
+    if(err != 0)
+        return err;
 
-	while(!IsElfLoaded(key, &error, elfData));
+    ElfLoaderError error = 0;
 
-	return error;
+    while(!IsElfLoaded(key, &error, elfData));
+
+    return error;
 }
 
 int
 RequestLoadElf(void *loc,
-			 uint64_t size,
-			 ElfLimitations limits,
-			 UID pid,
-			 uint32_t *key) {
+               uint64_t size,
+               ElfLimitations limits,
+               UID pid,
+               uint32_t *key) {
 
-	if(key == NULL)
-		return -1;
+    if(key == NULL)
+        return -1;
 
-	ElfLoadRequest load_req;
-	load_req.m.MsgID = RequestMessageID();
-	load_req.m.MsgType = CardinalMsgType_Request;
-	load_req.MsgType = ElfLoaderMessageType_LoadRequest;
-	load_req.Limits = limits;
-	load_req.Source = loc;
-	load_req.Size = size;
-	load_req.TargetPID = pid;
+    ElfLoadRequest load_req;
+    load_req.m.MsgID = RequestMessageID();
+    load_req.m.MsgType = CardinalMsgType_Request;
+    load_req.MsgType = ElfLoaderMessageType_LoadRequest;
+    load_req.Limits = limits;
+    load_req.Source = loc;
+    load_req.Size = size;
+    load_req.TargetPID = pid;
 
-	Message *msg_p = (Message*)&load_req;
+    Message *msg_p = (Message*)&load_req;
 
-	int err = PostIPCMessages(elf_loader_pid, &msg_p, 1);
+    int err = PostIPCMessages(elf_loader_pid, &msg_p, 1);
 
-	if(err != 1)
-		return err;
+    if(err != 1)
+        return err;
 
-	*key = load_req.m.MsgID;
-	return 0;
+    *key = load_req.m.MsgID;
+    return 0;
 }
 
 int
 IsElfLoaded(uint32_t id,
-			ElfLoaderError *error,
-			ElfInformation *elfData) {
+            ElfLoaderError *error,
+            ElfInformation *elfData) {
 
-	if(elfData == NULL | error == NULL)
-		return -1;
+    if(elfData == NULL | error == NULL)
+        return -1;
 
-	CREATE_NEW_MESSAGE_PTR(msg_buf);
-	ElfLoadResponse *load_resp = (ElfLoadResponse*)msg_buf;
+    CREATE_NEW_MESSAGE_PTR(msg_buf);
+    ElfLoadResponse *load_resp = (ElfLoadResponse*)msg_buf;
 
-	int err = GetIPCMessageFrom((Message*)load_resp, elf_loader_pid, id);
+    int err = GetIPCMessageFrom((Message*)load_resp, elf_loader_pid, id);
 
-	if(err == 1){
-		*error = load_resp->result;
-		memcpy(elfData, &load_resp->info, sizeof(ElfInformation));
-	}
+    if(err == 1) {
+        *error = load_resp->result;
+        memcpy(elfData, &load_resp->info, sizeof(ElfInformation));
+    }
 
-	return (err == 1);
+    return (err == 1);
 }
 
 //TODO cache elf_loader_pid after obtaining it from the service lookup.
-//TODO async calls: main entry point actually 
+//TODO async calls: main entry point actually

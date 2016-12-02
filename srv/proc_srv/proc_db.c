@@ -5,35 +5,35 @@
 #include <string.h>
 
 typedef struct {
-	UID pid;
-	char name[MAX_PROCESS_NAME_LEN];
+    UID pid;
+    char name[MAX_PROCESS_NAME_LEN];
 } ProcessEntry;
 
 static List *processes;
 
 void
 ProcDB_Initialize(void) {
-	processes = List_Create();
+    processes = List_Create();
 }
 
 void
 ProcDB_AddProcess(UID pid, char *name) {
-	ProcessEntry *entry = malloc(sizeof(ProcessEntry));
-	entry->pid = pid;
-	strncpy(entry->name, name, MAX_PROCESS_NAME_LEN);
+    ProcessEntry *entry = malloc(sizeof(ProcessEntry));
+    entry->pid = pid;
+    strncpy(entry->name, name, MAX_PROCESS_NAME_LEN);
 
-	List_AddEntry(processes, entry);
+    List_AddEntry(processes, entry);
 }
 
 void
 ProcDB_RemoveProcess(UID pid) {
-	for(uint64_t i = 0; i < List_Length(processes); i++) {
-		ProcessEntry *entry = List_EntryAt(processes, i);
+    for(uint64_t i = 0; i < List_Length(processes); i++) {
+        ProcessEntry *entry = List_EntryAt(processes, i);
 
-		if(entry->pid == pid) {
-			List_Remove(processes, i);
-			free(entry);
-			return;
-		}
-	}
+        if(entry->pid == pid) {
+            List_Remove(processes, i);
+            free(entry);
+            return;
+        }
+    }
 }

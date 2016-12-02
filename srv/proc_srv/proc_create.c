@@ -14,8 +14,8 @@ create_process_handler(Message *m) {
 
 void
 existence_notification_handler(Message *m) {
-	ProcessServer_R0NotifyProcessExistence *msg = (ProcessServer_R0NotifyProcessExistence*)m;
+    ProcessServer_R0NotifyProcessExistence *msg = (ProcessServer_R0NotifyProcessExistence*)m;
 
 
-//	ProcDB_AddProcess(msg->pid, )	
+//	ProcDB_AddProcess(msg->pid, )
 }

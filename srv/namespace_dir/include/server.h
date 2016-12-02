@@ -5,9 +5,9 @@
 #include <cardinal/ipc.h>
 
 typedef enum {
-	NamespaceDirectoryMessageType_Registration,
-	NamespaceDirectoryMessageType_Removal,
-	NamespaceDirectoryMessageType_Retrieval
+    NamespaceDirectoryMessageType_Registration,
+    NamespaceDirectoryMessageType_Removal,
+    NamespaceDirectoryMessageType_Retrieval
 } NamespaceDirectoryMessageType;
 
 typedef struct {
@@ -17,8 +17,8 @@ typedef struct {
 } NamespaceRegistrationRequest;
 
 typedef struct {
-	Message m;
-	uint64_t result;
+    Message m;
+    uint64_t result;
 } NamespaceRegistrationResponse;
 
 typedef NamespaceRegistrationRequest NamespaceRemovalRequest;

@@ -73,7 +73,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
         //The kernel expects the user mode to have freed up any and all memory as needed
         LockSpinlock(inst->lock);
 
-        for(int i = MAX_ALLOCATION_TYPE_BIT; i >= 0; i--){
+        for(int i = MAX_ALLOCATION_TYPE_BIT; i >= 0; i--) {
             WipeMemoryTypeFromTable(inst, 1 << i);
         }
 
@@ -300,7 +300,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
         do {
 
             if(map->VirtualAddress <= virtualAddress && (map->VirtualAddress + map->Length) >= (virtualAddress + size)) {
-                
+
                 //Shared memory explicitly requires full length match!
                 if(size != map->Length && (map->AllocationType & MemoryAllocationType_Shared))
                     return MemoryAllocationErrors_InvalidFlags;
@@ -326,11 +326,10 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
                 if(map->Length == 0) {
 
-                    if(map->AllocationType & MemoryAllocationType_Shared)
-                    {
+                    if(map->AllocationType & MemoryAllocationType_Shared) {
                         map->SharedMemoryInfo->ReferenceCount--;
 
-                        if(map->SharedMemoryInfo->ReferenceCount == 0){
+                        if(map->SharedMemoryInfo->ReferenceCount == 0) {
                             //Delete the mapping and free the memory
                             //TODO Is this a good idea? Freeing shouldn't be mixed in here if allocation isn't
                             FreePhysicalPageCont(map->SharedMemoryInfo->PhysicalAddress, map->SharedMemoryInfo->Length / PAGE_SIZE);
@@ -845,13 +844,13 @@ AllocateSharedMemory(UID pid,
                      MemoryAllocationFlags flags,
                      uint64_t *virtualAddress) {
     uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE);
-    MemoryAllocationErrors err = AllocateSharedMemoryPhys(pid, 
-                                                          length, 
-                                                          cacheMode, 
-                                                          allocType, 
-                                                          flags, 
-                                                          mem, 
-                                                        virtualAddress);
+    MemoryAllocationErrors err = AllocateSharedMemoryPhys(pid,
+                                 length,
+                                 cacheMode,
+                                 allocType,
+                                 flags,
+                                 mem,
+                                 virtualAddress);
 
     if(err != MemoryAllocationErrors_None)
         FreePhysicalPageCont(mem, length / PAGE_SIZE);
@@ -861,12 +860,12 @@ AllocateSharedMemory(UID pid,
 
 MemoryAllocationErrors
 AllocateSharedMemoryPhys(UID pid,
-                     uint64_t length,
-                     CachingMode cacheMode,
-                     MemoryAllocationType allocType,
-                     MemoryAllocationFlags flags,
-                     uint64_t physicalAddress,
-                     uint64_t *virtualAddress) {
+                         uint64_t length,
+                         CachingMode cacheMode,
+                         MemoryAllocationType allocType,
+                         MemoryAllocationFlags flags,
+                         uint64_t physicalAddress,
+                         uint64_t *virtualAddress) {
 
     if(virtualAddress == NULL)
         return MemoryAllocationErrors_InvalidParameters;
@@ -876,7 +875,7 @@ AllocateSharedMemoryPhys(UID pid,
 
     if(allocType & (MemoryAllocationType_ReservedAllocation | MemoryAllocationType_ReservedBacking))
         return MemoryAllocationErrors_InvalidFlags;
-    
+
     ProcessInformation *procInfo = NULL;
     if(GetProcessReference(pid, &procInfo) != ProcessErrors_None)
         return MemoryAllocationErrors_InvalidParameters;
@@ -884,7 +883,7 @@ AllocateSharedMemoryPhys(UID pid,
 
     LockSpinlock(procInfo->lock);
     LockSpinlock(procInfo->PageTable->lock);
-    
+
     FindFreeVirtualAddress(
         procInfo->PageTable,
         virtualAddress,
@@ -892,19 +891,19 @@ AllocateSharedMemoryPhys(UID pid,
         allocType,
         flags);
 
-    if(*virtualAddress == 0){
+    if(*virtualAddress == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
         return MemoryAllocationErrors_OutOfMemory;
     }
 
     uint64_t mem = physicalAddress;
-    if(mem == 0){
+    if(mem == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
         return MemoryAllocationErrors_OutOfMemory;
     }
-        
+
     MapPage(procInfo->PageTable,
             mem,
             *virtualAddress,
@@ -969,8 +968,7 @@ GetSharedMemoryKey(UID pid,
             identifiers[2] = (uint64_t)cacheMode;
             identifiers[IDENTIFIER_COUNT - 1] = KeyType_SharedMemoryKey;
 
-            if(KeyMan_AllocateKey(identifiers, key) != KeyManagerErrors_None)
-            {
+            if(KeyMan_AllocateKey(identifiers, key) != KeyManagerErrors_None) {
                 UnlockSpinlock(procInfo->PageTable->lock);
                 UnlockSpinlock(procInfo->lock);
                 return MemoryAllocationErrors_Unknown;
@@ -1025,14 +1023,14 @@ ApplySharedMemoryKey(UID pid,
 
 
     SharedMemoryData *shmem_info = (SharedMemoryData*)identifiers[0];
-    
+
     *flags = (MemoryAllocationFlags)identifiers[1];
     *cacheMode = (CachingMode)identifiers[2];
     *length = shmem_info->Length;
 
     LockSpinlock(procInfo->lock);
     LockSpinlock(procInfo->PageTable->lock);
-    
+
     FindFreeVirtualAddress(
         procInfo->PageTable,
         virtualAddress,
@@ -1040,12 +1038,12 @@ ApplySharedMemoryKey(UID pid,
         MemoryAllocationType_MMap,
         *flags);
 
-    if(*virtualAddress == 0){
+    if(*virtualAddress == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
         return MemoryAllocationErrors_OutOfMemory;
     }
-        
+
     MapPage(procInfo->PageTable,
             shmem_info->PhysicalAddress,
             *virtualAddress,
@@ -1078,7 +1076,7 @@ FreeSharedMemoryKey(UID parentPID,
                     uint64_t key) {
 
     uint32_t index = 0;
-    
+
     if(GetIndexOfKey(parentPID, key, &index) != ProcessErrors_None)
         return MemoryAllocationErrors_InvalidParameters;
 
@@ -1091,6 +1089,6 @@ FreeSharedMemoryKey(UID parentPID,
 
     if(DeleteDescriptor(parentPID, index) != ProcessErrors_None)
         return MemoryAllocationErrors_InvalidParameters;
-    
+
     return MemoryAllocationErrors_None;
 }
