@@ -966,6 +966,7 @@ GetSharedMemoryKey(UID pid,
             identifiers[0] = (uint64_t)map->SharedMemoryInfo;
             identifiers[1] = (uint64_t)flags;
             identifiers[2] = (uint64_t)cacheMode;
+            identifiers[3] = 0;
             identifiers[IDENTIFIER_COUNT - 1] = KeyType_SharedMemoryKey;
 
             if(KeyMan_AllocateKey(identifiers, key) != KeyManagerErrors_None) {
@@ -1024,6 +1025,8 @@ ApplySharedMemoryKey(UID pid,
 
     SharedMemoryData *shmem_info = (SharedMemoryData*)identifiers[0];
 
+    identifiers[3]++;
+
     *flags = (MemoryAllocationFlags)identifiers[1];
     *cacheMode = (CachingMode)identifiers[2];
     *length = shmem_info->Length;
@@ -1068,6 +1071,24 @@ ApplySharedMemoryKey(UID pid,
 
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    return MemoryAllocationErrors_None;
+}
+
+MemoryAllocationErrors
+GetSharedMemoryKeyUsageCount(uint64_t key, 
+                             uint64_t *cnt) {
+
+    if(cnt == NULL)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    uint64_t identifiers[IDENTIFIER_COUNT];
+    if(KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    if(identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
+        return MemoryAllocationErrors_InvalidParameters;
+
+    *cnt = identifiers[3];
     return MemoryAllocationErrors_None;
 }
 

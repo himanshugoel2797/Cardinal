@@ -2,7 +2,7 @@ TARGET=userboot.bin
 
 OBJS=main.o initrd.o elf.o program.o
 
-LIBS=
+LIBS=-lprocserver -lipc
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

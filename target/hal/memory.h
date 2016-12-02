@@ -505,6 +505,18 @@ MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID,
                     uint64_t key);
 
+/**
+ * @brief      Gets the shared memory key usage count.
+ *
+ * @param[in]  key   The key
+ * @param      cnt   The count
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+GetSharedMemoryKeyUsageCount(uint64_t key, 
+                             uint64_t *cnt);
+
 /**@}*/
 
 #endif

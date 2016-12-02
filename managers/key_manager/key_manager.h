@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define IDENTIFIER_COUNT 4
+#define IDENTIFIER_COUNT 5
 
 typedef enum {
     KeyManagerErrors_None,

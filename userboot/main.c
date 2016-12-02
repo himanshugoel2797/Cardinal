@@ -1,7 +1,8 @@
 #include "initrd.h"
 #include "program.h"
+#include <string.h>
 #include <cardinal/process.h>
-
+#include <procserver/server.h>
 
 int
 LoadProgram(char *name) {
@@ -11,6 +12,10 @@ LoadProgram(char *name) {
 
         UID pid = 0;
         R0_CreateProcess(GetCurrentProcessUID(), 0, &pid);
+
+        static int call_cnt = 0;
+        if(call_cnt++)
+            R0NotifyProcessExistence(pid, name, strlen(name));
 
         const char *argv[] = {name};
         return LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
@@ -32,6 +37,7 @@ int _start() {
     err = LoadProgram("mem_server.elf");
     if(err != 0)
         __asm__("hlt");
+
 
     //Bring up the service/namespace directory
     err = LoadProgram("namespace_dir.elf");

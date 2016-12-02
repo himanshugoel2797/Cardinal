@@ -24,14 +24,14 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
+    length += PAGE_SIZE - length % PAGE_SIZE;
+
     CachingMode cacheMode = data->params[1];
     MemoryAllocationType allocType = data->params[2];
     MemoryAllocationFlags flags = data->params[3];
 
-    if(flags & MemoryAllocationFlags_Kernel) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+    flags &= ~MemoryAllocationFlags_Kernel;
+    flags |= MemoryAllocationFlags_User;
 
     uint64_t vAddress = 0;
     MemoryAllocationErrors err = AllocateSharedMemory(GetCurrentProcessUID(),
@@ -72,15 +72,15 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
+    length += PAGE_SIZE - length % PAGE_SIZE;
+
     CachingMode cacheMode = data->params[1];
     MemoryAllocationType allocType = data->params[2];
     MemoryAllocationFlags flags = data->params[3];
     uint64_t phys_addr = data->params[4];
 
-    if(flags & MemoryAllocationFlags_Kernel) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+    flags &= ~MemoryAllocationFlags_Kernel;
+    flags |= MemoryAllocationFlags_User;
 
     uint64_t vAddress = 0;
     MemoryAllocationErrors err = AllocateSharedMemoryPhys(GetCurrentProcessUID(),
@@ -141,6 +141,36 @@ GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
 
     SyscallSetErrno(0);
     return key;
+}
+
+uint64_t
+GetSharedMemoryKeyUsageCount_Syscall(uint64_t UNUSED(instruction_pointer),
+                                     uint64_t syscall_num,
+                                     uint64_t *syscall_params) {
+    if(syscall_num != Syscall_GetSharedMemoryKeyUsageCount) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 1) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    uint64_t key = data->params[0];
+    uint64_t cnt = 0;
+
+    MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
+
+    if(err != MemoryAllocationErrors_None) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    SyscallSetErrno(0);
+    return cnt;
 }
 
 uint64_t

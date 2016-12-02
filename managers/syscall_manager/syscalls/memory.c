@@ -227,6 +227,9 @@ Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
+    if(data->params[1] % PAGE_SIZE)
+        data->params[1] += PAGE_SIZE - data->params[1] % PAGE_SIZE;
+
     UnmapPage(p_info->PageTable,
               data->params[0],
               data->params[1]);

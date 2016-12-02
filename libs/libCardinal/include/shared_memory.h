@@ -56,6 +56,16 @@ GetSharedMemoryKey(uint64_t virtualAddress,
 }
 
 static __inline uint64_t
+GetSharedMemoryKeyUsageCount(uint64_t key,
+                             uint64_t *cnt) {
+    if(cnt == NULL)
+        return -EINVAL;
+
+    *cnt = Syscall1(Syscall_GetSharedMemoryKeyUsageCount, key);
+    return GetErrno();
+}
+
+static __inline uint64_t
 ApplySharedMemoryKey(uint64_t key,
                      UserSharedMemoryData *data) {
     if(data == NULL)

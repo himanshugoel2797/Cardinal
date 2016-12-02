@@ -1,13 +1,13 @@
-TARGET=libelfserver.a
+TARGET=libprocserver.a
 
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=elfserver
+HEADER_INSTALL_DIR=procserver
 
-OBJS=elf.o
+OBJS=proc_create.o
 
-CFLAGS=-std=c11 -Iinclude -I.
+CFLAGS=-std=c11 -I../include -I.
 
 all:$(OBJS)
 	$(AR) rcs $(TARGET) $(OBJS)
@@ -18,7 +18,7 @@ clean:
 install:
 	cp $(TARGET) $(shell cctool --lib)
 	mkdir -p $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
-	cp include/*.h $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
+	cp ../include/*.h $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
 
 uninstall:
 	rm -rf $(shell cctool --inc)/$(HEADER_INSTALL_DIR)

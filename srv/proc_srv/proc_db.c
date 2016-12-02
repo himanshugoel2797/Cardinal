@@ -20,7 +20,10 @@ void
 ProcDB_AddProcess(UID pid, char *name) {
     ProcessEntry *entry = malloc(sizeof(ProcessEntry));
     entry->pid = pid;
-    strncpy(entry->name, name, MAX_PROCESS_NAME_LEN);
+    if(name != NULL)
+    	strncpy(entry->name, name, MAX_PROCESS_NAME_LEN);
+    else
+    	entry->name[0] = '\0';
 
     List_AddEntry(processes, entry);
 }

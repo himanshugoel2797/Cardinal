@@ -46,6 +46,12 @@ typedef struct {
     UID pid;
 } ProcessServerNotificationType_Notification;
 
+
+int
+R0NotifyProcessExistence(UID pid,
+					     char *name,
+						 int name_len);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,6 @@
 #include "server.h"
 #include "common.h"
+#include "proc_db.h"
 
 #include <cardinal/ipc.h>
 #include <errno.h>
@@ -35,6 +36,9 @@ checkGroup(uint64_t expectedGroup, UID dst, uint64_t msgID) {
 }
 
 int main() {
+
+    ProcDB_Initialize();
+
     while(1) {
 
         CREATE_NEW_MESSAGE_PTR(msg);
@@ -45,14 +49,20 @@ int main() {
             MsgHeader *msg_h = (MsgHeader*)msg;
 
             switch(msg_h->MsgType) {
+            case ProcessServerMessageType_CreateProcessRequest: {
+                create_process_handler(msg);
+            }
+            }
+        } else if(msg->MsgType == CardinalMsgType_Notification) {
+            MsgHeader *msg_h = (MsgHeader*)msg;
+
+                
+            switch(msg_h->MsgType) {
             case ProcessServerMessageType_R0_ProcessExistenceNotification: {
                 if(checkGroup(0, msg->SourcePID, msg->MsgType))
                     existence_notification_handler(msg);
             }
             break;
-            case ProcessServerMessageType_CreateProcessRequest: {
-                create_process_handler(msg);
-            }
             }
         } else
             HandleSystemMessages(msg);

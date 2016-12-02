@@ -40,4 +40,5 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_GetSharedMemoryKey, GetSharedMemoryKey_Syscall);
     RegisterSyscall(Syscall_ApplySharedMemoryKey, ApplySharedMemoryKey_Syscall);
     RegisterSyscall(Syscall_FreeSharedMemoryKey, FreeSharedMemoryKey_Syscall);
+    RegisterSyscall(Syscall_GetSharedMemoryKeyUsageCount, GetSharedMemoryKeyUsageCount_Syscall);
 }

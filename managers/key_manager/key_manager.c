@@ -8,7 +8,7 @@
 typedef struct {
     uint32_t key;
     uint32_t ref_count;
-    uint64_t identifier[IDENTIFIER_COUNT];
+    _Atomic uint64_t identifier[IDENTIFIER_COUNT];
 } KeyEntry;
 
 static KeyEntry* keyTable = NULL;

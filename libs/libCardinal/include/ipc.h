@@ -21,13 +21,13 @@ extern "C" {
 #define MESSAGE_SIZE (128)
 
 //! The process ID of the memory server.
-#define MEMORY_SRV_PID 2
+#define MEMORY_SRV_PID 4
 
 //! The process ID of the namespace server.
-#define NAMESPACE_SRV_PID 3
+#define NAMESPACE_SRV_PID 5
 
 //! The process ID of the process server.
-#define PROCESS_SRV_PID 4
+#define PROCESS_SRV_PID 3
 
 typedef enum {
     CardinalMsgType_Request,

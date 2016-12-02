@@ -2,7 +2,7 @@ TARGET=proc_server.elf
 
 OBJS=main.o proc_db.o proc_create.o
 
-LIBS=-llist
+LIBS=-llist -lipc
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
