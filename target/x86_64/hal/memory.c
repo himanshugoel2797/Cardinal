@@ -844,6 +844,29 @@ AllocateSharedMemory(UID pid,
                      MemoryAllocationType allocType,
                      MemoryAllocationFlags flags,
                      uint64_t *virtualAddress) {
+    uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE);
+    MemoryAllocationErrors err = AllocateSharedMemoryPhys(pid, 
+                                                          length, 
+                                                          cacheMode, 
+                                                          allocType, 
+                                                          flags, 
+                                                          mem, 
+                                                        virtualAddress);
+
+    if(err != MemoryAllocationErrors_None)
+        FreePhysicalPageCont(mem, length / PAGE_SIZE);
+
+    return err;
+}
+
+MemoryAllocationErrors
+AllocateSharedMemoryPhys(UID pid,
+                     uint64_t length,
+                     CachingMode cacheMode,
+                     MemoryAllocationType allocType,
+                     MemoryAllocationFlags flags,
+                     uint64_t physicalAddress,
+                     uint64_t *virtualAddress) {
 
     if(virtualAddress == NULL)
         return MemoryAllocationErrors_InvalidParameters;
@@ -875,7 +898,7 @@ AllocateSharedMemory(UID pid,
         return MemoryAllocationErrors_OutOfMemory;
     }
 
-    uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE);
+    uint64_t mem = physicalAddress;
     if(mem == 0){
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);

@@ -34,6 +34,8 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_R0_GetPhysicalAddress, R0GetPhysicalAddress_Syscall);
 
+    RegisterSyscall(Syscall_R0_AllocateSharedMemory, R0AllocateSharedMemory_Syscall);
+
     RegisterSyscall(Syscall_AllocateSharedMemory, AllocateSharedMemory_Syscall);
     RegisterSyscall(Syscall_GetSharedMemoryKey, GetSharedMemoryKey_Syscall);
     RegisterSyscall(Syscall_ApplySharedMemoryKey, ApplySharedMemoryKey_Syscall);

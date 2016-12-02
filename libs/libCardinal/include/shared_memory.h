@@ -29,6 +29,20 @@ AllocateSharedMemory(uint64_t length,
 }
 
 static __inline uint64_t
+R0_AllocateSharedMemory(uint64_t length,
+					 CachingMode cacheMode,
+					 MemoryAllocationType allocType,
+					 MemoryAllocationFlags flags,
+					 uint64_t physicalAddress,
+					 uint64_t *virtualAddress) {
+	if(virtualAddress == NULL)
+		return -EINVAL;
+
+	*virtualAddress = Syscall5(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags, physicalAddress);
+	return GetErrno();
+}
+
+static __inline uint64_t
 GetSharedMemoryKey(uint64_t virtualAddress,
 				   uint64_t length,
 				   CachingMode cacheMode,

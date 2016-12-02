@@ -433,6 +433,27 @@ AllocateSharedMemory(UID pid,
                      uint64_t *virtualAddress);
 
 /**
+ * @brief      Allocate a region of shared memory.
+ *
+ * @param[in]  pid             The pid
+ * @param[in]  length          The length
+ * @param[in]  cacheMode       The cache mode
+ * @param[in]  allocType       The allocate type
+ * @param[in]  flags           The flags
+ * @param      virtualAddress  The virtual address
+ *
+ * @return     Error code on failure, MemoryAllocationErrors_None on success.
+ */
+MemoryAllocationErrors
+AllocateSharedMemoryPhys(UID pid,
+                     uint64_t length,
+                     CachingMode cacheMode,
+                     MemoryAllocationType allocType,
+                     MemoryAllocationFlags flags,
+                     uint64_t physicalAddress,
+                     uint64_t *virtualAddress);
+
+/**
  * @brief      Gets the shared memory key.
  *
  * @param[in]  pid             The pid

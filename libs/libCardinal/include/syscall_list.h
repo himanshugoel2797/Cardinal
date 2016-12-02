@@ -42,8 +42,9 @@ typedef enum {
     Syscall_GetSharedMemoryKey,
     Syscall_ApplySharedMemoryKey,
     Syscall_FreeSharedMemoryKey,
+    Syscall_R0_AllocateSharedMemory,
 
-    Syscall_NumEnd = Syscall_FreeSharedMemoryKey,
+    Syscall_NumEnd = Syscall_R0_AllocateSharedMemory,
 } SyscallFunctions;
 
 #ifdef __cplusplus
