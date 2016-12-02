@@ -23,7 +23,8 @@ typedef enum {
 typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
-    uint32_t exec_len;
+    uint64_t exec_key;
+    uint64_t args_key;
 } ProcessServer_CreateRequest;
 
 typedef struct {
@@ -36,6 +37,7 @@ typedef struct {
 	Message m;
 	ProcessServerMessageType MsgType;
 	UID pid;
+	uint64_t process_name_key; 
 } ProcessServer_R0NotifyProcessExistence;
 
 typedef struct {
