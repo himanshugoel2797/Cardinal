@@ -63,7 +63,7 @@ LoadElf64(void *loc,
 
         if(phdr->p_type != PT_LOAD)continue;
 
-        MemoryAllocationFlags flags = MemoryAllocationFlags_User;
+        MemoryAllocationFlags flags = MemoryAllocationFlags_User | MemoryAllocationFlags_Present;
         if(phdr->p_flags & PF_X)flags |= MemoryAllocationFlags_Exec;
         if(phdr->p_flags & PF_W)flags |= MemoryAllocationFlags_Write;
 
@@ -102,7 +102,7 @@ LoadElf64(void *loc,
                       PAGE_SIZE,
                       CachingModeWriteBack,
                       MemoryAllocationType_Heap,
-                      MemoryAllocationFlags_User | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec))
+                      MemoryAllocationFlags_User | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Present))
                 return ElfLoaderError_OutOfMemory;
 
 

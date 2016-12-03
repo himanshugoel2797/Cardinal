@@ -9,8 +9,9 @@ int
 LoadAndStartApplication(UID pid,
                         void *elf_loc,
                         uint64_t elf_size,
-                        const char **argv,
-                        uint32_t argc) {
+                        const char *argv,
+                        uint32_t argc,
+                        uint64_t arg_len) {
     ElfInformation elf_info;
     ElfLoaderError err = LoadElf(elf_loc, elf_size, ElfLimitations_64Bit | ElfLimitations_LSB, pid, &elf_info);
     if(err != ElfLoaderError_Success)
@@ -20,14 +21,7 @@ LoadAndStartApplication(UID pid,
     //Map the page to the same virtual address in the target process as read/write
     //Pass the pointer as a parameter to the thread
 
-    uint64_t arg_len = 0;
-    for(uint32_t i = 0; i < argc; i++) {
-        arg_len += strlen(argv[i]);
-    }
-
-    uint64_t net_size = arg_len + sizeof(struct elf_setup_params);
-    if(net_size > UINT16_MAX)
-        return -2;
+    uint64_t net_size = argc * sizeof(char*) + arg_len + sizeof(struct ElfSetupParameters);
 
     if(net_size % PAGE_SIZE)
         net_size += (PAGE_SIZE - (net_size % PAGE_SIZE));
@@ -74,6 +68,18 @@ LoadAndStartApplication(UID pid,
     params->rnd_seed = 0;         //Set the seed to 0 for now, secondary loader will set it properly
     params->elf_entry_point = (uint64_t)elf_info.entry_point;
 
+    uint8_t **argv_base = (uint8_t**)params->argv;
+    uint8_t *arg_loc = (uint8_t*)argv_base + sizeof(char*) * argc;
+
+    for(uint32_t i = 0; i < argc; i++) {
+      argv_base[i] = (char*)(target_virt_addr + ((uint64_t)arg_loc - (uint64_t)params));
+
+      uint32_t len = strlen(argv) + 1;
+      strcpy(arg_loc, argv);
+      argv += len;
+      arg_loc += len;
+    }
+
     R0_Unmap(GetCurrentProcessUID(), (uint64_t)params, net_size);
 
     // We're no longer following the SysV Linux ABI, so just map in the data and
@@ -88,4 +94,6 @@ LoadAndStartApplication(UID pid,
     //Start the process
     if(R0_StartProcess(pid) != 0)
         return -7;
+
+    return 0;
 }

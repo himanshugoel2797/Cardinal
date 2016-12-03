@@ -24,7 +24,9 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
-    length += PAGE_SIZE - length % PAGE_SIZE;
+    
+    if(length % PAGE_SIZE)
+        length += PAGE_SIZE - length % PAGE_SIZE;
 
     CachingMode cacheMode = data->params[1];
     MemoryAllocationType allocType = data->params[2];
@@ -72,7 +74,9 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
-    length += PAGE_SIZE - length % PAGE_SIZE;
+    
+    if(length % PAGE_SIZE)
+        length += PAGE_SIZE - length % PAGE_SIZE;
 
     CachingMode cacheMode = data->params[1];
     MemoryAllocationType allocType = data->params[2];
@@ -118,13 +122,14 @@ GetSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
 
     uint64_t vAddress = data->params[0];
     uint64_t length = data->params[1];
+    if(length % PAGE_SIZE)
+        length += PAGE_SIZE - length % PAGE_SIZE;
+
     CachingMode cacheMode = data->params[2];
     MemoryAllocationFlags flags = data->params[3];
 
-    if(flags & MemoryAllocationFlags_Kernel) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+    flags &= ~MemoryAllocationFlags_Kernel;
+    flags |= MemoryAllocationFlags_User;
 
     uint64_t key = 0;
     MemoryAllocationErrors err = GetSharedMemoryKey(GetCurrentProcessUID(),

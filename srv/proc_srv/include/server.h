@@ -23,7 +23,9 @@ typedef enum {
 typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
+    uint32_t argc;
     uint64_t exec_key;
+    uint64_t exec_size;
     uint64_t args_key;
 } ProcessServer_CreateRequest;
 
@@ -51,6 +53,13 @@ int
 R0NotifyProcessExistence(UID pid,
 					     char *name,
 						 int name_len);
+
+int
+RequestCreateProcess(void *exec,
+					 uint64_t exec_len,
+					 char **argv,
+					 uint32_t argc,
+					 UID *pid);
 
 #ifdef __cplusplus
 }

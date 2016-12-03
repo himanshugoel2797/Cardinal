@@ -3,7 +3,7 @@
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE GiB(1)
+#define KEY_TABLE_SIZE MiB(16)
 
 typedef struct {
     uint32_t key;
@@ -30,12 +30,12 @@ KeyMan_Initialize(void) {
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
-               0,
+               AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
                keyTable_addr,
                KEY_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
-               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel
+               MemoryAllocationType_Heap,
+               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
     }
@@ -70,6 +70,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
     while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
     }
+
 
     UnlockSpinlock(keyman_lock);
 

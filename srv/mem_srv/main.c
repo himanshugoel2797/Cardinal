@@ -3,6 +3,7 @@
 #include "mem_db.h"
 
 #include <cardinal/ipc.h>
+#include <procserver/server.h>
 
 //TODO implement mmap and grant support for now, to allow musl to initialize, namespace_dir relies on it.
 //namespace_dir implements a simple list of namespaces and associated pids, it can receive process death notifications from the process server.
@@ -11,12 +12,35 @@
 //sys_init acts as the parent for the rest of the system.
 
 //TODO enable keys once again, but first determine exactly how they are to be used.
+typedef struct {
+    Message m;
+    uint64_t MsgType;
+} MsgHeader;
 
 void
 HandleSystemMessages(Message *m) {
+
+	MsgHeader *msg_h = (MsgHeader*)m;
+
     switch(m->MsgType) {
     case CardinalMsgType_Notification:
         //Check if it is a process creation or process deletion notification
+        {
+        	switch(msg_h->MsgType){
+        		case ProcessServerNotificationType_ProcessCreated:
+        			{
+        				ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
+        				MemDB_AddProcess(n->pid);
+        			}
+        		break;
+        		case ProcessServerNotificationType_ProcessExited:
+        			{
+        				ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
+        				MemDB_FreeProcess(n->pid);
+        			}
+        		break;
+        	}
+        }
         //Update the mount database appropriately.
         break;
     default:
@@ -24,10 +48,6 @@ HandleSystemMessages(Message *m) {
     }
 }
 
-typedef struct {
-    Message m;
-    MemoryServerMessageType MsgType;
-} MsgHeader;
 
 int main() {
 

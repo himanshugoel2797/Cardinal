@@ -42,10 +42,14 @@
 #define GET_ADDR_2MB(a) (a & ~0xf0000000000fffff)
 #define GET_ADDR_1GB(a) (a & ~0xf00000003fffffff)
 
-#define CORE_LOCAL_MEM_ADDR (0xffffff0000000000)
+#define CORE_LOCAL_MEM_ADDR (0xffff800000000000)
 #define BOOTSTRAP_PML_ADDR (0xfffffffe00001000)
 
+#define KERNEL_ADDITIONAL_PDPT_COUNT 254
+
 static uint64_t* kernel_pdpt = NULL;
+static uint64_t  kernel_additional_pdpts[KERNEL_ADDITIONAL_PDPT_COUNT];
+static uint64_t  kernel_additional_pdpts_paddr[KERNEL_ADDITIONAL_PDPT_COUNT];
 static uint64_t* kernel_pdpt_paddr = NULL;
 
 typedef struct VirtMemManData {
@@ -102,10 +106,24 @@ VirtMemMan_Initialize(void) {
 
         kernel_pdpt = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, pdpt_0);
 
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+            kernel_additional_pdpts_paddr[i] = (uint64_t)MemMan_Alloc();
+            kernel_additional_pdpts[i] = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)kernel_additional_pdpts_paddr[i]);
+            memset((void*)kernel_additional_pdpts[i], 0, PAGE_SIZE);
+        }
+
         pml[511] = (uint64_t)pdpt_0;    //Keep the top 512GiB of memory mapped into all address spaces
         MARK_PRESENT(pml[511]);
         MARK_WRITE(pml[511]);
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
+
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+            pml[510 - i] = kernel_additional_pdpts_paddr[i];
+            MARK_PRESENT(pml[510 - i]);
+            MARK_WRITE(pml[510 - i]);
+            SET_CACHEMODE(pml[510 - i], MEM_TYPE_WB);
+        }
+
         //Setup kernel code map
         VirtMemMan_MapHPage(pml,
                             0xFFFFFFFFC0000000,
@@ -277,6 +295,14 @@ VirtMemMan_Initialize(void) {
         MARK_PRESENT(pml[511]);
         MARK_WRITE(pml[511]);
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
+
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+            pml[510 - i] = kernel_additional_pdpts_paddr[i];
+            MARK_PRESENT(pml[510 - i]);
+            MARK_WRITE(pml[510 - i]);
+            SET_CACHEMODE(pml[510 - i], MEM_TYPE_WB);
+        }
+
     }
 
     //Enable NX
@@ -309,6 +335,13 @@ VirtMemMan_CreateInstance(void) {
     MARK_PRESENT(pml[511]);
     MARK_WRITE(pml[511]);
     SET_CACHEMODE(pml[511], MEM_TYPE_WB);
+
+    for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+        pml[510 - i] = kernel_additional_pdpts_paddr[i];
+        MARK_PRESENT(pml[510 - i]);
+        MARK_WRITE(pml[510 - i]);
+        SET_CACHEMODE(pml[510 - i], MEM_TYPE_WB);
+    }
 
     return pml;
 }
@@ -759,15 +792,12 @@ VirtMemMan_GetVirtualAddress(CachingMode c,
 static void
 VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocType, MEM_SECURITY_PERMS sec_perms) {
 
-    int pml_base = 256;
+    int pml_base = 1;
     int pdpt_base = 0;
 
     switch(allocType) {
-    case MemoryAllocationType_Heap:
-        pml_base = 511;
-        break;
     default:
-        pml_base = 256;
+        pml_base = 511;
         break;
     }
 
@@ -853,7 +883,7 @@ VirtMemMan_FindFreeAddress(PML_Instance       inst,
     VirtMemMan_GetMapping(&pml_base, &pdpt_base, allocType, sec_perms);
 
 
-    for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 128) && pml_i < 512 && cur_score < needed_score; ++pml_i) {
+    for(uint64_t pml_i = pml_base; pml_i < (uint64_t)(pml_base + 256) && pml_i < 512 && cur_score < needed_score; ++pml_i) {
         if(inst[pml_i] == 0) {  //An entry is available if it's blank
             //Check the pml4 table for free entries if more than 256GiB of space is requested
             BUILD_ADDR(pml_i, 0, 0, 0);

@@ -59,6 +59,21 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
         inst->lock = CreateSpinlock();
         inst->reference_count = 1;
+
+        //Copy in the current process's kernel tables, by design, they should be continuous
+        ManagedPageTable *tmp = GetActiveVirtualMemoryInstance();
+        LockSpinlock(tmp->lock);
+        MemoryAllocationsMap *map = tmp->AllocationMap;
+
+        while(map != NULL && (map->Flags & MemoryAllocationFlags_User)){
+            map = map->next;
+        }
+
+        UnlockSpinlock(tmp->lock);
+
+        inst->AllocationMap = map;
+        inst->Last = tmp->Last;
+
         UnlockSpinlock(vmem_lock);
         return MemoryAllocationErrors_None;
     }
@@ -153,7 +168,7 @@ MapPage(ManagedPageTable *pageTable,
     if((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)perms |= MEM_USER;
 
     MemoryAllocationsMap *allocMap = NULL;
-    if(((virtualAddress >> 39) & 0x1FF) != 511) {
+
         allocMap = kmalloc(sizeof(MemoryAllocationsMap));
 
         allocMap->CacheMode = cacheMode;
@@ -162,8 +177,7 @@ MapPage(ManagedPageTable *pageTable,
         allocMap->Length = size;
         allocMap->Flags = flags;
         allocMap->AllocationType = allocType;
-    }
-
+    
     LockSpinlock(pageTable->lock);
 
     if(pageTable->AllocationMap != NULL) {
@@ -188,7 +202,10 @@ MapPage(ManagedPageTable *pageTable,
                 if(top->Length != 0) {
                     top->next = map->next;
                     top->prev = map;
+                    
                     if(map->next != NULL)map->next->prev = top;
+                    else pageTable->Last = top;
+
                     map->next = top;
                 } else kfree(top);
 
@@ -199,6 +216,7 @@ MapPage(ManagedPageTable *pageTable,
                         pageTable->AllocationMap = map->next;
 
                     if(map->next != NULL)map->next->prev = prev;
+                    else pageTable->Last = map->prev;
 
                     kfree(map);
                 }
@@ -210,11 +228,23 @@ MapPage(ManagedPageTable *pageTable,
         } while(map != NULL);
     }
 
-    //At this point, all parameters have been verified
-    if(((virtualAddress >> 39) & 0x1FF) != 511) {
+
+    //If this is a kernel mapping, append it to the end of the list
+    //Else put it at the start
+    if(flags & MemoryAllocationFlags_User){
         allocMap->next = pageTable->AllocationMap;
         allocMap->prev = NULL;
         pageTable->AllocationMap = allocMap;
+
+        if(allocMap->next == NULL)
+            pageTable->Last = allocMap;
+    }else{
+        allocMap->prev = pageTable->Last;
+        allocMap->next = NULL;
+        pageTable->Last = allocMap;
+
+        if(pageTable->AllocationMap == NULL)
+            pageTable->AllocationMap = allocMap;
     }
 
     VirtMemMan_Map((PML_Instance)pageTable->PageTable,
@@ -321,6 +351,8 @@ UnmapPage(ManagedPageTable 	*pageTable,
                     top->next = map->next;
                     top->prev = map;
                     if(map->next != NULL)map->next->prev = top;
+                    else pageTable->Last = top;
+
                     map->next = top;
                 } else kfree(top);
 
@@ -343,6 +375,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
                         pageTable->AllocationMap = map->next;
 
                     if(map->next != NULL)map->next->prev = map->prev;
+                    else pageTable->Last = map->prev;
 
                     kfree(map);
                 }
@@ -545,7 +578,7 @@ static volatile int tlb_core_count = 0;
 void
 HandlePageFault(uint64_t virtualAddress,
                 uint64_t instruction_pointer,
-                MemoryAllocationFlags error) {
+                MemoryAllocationFlags UNUSED(error)) {
 
     if(!ProcessSys_IsInitialized()) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer));
@@ -573,7 +606,7 @@ HandlePageFault(uint64_t virtualAddress,
             }
 
 //            if(map->AllocationType & MemoryAllocationType_Application) {
-            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(3), "c"(error));
+            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
 //            }
 
 
@@ -815,6 +848,8 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
 
         MemoryAllocationsMap *n = map->next;
 
+        if(map->Flags & MemoryAllocationFlags_User){
+
         MemoryAllocationType allocType = map->AllocationType;
 
         //Ignore extra flags during this process.
@@ -830,7 +865,9 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
                       map->VirtualAddress,
                       map->Length);
         }
+        }
         map = n;
+
     }
 
     UnlockSpinlock(pageTable->lock);
@@ -927,9 +964,13 @@ AllocateSharedMemoryPhys(UID pid,
         }
         map = map->next;
     }
-
+        
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    
+    if(map == NULL)
+        return MemoryAllocationErrors_Unknown;
+
     return MemoryAllocationErrors_None;
 
 }
@@ -954,6 +995,7 @@ GetSharedMemoryKey(UID pid,
     MemoryAllocationsMap *map = procInfo->PageTable->AllocationMap;
     while(map != NULL) {
         if(virtualAddress == map->VirtualAddress && length == map->Length) {
+
 
             if(!(map->AllocationType & MemoryAllocationType_Shared)) {
                 UnlockSpinlock(procInfo->PageTable->lock);
@@ -985,9 +1027,12 @@ GetSharedMemoryKey(UID pid,
         }
         map = map->next;
     }
-
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    
+    if(map == NULL)
+        return MemoryAllocationErrors_InvalidVirtualAddress;
+
     return MemoryAllocationErrors_None;
 }
 

@@ -1,6 +1,6 @@
 TARGET=proc_server.elf
 
-OBJS=main.o proc_db.o proc_create.o
+OBJS=main.o proc_db.o proc_create.o elf.o program.o
 
 LIBS=-llist -lipc
 

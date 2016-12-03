@@ -1,7 +1,7 @@
 #include "server.h"
 #include <cardinal/shared_memory.h>
 #include <libipc/ipc.h>
-
+#include <string.h>
 
 int
 R0NotifyProcessExistence(UID pid,
@@ -56,4 +56,124 @@ R0NotifyProcessExistence(UID pid,
 		FreeSharedMemoryKey(data.process_name_key);
 	}
 	return 0;
+}
+
+int
+RequestCreateProcess(void *exec,
+					 uint64_t exec_len,
+					 char **argv,
+					 uint32_t argc,
+					 UID *pid) {
+	if(exec == NULL)
+		return -1;
+
+	if(exec_len == 0)
+		return -1;
+
+	if(argv == NULL && argc != 0)
+		return -1;
+
+	if(argc == 0 && argv != NULL)
+		return -1;
+
+	ProcessServer_CreateRequest create_req;
+	create_req.m.MsgID = RequestMessageID();
+	create_req.m.MsgType = CardinalMsgType_Request;
+	create_req.MsgType = ProcessServerMessageType_CreateProcessRequest;
+	create_req.args_key = 0;
+	create_req.argc = argc;
+	create_req.exec_size = exec_len;
+	
+	exec_len += PAGE_SIZE - exec_len % PAGE_SIZE;
+	uint64_t vAddress = 0;
+	if(AllocateSharedMemory(exec_len, 
+							CachingModeWriteBack,
+							MemoryAllocationType_MMap,
+							MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+							&vAddress) != 0)
+			return -1;
+
+	memcpy((void*)vAddress, exec, create_req.exec_size);
+
+	uint64_t key = 0;
+	if(GetSharedMemoryKey(vAddress,
+					   exec_len,
+					   CachingModeWriteBack,
+					   MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+					   &key) != 0)
+	{
+		Unmap(vAddress, exec_len);
+		return -1;
+	}
+
+	create_req.exec_key = key;
+
+	//Allocate memory for the argv
+	uint64_t arg_len = 0;
+	for(uint32_t i = 0; i < argc; i++)
+		arg_len += strlen(argv[i]);
+
+	arg_len += PAGE_SIZE - arg_len % PAGE_SIZE;
+
+	if(arg_len > 0){
+	if(AllocateSharedMemory(arg_len, 
+							CachingModeWriteBack,
+							MemoryAllocationType_MMap,
+							MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+							&vAddress) != 0)
+			return -1;
+
+	char *arg = (char*)vAddress;
+	for(uint32_t i = 0; i < argc; i++) {
+		strcpy(arg, argv[i]);
+		arg += strlen(argv[i]) + 1;
+	}
+
+	if(GetSharedMemoryKey(vAddress,
+					   arg_len,
+					   CachingModeWriteBack,
+					   MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+					   &key) != 0)
+	{
+		Unmap(vAddress, arg_len);
+		return -1;
+	}
+
+	create_req.args_key = key;
+	}
+
+	Message *msg = (Message*)&create_req;
+
+	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
+
+	if(create_req.args_key != 0){
+		uint64_t cnt = 0;
+		while(1){
+			GetSharedMemoryKeyUsageCount(create_req.args_key, &cnt);
+			if(cnt)
+				break;
+		}
+		FreeSharedMemoryKey(create_req.args_key);
+	}
+	__asm__("hlt");
+
+	if(create_req.exec_key != 0){
+		uint64_t cnt = 0;
+		while(1){
+			GetSharedMemoryKeyUsageCount(create_req.exec_key, &cnt);
+			if(cnt)
+				break;
+		}
+		FreeSharedMemoryKey(create_req.exec_key);
+	}
+
+	CREATE_NEW_MESSAGE_PTR(m2);
+	while(!GetIPCMessageFrom(m2, PROCESS_SRV_PID, create_req.m.MsgID));
+
+	ProcessServer_CreateRequest_Response *resp = (ProcessServer_CreateRequest_Response*)m2;
+	
+	if(pid != NULL)
+		*pid = resp->pid;
+	
+	return (int)resp->err_code;
 }

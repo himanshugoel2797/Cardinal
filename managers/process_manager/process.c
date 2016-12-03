@@ -450,14 +450,17 @@ GetIndexOfKey(UID pid,
     *index = (uint32_t)-1;
 
     for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
-        if(info->Keys[i] == key && info->Keys[i] != 0)
+        if(info->Keys[i] == key && info->Keys[i] != 0){
             *index = i;
+            break;
+        }
     }
 
     UnlockSpinlock(info->lock);
 
     if(*index == (uint32_t)-1)
         return ProcessErrors_InvalidParameters;
+    
     return ProcessErrors_None;
 }
 
