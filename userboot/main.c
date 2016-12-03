@@ -41,7 +41,7 @@ int _start() {
         __asm__("hlt");
 
     //Bring up the service/namespace directory
-    err = LoadProgram("namespace_dir.elf");
+    err = LoadProgram("namespace_srv.elf");
     if(err != 0)
         __asm__("hlt");
 

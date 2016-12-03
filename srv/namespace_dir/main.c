@@ -31,21 +31,21 @@ send_err_response(UID val, int result, uint32_t msgID, UID dst){
 void
 handle_request(MsgHeader *m){
 	switch(m->MsgType) {
-		case NamespaceDirectoryMessageType_Registration:
+		case NamespaceServerMessageType_Registration:
 			{
 				NamespaceRegistrationRequest *req = (NamespaceRegistrationRequest*)m;
 				int err_code = NamespaceDir_AddNamespace(req->namespace_name, req->m.SourcePID);
 				send_err_response(0, err_code, req->m.MsgID, req->m.SourcePID);
 			}
 		break;
-    	case NamespaceDirectoryMessageType_Removal:
+    	case NamespaceServerMessageType_Removal:
     		{
     			NamespaceRemovalRequest *req = (NamespaceRemovalRequest*)m;
 				int err_code = NamespaceDir_RemoveNamespace(req->namespace_name, req->m.SourcePID);
 				send_err_response(0, err_code, req->m.MsgID, req->m.SourcePID);
     		}
     	break;
-    	case NamespaceDirectoryMessageType_Retrieval:
+    	case NamespaceServerMessageType_Retrieval:
 			{
     			NamespaceRetrievalRequest *req = (NamespaceRetrievalRequest*)m;
     			UID pid = 0;

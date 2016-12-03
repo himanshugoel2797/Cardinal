@@ -1,13 +1,13 @@
-TARGET=libelfserver.a
+TARGET=libnamespaceserver.a
 
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=elfserver
+HEADER_INSTALL_DIR=namespaceserver
 
-OBJS=elf.o
+OBJS=namespace.o
 
-CFLAGS=-std=c11 -Iinclude -I.
+CFLAGS=-std=c11 -I../include -I.
 
 all:$(OBJS)
 	$(AR) rcs $(TARGET) $(OBJS)

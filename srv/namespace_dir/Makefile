@@ -1,4 +1,4 @@
-TARGET=namespace_dir.elf
+TARGET=namespace_srv.elf
 
 OBJS=main.o namespace_dir.o
 
@@ -19,8 +19,8 @@ $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
 
 install:
-	mkdir -p $(shell cctool --srv)/namespace_dir
-	cp $(TARGET) $(shell cctool --srv)/namespace_dir/server.elf
+	mkdir -p $(shell cctool --srv)/namespace
+	cp $(TARGET) $(shell cctool --srv)/namespace/server.elf
 	cp $(TARGET) $(INSTALL_DIR)
 
 clean:
