@@ -46,7 +46,7 @@ int _start() {
         __asm__("hlt");
 
     //Begin system initialization
-    err = LoadProgram("framebuffer.elf");
+    err = LoadProgram("sys_init.elf");
     if(err != 0)
         __asm__("hlt");
 

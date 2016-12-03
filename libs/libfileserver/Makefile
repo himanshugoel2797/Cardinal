@@ -1,13 +1,13 @@
-TARGET=libcserver.a
+TARGET=libipc.a
 
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=cserver
+HEADER_INSTALL_DIR=libipc
 
-OBJS=open.o read.o write.o close.o direntry.o mount_db.o interface_provider.o mount.o list.o stat.o remove.o cserver.o fd2path.o 
+OBJS=ipc.o
 
-CFLAGS=-std=c11 -Iinclude -I. -D_MOUNT_DB_PRIV_H_
+CFLAGS=-std=c11 -Iinclude -I.
 
 all:$(OBJS)
 	$(AR) rcs $(TARGET) $(OBJS)
