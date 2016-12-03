@@ -1,8 +1,6 @@
 #include "initrd.h"
 
 int _start() {
-
-	__asm__("hlt");
     //First map in the initrd
     ImportInitrd();
 

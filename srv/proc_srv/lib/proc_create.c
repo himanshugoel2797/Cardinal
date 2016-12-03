@@ -146,34 +146,21 @@ RequestCreateProcess(void *exec,
 
 	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
 
-	if(create_req.args_key != 0){
-		uint64_t cnt = 0;
-		while(1){
-			GetSharedMemoryKeyUsageCount(create_req.args_key, &cnt);
-			if(cnt)
-				break;
-		}
-		FreeSharedMemoryKey(create_req.args_key);
-	}
-	__asm__("hlt");
-
-	if(create_req.exec_key != 0){
-		uint64_t cnt = 0;
-		while(1){
-			GetSharedMemoryKeyUsageCount(create_req.exec_key, &cnt);
-			if(cnt)
-				break;
-		}
-		FreeSharedMemoryKey(create_req.exec_key);
-	}
-
 	CREATE_NEW_MESSAGE_PTR(m2);
 	while(!GetIPCMessageFrom(m2, PROCESS_SRV_PID, create_req.m.MsgID));
 
 	ProcessServer_CreateRequest_Response *resp = (ProcessServer_CreateRequest_Response*)m2;
-	
 	if(pid != NULL)
 		*pid = resp->pid;
+
+	if(create_req.args_key != 0){
+		FreeSharedMemoryKey(create_req.args_key);
+	}
+
+	if(create_req.exec_key != 0){
+		FreeSharedMemoryKey(create_req.exec_key);
+	}
+	
 	
 	return (int)resp->err_code;
 }

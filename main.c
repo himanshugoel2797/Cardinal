@@ -21,6 +21,7 @@ kernel_main_init(void) {
     kmalloc_init ();
     ProcessSys_Initialize();
     Thread_Initialize();
+    KeyMan_Initialize();
     RegisterCore(0, NULL);
     CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
 
@@ -91,7 +92,6 @@ kernel_main(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();
-    KeyMan_Initialize();
     //smp_unlock_cores();
     SetupPreemption();
     target_device_setup();

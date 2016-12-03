@@ -759,16 +759,18 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
-#include "boot_information/boot_information.h"
+#include "utils/native.h"
 
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
-    static int switchCnt = 0;
-    //if(switchCnt++ == 500)__asm__("cli\n\thlt");
+    outb(0x3f8, (GetCurrentThreadUID() % 1000)/100 + '0');
+    outb(0x3f8, (GetCurrentThreadUID() % 100)/10 + '0');
+    outb(0x3f8, (GetCurrentThreadUID() % 10) + '0');
+    outb(0x3f8, '\r');
+    outb(0x3f8, '\n');
 
-    //if(coreState->coreID == 1)
     {
         err_code = 0;
 
