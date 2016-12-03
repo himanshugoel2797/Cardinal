@@ -48,8 +48,6 @@ create_process_handler(Message *m) {
    		maxLen = arg_data.Length;
    	}
 
-
-    
     uint64_t arg_len = 0;
 
     for(uint32_t i = 0; i < argc; i++) {

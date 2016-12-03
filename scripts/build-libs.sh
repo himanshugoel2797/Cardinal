@@ -27,13 +27,6 @@ cd $SRC_DIR/libs/liblist
 	make install
 cd ..
 
-cd $SRC_DIR/srv/elf_srv/lib
-	make uninstall 
-	make clean
-	make all
-	make install
-cd ..
-
 cd $SRC_DIR/srv/mem_srv/lib
 	make uninstall 
 	make clean
