@@ -12,7 +12,7 @@ LoadProgram(char *name) {
 
         UID pid = 0;
 
-        const char *argv[] = {name};
+        char *argv[] = {name};
         static int call_cnt = 0;
         if(call_cnt++){
             return RequestCreateProcess(elf_loc, elf_sz, argv, 1, &pid);
@@ -20,7 +20,7 @@ LoadProgram(char *name) {
         }
 
         R0_CreateProcess(GetCurrentProcessUID(), 0, &pid);
-        return LoadAndStartApplication(pid, elf_loc, elf_sz, argv, 1);
+        return LoadAndStartApplication(pid, elf_loc, elf_sz, (const char**)argv, 1);
     }
     return -1;
 }
@@ -46,7 +46,7 @@ int _start() {
         __asm__("hlt");
 
     //Begin system initialization
-    err = LoadProgram("sys_init.elf");
+    err = LoadProgram("framebuffer.elf");
     if(err != 0)
         __asm__("hlt");
 

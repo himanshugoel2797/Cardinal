@@ -128,6 +128,11 @@ SleepThread(uint64_t ns_time) {
     return GetErrno();
 }
 
+static __inline void
+WaitForMessage() {
+    //TODO design this syscall, use it to reduce the number of active threads by moving polling into the kernel.
+}
+
 /**@}*/
 
 #endif

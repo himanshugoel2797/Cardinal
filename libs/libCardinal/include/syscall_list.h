@@ -37,13 +37,15 @@ typedef enum {
 
     Syscall_R0_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
 
-    Syscall_Unmap,
-    Syscall_AllocateSharedMemory,
-    Syscall_GetSharedMemoryKey,
-    Syscall_ApplySharedMemoryKey,
-    Syscall_FreeSharedMemoryKey,
-    Syscall_R0_AllocateSharedMemory,
-    Syscall_GetSharedMemoryKeyUsageCount,
+    Syscall_Unmap,                      //!< Unmap any shared memory region.
+    Syscall_AllocateSharedMemory,       //!< Allocate shared memory.
+    Syscall_GetSharedMemoryKey,         //!< Get a shared memory key.
+    Syscall_ApplySharedMemoryKey,       //!< Apply an existing shared memory key.
+    Syscall_FreeSharedMemoryKey,        //!< Free a shared memory key owned by the calling process.
+    Syscall_R0_AllocateSharedMemory,    //!< Allocate shared memory, controlling the physical address.
+    Syscall_GetSharedMemoryKeyUsageCount,//!< Get the number of times a key has been used.
+
+    Syscall_WaitForMessage,             //!< Pause this thread untila message of the specified type is received.
 
     Syscall_NumEnd = Syscall_GetSharedMemoryKeyUsageCount,
 } SyscallFunctions;

@@ -18,6 +18,7 @@ send_existence_notification(UID pid) {
 	//Post this message to the various servers that need this info.
 	Message *m = (Message*)&note;
 	PostIPCMessages(MEMORY_SRV_PID, &m, 1);
+	PostIPCMessages(NAMESPACE_SRV_PID, &m, 1);
 }
 
 void

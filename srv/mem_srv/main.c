@@ -26,6 +26,7 @@ HandleSystemMessages(Message *m) {
     case CardinalMsgType_Notification:
         //Check if it is a process creation or process deletion notification
         {
+            if(m->SourcePID == PROCESS_SRV_PID){
         	switch(msg_h->MsgType){
         		case ProcessServerNotificationType_ProcessCreated:
         			{
@@ -39,7 +40,8 @@ HandleSystemMessages(Message *m) {
         				MemDB_FreeProcess(n->pid);
         			}
         		break;
-        	}
+        	   }
+            }
         }
         //Update the mount database appropriately.
         break;

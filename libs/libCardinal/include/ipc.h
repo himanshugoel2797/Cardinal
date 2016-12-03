@@ -63,6 +63,7 @@ struct CardinalFullMessage {
 };
 
 #define CREATE_NEW_MESSAGE_PTR(XXX) struct CardinalFullMessage XXX_0; Message *XXX = (Message*)&XXX_0
+#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
 
 /**
  * @brief      Gets the ipc message from the source.

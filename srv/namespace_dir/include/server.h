@@ -4,6 +4,8 @@
 #include <cardinal/cardinal_types.h>
 #include <cardinal/ipc.h>
 
+#define NAMESPACE_NAME_LEN 64
+
 typedef enum {
     NamespaceDirectoryMessageType_Registration,
     NamespaceDirectoryMessageType_Removal,
@@ -13,12 +15,13 @@ typedef enum {
 typedef struct {
     Message m;
     uint32_t MsgType;
-    char namespace_name[64];
+    char namespace_name[NAMESPACE_NAME_LEN];
 } NamespaceRegistrationRequest;
 
 typedef struct {
     Message m;
     uint64_t result;
+    UID pid;
 } NamespaceRegistrationResponse;
 
 typedef NamespaceRegistrationRequest NamespaceRemovalRequest;
