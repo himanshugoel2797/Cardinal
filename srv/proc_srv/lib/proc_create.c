@@ -1,4 +1,5 @@
 #include "server.h"
+#include <cardinal/ipc.h>
 #include <cardinal/shared_memory.h>
 #include <libipc/ipc.h>
 #include <string.h>
@@ -8,12 +9,12 @@ R0NotifyProcessExistence(UID pid,
 					     char *name,
 						 int name_len) {
 
-	ProcessServer_R0NotifyProcessExistence data;
-	data.m.MsgID = RequestMessageID();
-	data.m.MsgType = CardinalMsgType_Notification;
-	data.MsgType = ProcessServerMessageType_R0_ProcessExistenceNotification;
-	data.pid = pid;
-	data.process_name_key = 0;
+	CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_R0NotifyProcessExistence, data);
+	data->m.MsgID = RequestMessageID();
+	data->m.MsgType = CardinalMsgType_Notification;
+	data->MsgType = ProcessServerMessageType_R0_ProcessExistenceNotification;
+	data->pid = pid;
+	data->process_name_key = 0;
 
 	if(name_len != 0 && name != NULL){
 	uint64_t vAddress = 0;
@@ -39,21 +40,21 @@ R0NotifyProcessExistence(UID pid,
 		return -1;
 	}
 
-		data.process_name_key = key;
+		data->process_name_key = key;
 	}
 
 	Message *msg = (Message*)&data;
 
 	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
 
-	if(data.process_name_key != 0){
+	if(data->process_name_key != 0){
 		uint64_t cnt = 0;
 		while(1){
-			GetSharedMemoryKeyUsageCount(data.process_name_key, &cnt);
+			GetSharedMemoryKeyUsageCount(data->process_name_key, &cnt);
 			if(cnt)
 				break;
 		}
-		FreeSharedMemoryKey(data.process_name_key);
+		FreeSharedMemoryKey(data->process_name_key);
 	}
 	return 0;
 }
@@ -76,13 +77,13 @@ RequestCreateProcess(void *exec,
 	if(argc == 0 && argv != NULL)
 		return -1;
 
-	ProcessServer_CreateRequest create_req;
-	create_req.m.MsgID = RequestMessageID();
-	create_req.m.MsgType = CardinalMsgType_Request;
-	create_req.MsgType = ProcessServerMessageType_CreateProcessRequest;
-	create_req.args_key = 0;
-	create_req.argc = argc;
-	create_req.exec_size = exec_len;
+	CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_CreateRequest, create_req);
+	create_req->m.MsgID = RequestMessageID();
+	create_req->m.MsgType = CardinalMsgType_Request;
+	create_req->MsgType = ProcessServerMessageType_CreateProcessRequest;
+	create_req->args_key = 0;
+	create_req->argc = argc;
+	create_req->exec_size = exec_len;
 	
 	exec_len += PAGE_SIZE - exec_len % PAGE_SIZE;
 	uint64_t vAddress = 0;
@@ -93,7 +94,7 @@ RequestCreateProcess(void *exec,
 							&vAddress) != 0)
 			return -1;
 
-	memcpy((void*)vAddress, exec, create_req.exec_size);
+	memcpy((void*)vAddress, exec, create_req->exec_size);
 
 	uint64_t key = 0;
 	if(GetSharedMemoryKey(vAddress,
@@ -106,7 +107,7 @@ RequestCreateProcess(void *exec,
 		return -1;
 	}
 
-	create_req.exec_key = key;
+	create_req->exec_key = key;
 
 	//Allocate memory for the argv
 	uint64_t arg_len = 0;
@@ -139,7 +140,7 @@ RequestCreateProcess(void *exec,
 		return -1;
 	}
 
-	create_req.args_key = key;
+	create_req->args_key = key;
 	}
 
 	Message *msg = (Message*)&create_req;
@@ -147,18 +148,18 @@ RequestCreateProcess(void *exec,
 	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
 
 	CREATE_NEW_MESSAGE_PTR(m2);
-	while(!GetIPCMessageFrom(m2, PROCESS_SRV_PID, create_req.m.MsgID));
+	while(!GetIPCMessageFrom(m2, PROCESS_SRV_PID, create_req->m.MsgID));
 
 	ProcessServer_CreateRequest_Response *resp = (ProcessServer_CreateRequest_Response*)m2;
 	if(pid != NULL)
 		*pid = resp->pid;
 
-	if(create_req.args_key != 0){
-		FreeSharedMemoryKey(create_req.args_key);
+	if(create_req->args_key != 0){
+		FreeSharedMemoryKey(create_req->args_key);
 	}
 
-	if(create_req.exec_key != 0){
-		FreeSharedMemoryKey(create_req.exec_key);
+	if(create_req->exec_key != 0){
+		FreeSharedMemoryKey(create_req->exec_key);
 	}
 	
 	

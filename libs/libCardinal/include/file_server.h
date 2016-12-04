@@ -9,6 +9,8 @@
 #include "syscall.h"
 #include "ipc.h"
 
+#define PATH_MAX KiB(64)
+
 typedef enum {
     FileSystemRequestType_GetOpMask = 0,
     FileSystemRequestType_Op,
@@ -33,7 +35,8 @@ typedef enum {
     FileSystemOpType_Rename = (1 << 9),
     FileSystemOpType_AddTag = (1 << 10),
     FileSystemOpType_RemoveTag = (1 << 11),
-    FileSystemOpType_ReadTags = (1 << 12)
+    FileSystemOpType_ReadTags = (1 << 12),
+    FileSystemOpType_Sync = (1 << 13),
 } FileSystemOpType;
 
 typedef struct {
@@ -55,4 +58,18 @@ typedef struct {
     FileSystemOpType OpType;
 } FileSystemOpRequestHeader;
 
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t filename_key;
+    uint64_t filename_offset;
+    int flags;
+    mode_t mode;
+} FileSystemOpOpen;
+
+
+typedef struct {
+    Message m;
+    int error_code;
+    uint64_t fd;
+} FileSystemOpResponse;
 #endif

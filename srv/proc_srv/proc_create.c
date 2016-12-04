@@ -9,11 +9,11 @@
 
 void
 send_existence_notification(UID pid) {
-	ProcessServerNotificationType_Notification note;
-	note.m.MsgID = RequestMessageID();
-	note.m.MsgType = CardinalMsgType_Notification;
-	note.MsgType = ProcessServerNotificationType_ProcessCreated;
-	note.pid = pid;
+	CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServerNotificationType_Notification, note);
+	note->m.MsgID = RequestMessageID();
+	note->m.MsgType = CardinalMsgType_Notification;
+	note->MsgType = ProcessServerNotificationType_ProcessCreated;
+	note->pid = pid;
 
 	//Post this message to the various servers that need this info.
 	Message *m = (Message*)&note;

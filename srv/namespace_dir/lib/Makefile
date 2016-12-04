@@ -18,7 +18,7 @@ clean:
 install:
 	cp $(TARGET) $(shell cctool --lib)
 	mkdir -p $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
-	cp include/*.h $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
+	cp ../include/*.h $(shell cctool --inc)/$(HEADER_INSTALL_DIR)
 
 uninstall:
 	rm -rf $(shell cctool --inc)/$(HEADER_INSTALL_DIR)

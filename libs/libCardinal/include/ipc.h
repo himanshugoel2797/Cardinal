@@ -32,7 +32,9 @@ extern "C" {
 typedef enum {
     CardinalMsgType_Request,
     CardinalMsgType_Error,
-    CardinalMsgType_IO,
+    CardinalMsgType_IORequest,
+    CardinalMsgType_IOResponse,
+    CardinalMsgType_AuthenticationRequest,
     CardinalMsgType_Signal,
     CardinalMsgType_Response,
     CardinalMsgType_Notification,
@@ -62,7 +64,8 @@ struct CardinalFullMessage {
     char data[MESSAGE_SIZE];
 };
 
-#define CREATE_NEW_MESSAGE_PTR(XXX) struct CardinalFullMessage XXX_0; Message *XXX = (Message*)&XXX_0
+#define CREATE_NEW_MESSAGE_PTR_TYPE(TYPE, XXX) struct CardinalFullMessage XXX##_0; for(int i = 0; i < MESSAGE_SIZE; i++)XXX##_0.data[i] = 0; TYPE *XXX = (TYPE*)&XXX##_0
+#define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
 #define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
 
 /**

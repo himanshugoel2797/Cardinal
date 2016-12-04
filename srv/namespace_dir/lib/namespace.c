@@ -12,11 +12,11 @@ RegisterNamespace(char *name,
     if(key == NULL)
         return -1;
 
-    NamespaceRegistrationRequest request;
-    request.m.MsgID = RequestMessageID();
-    request.m.MsgType = CardinalMsgType_Request;
-    request.MsgType = NamespaceServerMessageType_Registration;
-    strncpy(request.namespace_name, name, NAMESPACE_NAME_LEN);
+    CREATE_NEW_MESSAGE_PTR_TYPE(NamespaceRegistrationRequest, request);
+    request->m.MsgID = RequestMessageID();
+    request->m.MsgType = CardinalMsgType_Request;
+    request->MsgType = NamespaceServerMessageType_Registration;
+    strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
     Message *msg_p = (Message*)&request;
 
@@ -25,7 +25,7 @@ RegisterNamespace(char *name,
     if(err != 1)
         return err;
 
-    *key = request.m.MsgID;
+    *key = request->m.MsgID;
     return 0;    
 }
 
@@ -35,11 +35,11 @@ UnregisterNamespace(char *name,
     if(key == NULL)
         return -1;
 
-    NamespaceRegistrationRequest request;
-    request.m.MsgID = RequestMessageID();
-    request.m.MsgType = CardinalMsgType_Request;
-    request.MsgType = NamespaceServerMessageType_Removal;
-    strncpy(request.namespace_name, name, NAMESPACE_NAME_LEN);
+    CREATE_NEW_MESSAGE_PTR_TYPE(NamespaceRegistrationRequest, request);
+    request->m.MsgID = RequestMessageID();
+    request->m.MsgType = CardinalMsgType_Request;
+    request->MsgType = NamespaceServerMessageType_Removal;
+    strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
     Message *msg_p = (Message*)&request;
 
@@ -48,7 +48,7 @@ UnregisterNamespace(char *name,
     if(err != 1)
         return err;
 
-    *key = request.m.MsgID;
+    *key = request->m.MsgID;
     return 0;    
 }
 
@@ -59,11 +59,11 @@ RetrieveNamespace(char *name,
     if(key == NULL)
         return -1;
 
-    NamespaceRegistrationRequest request;
-    request.m.MsgID = RequestMessageID();
-    request.m.MsgType = CardinalMsgType_Request;
-    request.MsgType = NamespaceServerMessageType_Retrieval;
-    strncpy(request.namespace_name, name, NAMESPACE_NAME_LEN);
+    CREATE_NEW_MESSAGE_PTR_TYPE(NamespaceRegistrationRequest, request);
+    request->m.MsgID = RequestMessageID();
+    request->m.MsgType = CardinalMsgType_Request;
+    request->MsgType = NamespaceServerMessageType_Retrieval;
+    strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
     Message *msg_p = (Message*)&request;
 
@@ -72,7 +72,7 @@ RetrieveNamespace(char *name,
     if(err != 1)
         return err;
 
-    *key = request.m.MsgID;
+    *key = request->m.MsgID;
     return 0;    
 }
 

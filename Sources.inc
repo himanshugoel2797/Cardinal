@@ -18,4 +18,3 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/boot_info.o \
 		managers/syscall_manager/syscalls/shared_memory.o \
 		managers/key_manager/key_manager.o \
-		Sibyl/sec_mon.o

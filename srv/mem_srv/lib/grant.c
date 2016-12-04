@@ -18,12 +18,12 @@ RequestCreateGrant(uint64_t address,
     if(key == NULL | length == 0 | address == 0)
         return -1;
 
-    GrantCreationRequest create_req;
-    create_req.m.MsgID = RequestMessageID();
-    create_req.m.MsgType = CardinalMsgType_Request;
-    create_req.MsgType = MemoryServerMessageType_GrantCreationRequest;
-    create_req.Length = length;
-    create_req.Address = address;
+    CREATE_NEW_MESSAGE_PTR_TYPE(GrantCreationRequest, create_req);
+    create_req->m.MsgID = RequestMessageID();
+    create_req->m.MsgType = CardinalMsgType_Request;
+    create_req->MsgType = MemoryServerMessageType_GrantCreationRequest;
+    create_req->Length = length;
+    create_req->Address = address;
 
     Message *msg_p = (Message*)&create_req;
 
@@ -32,7 +32,7 @@ RequestCreateGrant(uint64_t address,
     if(err != 1)
         return err;
 
-    *key = create_req.m.MsgID;
+    *key = create_req->m.MsgID;
     return 0;
 }
 

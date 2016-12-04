@@ -38,15 +38,15 @@ RequestMMap(uint64_t address,
     if(key == NULL)
         return -1;
 
-    MMapRequest request;
-    request.m.MsgID = RequestMessageID();
-    request.m.MsgType = CardinalMsgType_Request;
-    request.MsgType = MemoryServerMessageType_MMapRequest;
-    request.address = address;
-    request.size = size;
-    request.flags = flags;
-    request.mmap_flags = m_flags;
-    request.cachingMode = cacheMode;
+    CREATE_NEW_MESSAGE_PTR_TYPE(MMapRequest, request);
+    request->m.MsgID = RequestMessageID();
+    request->m.MsgType = CardinalMsgType_Request;
+    request->MsgType = MemoryServerMessageType_MMapRequest;
+    request->address = address;
+    request->size = size;
+    request->flags = flags;
+    request->mmap_flags = m_flags;
+    request->cachingMode = cacheMode;
 
     Message *msg_p = (Message*)&request;
 
@@ -55,7 +55,7 @@ RequestMMap(uint64_t address,
     if(err != 1)
         return err;
 
-    *key = request.m.MsgID;
+    *key = request->m.MsgID;
     return 0;
 }
 

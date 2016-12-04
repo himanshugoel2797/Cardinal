@@ -12,17 +12,17 @@ typedef struct {
 
 void
 send_err_response(UID val, int result, uint32_t msgID, UID dst){
-	NamespaceRegistrationResponse resp;
-	resp.m.MsgType = CardinalMsgType_Response;
-	resp.m.MsgID = msgID;
-	resp.pid = val;
+	CREATE_NEW_MESSAGE_PTR_TYPE(NamespaceRegistrationResponse, resp);
+	resp->m.MsgType = CardinalMsgType_Response;
+	resp->m.MsgID = msgID;
+	resp->pid = val;
 	
-	resp.result = 0;
+	resp->result = 0;
 
 	if(result == -1)
-		resp.result = -EINVAL;
+		resp->result = -EINVAL;
 	else if(result == -2 || result == -3)
-		resp.result = -ENAVAIL;
+		resp->result = -ENAVAIL;
 
 	Message *m = (Message*)&resp;
 	PostIPCMessages(dst, &m, 1);
