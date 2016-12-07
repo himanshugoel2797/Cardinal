@@ -78,6 +78,22 @@ typedef struct {
 } FileSystemOpSync;
 
 typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+    uint64_t offset;
+    uint64_t key;
+    uint64_t len;
+} FileSystemOpRead;
+
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+    uint64_t offset;
+    uint64_t key;
+    uint64_t len;
+} FileSystemOpWrite;
+
+typedef struct {
     Message m;
     int error_code;
     uint64_t fd;

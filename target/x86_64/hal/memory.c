@@ -857,7 +857,7 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
 
             if(allocType == type) {
 
-                if(type & MemoryAllocationType_ReservedBacking) {
+                if(allocType & MemoryAllocationType_ReservedBacking) {
                     FreePhysicalPageCont(map->PhysicalAddress, map->Length / PAGE_SIZE);
                 }
 

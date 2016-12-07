@@ -5,8 +5,8 @@
 
 typedef struct {
     int (*open)(const char *, int, uint64_t, uint8_t*, UID, uint64_t*);
-    int (*read)(uint64_t, uint64_t, void*, size_t);
-    int (*write)(uint64_t, uint64_t, void*, size_t);
+    int (*read)(uint64_t, uint64_t, void*, uint64_t, UID);
+    int (*write)(uint64_t, uint64_t, void*, uint64_t, UID);
     void (*close)(uint64_t, UID);
     void (*remove)(uint64_t, UID);
     int (*get_info)(const char *, UID);

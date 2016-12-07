@@ -50,6 +50,7 @@ Server_HandleOpRequest(Message *m) {
 
         if(shmem_data.Length < op->filename_offset) {
             retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
             break;
         }
 
@@ -70,11 +71,69 @@ Server_HandleOpRequest(Message *m) {
         return;
     }
     break;
-    case FileSystemOpType_Read:
+    case FileSystemOpType_Read: {
+    	FileSystemOpRead *op = (FileSystemOpRead*)m;
 
+    	//Map the destination key and ensure it has the desired permissions
+    	if(op->key == 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        UserSharedMemoryData shmem_data;
+        if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        if(shmem_data.Length < op->len) {
+            retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+            break;
+        }
+
+        if(!(shmem_data.Flags & MemoryAllocationFlags_Write)){
+        	retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+        	break;
+        }
+
+        retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+
+        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+    }
         break;
-    case FileSystemOpType_Write:
+    case FileSystemOpType_Write: {
+    	FileSystemOpWrite *op = (FileSystemOpWrite*)m;
 
+    	//Map the destination key and ensure it has the desired permissions
+    	if(op->key == 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        UserSharedMemoryData shmem_data;
+        if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        if(shmem_data.Length < op->len) {
+            retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+            break;
+        }
+
+        if(!(shmem_data.Flags & MemoryAllocationFlags_Write)){
+        	retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+        	break;
+        }
+
+        retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+
+        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+    }
         break;
     case FileSystemOpType_Remove: {
         FileSystemOpRemove *op = (FileSystemOpRemove*)m;
