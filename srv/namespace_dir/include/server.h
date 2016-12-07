@@ -32,15 +32,15 @@ typedef NamespaceRegistrationResponse NamespaceRetrievalResponse;
 
 int
 RegisterNamespace(char *name,
-				  uint32_t *key);
+                  uint32_t *key);
 
 int
 UnregisterNamespace(char *name,
-					uint32_t *key);
+                    uint32_t *key);
 
 int
 RetrieveNamespace(char *name,
-				  uint32_t *key);
+                  uint32_t *key);
 
 int
 IsNamespaceRetrieved(uint32_t key, UID *pid, uint64_t *error);

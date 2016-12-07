@@ -51,15 +51,15 @@ typedef struct {
 
 int
 R0NotifyProcessExistence(UID pid,
-					     char *name,
-						 int name_len);
+                         char *name,
+                         int name_len);
 
 int
 RequestCreateProcess(void *exec,
-					 uint64_t exec_len,
-					 char **argv,
-					 uint32_t argc,
-					 UID *pid);
+                     uint64_t exec_len,
+                     char **argv,
+                     uint32_t argc,
+                     UID *pid);
 
 #ifdef __cplusplus
 }

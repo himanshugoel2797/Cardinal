@@ -515,7 +515,7 @@ FreeSharedMemoryKey(UID parentPID,
  * @return     Error code on failure, MemoryAllocationErrors_None on success.
  */
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint64_t key, 
+GetSharedMemoryKeyUsageCount(uint64_t key,
                              uint64_t *cnt);
 
 /**@}*/

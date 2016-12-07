@@ -24,7 +24,7 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
-    
+
     if(length % PAGE_SIZE)
         length += PAGE_SIZE - length % PAGE_SIZE;
 
@@ -74,7 +74,7 @@ R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t length = data->params[0];
-    
+
     if(length % PAGE_SIZE)
         length += PAGE_SIZE - length % PAGE_SIZE;
 

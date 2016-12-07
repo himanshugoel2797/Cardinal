@@ -65,7 +65,7 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
         LockSpinlock(tmp->lock);
         MemoryAllocationsMap *map = tmp->AllocationMap;
 
-        while(map != NULL && (map->Flags & MemoryAllocationFlags_User)){
+        while(map != NULL && (map->Flags & MemoryAllocationFlags_User)) {
             map = map->next;
         }
 
@@ -169,15 +169,15 @@ MapPage(ManagedPageTable *pageTable,
 
     MemoryAllocationsMap *allocMap = NULL;
 
-        allocMap = kmalloc(sizeof(MemoryAllocationsMap));
+    allocMap = kmalloc(sizeof(MemoryAllocationsMap));
 
-        allocMap->CacheMode = cacheMode;
-        allocMap->VirtualAddress = virtualAddress;
-        allocMap->PhysicalAddress = physicalAddress;
-        allocMap->Length = size;
-        allocMap->Flags = flags;
-        allocMap->AllocationType = allocType;
-    
+    allocMap->CacheMode = cacheMode;
+    allocMap->VirtualAddress = virtualAddress;
+    allocMap->PhysicalAddress = physicalAddress;
+    allocMap->Length = size;
+    allocMap->Flags = flags;
+    allocMap->AllocationType = allocType;
+
     LockSpinlock(pageTable->lock);
 
     if(pageTable->AllocationMap != NULL) {
@@ -202,7 +202,7 @@ MapPage(ManagedPageTable *pageTable,
                 if(top->Length != 0) {
                     top->next = map->next;
                     top->prev = map;
-                    
+
                     if(map->next != NULL)map->next->prev = top;
                     else pageTable->Last = top;
 
@@ -231,14 +231,14 @@ MapPage(ManagedPageTable *pageTable,
 
     //If this is a kernel mapping, append it to the end of the list
     //Else put it at the start
-    if(flags & MemoryAllocationFlags_User){
+    if(flags & MemoryAllocationFlags_User) {
         allocMap->next = pageTable->AllocationMap;
         allocMap->prev = NULL;
         pageTable->AllocationMap = allocMap;
 
         if(allocMap->next == NULL)
             pageTable->Last = allocMap;
-    }else{
+    } else {
         allocMap->prev = pageTable->Last;
         allocMap->next = NULL;
         pageTable->Last = allocMap;
@@ -848,23 +848,23 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
 
         MemoryAllocationsMap *n = map->next;
 
-        if(map->Flags & MemoryAllocationFlags_User){
+        if(map->Flags & MemoryAllocationFlags_User) {
 
-        MemoryAllocationType allocType = map->AllocationType;
+            MemoryAllocationType allocType = map->AllocationType;
 
-        //Ignore extra flags during this process.
-        allocType &= ~(MemoryAllocationType_ReservedBacking | MemoryAllocationType_ReservedAllocation);
+            //Ignore extra flags during this process.
+            allocType &= ~(MemoryAllocationType_ReservedBacking | MemoryAllocationType_ReservedAllocation);
 
-        if(allocType == type) {
+            if(allocType == type) {
 
-            if(type & MemoryAllocationType_ReservedBacking) {
-                FreePhysicalPageCont(map->PhysicalAddress, map->Length / PAGE_SIZE);
+                if(type & MemoryAllocationType_ReservedBacking) {
+                    FreePhysicalPageCont(map->PhysicalAddress, map->Length / PAGE_SIZE);
+                }
+
+                UnmapPage(pageTable,
+                          map->VirtualAddress,
+                          map->Length);
             }
-
-            UnmapPage(pageTable,
-                      map->VirtualAddress,
-                      map->Length);
-        }
         }
         map = n;
 
@@ -964,10 +964,10 @@ AllocateSharedMemoryPhys(UID pid,
         }
         map = map->next;
     }
-        
+
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
-    
+
     if(map == NULL)
         return MemoryAllocationErrors_Unknown;
 
@@ -1029,7 +1029,7 @@ GetSharedMemoryKey(UID pid,
     }
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
-    
+
     if(map == NULL)
         return MemoryAllocationErrors_InvalidVirtualAddress;
 
@@ -1120,7 +1120,7 @@ ApplySharedMemoryKey(UID pid,
 }
 
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint64_t key, 
+GetSharedMemoryKeyUsageCount(uint64_t key,
                              uint64_t *cnt) {
 
     if(cnt == NULL)

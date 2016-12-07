@@ -1,12 +1,11 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 #include <openssl/err.h>
-#include <string.h>   
+#include <string.h>
 
-int main(int arc, char *argv[])
-{
+int main(int arc, char *argv[]) {
     OpenSSL_add_all_algorithms();
-    ERR_load_crypto_strings();     
+    ERR_load_crypto_strings();
 
     /* Set up the key and iv. Do I need to say to not hard code these in a real application? :-) */
 
@@ -51,16 +50,13 @@ int main(int arc, char *argv[])
     decryptedtext_len = decrypt(ciphertext, ciphertext_len, aad, strlen(aad), tag, key, iv, decryptedtext);
 
     if(decryptedtext_len == strlen(plaintext)) {
-    	__asm__("hlt");
+        __asm__("hlt");
     }
     __asm__("hlt" :: "a"(0xF00F1E50F00F1E50));
 
-    if(decryptedtext_len < 0)
-    {
+    if(decryptedtext_len < 0) {
         /* Verify error */
-    }
-    else
-    {
+    } else {
         /* Add a NULL terminator. We are expecting printable text */
         decryptedtext[decryptedtext_len] = '\0';
 
@@ -73,8 +69,7 @@ int main(int arc, char *argv[])
     return 0;
 }
 
-void handleErrors(void)
-{
+void handleErrors(void) {
     unsigned long errCode;
 
     __asm__("hlt");
@@ -84,8 +79,7 @@ void handleErrors(void)
 
 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
             int aad_len, unsigned char *key, unsigned char *iv,
-            unsigned char *ciphertext, unsigned char *tag)
-{
+            unsigned char *ciphertext, unsigned char *tag) {
     EVP_CIPHER_CTX *ctx = NULL;
     int len = 0, ciphertext_len = 0;
 
@@ -106,8 +100,7 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     /* Provide any AAD data. This can be called zero or more times as
      * required
      */
-    if(aad && aad_len > 0)
-    {
+    if(aad && aad_len > 0) {
         if(1 != EVP_EncryptUpdate(ctx, NULL, &len, aad, aad_len))
             handleErrors();
     }
@@ -115,8 +108,7 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
     /* Provide the message to be encrypted, and obtain the encrypted output.
      * EVP_EncryptUpdate can be called multiple times if necessary
      */
-    if(plaintext)
-    {
+    if(plaintext) {
         if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
             handleErrors();
 
@@ -141,8 +133,7 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
 
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
             int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv,
-            unsigned char *plaintext)
-{
+            unsigned char *plaintext) {
     EVP_CIPHER_CTX *ctx = NULL;
     int len = 0, plaintext_len = 0, ret;
 
@@ -163,8 +154,7 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
     /* Provide any AAD data. This can be called zero or more times as
      * required
      */
-    if(aad && aad_len > 0)
-    {
+    if(aad && aad_len > 0) {
         if(!EVP_DecryptUpdate(ctx, NULL, &len, aad, aad_len))
             handleErrors();
     }
@@ -172,8 +162,7 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
     /* Provide the message to be decrypted, and obtain the plaintext output.
      * EVP_DecryptUpdate can be called multiple times if necessary
      */
-    if(ciphertext)
-    {
+    if(ciphertext) {
         if(!EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
             handleErrors();
 
@@ -192,14 +181,11 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
     /* Clean up */
     EVP_CIPHER_CTX_free(ctx);
 
-    if(ret > 0)
-    {
+    if(ret > 0) {
         /* Success */
         plaintext_len += len;
         return plaintext_len;
-    }
-    else
-    {
+    } else {
         /* Verify failed */
         return -1;
     }

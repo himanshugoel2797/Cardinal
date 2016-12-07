@@ -14,7 +14,7 @@ LoadProgram(char *name) {
 
         char *argv[] = {name};
         static int call_cnt = 0;
-        if(call_cnt++){
+        if(call_cnt++) {
             return RequestCreateProcess(elf_loc, elf_sz, argv, 1, &pid);
             //R0NotifyProcessExistence(pid, name, strlen(name));
         }

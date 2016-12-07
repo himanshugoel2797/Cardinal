@@ -72,12 +72,12 @@ LoadAndStartApplication(UID pid,
     uint8_t *arg_loc = (uint8_t*)argv_base + sizeof(char*) * argc;
 
     for(uint32_t i = 0; i < argc; i++) {
-      argv_base[i] = (char*)(target_virt_addr + ((uint64_t)arg_loc - (uint64_t)params));
+        argv_base[i] = (char*)(target_virt_addr + ((uint64_t)arg_loc - (uint64_t)params));
 
-      uint32_t len = strlen(argv) + 1;
-      strcpy(arg_loc, argv);
-      argv += len;
-      arg_loc += len;
+        uint32_t len = strlen(argv) + 1;
+        strcpy(arg_loc, argv);
+        argv += len;
+        arg_loc += len;
     }
 
     R0_Unmap(GetCurrentProcessUID(), (uint64_t)params, net_size);

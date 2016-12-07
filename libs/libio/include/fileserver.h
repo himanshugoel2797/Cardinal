@@ -5,7 +5,7 @@
 #include <cardinal/file_server.h>
 
 typedef struct {
-	uint64_t Size;
+    uint64_t Size;
 } FileInfo;
 
 int io_open(const char*, int, uint64_t, uint64_t*, UID, uint64_t*);

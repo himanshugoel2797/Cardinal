@@ -106,7 +106,7 @@ VirtMemMan_Initialize(void) {
 
         kernel_pdpt = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, pdpt_0);
 
-        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++) {
             kernel_additional_pdpts_paddr[i] = (uint64_t)MemMan_Alloc();
             kernel_additional_pdpts[i] = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)kernel_additional_pdpts_paddr[i]);
             memset((void*)kernel_additional_pdpts[i], 0, PAGE_SIZE);
@@ -117,7 +117,7 @@ VirtMemMan_Initialize(void) {
         MARK_WRITE(pml[511]);
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
 
-        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++) {
             pml[510 - i] = kernel_additional_pdpts_paddr[i];
             MARK_PRESENT(pml[510 - i]);
             MARK_WRITE(pml[510 - i]);
@@ -296,7 +296,7 @@ VirtMemMan_Initialize(void) {
         MARK_WRITE(pml[511]);
         SET_CACHEMODE(pml[511], MEM_TYPE_WB);
 
-        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+        for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++) {
             pml[510 - i] = kernel_additional_pdpts_paddr[i];
             MARK_PRESENT(pml[510 - i]);
             MARK_WRITE(pml[510 - i]);
@@ -336,7 +336,7 @@ VirtMemMan_CreateInstance(void) {
     MARK_WRITE(pml[511]);
     SET_CACHEMODE(pml[511], MEM_TYPE_WB);
 
-    for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++){
+    for(int i = 0; i < KERNEL_ADDITIONAL_PDPT_COUNT; i++) {
         pml[510 - i] = kernel_additional_pdpts_paddr[i];
         MARK_PRESENT(pml[510 - i]);
         MARK_WRITE(pml[510 - i]);

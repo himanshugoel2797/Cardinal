@@ -56,7 +56,7 @@ int main() {
         } else if(msg->MsgType == CardinalMsgType_Notification) {
             MsgHeader *msg_h = (MsgHeader*)msg;
 
-                
+
             switch(msg_h->MsgType) {
             case ProcessServerMessageType_R0_ProcessExistenceNotification: {
                 if(checkGroup(0, msg->SourcePID, msg->MsgType))

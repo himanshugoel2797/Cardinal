@@ -6,10 +6,10 @@
 #include "fileserver.h"
 
 uint64_t
-io_open(const char * path, 
-		int flags, 
-		uint64_t mode) {
+io_open(const char * path,
+        int flags,
+        uint64_t mode) {
 
-	CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpOpen, op);
-	
+    CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpOpen, op);
+
 }

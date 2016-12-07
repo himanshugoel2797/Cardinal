@@ -26,7 +26,7 @@ RegisterNamespace(char *name,
         return err;
 
     *key = request->m.MsgID;
-    return 0;    
+    return 0;
 }
 
 int
@@ -49,7 +49,7 @@ UnregisterNamespace(char *name,
         return err;
 
     *key = request->m.MsgID;
-    return 0;    
+    return 0;
 }
 
 int
@@ -73,11 +73,11 @@ RetrieveNamespace(char *name,
         return err;
 
     *key = request->m.MsgID;
-    return 0;    
+    return 0;
 }
 
 int
-IsNamespaceRetrieved(uint32_t key, 
+IsNamespaceRetrieved(uint32_t key,
                      UID *pid,
                      uint64_t *error) {
     if(pid == NULL | error == NULL)

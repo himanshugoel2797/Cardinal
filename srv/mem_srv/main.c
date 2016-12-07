@@ -20,31 +20,29 @@ typedef struct {
 void
 HandleSystemMessages(Message *m) {
 
-	MsgHeader *msg_h = (MsgHeader*)m;
+    MsgHeader *msg_h = (MsgHeader*)m;
 
     switch(m->MsgType) {
     case CardinalMsgType_Notification:
         //Check if it is a process creation or process deletion notification
-        {
-            if(m->SourcePID == PROCESS_SRV_PID){
-        	switch(msg_h->MsgType){
-        		case ProcessServerNotificationType_ProcessCreated:
-        			{
-        				ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
-        				MemDB_AddProcess(n->pid);
-        			}
-        		break;
-        		case ProcessServerNotificationType_ProcessExited:
-        			{
-        				ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
-        				MemDB_FreeProcess(n->pid);
-        			}
-        		break;
-        	   }
+    {
+        if(m->SourcePID == PROCESS_SRV_PID) {
+            switch(msg_h->MsgType) {
+            case ProcessServerNotificationType_ProcessCreated: {
+                ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
+                MemDB_AddProcess(n->pid);
+            }
+            break;
+            case ProcessServerNotificationType_ProcessExited: {
+                ProcessServerNotificationType_Notification *n = (ProcessServerNotificationType_Notification*)msg_h;
+                MemDB_FreeProcess(n->pid);
+            }
+            break;
             }
         }
+    }
         //Update the mount database appropriately.
-        break;
+    break;
     default:
         return;
     }
