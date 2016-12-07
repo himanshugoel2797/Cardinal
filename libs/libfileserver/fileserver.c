@@ -124,13 +124,7 @@ Server_HandleOpRequest(Message *m) {
             break;
         }
 
-        if(!(shmem_data.Flags & MemoryAllocationFlags_Write)) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+        retVal = fs_handlers->write(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
 
         Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
     }

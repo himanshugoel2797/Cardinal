@@ -46,6 +46,61 @@ setup_shmem(uint64_t *len,
 
 
 int
+IO_AllocateBuffer(uint64_t* len,
+                  uint64_t* vAddress,
+                  uint64_t* read_key,
+                  uint64_t* write_key) {
+    
+    *len += PAGE_SIZE - *len % PAGE_SIZE;
+
+    if(AllocateSharedMemory(*len,
+                            CachingModeWriteBack,
+                            MemoryAllocationType_MMap,
+                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+                            vAddress) != 0)
+        return -1;
+
+    //The write_key is the key to be passed to IO_Write
+    if(GetSharedMemoryKey(*vAddress,
+                          *len,
+                          CachingModeWriteBack,
+                          MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
+                          write_key) != 0) {
+        Unmap(*vAddress, *len);
+        return -1;
+    }
+
+    //The read_key is the key to be passed to IO_Read
+    if(GetSharedMemoryKey(*vAddress,
+                          *len,
+                          CachingModeWriteBack,
+                          MemoryAllocationFlags_Read | MemoryAllocationFlags_Write | MemoryAllocationFlags_Present,
+                          read_key) != 0) {
+        Unmap(*vAddress, *len);
+        return -1;
+    }
+    return 0;
+}
+
+int
+IO_FreeBuffer(uint64_t address,
+              uint64_t len,
+              uint64_t read_key,
+              uint64_t write_key) {
+
+	if(Unmap(address, len) != 0)
+		return -1;
+
+	if(FreeSharedMemoryKey(read_key) != 0)
+		return -1;
+
+	if(FreeSharedMemoryKey(write_key) != 0)
+		return -1;
+
+	return 0;
+}
+
+int
 IO_Open(const char * path,
         int flags,
         uint64_t mode,
