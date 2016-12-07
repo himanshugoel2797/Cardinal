@@ -190,7 +190,7 @@ TerminateProcess(UID pid) {
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 
-    FreeVirtualMemoryInstance(pinfo->PageTable);
+//    FreeVirtualMemoryInstance(pinfo->PageTable);
 
 
     //TODO Inspect this to make sure the entire process information data is being freed

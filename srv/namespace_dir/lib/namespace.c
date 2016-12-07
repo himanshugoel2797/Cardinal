@@ -18,7 +18,7 @@ RegisterNamespace(char *name,
     request->MsgType = NamespaceServerMessageType_Registration;
     strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
-    Message *msg_p = (Message*)&request;
+    Message *msg_p = (Message*)request;
 
     int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
 
@@ -41,7 +41,7 @@ UnregisterNamespace(char *name,
     request->MsgType = NamespaceServerMessageType_Removal;
     strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
-    Message *msg_p = (Message*)&request;
+    Message *msg_p = (Message*)request;
 
     int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
 
@@ -65,7 +65,7 @@ RetrieveNamespace(char *name,
     request->MsgType = NamespaceServerMessageType_Retrieval;
     strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
-    Message *msg_p = (Message*)&request;
+    Message *msg_p = (Message*)request;
 
     int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
 

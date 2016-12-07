@@ -46,9 +46,11 @@ int _start() {
         __asm__("hlt");
 
     //Begin system initialization
-    err = LoadProgram("sys_init.elf");
+    err = LoadProgram("sibyl.elf");
     if(err != 0)
         __asm__("hlt");
+
+    //TODO fix Exit_Process, it's broken!
 
     //Now exit the process, allowing the init process to take control of the system
     R0_ExitProcess(0);

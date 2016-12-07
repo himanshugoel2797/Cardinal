@@ -10,6 +10,7 @@
 #include "ipc.h"
 
 #define PATH_MAX KiB(64)
+#define KEY_BYTES 64
 
 typedef enum {
     FileSystemRequestType_GetOpMask = 0,
@@ -29,14 +30,8 @@ typedef enum {
     FileSystemOpType_Close = (1 << 3),
     FileSystemOpType_Remove = (1 << 4),
     FileSystemOpType_GetInfo = (1 << 5),
-    FileSystemOpType_MakeDir = (1 << 6),
-    FileSystemOpType_ReadDir = (1 << 7),
-    FileSystemOpType_RemoveDir = (1 << 8),
-    FileSystemOpType_Rename = (1 << 9),
-    FileSystemOpType_AddTag = (1 << 10),
-    FileSystemOpType_RemoveTag = (1 << 11),
-    FileSystemOpType_ReadTags = (1 << 12),
-    FileSystemOpType_Sync = (1 << 13),
+    FileSystemOpType_Rename = (1 << 6),
+    FileSystemOpType_Sync = (1 << 7),
 } FileSystemOpType;
 
 typedef struct {
@@ -63,13 +58,29 @@ typedef struct {
     uint64_t filename_key;
     uint64_t filename_offset;
     int flags;
-    mode_t mode;
+    uint64_t mode;
+    uint8_t access_pass[KEY_BYTES];
 } FileSystemOpOpen;
 
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+} FileSystemOpClose;
+
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+} FileSystemOpRemove;
+
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+} FileSystemOpSync;
 
 typedef struct {
     Message m;
     int error_code;
     uint64_t fd;
 } FileSystemOpResponse;
+
 #endif

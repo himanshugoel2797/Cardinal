@@ -47,6 +47,8 @@ typedef enum {
 
     Syscall_WaitForMessage,             //!< Pause this thread untila message of the specified type is received.
 
+    Syscall_GetCoreCount,
+
     Syscall_NumEnd = Syscall_GetSharedMemoryKeyUsageCount,
 } SyscallFunctions;
 

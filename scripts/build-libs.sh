@@ -6,7 +6,7 @@ ROOTDIR=$(pwd)/root
 mkdir -p $ROOTDIR/sys/include/cardinal
 cp $SRC_DIR/libs/libCardinal/include/* $ROOTDIR/sys/include/cardinal
 
-cd $SRC_DIR/libs/libcserver
+cd $SRC_DIR/libs/libfileserver
 	make uninstall
 	make clean
 	make all

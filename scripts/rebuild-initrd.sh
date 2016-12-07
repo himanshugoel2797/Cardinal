@@ -40,3 +40,10 @@ cd mem_srv
 	make install INSTALL_DIR=$INITRD_INST_DIR
 	mv *.elf $INITRD_INST_DIR
 cd ..
+
+cd sibyl
+	make clean
+	make all
+	make install INSTALL_DIR=$INITRD_INST_DIR
+	mv *.elf $INITRD_INST_DIR
+cd ..

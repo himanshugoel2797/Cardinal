@@ -43,7 +43,7 @@ R0NotifyProcessExistence(UID pid,
 		data->process_name_key = key;
 	}
 
-	Message *msg = (Message*)&data;
+	Message *msg = (Message*)data;
 
 	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
 
@@ -143,7 +143,7 @@ RequestCreateProcess(void *exec,
 	create_req->args_key = key;
 	}
 
-	Message *msg = (Message*)&create_req;
+	Message *msg = (Message*)create_req;
 
 	PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
 

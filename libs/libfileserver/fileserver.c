@@ -1,10 +1,12 @@
 #include <cardinal/cardinal_types.h>
+#include <cardinal/shared_memory.h>
 #include <cardinal/file_server.h>
 #include <cardinal/syscall.h>
 #include <cardinal/ipc.h>
+#include "fileserver.h"
 
 static FileSystemOpType op_mask = 0;
-static FileSystemHandlers *fs_handlers;
+static FileServerHandlers *fs_handlers;
 static void (*unkn_msg_handler)(Message *);
 static int exit = 0;
 static int exit_code = 0;
@@ -52,9 +54,22 @@ Server_HandleOpRequest(Message *m) {
 					break;
 				}
 
-				retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->filename_offset, op->flags, op->mode, &fd);
+				retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->filename_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
 
 				Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+			}
+		break;
+		case FileSystemOpType_Close:
+			{
+				FileSystemOpClose *op = (FileSystemOpClose*)m;
+
+				if(op->fd == 0) {
+					retVal = -EINVAL;
+					break;
+				}
+
+				fs_handlers->close(op->fd, m->SourcePID);
+				return;
 			}
 		break;
 		case FileSystemOpType_Read:
@@ -63,38 +78,41 @@ Server_HandleOpRequest(Message *m) {
 		case FileSystemOpType_Write:
 
 		break;
-		case FileSystemOpType_Close:
-
-		break;
 		case FileSystemOpType_Remove:
+			{
+				FileSystemOpRemove *op = (FileSystemOpRemove*)m;
 
+				if(op->fd == 0) {
+					retVal = -EINVAL;
+					break;
+				}
+
+				fs_handlers->remove(op->fd, m->SourcePID);
+				return;
+			}
 		break;
 		case FileSystemOpType_GetInfo:
+			{
 
-		break;
-		case FileSystemOpType_MakeDir:
-
-		break;
-		case FileSystemOpType_ReadDir:
-
-		break;
-		case FileSystemOpType_RemoveDir:
-
+			}
 		break;
 		case FileSystemOpType_Rename:
+			{
 
-		break;
-		case FileSystemOpType_AddTag:
-
-		break;
-		case FileSystemOpType_RemoveTag:
-
-		break;
-		case FileSystemOpType_ReadTags:
-
+			}
 		break;
 		case FileSystemOpType_Sync:
+			{
+				FileSystemOpSync *op = (FileSystemOpSync*)m;
 
+				if(op->fd == 0) {
+					retVal = -EINVAL;
+					break;
+				}
+
+				fs_handlers->sync(op->fd, m->SourcePID);
+				return;
+			}
 		break;
 		default:
 		if(unkn_msg_handler != NULL)
@@ -105,10 +123,12 @@ Server_HandleOpRequest(Message *m) {
 	}
 
 	CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, op_response);
-	op_response.m.MsgID = m->MsgID;
-	op_response.m.MsgType = CardinalMsgType_IOResponse;
-	op_response.error_code = 0;
-	op_response.fd = 
+	op_response->m.MsgID = m->MsgID;
+	op_response->m.MsgType = CardinalMsgType_IOResponse;
+	op_response->error_code = retVal;
+	op_response->fd = fd;
+
+	PostIPCMessages(m->SourcePID, (Message**)&op_response, 1);
 }
 
 static void
@@ -117,7 +137,7 @@ Server_HandleGetFileSystemInfoRequest(Message *m) {
 }
 
 int
-Server_Start(FileSystemHandlers *handlers,
+Server_Start(FileServerHandlers *handlers,
 			 void (*UnknownMessageHandler)(Message *)) {
 
 	//Build an op mask from the handlers
@@ -140,30 +160,9 @@ Server_Start(FileSystemHandlers *handlers,
 	if(handlers->remove != NULL)
 		op_mask |= FileSystemOpType_Remove;
 
-	//if(handlers-> != NULL)
-	//	op_mask |= FileSystemOpType_GetInfo;
-
-	if(handlers->mkdir != NULL)
-		op_mask |= FileSystemOpType_MakeDir;
-
-	//if(handlers-> != NULL)
-	//	op_mask |= FileSystemOpType_ReadDir;
-
-	if(handlers->rmdir != NULL)
-		op_mask |= FileSystemOpType_RemoveDir;
-
 	if(handlers->rename != NULL)
 		op_mask |= FileSystemOpType_Rename;
 
-	if(handlers->addtag != NULL)
-		op_mask |= FileSystemOpType_AddTag;
-
-	if(handlers->removetag != NULL)
-		op_mask |= FileSystemOpType_RemoveTag;
-
-	if(handlers->readtags != NULL)
-		op_mask |= FileSystemOpType_ReadTags;
-	
 	if(handlers->sync != NULL)
 		op_mask |= FileSystemOpType_Sync;
 	

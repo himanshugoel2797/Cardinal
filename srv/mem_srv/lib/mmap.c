@@ -48,7 +48,7 @@ RequestMMap(uint64_t address,
     request->mmap_flags = m_flags;
     request->cachingMode = cacheMode;
 
-    Message *msg_p = (Message*)&request;
+    Message *msg_p = (Message*)request;
 
     int err = PostIPCMessages(MEMORY_SRV_PID, &msg_p, 1);
 

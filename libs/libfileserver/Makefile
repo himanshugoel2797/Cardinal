@@ -1,11 +1,11 @@
-TARGET=libipc.a
+TARGET=libfileserver.a
 
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=libipc
+HEADER_INSTALL_DIR=libfileserver
 
-OBJS=ipc.o
+OBJS=fileserver.o
 
 CFLAGS=-std=c11 -Iinclude -I.
 
