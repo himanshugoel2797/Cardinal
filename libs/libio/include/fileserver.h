@@ -9,52 +9,52 @@ typedef struct {
 } FileInfo;
 
 int
-IO_AllocateBuffer(uint64_t* len, 
-				  uint64_t* address, 
-				  uint64_t* read_key,
-				  uint64_t* write_key);
+IO_AllocateBuffer(uint64_t* len,
+                  uint64_t* address,
+                  uint64_t* read_key,
+                  uint64_t* write_key);
 
 int
 IO_FreeBuffer(uint64_t address,
-			  uint64_t len,
-			  uint64_t read_key,
-			  uint64_t write_key);
+              uint64_t len,
+              uint64_t read_key,
+              uint64_t write_key);
 
-int 
-IO_Open(const char* path, 
-		int flags, 
-		uint64_t mode, 
-		uint64_t* key, 
-		UID pid, 
-		uint64_t* fd);
+int
+IO_Open(const char* path,
+        int flags,
+        uint64_t mode,
+        uint64_t* key,
+        UID pid,
+        uint64_t* fd);
 
-int 
-IO_Read(uint64_t fd, 
-		uint64_t offset,
-		uint64_t key, 
-		uint64_t len, 
-		UID pid);
+int
+IO_Read(uint64_t fd,
+        uint64_t offset,
+        uint64_t key,
+        uint64_t len,
+        UID pid);
 
-int 
-IO_Write(uint64_t fd, 
-		 uint64_t offset, 
-		 uint64_t key,
-		 uint64_t len, 
-		 UID pid);
+int
+IO_Write(uint64_t fd,
+         uint64_t offset,
+         uint64_t key,
+         uint64_t len,
+         UID pid);
 
-void 
+void
 IO_Close(uint64_t, UID);
 
-void 
+void
 IO_Remove(uint64_t, UID);
 
-void 
+void
 IO_GetInfo(const char*, UID, FileInfo*);
 
-int 
+int
 IO_Rename(uint64_t, const char*, UID);
 
-void 
+void
 IO_Sync(uint64_t, UID);
 
 #endif
