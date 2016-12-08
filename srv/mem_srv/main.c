@@ -14,7 +14,7 @@
 //TODO enable keys once again, but first determine exactly how they are to be used.
 typedef struct {
     Message m;
-    uint64_t MsgType;
+    uint32_t MsgType;
 } MsgHeader;
 
 void

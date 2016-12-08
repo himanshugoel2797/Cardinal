@@ -2,7 +2,29 @@
 #include <cardinal/bootinfo.h>
 #include <cardinal/process.h>
 #include <cardinal/memory.h>
+#include <cardinal/shared_memory.h>
 #include <cardinal/syscall_property.h>
+#include <libfileserver/fileserver.h>
+#include <namespaceserver/server.h>
+
+
+uint32_t *fb;
+uint32_t w,h,p;
+
+int fbuf_open(const char *path, 
+              int flags, 
+              uint64_t mode, 
+              uint8_t* key, 
+              UID pid, 
+              uint64_t* fd){
+
+    for(uint32_t y = 0; y < h; y++) {
+        for(uint32_t x = 0; x < p/sizeof(uint32_t); x++) {
+            fb[y * p/sizeof(uint32_t) + x] = (uint32_t)-1;
+        }
+    }
+
+}
 
 int main() {
 
@@ -18,27 +40,40 @@ int main() {
     R0_AllocateSharedMemory(fb_len,
                             CachingModeWriteThrough,
                             MemoryAllocationType_MMap,
-                            MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present
+                            MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present,
                             fb_addr,
                             &fb_addr);
+
 
     uint64_t key = 0;
     GetSharedMemoryKey(fb_addr,
                        fb_len,
                        CachingModeWriteThrough,
-                       MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Present,
+                       MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Write | MemoryAllocationFlags_User | MemoryAllocationFlags_Present,
                        &key);
 
-    uint32_t w = b_info.FramebufferWidth;
-    uint32_t h = b_info.FramebufferHeight;
-    uint32_t p = b_info.FramebufferPitch;
+    w = b_info.FramebufferWidth;
+    h = b_info.FramebufferHeight;
+    p = b_info.FramebufferPitch;
 
-    uint32_t *fb = (uint32_t*)fb_addr;
+
+
+    fb = (uint32_t*)fb_addr;
     for(uint32_t y = 0; y < h; y++) {
         for(uint32_t x = 0; x < p/sizeof(uint32_t); x++) {
-            fb[y * p/sizeof(uint32_t) + x] = (uint32_t)-1;
+            fb[y * p/sizeof(uint32_t) + x] = (uint32_t)0x0000ffff;
         }
     }
+
+    uint32_t op_key = 0;
+    uint64_t op_error = 0;
+    RegisterNamespace("disp0", &op_key);
+    while(!IsNamespaceRequestReady(op_key, &op_error));
+
+    FileServerHandlers handlers;
+    handlers.open = fbuf_open;
+    Server_Start(&handlers, NULL);
+
 
     while(1);
     //Obtain boot information

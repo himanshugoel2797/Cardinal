@@ -45,14 +45,21 @@ int _start() {
     if(err != 0)
         __asm__("hlt");
 
+    err = LoadProgram("framebuffer.elf");
+    if(err != 0)
+        __asm__("hlt");
+
     //Begin system initialization
+    err = LoadProgram("sys_init.elf");
+    if(err != 0)
+        __asm__("hlt");
+
+    R0_ExitProcess(0);
+    while(1);
+
     err = LoadProgram("sibyl.elf");
     if(err != 0)
         __asm__("hlt");
 
-    //TODO fix Exit_Process, it's broken!
-
     //Now exit the process, allowing the init process to take control of the system
-    R0_ExitProcess(0);
-    while(1);
 }

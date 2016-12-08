@@ -24,7 +24,7 @@ int
 IO_Open(const char* path,
         int flags,
         uint64_t mode,
-        uint64_t* key,
+        uint8_t* key,
         UID pid,
         uint64_t* fd);
 

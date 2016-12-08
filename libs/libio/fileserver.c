@@ -104,7 +104,7 @@ int
 IO_Open(const char * path,
         int flags,
         uint64_t mode,
-        uint64_t *access_key,
+        uint8_t *access_key,
         UID pid,
         uint64_t *fd) {
 

@@ -56,7 +56,7 @@ uint64_t
 R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
                                uint64_t syscall_num,
                                uint64_t *syscall_params) {
-    if(syscall_num != Syscall_AllocateSharedMemory) {
+    if(syscall_num != Syscall_R0_AllocateSharedMemory) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }

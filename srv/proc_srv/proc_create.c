@@ -16,7 +16,7 @@ send_existence_notification(UID pid) {
     note->pid = pid;
 
     //Post this message to the various servers that need this info.
-    Message *m = (Message*)&note;
+    Message *m = (Message*)note;
     PostIPCMessages(MEMORY_SRV_PID, &m, 1);
     PostIPCMessages(NAMESPACE_SRV_PID, &m, 1);
 }
@@ -93,13 +93,13 @@ create_process_handler(Message *m) {
     Unmap((uint64_t)arg_data.VirtualAddress, arg_data.Length);
 
 
-    ProcessServer_CreateRequest_Response resp;
-    resp.m.MsgID = msg->m.MsgID;
-    resp.m.MsgType = CardinalMsgType_Response;
-    resp.pid = pid;
-    resp.err_code = 0;
+    CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_CreateRequest_Response, resp);
+    resp->m.MsgID = msg->m.MsgID;
+    resp->m.MsgType = CardinalMsgType_Response;
+    resp->pid = pid;
+    resp->err_code = 0;
 
-    Message *m2 = (Message*)&resp;
+    Message *m2 = (Message*)resp;
     PostIPCMessages(m->SourcePID, &m2, 1);
 
     send_existence_notification(pid);

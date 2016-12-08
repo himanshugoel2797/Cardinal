@@ -13,6 +13,13 @@ cd $SRC_DIR/libs/libfileserver
 	make install
 cd ..
 
+cd $SRC_DIR/libs/libio
+	make uninstall
+	make clean
+	make all
+	make install
+cd ..
+
 cd $SRC_DIR/libs/libipc
 	make uninstall 
 	make clean

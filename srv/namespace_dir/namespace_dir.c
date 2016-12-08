@@ -92,10 +92,10 @@ NamespaceDir_GetNamespacePID(char *name, UID *pid) {
 
     if(pid == NULL | name == NULL)
         return -1;
+    
 
     uint64_t hash = FNV1a_64(name);
     uint64_t index = hash % NAMESPACE_TABLE_LEN;
-
     if(names[index].pid != 0) {
         *pid = names[index].pid;
         return 0;

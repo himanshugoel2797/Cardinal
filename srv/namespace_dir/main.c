@@ -7,7 +7,7 @@
 
 typedef struct {
     Message m;
-    uint64_t MsgType;
+    uint32_t MsgType;
 } MsgHeader;
 
 void
@@ -24,8 +24,7 @@ send_err_response(UID val, int result, uint32_t msgID, UID dst) {
     else if(result == -2 || result == -3)
         resp->result = -ENAVAIL;
 
-    Message *m = (Message*)&resp;
-    PostIPCMessages(dst, &m, 1);
+    PostIPCMessages(dst, (Message**)&resp, 1);
 }
 
 void
@@ -78,6 +77,7 @@ int main() {
     while(1) {
         CREATE_NEW_MESSAGE_PTR(m);
         POLL_MESSAGE(m);
+
 
         MsgHeader *hdr = (MsgHeader*)m;
 

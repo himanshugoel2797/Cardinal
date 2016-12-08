@@ -47,3 +47,9 @@ cd sibyl
 	make install INSTALL_DIR=$INITRD_INST_DIR
 	mv *.elf $INITRD_INST_DIR
 cd ..
+
+cd $SRC_DIR/drivers/display/framebuffer
+	make clean
+	make all
+	cp framebuffer.elf $INITRD_INST_DIR
+cd $SRC_DIR

@@ -307,12 +307,12 @@ GetMessageFrom(Message *msg,
     Message *tmp = NULL;
 
     for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
-        tmp = (Message*)List_EntryAt(pInfo->PendingMessages, 0);
+        tmp = (Message*)List_EntryAt(pInfo->PendingMessages, i);
 
         if((tmp->SourcePID == SourcePID) | (SourcePID == 0)) {
 
             if((tmp->MsgID == msg_id) | (msg_id == 0)) {
-                List_Remove(pInfo->PendingMessages, 0);
+                List_Remove(pInfo->PendingMessages, i);
                 if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
                 kfree(tmp);
 

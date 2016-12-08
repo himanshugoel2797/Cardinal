@@ -38,7 +38,7 @@ R0_AllocateSharedMemory(uint64_t length,
     if(virtualAddress == NULL)
         return -EINVAL;
 
-    *virtualAddress = Syscall5(Syscall_AllocateSharedMemory, length, cacheMode, allocType, flags, physicalAddress);
+    *virtualAddress = Syscall5(Syscall_R0_AllocateSharedMemory, length, cacheMode, allocType, flags, physicalAddress);
     return GetErrno();
 }
 

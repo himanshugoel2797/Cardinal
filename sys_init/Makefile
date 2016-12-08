@@ -2,13 +2,13 @@ TARGET=sys_init.elf
 
 OBJS=main.o initrd.o
 
-LIBS=
+LIBS=-lio -lipc -lnamespaceserver
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
 
 CFLAGS=-Iinclude
-LDFLAGS=-nostartfiles
+LDFLAGS=
 
 .PHONY:all
 
