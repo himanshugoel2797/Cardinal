@@ -45,12 +45,10 @@ typedef enum {
     Syscall_R0_AllocateSharedMemory,    //!< Allocate shared memory, controlling the physical address.
     Syscall_GetSharedMemoryKeyUsageCount,//!< Get the number of times a key has been used.
 
-    Syscall_WaitForMessage,             //!< Pause this thread until a message of the specified type is received.
+    Syscall_WaitForMessage,             //!< Pause this thread until a message is received.
+    Syscall_RequestAppointment,         //!< Request an appointment on the other cores.
 
-    Syscall_GetCoreCount,
-    Syscall_RequestCoreTime,
-
-    Syscall_NumEnd = Syscall_GetSharedMemoryKeyUsageCount,
+    Syscall_NumEnd = Syscall_RequestAppointment,
 } SyscallFunctions;
 
 #ifdef __cplusplus

@@ -131,14 +131,9 @@ IO_Open(const char * path,
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
+
     while(!GetIPCMessageFrom((Message*)resp, pid, msgID));
 
-    uint64_t cnt = 0;
-    while(1) {
-        GetSharedMemoryKeyUsageCount(op->filename_key, &cnt);
-        if(cnt)
-            break;
-    }
     FreeSharedMemoryKey(op->filename_key);
 
     *fd = resp->fd;

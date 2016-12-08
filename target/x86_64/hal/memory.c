@@ -1114,6 +1114,8 @@ ApplySharedMemoryKey(UID pid,
         map = map->next;
     }
 
+    KeyMan_WriteKey(key, identifiers);
+
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
     return MemoryAllocationErrors_None;

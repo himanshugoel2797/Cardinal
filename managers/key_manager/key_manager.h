@@ -74,6 +74,18 @@ KeyMan_ReadKey(uint64_t key,
                uint64_t *identifier);
 
 /**
+ * @brief      Write a key.
+ *
+ * @param[in]  key         The key
+ * @param      identifier  The identifier
+ *
+ * @return     Error code on failure, KeyManagerErrors_None on success.
+ */
+KeyManagerErrors
+KeyMan_WriteKey(uint64_t key,
+                uint64_t *identifier);
+
+/**
  * @brief      Increment the key reference count.
  *
  * @param[in]  key   The key

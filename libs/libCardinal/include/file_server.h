@@ -99,4 +99,9 @@ typedef struct {
     uint64_t fd;
 } FileSystemOpResponse;
 
+typedef enum {
+    FileSystemOpFlag_Read = (1 << 0),
+    FileSystemOpFlag_Write = (1 << 1),
+} FileSystemOpFlag;
+
 #endif

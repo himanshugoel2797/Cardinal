@@ -149,6 +149,31 @@ KeyMan_ReadKey(uint64_t key,
     return KeyManagerErrors_None;
 }
 
+
+KeyManagerErrors
+KeyMan_WriteKey(uint64_t key,
+                uint64_t *identifier) {
+
+    uint32_t index = (uint32_t)key;
+    if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
+        return KeyManagerErrors_InvalidParams;
+
+    LockSpinlock(keyman_lock);
+
+    if(keyTable[index].key != (uint32_t)(key >> 32)) {
+        UnlockSpinlock(keyman_lock);
+        return KeyManagerErrors_KeyDoesNotExist;
+    }
+
+    if(identifier != NULL) {
+        for(int i = 0; i < IDENTIFIER_COUNT; i++)
+            keyTable[index].identifier[i] = identifier[i];
+    }
+
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+}
+
 KeyManagerErrors
 KeyMan_IncrementRefCount(uint64_t key) {
 
