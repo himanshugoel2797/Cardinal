@@ -66,7 +66,7 @@ RetrieveNamespace(char *name,
     strncpy(request->namespace_name, name, NAMESPACE_NAME_LEN);
 
     Message *msg_p = (Message*)request;
-    
+
     int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
 
     if(err != 1)

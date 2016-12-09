@@ -102,7 +102,7 @@ kernel_main(void) {
 
     load_exec(cpid, "userboot.bin");
 
-    while(1) 
+    while(1)
         WakeReadyThreads();
 }
 

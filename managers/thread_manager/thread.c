@@ -482,7 +482,7 @@ SleepThread(UID id,
             //Remove the thread from the neutral list and put it into the sleeping list
             List_Remove(neutral, List_GetLastIndex(neutral));
             List_AddEntry(sleeping_thds, thd);
-            //A kernel thread will loop through the threads and wake them up as necessary.    
+            //A kernel thread will loop through the threads and wake them up as necessary.
             return;
         }
     }
@@ -917,19 +917,19 @@ GetThreadErrno(UID id) {
 
 void
 SleepThreadForMessage(UID id,
-                      MessageWaitType wait_type, 
+                      MessageWaitType wait_type,
                       uint64_t val) {
-    
+
     ThreadWakeCondition condition;
     switch(wait_type) {
-        case MessageWaitType_Any:
-            condition = ThreadWakeCondition_MatchMsgAny;
+    case MessageWaitType_Any:
+        condition = ThreadWakeCondition_MatchMsgAny;
         break;
-        case MessageWaitType_MsgType:
-            condition = ThreadWakeCondition_MatchMsgType;
+    case MessageWaitType_MsgType:
+        condition = ThreadWakeCondition_MatchMsgType;
         break;
-        case MessageWaitType_SourcePID:
-            condition = ThreadWakeCondition_MatchMsgSourcePID;
+    case MessageWaitType_SourcePID:
+        condition = ThreadWakeCondition_MatchMsgSourcePID;
         break;
     }
 
@@ -967,7 +967,7 @@ SleepThreadForMessage(UID id,
             List_Remove(neutral, List_GetLastIndex(neutral));
             List_AddEntry(sleeping_thds, thd);
             //A kernel thread will loop through the threads and wake them up as necessary.
-        
+
             ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
 
             break;
@@ -1006,10 +1006,10 @@ WakeReadyThreads(void) {
 
         ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
 
-        if(thd != NULL){
+        if(thd != NULL) {
             LockSpinlock(thd->lock);
             uint64_t cur_time = GetTimerValue();
-            
+
             if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
                 if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
                     SET_PROPERTY_VAL(thd, State, ThreadState_Running);

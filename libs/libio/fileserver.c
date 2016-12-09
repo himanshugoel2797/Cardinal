@@ -50,7 +50,7 @@ IO_AllocateBuffer(uint64_t* len,
                   uint64_t* vAddress,
                   uint64_t* read_key,
                   uint64_t* write_key) {
-    
+
     *len += PAGE_SIZE - *len % PAGE_SIZE;
 
     if(AllocateSharedMemory(*len,
@@ -88,16 +88,16 @@ IO_FreeBuffer(uint64_t address,
               uint64_t read_key,
               uint64_t write_key) {
 
-	if(Unmap(address, len) != 0)
-		return -1;
+    if(Unmap(address, len) != 0)
+        return -1;
 
-	if(FreeSharedMemoryKey(read_key) != 0)
-		return -1;
+    if(FreeSharedMemoryKey(read_key) != 0)
+        return -1;
 
-	if(FreeSharedMemoryKey(write_key) != 0)
-		return -1;
+    if(FreeSharedMemoryKey(write_key) != 0)
+        return -1;
 
-	return 0;
+    return 0;
 }
 
 int

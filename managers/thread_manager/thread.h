@@ -91,11 +91,11 @@ typedef struct ThreadInfo {
     uint64_t            KernelStackBase;        //!< Base of kernel stack.
     uint64_t            KernelStackAligned;     //!< Aligned address of kernel stack.
     uint64_t            CurrentStack;           //!< Current stack address.
-                        
+
     union {
-      uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
-      uint64_t            TargetMsgSourcePID;
-      uint64_t            TargetMsgType;
+        uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
+        uint64_t            TargetMsgSourcePID;
+        uint64_t            TargetMsgType;
     };
 
     uint64_t            SleepStartTime;         //!< Sleep start time.
@@ -454,7 +454,7 @@ GetThreadErrno(UID tid);
  */
 void
 SleepThreadForMessage(UID id,
-                      MessageWaitType wait_type, 
+                      MessageWaitType wait_type,
                       uint64_t val);
 
 /**

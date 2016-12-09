@@ -23,41 +23,41 @@ UnknMessage(Message *m) {
     __asm__("hlt");
 }
 
-int 
-fbuf_open(const char *path, 
-          int flags, 
-          uint64_t mode, 
-          uint8_t* key, 
-          UID pid, 
-          uint64_t* fd){
+int
+fbuf_open(const char *path,
+          int flags,
+          uint64_t mode,
+          uint8_t* key,
+          UID pid,
+          uint64_t* fd) {
 
-    if(strcmp(path, ":framebuffer") == 0){
+    if(strcmp(path, ":framebuffer") == 0) {
         if(flags & FileSystemOpFlag_Write && write_pid == 0)
             write_pid = pid;
-        else if(flags & FileSystemOpFlag_Write && write_pid != 0){
+        else if(flags & FileSystemOpFlag_Write && write_pid != 0) {
             *fd = write_pid;
             return -EINUSE;
         }
 
         *fd = 2;
 
-    }else if(strcmp(path, ":info") == 0){
+    } else if(strcmp(path, ":info") == 0) {
         if(flags & FileSystemOpFlag_Write)
             return -ERDONLY;
 
         *fd = 1;
-    }else
+    } else
         return -EINVAL;
     return 0;
 }
 
-int 
+int
 fbuf_read(uint64_t fd,
           uint64_t offset,
           void *dst,
           uint64_t len,
           UID pid) {
-        __asm__("hlt");
+    __asm__("hlt");
     if(fd == 1) {
 
         if(offset >= fbuf_info_len)
@@ -68,7 +68,7 @@ fbuf_read(uint64_t fd,
 
         memcpy(dst, fbuf_info + offset, len);
         return (int)len;
-    }else if(fd == 2) {
+    } else if(fd == 2) {
 
         if(offset >= fbuf_len)
             return -EEOF;
@@ -79,11 +79,11 @@ fbuf_read(uint64_t fd,
         memcpy(dst, (uint8_t*)fb + offset, len);
         return (int)len;
 
-    }else
+    } else
         return -EINVAL;
 }
 
-int 
+int
 fbuf_write(uint64_t fd,
            uint64_t offset,
            void *src,
@@ -100,12 +100,12 @@ fbuf_write(uint64_t fd,
         memcpy((uint8_t*)fb + offset, src, len);
         return (int)len;
 
-    }else
-        return -EINVAL;    
+    } else
+        return -EINVAL;
 }
 
 void fbuf_close(uint64_t fd,
-               UID pid) {
+                UID pid) {
     if(fd == 2 && pid == write_pid) {
         write_pid = 0;
     }

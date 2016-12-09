@@ -144,7 +144,7 @@ uint64_t
 WaitForMessage_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {
-    
+
     if(syscall_num != Syscall_WaitForMessage) {
         SyscallSetErrno(-ENOSYS);
         return -1;
