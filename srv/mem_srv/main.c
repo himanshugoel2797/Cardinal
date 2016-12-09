@@ -54,7 +54,7 @@ int main() {
     MemDB_Initialize();
     while(1) {
         CREATE_NEW_MESSAGE_PTR(msg);
-        while(!GetIPCMessage(msg));
+        POLL_MESSAGE(msg);
 
         if(msg->MsgType == CardinalMsgType_Request) {
 

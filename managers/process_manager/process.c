@@ -291,41 +291,9 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
         m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
-
-        List_RotPrev(pInfo->ThreadInfos);
-        for(uint64_t i = 0; i < List_Length(pInfo->ThreadInfos); i++) {
-            ThreadInfo* tInfo = (ThreadInfo*)List_RotNext(pInfo->ThreadInfos);
-            
-            LockSpinlock(tInfo->lock);
-
-            if(tInfo->State != ThreadState_Sleep){
-                UnlockSpinlock(tInfo->lock);
-                continue;
-            }
-
-            ThreadWakeCondition condition = tInfo->WakeCondition;
-
-            uint64_t wake_val = tInfo->TargetMsgSourcePID;
-
-            switch(condition) {
-                case ThreadWakeCondition_MatchMsgType:
-                    if(wake_val == m->MsgType)
-                        WakeThread(tInfo->ID);
-                break;
-                case ThreadWakeCondition_MatchMsgSourcePID:
-                    if(wake_val == m->SourcePID)
-                        WakeThread(tInfo->ID);
-                break;
-                case ThreadWakeCondition_MatchMsgAny:
-                    WakeThread(tInfo->ID);
-                break;
-                default:
-                break;
-            }
-
-            UnlockSpinlock(tInfo->lock);
-        }
     }
+
+    ProcessCheckWakeThreads(dstPID);
 
     return TRUE;
 }
@@ -521,4 +489,85 @@ DeleteDescriptor(UID pid,
 
     UnlockSpinlock(info->lock);
     return ProcessErrors_None;
+}
+
+void
+ProcessCheckWakeThreads(UID pid) {
+    
+    ProcessInformation *pInfo = NULL;
+    if(GetProcessReference(pid, &pInfo) != ProcessErrors_None)
+        return;
+
+    LockSpinlock(pInfo->lock);
+
+    List_RotPrev(pInfo->ThreadInfos);
+    for(uint64_t i = 0; i < List_Length(pInfo->ThreadInfos); i++) {
+        ThreadInfo* tInfo = (ThreadInfo*)List_RotNext(pInfo->ThreadInfos);
+            
+        LockSpinlock(tInfo->lock);
+
+        if(tInfo->State != ThreadState_Sleep){
+            UnlockSpinlock(tInfo->lock);
+            continue;
+        }
+
+        ThreadWakeCondition condition = tInfo->WakeCondition;
+
+        uint64_t wake_val = tInfo->TargetMsgSourcePID;
+
+        switch(condition) {
+            case ThreadWakeCondition_MatchMsgType:
+                {
+                    LockSpinlock(pInfo->MessageLock);
+
+                    for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
+
+                        Message *m = List_EntryAt(pInfo->PendingMessages, i);
+
+                        if(m->MsgType == wake_val)
+                        {
+                            WakeThread(tInfo->ID);
+                            break;
+                        }
+                    }
+
+                    UnlockSpinlock(pInfo->MessageLock);
+                }
+            break;
+            case ThreadWakeCondition_MatchMsgSourcePID:
+                {
+                    LockSpinlock(pInfo->MessageLock);
+
+                    for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
+
+                        Message *m = List_EntryAt(pInfo->PendingMessages, i);
+
+                        if(m->SourcePID == wake_val)
+                        {
+                            WakeThread(tInfo->ID);
+                            break;
+                        }
+                    }
+
+                    UnlockSpinlock(pInfo->MessageLock);
+                }
+            break;
+            case ThreadWakeCondition_MatchMsgAny:
+                {
+                    LockSpinlock(pInfo->MessageLock);
+                    
+                    if(List_Length(pInfo->PendingMessages) != 0)
+                        WakeThread(tInfo->ID);
+
+                    UnlockSpinlock(pInfo->MessageLock);
+                }
+            break;
+            default:
+            break;
+        }
+
+        UnlockSpinlock(tInfo->lock);
+    }
+
+    UnlockSpinlock(pInfo->lock);
 }

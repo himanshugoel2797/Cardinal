@@ -164,7 +164,7 @@ List_RotNext(List *a) {
     LockSpinlock(a->spin);
     void *val = NULL;
     if(a->entry_count != 0)
-        List_EntryAt(a, (a->last_accessed_index + 1) % a->entry_count);
+        val = List_EntryAt(a, (a->last_accessed_index + 1) % a->entry_count);
     UnlockSpinlock(a->spin);
     return val;
 }

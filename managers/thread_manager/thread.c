@@ -12,7 +12,7 @@ typedef struct CoreThreadState {
     uint32_t    coreID;
 } CoreThreadState;
 
-static Spinlock sync_lock;
+Spinlock sync_lock;
 static List *neutral, *thds, *sleeping_thds;
 static List* cores;
 static volatile CoreThreadState* coreState = NULL;
@@ -459,6 +459,17 @@ void
 SleepThread(UID id,
             uint64_t duration_ns) {
 
+    if( GET_PROPERTY_VAL(coreState->cur_thread, ID) == id) {
+        SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Sleep);
+        SET_PROPERTY_VAL(coreState->cur_thread, WakeCondition, ThreadWakeCondition_SleepEnd);
+        SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());
+        SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);
+
+        List_AddEntry(sleeping_thds, coreState->cur_thread);
+        YieldThread();
+        return;
+    }
+
     List_RotPrev(neutral);
     for(uint64_t i = 0; i < List_Length(neutral); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
@@ -471,10 +482,7 @@ SleepThread(UID id,
             //Remove the thread from the neutral list and put it into the sleeping list
             List_Remove(neutral, List_GetLastIndex(neutral));
             List_AddEntry(sleeping_thds, thd);
-            //A kernel thread will loop through the threads and wake them up as necessary.
-            
-            if(thd->ID == GetCurrentThreadUID())
-                YieldThread();
+            //A kernel thread will loop through the threads and wake them up as necessary.    
             return;
         }
     }
@@ -642,7 +650,10 @@ GetNextThread(ThreadInfo *prevThread) {
 
     if(prevThread != NULL) {
         LockSpinlock(sync_lock);
-        List_AddEntry(neutral, prevThread);
+
+        if(GET_PROPERTY_VAL(prevThread, State) != ThreadState_Sleep)
+            List_AddEntry(neutral, prevThread);
+
         UnlockSpinlock(sync_lock);
     }
 
@@ -653,7 +664,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
         LockSpinlock(sync_lock);
         next_thread = List_EntryAt(neutral, 0);
-        if(next_thread != NULL)List_Remove(neutral, 0);
+        List_Remove(neutral, 0);
         UnlockSpinlock(sync_lock);
 
         if(next_thread == NULL)continue;
@@ -922,9 +933,30 @@ SleepThreadForMessage(UID id,
         break;
     }
 
+
+    LockSpinlock(sync_lock);
+
+    if( GET_PROPERTY_VAL(coreState->cur_thread, ID) == id) {
+
+
+        SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Sleep);
+        SET_PROPERTY_VAL(coreState->cur_thread, WakeCondition, condition);
+        SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());
+        SET_PROPERTY_VAL(coreState->cur_thread, TargetMsgSourcePID, val);
+
+        List_AddEntry(sleeping_thds, coreState->cur_thread);
+        UnlockSpinlock(sync_lock);
+
+        ProcessCheckWakeThreads(GetCurrentProcessUID());
+
+        YieldThread();
+        return;
+    }
+
     List_RotPrev(neutral);
     for(uint64_t i = 0; i < List_Length(neutral); i++) {
         ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
+
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
             SET_PROPERTY_VAL(thd, WakeCondition, condition);
@@ -935,16 +967,20 @@ SleepThreadForMessage(UID id,
             List_Remove(neutral, List_GetLastIndex(neutral));
             List_AddEntry(sleeping_thds, thd);
             //A kernel thread will loop through the threads and wake them up as necessary.
-            
-            if(thd->ID == GetCurrentThreadUID())
-                YieldThread();
-            return;
+        
+            ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
+
+            break;
         }
     }
+
+    UnlockSpinlock(sync_lock);
 }
 
 void
 WakeThread(UID id) {
+
+    LockSpinlock(sync_lock);
 
     List_RotPrev(sleeping_thds);
     for(uint64_t i = 0; i < List_Length(sleeping_thds); i++) {
@@ -955,10 +991,11 @@ WakeThread(UID id) {
 
             List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
             List_AddEntry(neutral, thd);
-
             break;
         }
     }
+
+    UnlockSpinlock(sync_lock);
 }
 
 void
@@ -969,21 +1006,21 @@ WakeReadyThreads(void) {
 
         ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
 
-        LockSpinlock(thd->lock);
-        uint64_t cur_time = GetTimerValue();
+        if(thd != NULL){
+            LockSpinlock(thd->lock);
+            uint64_t cur_time = GetTimerValue();
             
-        if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
-            if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
-                SET_PROPERTY_VAL(thd, State, ThreadState_Running);
+            if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
+                if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
+                    SET_PROPERTY_VAL(thd, State, ThreadState_Running);
 
-                List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
-                List_AddEntry(neutral, thd);
+                    List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
+                    List_AddEntry(neutral, thd);
+                }
             }
+
+            UnlockSpinlock(thd->lock);
         }
 
-        UnlockSpinlock(thd->lock);
     }
-
-    __asm__("cli\n\thlt");
-    YieldThread();
 }

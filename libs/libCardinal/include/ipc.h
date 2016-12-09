@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "syscall.h"
+#include "thread.h"
 #include "cardinal_types.h"
 #include "syscall_list.h"
 #include "memory.h"
@@ -66,7 +67,7 @@ struct CardinalFullMessage {
 
 #define CREATE_NEW_MESSAGE_PTR_TYPE(TYPE, XXX) struct CardinalFullMessage XXX##_0; for(int i = 0; i < MESSAGE_SIZE; i++)XXX##_0.data[i] = 0; TYPE *XXX = (TYPE*)&XXX##_0
 #define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
-#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
+#define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
 
 /**
  * @brief      Gets the ipc message from the source.

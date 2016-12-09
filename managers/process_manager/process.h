@@ -200,6 +200,14 @@ ProcessErrors
 DeleteDescriptor(UID pid,
                  uint32_t index);
 
+/**
+ * @brief      Check if any of the process's threads can be woken.
+ *
+ * @param[in]  pid   The pid
+ */
+void
+ProcessCheckWakeThreads(UID pid);
+
 /**@}*/
 
 #endif
