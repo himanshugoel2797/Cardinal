@@ -39,6 +39,7 @@ typedef enum {
     CardinalMsgType_Signal,
     CardinalMsgType_Response,
     CardinalMsgType_Notification,
+    CardinalMsgType_Interrupt,
 } CardinalMsgType;
 
 //! IPC Message.
@@ -47,6 +48,11 @@ typedef struct Message {
     uint32_t MsgID;                     //!< The message ID, uniquely identifies a conversation.
     CardinalMsgType MsgType;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
+
+typedef struct InterruptMessage {
+    Message m;
+    uint32_t vector;
+} InterruptMessage;
 
 //! An error message.
 struct ErrorMessage {
@@ -59,7 +65,6 @@ typedef struct Response {
     volatile uint8_t ResponseReady;     //!< Initialized to zero. Gets set to 1 when the response is ready to read.
 } Response;
 
-#ifndef _KERNEL_
 
 struct CardinalFullMessage {
     char data[MESSAGE_SIZE];
@@ -67,6 +72,8 @@ struct CardinalFullMessage {
 
 #define CREATE_NEW_MESSAGE_PTR_TYPE(TYPE, XXX) struct CardinalFullMessage XXX##_0; for(int i = 0; i < MESSAGE_SIZE; i++)XXX##_0.data[i] = 0; TYPE *XXX = (TYPE*)&XXX##_0
 #define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
+
+#ifndef _KERNEL_
 #define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
 
 /**

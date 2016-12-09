@@ -9,5 +9,6 @@
 #include "device_manager/device_manager.h"		   //Device Manager
 #include "syscall_manager/syscall.h"			   //Syscall Manager
 #include "key_manager/key_manager.h"			   //Key Manager
+#include "interrupt_manager/interrupt_man.h"
 
 #endif /* end of include guard: _MANAGERS_H_ */

@@ -48,6 +48,9 @@ typedef enum {
     Syscall_WaitForMessage,             //!< Pause this thread until a message is received.
     Syscall_RequestAppointment,         //!< Request an appointment on the other cores.
 
+    Syscall_R01_AllocateInterrupts,
+    Syscall_R01_RegisterForInterrupt,
+
     Syscall_NumEnd = Syscall_RequestAppointment,
 } SyscallFunctions;
 

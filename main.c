@@ -89,6 +89,8 @@ kernel_main(void) {
     //Seed the rng with the timer value
     seed(GetTimerValue());
 
+    InterruptMan_Initialize();
+
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();
