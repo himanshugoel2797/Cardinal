@@ -17,6 +17,14 @@ typedef enum {
     R0_ThreadInfoType_UserStackAddress
 } R0_ThreadInfoType;
 
+typedef enum {
+    MessageWaitType_Any,
+    MessageWaitType_MsgType,
+    MessageWaitType_SourcePID
+} MessageWaitType;
+
+#ifndef _KERNEL_
+
 /**
  * @brief      Create a new thread. R0 process only.
  *
@@ -129,9 +137,12 @@ SleepThread(uint64_t ns_time) {
 }
 
 static __inline void
-WaitForMessage() {
-    //TODO design this syscall, use it to reduce the number of active threads by moving polling into the kernel.
+WaitForMessage(MessageWaitType waitType, uint64_t wait_val) {
+    Syscall2(Syscall_WaitForMessage, waitType, wait_val);
+    return GetErrno();
 }
+
+#endif
 
 /**@}*/
 

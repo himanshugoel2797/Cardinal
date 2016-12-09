@@ -101,7 +101,9 @@ kernel_main(void) {
         HaltProcessor();
 
     load_exec(cpid, "userboot.bin");
-    while(1);
+
+    while(1) 
+        WakeReadyThreads();
 }
 
 void

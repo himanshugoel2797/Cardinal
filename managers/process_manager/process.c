@@ -27,7 +27,7 @@ ProcessSys_Initialize(void) {
     root->Parent = NULL;
 
     root->PendingMessages = List_Create(CreateSpinlock());
-    root->ThreadIDs = List_Create(CreateSpinlock());
+    root->ThreadInfos = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
     root->PendingMessages = List_Create(CreateSpinlock());
@@ -68,7 +68,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     dst->HeapBreak = 0;
 
-    dst->ThreadIDs = List_Create(CreateSpinlock());
+    dst->ThreadInfos = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
 
     dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(uint64_t));
@@ -128,11 +128,12 @@ TerminateProcess(UID pid) {
     kfree(pinfo->Keys);
 
     //Remove this process from the list of processes
+    List_RotPrev(processes);
     for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *tmp_procInfo = List_EntryAt(processes, i);
+        ProcessInformation *tmp_procInfo = List_RotNext(processes);
 
         if(tmp_procInfo->ID == pid) {
-            List_Remove(processes, i);
+            List_Remove(processes, List_GetLastIndex(processes));
             break;
         }
     }
@@ -185,7 +186,7 @@ TerminateProcess(UID pid) {
         kfree(message);
     }
     List_Free(pinfo->PendingMessages);
-    List_Free(pinfo->ThreadIDs);
+    List_Free(pinfo->ThreadInfos);
 
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
@@ -204,8 +205,10 @@ TerminateProcess(UID pid) {
 ProcessErrors
 GetProcessInformation(UID           pid,
                       ProcessInformation    *procInfo) {
+
+    List_RotPrev(processes);
     for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
+        ProcessInformation *pInf = List_RotNext(processes);
 
         LockSpinlock(pInf->lock);
         UID pInfID = pInf->ID;
@@ -224,8 +227,10 @@ GetProcessInformation(UID           pid,
 ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
+
+    List_RotPrev(processes); //Move back one entry to force the current entry to be tested first
     for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_EntryAt(processes, i);
+        ProcessInformation *pInf = List_RotNext(processes);
 
         LockSpinlock(pInf->lock);
         UID pInfID = pInf->ID;
@@ -286,6 +291,40 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
         m->SourcePID = GetCurrentProcessUID();
         List_AddEntry(pInfo->PendingMessages, m);
+
+        List_RotPrev(pInfo->ThreadInfos);
+        for(uint64_t i = 0; i < List_Length(pInfo->ThreadInfos); i++) {
+            ThreadInfo* tInfo = (ThreadInfo*)List_RotNext(pInfo->ThreadInfos);
+            
+            LockSpinlock(tInfo->lock);
+
+            if(tInfo->State != ThreadState_Sleep){
+                UnlockSpinlock(tInfo->lock);
+                continue;
+            }
+
+            ThreadWakeCondition condition = tInfo->WakeCondition;
+
+            uint64_t wake_val = tInfo->TargetMsgSourcePID;
+
+            switch(condition) {
+                case ThreadWakeCondition_MatchMsgType:
+                    if(wake_val == m->MsgType)
+                        WakeThread(tInfo->ID);
+                break;
+                case ThreadWakeCondition_MatchMsgSourcePID:
+                    if(wake_val == m->SourcePID)
+                        WakeThread(tInfo->ID);
+                break;
+                case ThreadWakeCondition_MatchMsgAny:
+                    WakeThread(tInfo->ID);
+                break;
+                default:
+                break;
+            }
+
+            UnlockSpinlock(tInfo->lock);
+        }
     }
 
     return TRUE;

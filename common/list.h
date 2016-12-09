@@ -35,9 +35,12 @@ List_EntryAt(List *a,
              uint64_t index);
 
 void*
-List_Next(List *a);
+List_RotNext(List *a);
 
 void*
-List_Prev(List *a);
+List_RotPrev(List *a);
+
+uint64_t
+List_GetLastIndex(List *a);
 
 #endif

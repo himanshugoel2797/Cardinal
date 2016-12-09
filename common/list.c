@@ -132,6 +132,18 @@ List_EntryAt(List *a,
         return NULL;
     }
 
+    //Accelarate first and last element accesses
+    if(index == 0) {
+        a->last_accessed_index = 0;
+        a->last_accessed_node = a->nodes;
+    }
+
+    //Accelerate first and last element accesses
+    if(index == a->entry_count - 1) {
+        a->last_accessed_index = a->entry_count - 1;
+        a->last_accessed_node = a->last;
+    }
+
     while(a->last_accessed_index > index) {
         a->last_accessed_node = a->last_accessed_node->prev;
         a->last_accessed_index--;
@@ -148,25 +160,29 @@ List_EntryAt(List *a,
 }
 
 void*
-List_Next(List *a) {
+List_RotNext(List *a) {
     LockSpinlock(a->spin);
-    if(a->last_accessed_index < a->entry_count - 1) {
-        a->last_accessed_index++;
-        a->last_accessed_node = a->last_accessed_node->next;
-    }
-    void *val = a->last_accessed_node->value;
+    void *val = NULL;
+    if(a->entry_count != 0)
+        List_EntryAt(a, (a->last_accessed_index + 1) % a->entry_count);
     UnlockSpinlock(a->spin);
     return val;
 }
 
 void*
-List_Prev(List *a) {
+List_RotPrev(List *a) {
     LockSpinlock(a->spin);
-    if(a->last_accessed_index > 0) {
-        a->last_accessed_index--;
-        a->last_accessed_node = a->last_accessed_node->prev;
-    }
-    void *val = a->last_accessed_node->value;
+    void *val = NULL;
+    if(a->entry_count != 0)
+        val = List_EntryAt(a, (a->last_accessed_index - 1) % a->entry_count);
     UnlockSpinlock(a->spin);
     return val;
+}
+
+uint64_t
+List_GetLastIndex(List *a) {
+    LockSpinlock(a->spin);
+    uint64_t i = a->last_accessed_index;
+    UnlockSpinlock(a->spin);
+    return i;
 }

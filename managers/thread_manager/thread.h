@@ -5,6 +5,7 @@
 #include "managers/process_manager/process_info.h"
 #include "libs/libc/include/signal.h"
 #include "libs/libCardinal/include/registers.h"
+#include "libs/libCardinal/include/thread.h"
 #include "synchronization.h"
 
 /**
@@ -54,6 +55,9 @@ typedef enum {
 typedef enum {
     ThreadWakeCondition_None,     //!< No wake condition, thread isn't sleeping.
     ThreadWakeCondition_SleepEnd, //!< Wake on sleep period expiry.
+    ThreadWakeCondition_MatchMsgType,
+    ThreadWakeCondition_MatchMsgSourcePID,
+    ThreadWakeCondition_MatchMsgAny,
 } ThreadWakeCondition;
 
 /**
@@ -87,7 +91,13 @@ typedef struct ThreadInfo {
     uint64_t            KernelStackBase;        //!< Base of kernel stack.
     uint64_t            KernelStackAligned;     //!< Aligned address of kernel stack.
     uint64_t            CurrentStack;           //!< Current stack address.
-    uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
+                        
+    union {
+      uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
+      uint64_t            TargetMsgSourcePID;
+      uint64_t            TargetMsgType;
+    };
+
     uint64_t            SleepStartTime;         //!< Sleep start time.
     uint64_t            Errno;                  //!< Errno of last syscall.
 
@@ -434,6 +444,33 @@ SetThreadErrno(UID tid,
  */
 uint64_t
 GetThreadErrno(UID tid);
+
+/**
+ * @brief      Sleep a thread for a message.
+ *
+ * @param[in]  id         The identifier
+ * @param[in]  wait_type  The wait type
+ * @param[in]  val        The value
+ */
+void
+SleepThreadForMessage(UID id,
+                      MessageWaitType wait_type, 
+                      uint64_t val);
+
+/**
+ * @brief      Wake the thread.
+ *
+ * @param[in]  id    The identifier
+ */
+void
+WakeThread(UID id);
+
+/**
+ * @brief      Wake threads that are ready to be woken.
+ */
+void
+WakeReadyThreads(void);
+
 
 /**@}*/
 

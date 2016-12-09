@@ -104,15 +104,11 @@ fbuf_write(uint64_t fd,
         return -EINVAL;    
 }
 
-int fbuf_close(uint64_t fd,
+void fbuf_close(uint64_t fd,
                UID pid) {
     if(fd == 2 && pid == write_pid) {
         write_pid = 0;
-        return 0;
-    }else if(fd == 1)
-        return 0;
-
-    return -EINVAL;
+    }
 }
 
 int main() {

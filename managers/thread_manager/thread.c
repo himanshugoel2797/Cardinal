@@ -13,7 +13,7 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 static Spinlock sync_lock;
-static List *neutral, *thds;
+static List *neutral, *thds, *sleeping_thds;
 static List* cores;
 static volatile CoreThreadState* coreState = NULL;
 static uint64_t preempt_frequency;
@@ -79,7 +79,7 @@ PROPERTY_PROC_GET(ManagedPageTable*, PageTable, 0)
 PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
 PROPERTY_PROC_GET(ProcessInformation*, Parent, NULL)
 PROPERTY_PROC_GET(List*, PendingMessages, NULL)
-PROPERTY_PROC_GET(List*, ThreadIDs, NULL)
+PROPERTY_PROC_GET(List*, ThreadInfos, NULL)
 PROPERTY_PROC_GET(ProcessStatus, Status, ProcessStatus_Stopped)
 
 PROPERTY_GET_SET(UID, ID, 0)
@@ -96,6 +96,7 @@ PROPERTY_GET_SET(uint64_t, KernelStackBase, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackAligned, 0)
 PROPERTY_GET_SET(uint64_t, CurrentStack, 0)
 PROPERTY_GET_SET(uint64_t, SleepDurationNS, 0)
+PROPERTY_GET_SET(uint64_t, TargetMsgSourcePID, 0)
 PROPERTY_GET_SET(uint64_t, SleepStartTime, 0)
 PROPERTY_GET_SET(uint64_t, Errno, 0)
 
@@ -136,6 +137,8 @@ Thread_Initialize(void) {
     Spinlock tmp = CreateSpinlock();
     neutral = List_Create(tmp);
     thds = List_Create(tmp);
+
+    sleeping_thds = List_Create(CreateSpinlock());
 
     cores = List_Create(CreateSpinlock());
     sync_lock = CreateSpinlock();
@@ -335,7 +338,7 @@ CreateThreadADV(UID parentProcess,
 
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
-    List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadIDs), (void*)GET_PROPERTY_VAL(thd, ID));
+    List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), (void*)thd);
     List_AddEntry(thds, thd);
     List_AddEntry(neutral, thd);
 
@@ -360,7 +363,7 @@ SetChildTIDAddress(UID id,
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             SET_PROPERTY_VAL(thd, SetChildTID, address);
             return;
@@ -378,7 +381,7 @@ SetClearChildTIDAddress(UID id,
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             SET_PROPERTY_VAL(thd, ClearChildTID, address);
             return;
@@ -394,7 +397,7 @@ GetClearChildTIDAddress(UID id) {
     }
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             return GET_PROPERTY_VAL(thd, ClearChildTID);
         }
@@ -455,22 +458,23 @@ SetThreadState(UID id,
 void
 SleepThread(UID id,
             uint64_t duration_ns) {
-    if(id == GET_PROPERTY_VAL(coreState->cur_thread, ID)) {
-        SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Sleep);
-        SET_PROPERTY_VAL(coreState->cur_thread, WakeCondition, ThreadWakeCondition_SleepEnd);
-        SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());
-        SET_PROPERTY_VAL(coreState->cur_thread, SleepDurationNS, duration_ns);
-        YieldThread();
-        return;
-    }
 
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
+    List_RotPrev(neutral);
+    for(uint64_t i = 0; i < List_Length(neutral); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
         if( GET_PROPERTY_VAL(thd, ID) == id) {
             SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
             SET_PROPERTY_VAL(thd, WakeCondition, ThreadWakeCondition_SleepEnd);
             SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
             SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
+
+            //Remove the thread from the neutral list and put it into the sleeping list
+            List_Remove(neutral, List_GetLastIndex(neutral));
+            List_AddEntry(sleeping_thds, thd);
+            //A kernel thread will loop through the threads and wake them up as necessary.
+            
+            if(thd->ID == GetCurrentThreadUID())
+                YieldThread();
             return;
         }
     }
@@ -684,18 +688,18 @@ GetNextThread(ThreadInfo *prevThread) {
 //                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
 
                 for(uint64_t i = 0; i < List_Length(thds); i++) {
-                    ThreadInfo *tInfo = List_EntryAt(thds, i);
+                    ThreadInfo *tInfo = List_RotNext(thds);
                     if(GET_PROPERTY_VAL(tInfo, ID) == next_thread->ID) {
-                        List_Remove(thds, i);
+                        List_Remove(thds, List_GetLastIndex(thds));
                         break;
                     }
                 }
 
-                for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)); i++) {
-                    UID id = (UID)List_EntryAt(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs), i);
+                for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos)); i++) {
+                    ThreadInfo* id = (ThreadInfo*)List_EntryAt(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos), i);
 
-                    if(id == next_thread->ID) {
-                        List_Remove(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs), i);
+                    if(id->ID == next_thread->ID) {
+                        List_Remove(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos), i);
                         break;
                     }
                 }
@@ -703,7 +707,7 @@ GetNextThread(ThreadInfo *prevThread) {
                 //LockSpinlock(next_thread->ParentProcess->lock);
 
                 AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadIDs)) == 0) {
+                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos)) == 0) {
                     TerminateProcess(GET_PROPERTY_PROC_VAL(next_thread, ID));
                 }
                 UnlockSpinlock(next_thread->lock);
@@ -719,27 +723,6 @@ GetNextThread(ThreadInfo *prevThread) {
             }
             break;
         case ThreadState_Paused:
-            break;
-        case ThreadState_Sleep:
-            LockSpinlock(next_thread->lock);
-            uint64_t cur_time = GetTimerValue();
-            if(next_thread->WakeCondition == ThreadWakeCondition_SleepEnd) {
-                if(GetTimerInterval_NS(cur_time - next_thread->SleepStartTime) >= next_thread->SleepDurationNS) {
-                    next_thread->State = ThreadState_Running;
-                    exit_loop = TRUE;
-                    UnlockSpinlock(next_thread->lock);
-                } else {
-                    UnlockSpinlock(next_thread->lock);
-                    LockSpinlock(sync_lock);
-                    List_AddEntry(neutral, next_thread);
-                    UnlockSpinlock(sync_lock);
-                }
-            } else {
-                UnlockSpinlock(next_thread->lock);
-                LockSpinlock(sync_lock);
-                List_AddEntry(neutral, next_thread);
-                UnlockSpinlock(sync_lock);
-            }
             break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
@@ -919,4 +902,88 @@ GetThreadErrno(UID id) {
         }
     }
     return -1;
+}
+
+void
+SleepThreadForMessage(UID id,
+                      MessageWaitType wait_type, 
+                      uint64_t val) {
+    
+    ThreadWakeCondition condition;
+    switch(wait_type) {
+        case MessageWaitType_Any:
+            condition = ThreadWakeCondition_MatchMsgAny;
+        break;
+        case MessageWaitType_MsgType:
+            condition = ThreadWakeCondition_MatchMsgType;
+        break;
+        case MessageWaitType_SourcePID:
+            condition = ThreadWakeCondition_MatchMsgSourcePID;
+        break;
+    }
+
+    List_RotPrev(neutral);
+    for(uint64_t i = 0; i < List_Length(neutral); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
+        if( GET_PROPERTY_VAL(thd, ID) == id) {
+            SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
+            SET_PROPERTY_VAL(thd, WakeCondition, condition);
+            SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
+            SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
+
+            //Remove the thread from the neutral list and put it into the sleeping list
+            List_Remove(neutral, List_GetLastIndex(neutral));
+            List_AddEntry(sleeping_thds, thd);
+            //A kernel thread will loop through the threads and wake them up as necessary.
+            
+            if(thd->ID == GetCurrentThreadUID())
+                YieldThread();
+            return;
+        }
+    }
+}
+
+void
+WakeThread(UID id) {
+
+    List_RotPrev(sleeping_thds);
+    for(uint64_t i = 0; i < List_Length(sleeping_thds); i++) {
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
+
+        if(GET_PROPERTY_VAL(thd, ID) == id) {
+            SET_PROPERTY_VAL(thd, State, ThreadState_Running);
+
+            List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
+            List_AddEntry(neutral, thd);
+
+            break;
+        }
+    }
+}
+
+void
+WakeReadyThreads(void) {
+
+    List_RotPrev(sleeping_thds);
+    for(uint64_t i = 0; i < List_Length(sleeping_thds); i++) {
+
+        ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
+
+        LockSpinlock(thd->lock);
+        uint64_t cur_time = GetTimerValue();
+            
+        if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
+            if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
+                SET_PROPERTY_VAL(thd, State, ThreadState_Running);
+
+                List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
+                List_AddEntry(neutral, thd);
+            }
+        }
+
+        UnlockSpinlock(thd->lock);
+    }
+
+    __asm__("cli\n\thlt");
+    YieldThread();
 }
