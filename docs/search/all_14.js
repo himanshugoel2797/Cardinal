@@ -1,6 +1,9 @@
 var searchData=
 [
-  ['vesa_5fpm_5finfo',['VESA_PM_INFO',['../d7/d09/structVESA__PM__INFO.html',1,'']]],
-  ['virtmemmandata',['VirtMemManData',['../d7/de1/structVirtMemManData.html',1,'']]],
-  ['virtualaddress',['VirtualAddress',['../d8/d2c/structMemoryMapParams.html#a2e894751aa3b4360d13ead79179af861',1,'MemoryMapParams::VirtualAddress()'],['../d5/d3a/structMemoryAllocationsMap.html#a90507e8d6366b8f3bf34b9a96e0e8346',1,'MemoryAllocationsMap::VirtualAddress()']]]
+  ['wakecondition',['WakeCondition',['../d5/dfe/structThreadInfo.html#ab791c21f54e7b7371fef46fd5a3a2361',1,'ThreadInfo']]],
+  ['wakereadythreads',['WakeReadyThreads',['../d6/d5a/group__threading.html#gad20dac837b5383cd5fe399712dd872ce',1,'WakeReadyThreads(void):&#160;thread.c'],['../d6/d5a/group__threading.html#gad20dac837b5383cd5fe399712dd872ce',1,'WakeReadyThreads(void):&#160;thread.c']]],
+  ['wakethread',['WakeThread',['../d6/d5a/group__threading.html#gaa9130663e1d68583c2909986ea0a3d01',1,'WakeThread(UID id):&#160;thread.c'],['../d6/d5a/group__threading.html#gaa9130663e1d68583c2909986ea0a3d01',1,'WakeThread(UID id):&#160;thread.c']]],
+  ['wipememorytypefromtable',['WipeMemoryTypeFromTable',['../d0/d92/group__memory__hal.html#gaeacbe2fb33e6a0df47defab0a6643fef',1,'WipeMemoryTypeFromTable(ManagedPageTable *pageTable, MemoryAllocationType type):&#160;memory.c'],['../d0/d92/group__memory__hal.html#gaeacbe2fb33e6a0df47defab0a6643fef',1,'WipeMemoryTypeFromTable(ManagedPageTable *pageTable, MemoryAllocationType type):&#160;memory.c']]],
+  ['writevalueataddress32',['WriteValueAtAddress32',['../d0/d92/group__memory__hal.html#gac735f7816a3f90773251fee78bb14e14',1,'WriteValueAtAddress32(ManagedPageTable *pageTable, uint32_t *addr, uint32_t val):&#160;memory.c'],['../d0/d92/group__memory__hal.html#gac735f7816a3f90773251fee78bb14e14',1,'WriteValueAtAddress32(ManagedPageTable *pageTable, uint32_t *addr, uint32_t val):&#160;memory.c']]],
+  ['writevalueataddress64',['WriteValueAtAddress64',['../d0/d92/group__memory__hal.html#ga3bd4c5b1c1c001e27aa3a26c735c64ca',1,'WriteValueAtAddress64(ManagedPageTable *pageTable, uint64_t *addr, uint64_t val):&#160;memory.c'],['../d0/d92/group__memory__hal.html#ga3bd4c5b1c1c001e27aa3a26c735c64ca',1,'WriteValueAtAddress64(ManagedPageTable *pageTable, uint64_t *addr, uint64_t val):&#160;memory.c']]]
 ];

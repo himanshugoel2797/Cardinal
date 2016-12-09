@@ -19,8 +19,6 @@ var searchData=
   ['elf_5fcommonehdr',['Elf_CommonEhdr',['../d3/dc8/structElf__CommonEhdr.html',1,'']]],
   ['elf_5fsetup_5fparams',['elf_setup_params',['../dd/da5/structelf__setup__params.html',1,'']]],
   ['elfinformation',['ElfInformation',['../d7/de6/structElfInformation.html',1,'']]],
-  ['elfloadrequest',['ElfLoadRequest',['../d7/ddf/structElfLoadRequest.html',1,'']]],
-  ['elfloadresponse',['ElfLoadResponse',['../de/d4c/structElfLoadResponse.html',1,'']]],
   ['elfsetupparameters',['ElfSetupParameters',['../d5/d10/structElfSetupParameters.html',1,'']]],
   ['errno',['Errno',['../d5/dfe/structThreadInfo.html#a0169ca5f62e1cf64b9dbf6b26c343579',1,'ThreadInfo']]],
   ['errormessage',['ErrorMessage',['../dc/dd8/structErrorMessage.html',1,'']]],

@@ -136,6 +136,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:gad1eafd287e34b1870e9f54dd518491d1"><td class="memItemLeft" align="right" valign="top">ProcessErrors&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#gad1eafd287e34b1870e9f54dd518491d1">DeleteDescriptor</a> (UID pid, uint32_t index)</td></tr>
 <tr class="memdesc:gad1eafd287e34b1870e9f54dd518491d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete a descriptor from a process.  <a href="#gad1eafd287e34b1870e9f54dd518491d1">More...</a><br /></td></tr>
 <tr class="separator:gad1eafd287e34b1870e9f54dd518491d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga853838bf8d5fa674eb34335f8f8d32ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d12/group__proc__man.html#ga853838bf8d5fa674eb34335f8f8d32ac">ProcessCheckWakeThreads</a> (UID pid)</td></tr>
+<tr class="memdesc:ga853838bf8d5fa674eb34335f8f8d32ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if any of the process's threads can be woken.  <a href="#ga853838bf8d5fa674eb34335f8f8d32ac">More...</a><br /></td></tr>
+<tr class="separator:ga853838bf8d5fa674eb34335f8f8d32ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -554,6 +557,32 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>If 'i' is the number of messages sent, -(i + 1) on error, i on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga853838bf8d5fa674eb34335f8f8d32ac"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ProcessCheckWakeThreads </td>
+          <td>(</td>
+          <td class="paramtype">UID&#160;</td>
+          <td class="paramname"><em>pid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;managers/process_manager/process.h&gt;</code></p>
+
+<p>Check if any of the process's threads can be woken. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pid</td><td>The pid </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

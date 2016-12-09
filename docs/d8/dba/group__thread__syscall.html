@@ -91,6 +91,11 @@ Enumerations</h2></td></tr>
 <tr class="memitem:gaea778e861e68a590a2fc8b08f6144381"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaea778e861e68a590a2fc8b08f6144381"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>R0_ThreadInfoType</b> { <b>R0_ThreadInfoType_UserStackAddress</b>
  }</td></tr>
 <tr class="separator:gaea778e861e68a590a2fc8b08f6144381"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96332d42191eedd8396baa9c0739c53e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga96332d42191eedd8396baa9c0739c53e"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>MessageWaitType</b> { <b>MessageWaitType_Any</b>, 
+<b>MessageWaitType_MsgType</b>, 
+<b>MessageWaitType_SourcePID</b>
+ }</td></tr>
+<tr class="separator:ga96332d42191eedd8396baa9c0739c53e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -118,6 +123,9 @@ static __inline void *&#160;</td><td class="memItemRight" valign="bottom"><b>R0_
 <tr class="memitem:ga05418e645b6c7f3ef95779896ac4ef18"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga05418e645b6c7f3ef95779896ac4ef18"></a>
 static __inline void&#160;</td><td class="memItemRight" valign="bottom"><b>SleepThread</b> (uint64_t ns_time)</td></tr>
 <tr class="separator:ga05418e645b6c7f3ef95779896ac4ef18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1c3655415af4dc796dac4169568da826"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga1c3655415af4dc796dac4169568da826"></a>
+static __inline void&#160;</td><td class="memItemRight" valign="bottom"><b>WaitForMessage</b> (MessageWaitType waitType, uint64_t wait_val)</td></tr>
+<tr class="separator:ga1c3655415af4dc796dac4169568da826"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>

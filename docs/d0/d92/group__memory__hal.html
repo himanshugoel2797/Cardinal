@@ -215,6 +215,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
 <tr class="memitem:ga1e6262de4f55cea1bef568ea1e705304"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#ga1e6262de4f55cea1bef568ea1e705304">FreeSharedMemoryKey</a> (UID parentPID, uint64_t key)</td></tr>
 <tr class="memdesc:ga1e6262de4f55cea1bef568ea1e705304"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the provided shared memory key.  <a href="#ga1e6262de4f55cea1bef568ea1e705304">More...</a><br /></td></tr>
 <tr class="separator:ga1e6262de4f55cea1bef568ea1e705304"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0420c51ba540de3b2ea453c933fabe0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d92/group__memory__hal.html#gaa0420c51ba540de3b2ea453c933fabe0">GetSharedMemoryKeyUsageCount</a> (uint64_t key, uint64_t *cnt)</td></tr>
+<tr class="memdesc:gaa0420c51ba540de3b2ea453c933fabe0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the shared memory key usage count.  <a href="#gaa0420c51ba540de3b2ea453c933fabe0">More...</a><br /></td></tr>
+<tr class="separator:gaa0420c51ba540de3b2ea453c933fabe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Typedef Documentation</h2>
@@ -1145,6 +1148,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../.
     <tr><td class="paramdir">[in]</td><td class="paramname">cacheMode</td><td>The cache mode </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">flags</td><td>The flags </td></tr>
     <tr><td class="paramdir"></td><td class="paramname">key</td><td>The key</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Error code on failure, MemoryAllocationErrors_None on success. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa0420c51ba540de3b2ea453c933fabe0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d2d/group__memory__syscall.html#ga1c37324a30e01fffd90ff594a6e2fe00">MemoryAllocationErrors</a> GetSharedMemoryKeyUsageCount </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint64_t *&#160;</td>
+          <td class="paramname"><em>cnt</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><code>#include &lt;target/hal/memory.h&gt;</code></p>
+
+<p>Gets the shared memory key usage count. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">key</td><td>The key </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">cnt</td><td>The count</td></tr>
   </table>
   </dd>
 </dl>
