@@ -56,8 +56,7 @@ typedef struct MemoryAllocationsMap {
  */
 typedef struct ManagedPageTable {
     UID                   PageTable;      //!< The hardware dependent page table
-    MemoryAllocationsMap  *AllocationMap; //!< The allocation data of the page table
-    MemoryAllocationsMap  *Last;          //!< The last node in the AllocationMap
+    MemoryAllocationsMap  *UserMap; //!< The allocation data of the page table
 
     uint32_t              reference_count;
     Spinlock              lock;

@@ -52,7 +52,6 @@ void kmalloc_init(void) {
             CachingModeWriteBack,
             MemoryAllocationType_Heap,
             MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
-    GetActiveVirtualMemoryInstance()->AllocationMap = NULL;
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
     k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));

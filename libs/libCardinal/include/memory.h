@@ -51,7 +51,7 @@ typedef enum {
     MemoryAllocationFlags_Exec = (1 << 1),    //!< Execute Enable.
     MemoryAllocationFlags_Read = 0,           //!< Read Only.
     MemoryAllocationFlags_Write = (1 << 2),   //!< Write Enabled.
-    MemoryAllocationFlags_Kernel = 0,         //!< Kernel Access Permission.
+    MemoryAllocationFlags_Kernel = (1 << 5),         //!< Kernel Access Permission.
     MemoryAllocationFlags_User = (1 << 3),    //!< User Access Permission.
     MemoryAllocationFlags_Present = (1 << 4), //!< Page is present.
     MemoryAllocationFlags_NotPresent = 0      //!< Page is not present.

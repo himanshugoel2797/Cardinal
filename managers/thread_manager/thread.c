@@ -13,7 +13,7 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 Spinlock sync_lock;
-static List *neutral, *thds, *sleeping_thds;
+static List *neutral, *thds, *sleeping_thds, *exiting_thds;
 static List* cores;
 static volatile CoreThreadState* coreState = NULL;
 static uint64_t preempt_frequency;
@@ -139,6 +139,7 @@ Thread_Initialize(void) {
     thds = List_Create(tmp);
 
     sleeping_thds = List_Create(CreateSpinlock());
+    exiting_thds = List_Create(CreateSpinlock());
 
     cores = List_Create(CreateSpinlock());
     sync_lock = CreateSpinlock();
@@ -177,7 +178,7 @@ AllocateStack(UID parentProcess,
             stack_Size,
             CachingModeWriteBack,
             MemoryAllocationType_Stack | ((perm_level == ThreadPermissionLevel_User)?MemoryAllocationType_ReservedAllocation:0),
-            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present |((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : 0)
+            MemoryAllocationFlags_Write | MemoryAllocationFlags_Present |((perm_level == ThreadPermissionLevel_User)?MemoryAllocationFlags_User : MemoryAllocationFlags_Kernel)
            );
 
     UnlockSpinlock(pInfo->lock);
@@ -676,62 +677,26 @@ GetNextThread(ThreadInfo *prevThread) {
 
         switch(GET_PROPERTY_VAL(next_thread, State)) {
         case ThreadState_Exiting:
-            if(GetSpinlockContenderCount(next_thread->lock) == 0) {
-                LockSpinlock(next_thread->lock);
 
-                CachingMode cMode = 0;
-                MemoryAllocationFlags cFlags = 0;
-                GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                      (uint64_t)next_thread->SetChildTID,
-                                      &cMode,
-                                      &cFlags,
-                                      NULL);
+            LockSpinlock(next_thread->lock);
+            List_AddEntry(exiting_thds, next_thread);
 
-                if(cMode != 0 && cFlags != 0) {
-                    if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
-                        WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                              (uint32_t*)next_thread->ClearChildTID,
-                                              0);
-                }
+            CachingMode cMode = 0;
+            MemoryAllocationFlags cFlags = 0;
+            GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                  (uint64_t)next_thread->SetChildTID,
+                                  &cMode,
+                                  &cFlags,
+                                  NULL);
 
-//TODO Free these as per AllocateStack's allocation
-//                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
-//                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
-
-                for(uint64_t i = 0; i < List_Length(thds); i++) {
-                    ThreadInfo *tInfo = List_RotNext(thds);
-                    if(GET_PROPERTY_VAL(tInfo, ID) == next_thread->ID) {
-                        List_Remove(thds, List_GetLastIndex(thds));
-                        break;
-                    }
-                }
-
-                for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos)); i++) {
-                    ThreadInfo* id = (ThreadInfo*)List_EntryAt(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos), i);
-
-                    if(id->ID == next_thread->ID) {
-                        List_Remove(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos), i);
-                        break;
-                    }
-                }
-
-                //LockSpinlock(next_thread->ParentProcess->lock);
-
-                AtomicDecrement32(&next_thread->ParentProcess->reference_count);
-                if(List_Length(GET_PROPERTY_PROC_VAL(next_thread, ThreadInfos)) == 0) {
-                    TerminateProcess(GET_PROPERTY_PROC_VAL(next_thread, ID));
-                }
-                UnlockSpinlock(next_thread->lock);
-                FreeSpinlock(next_thread->lock);
-
-
-                kfree(next_thread);
-                next_thread = NULL;
-            } else {
-                LockSpinlock(sync_lock);
-                List_AddEntry(neutral, next_thread);
-                UnlockSpinlock(sync_lock);
+            if(cMode != 0 && cFlags != 0) {
+                if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
+                    WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
+                                          (uint32_t*)next_thread->ClearChildTID,
+                                          0);
             }
+
+            UnlockSpinlock(next_thread->lock);
             break;
         case ThreadState_Paused:
             break;
@@ -999,10 +964,50 @@ WakeThread(UID id) {
 }
 
 void
-WakeReadyThreads(void) {
+DeleteThread(void) {
 
-    List_RotPrev(sleeping_thds);
-    for(uint64_t i = 0; i < List_Length(sleeping_thds); i++) {
+    ThreadInfo* thd = List_RotNext(exiting_thds);
+    List_Remove(exiting_thds, List_GetLastIndex(exiting_thds));
+    if(thd == NULL)
+        return;
+
+                    
+//TODO Free these as per AllocateStack's allocation
+//                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
+//                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
+
+    for(uint64_t i = 0; i < List_Length(thds); i++) {
+        ThreadInfo *tInfo = List_RotNext(thds);
+        if(GET_PROPERTY_VAL(tInfo, ID) == thd->ID) {
+            List_Remove(thds, List_GetLastIndex(thds));
+            break;
+        }
+    }
+
+    for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(thd, ThreadInfos)); i++) {
+        ThreadInfo* id = (ThreadInfo*)List_EntryAt(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), i);
+
+        if(id->ID == thd->ID) {
+            List_Remove(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), i);
+            break;
+        }
+    }
+
+    //LockSpinlock(next_thread->ParentProcess->lock);
+
+    AtomicDecrement32(&thd->ParentProcess->reference_count);
+    if(List_Length(GET_PROPERTY_PROC_VAL(thd, ThreadInfos)) == 0) {
+        TerminateProcess(GET_PROPERTY_PROC_VAL(thd, ID));
+    }
+  
+    UnlockSpinlock(thd->lock);
+    FreeSpinlock(thd->lock);
+
+    kfree(thd);
+}
+
+void
+WakeReadyThreads(void) {
 
         ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
 
@@ -1022,5 +1027,5 @@ WakeReadyThreads(void) {
             UnlockSpinlock(thd->lock);
         }
 
-    }
+        DeleteThread();
 }

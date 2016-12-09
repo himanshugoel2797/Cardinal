@@ -108,7 +108,8 @@ StartProcess(UID pid) {
 ProcessErrors
 TerminateProcess(UID pid) {
 
-    UID curPID = GetCurrentProcessUID();
+    while(GetCurrentProcessUID() == pid)
+        YieldThread();
 
     ProcessInformation *pinfo = NULL;
     ProcessErrors err = GetProcessReference(pid, &pinfo);
@@ -177,7 +178,6 @@ TerminateProcess(UID pid) {
     List_Free(pinfo->Children);
 
     //Now free all the memory related to this process
-    LockSpinlock(pinfo->lock);
     LockSpinlock(pinfo->MessageLock);
     for(uint64_t i = 0; i < List_Length(pinfo->PendingMessages); i++) {
         void *message = List_EntryAt(pinfo->PendingMessages, i);
@@ -191,13 +191,16 @@ TerminateProcess(UID pid) {
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 
-//    FreeVirtualMemoryInstance(pinfo->PageTable);
+    InterruptMan_UnregisterProcess(pid);    
+
+    FreeVirtualMemoryInstance(pinfo->PageTable);
 
 
     //TODO Inspect this to make sure the entire process information data is being freed
     UnlockSpinlock(pinfo->lock);
     FreeSpinlock(pinfo->lock);
     kfree(pinfo);
+
 
     return ProcessErrors_None;
 }

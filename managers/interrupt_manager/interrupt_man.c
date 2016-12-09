@@ -21,7 +21,7 @@ InterruptMan_InterruptHandler(uint32_t int_no,
 		if(irq_subscriber_pids[int_no][i] != 0) {
 			PostMessages(irq_subscriber_pids[int_no][i], (Message**)&m, 1);
 		}
-	}
+	}	
 }
 
 void
@@ -30,6 +30,7 @@ InterruptMan_Initialize(void) {
 	for(int i = 0x10; i < IRQ_COUNT; i++){
 		memset(irq_subscriber_pids[i], 0, MAX_SUBSCRIBERS * sizeof(UID));
 		RegisterInterruptHandler(i, InterruptMan_InterruptHandler);
+		SetInterruptEnableMode(i, TRUE);
 	}
 }
 
