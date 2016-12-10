@@ -59,9 +59,9 @@ typedef struct ProcessInformation {
     UID                         GroupID;                    //!< GroupIDs are used to control permission levels
 
     ProcessStatus               Status;                     //!< The status of the process.
-    ManagedPageTable            *PageTable;                 //!< The page table.
-    uint64_t                    HeapBreak;                  //!< The heap break.
     uint32_t                    ExitStatus;                 //!< The process exit status.
+    uint64_t                    HeapBreak;                  //!< The heap break.
+    ManagedPageTable            *PageTable;                 //!< The page table.
     List                        *Children;                  //!< The process's children processes.
     List                        *ThreadInfos;                 //!< The threads that belong to this process.
     List                        *PendingMessages;           //!< The pending messages.
@@ -72,7 +72,7 @@ typedef struct ProcessInformation {
     Spinlock                    MessageLock;                //!< Message access synchronization.
 
     struct ProcessInformation   *Parent;                    //!< Pointer to the parent of the process.
-
+    uint32_t                    InterruptsUsed;             //!< Tracks if the process has requested interrupt notifications.
     uint32_t                    reference_count;            //!< Reference count
     Spinlock                    lock;                       //!< Read/Write synchronization.
 } ProcessInformation;

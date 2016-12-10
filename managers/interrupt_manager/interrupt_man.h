@@ -6,7 +6,7 @@
 void
 InterruptMan_Initialize(void);
 
-void
+int
 InterruptMan_RegisterProcess(UID pid, 
 							 uint32_t irq, 
 							 uint32_t cnt);

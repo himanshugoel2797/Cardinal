@@ -131,8 +131,7 @@ IO_Open(const char * path,
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
-
-    while(!GetIPCMessageFrom((Message*)resp, pid, msgID));
+    POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
     FreeSharedMemoryKey(op->filename_key);
 
@@ -159,7 +158,7 @@ IO_Read(uint64_t fd,
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
-    while(!GetIPCMessageFrom((Message*)resp, pid, msgID));
+    POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
     return resp->error_code;
 }
@@ -183,7 +182,7 @@ IO_Write(uint64_t fd,
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
-    while(!GetIPCMessageFrom((Message*)resp, pid, msgID));
+    POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
     return resp->error_code;
 }

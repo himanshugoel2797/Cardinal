@@ -191,7 +191,8 @@ TerminateProcess(UID pid) {
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
 
-    InterruptMan_UnregisterProcess(pid);    
+    if(pinfo->InterruptsUsed)
+        InterruptMan_UnregisterProcess(pid);    
 
     FreeVirtualMemoryInstance(pinfo->PageTable);
 
@@ -338,6 +339,35 @@ GetMessageFrom(Message *msg,
 
     UnlockSpinlock(pInfo->MessageLock);
     return FALSE;
+}
+
+bool
+GetMessageFromType(Message *msg,
+                   CardinalMsgType msgType) {
+
+    ProcessInformation *pInfo;
+    GetProcessReference(GetCurrentProcessUID(), &pInfo);
+
+    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
+
+    LockSpinlock(pInfo->MessageLock);
+    Message *tmp = NULL;
+
+    for(uint64_t i = 0; i < List_Length(pInfo->PendingMessages); i++) {
+        tmp = (Message*)List_EntryAt(pInfo->PendingMessages, i);
+
+        if(tmp->MsgType == msgType) {
+            List_Remove(pInfo->PendingMessages, i);
+            if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
+            kfree(tmp);
+
+            UnlockSpinlock(pInfo->MessageLock);
+            return TRUE;
+        }
+    }
+
+    UnlockSpinlock(pInfo->MessageLock);
+    return FALSE;    
 }
 
 uint64_t
@@ -549,6 +579,11 @@ ProcessCheckWakeThreads(UID pid) {
             }
 
             UnlockSpinlock(pInfo->MessageLock);
+
+            //If the process from which a message is expected no longer exists, wake the thread
+            ProcessInformation *pInfo = NULL;
+            if(GetProcessReference(wake_val, &pInfo) != ProcessErrors_None)
+                WakeThread(tInfo->ID);
         }
         break;
         case ThreadWakeCondition_MatchMsgAny: {

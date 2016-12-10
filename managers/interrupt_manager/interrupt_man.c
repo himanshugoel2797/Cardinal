@@ -34,10 +34,19 @@ InterruptMan_Initialize(void) {
 	}
 }
 
-void
+int
 InterruptMan_RegisterProcess(UID pid, 
 							 uint32_t irq, 
 							 uint32_t cnt) {
+
+	ProcessInformation *pInfo = NULL;
+	if(GetProcessReference(pid, &pInfo) != ProcessErrors_None)
+		return -1;
+
+	LockSpinlock(pInfo->lock);
+
+	//Mark that this process is using interrupts
+	pInfo->InterruptsUsed = 1;
 
 	for(uint32_t i = irq; i < cnt; i++) {
 
@@ -54,6 +63,9 @@ InterruptMan_RegisterProcess(UID pid,
 			__asm__ ("cli\n\thlt");
 
 	}
+
+	UnlockSpinlock(pInfo->lock);
+	return 0;
 }
 
 void

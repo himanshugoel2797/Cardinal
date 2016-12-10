@@ -1041,7 +1041,7 @@ VirtMemMan_GetAddressPermissions(PML_Instance inst,
 
 void
 VirtMemMan_FreePageTable(PML_Instance inst) {
-    for(int pml_i = 0; pml_i < 512; pml_i++) {
+    for(int pml_i = 0; pml_i < 256; pml_i++) {
         uint64_t pml_paddr = GET_ADDR_4KB(inst[pml_i]);
         uint64_t *pml_vaddr = (uint64_t*)VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)pml_paddr);
         if(pml_paddr == 0)continue;

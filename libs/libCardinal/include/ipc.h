@@ -75,6 +75,9 @@ struct CardinalFullMessage {
 
 #ifndef _KERNEL_
 #define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
+#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) WaitForMessage(MessageWaitType_SourcePID, PID); GetIPCMessageFrom(XXX, PID, MSGID)
+#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
+#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) WaitForMessage(MessageWaitType_MsgType, MSGTYPE); GetIPCMessageOfType(XXX, MSGTYPE)
 
 /**
  * @brief      Gets the ipc message from the source.
@@ -88,6 +91,19 @@ struct CardinalFullMessage {
 static __inline int
 GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
     return (int)Syscall3(Syscall_GetIPCMessageFrom, (uint64_t)m, (uint64_t)sourcePID, msg_id);
+}
+
+/**
+ * @brief      Gets the ipc message of the specified type.
+ *
+ * @param      m        A preallocated message bufer of size MESSAGE_SIZE
+ * @param[in]  msgType  The message type
+ *
+ * @return     The ipc message of type.
+ */
+static __inline int
+GetIPCMessageOfType(Message *m, CardinalMsgType msgType) {
+    return (int)Syscall2(Syscall_GetIPCMessageMsgType, m, msgType);
 }
 
 /**

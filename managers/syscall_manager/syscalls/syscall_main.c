@@ -43,4 +43,5 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_GetSharedMemoryKeyUsageCount, GetSharedMemoryKeyUsageCount_Syscall);
 
     RegisterSyscall(Syscall_WaitForMessage, WaitForMessage_Syscall);
+    RegisterSyscall(Syscall_GetIPCMessageMsgType, GetIPCMessageMsgType_Syscall);
 }

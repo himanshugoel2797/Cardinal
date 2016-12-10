@@ -99,6 +99,18 @@ GetMessageFrom(Message *msg,
                uint32_t msg_id);
 
 /**
+ * @brief      Gets the ipc message based on the type.
+ *
+ * @param      msg      The message
+ * @param[in]  msgType  The message type
+ *
+ * @return     The message from type.
+ */
+bool
+GetMessageFromType(Message *msg,
+                   CardinalMsgType msgType);
+
+/**
  * @brief      Initialize the process system.
  */
 void

@@ -58,6 +58,56 @@ GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
+GetIPCMessageMsgType_Syscall(uint64_t UNUSED(instruction_pointer),
+                             uint64_t syscall_num,
+                             uint64_t *syscall_params) {
+    if(syscall_num != Syscall_GetIPCMessageMsgType) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+    if(data->param_num != 2) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    //Check bottom end of buffer
+    MemoryAllocationFlags cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[0],
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    //Check top end of buffer
+    cFlags = 0;
+    GetAddressPermissions(GetActiveVirtualMemoryInstance(),
+                          data->params[0] + MESSAGE_SIZE,
+                          NULL,
+                          &cFlags,
+                          NULL);
+
+    if(cFlags != (MemoryAllocationFlags_User | MemoryAllocationFlags_Present | MemoryAllocationFlags_Write)) {
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
+    uint64_t retVal = GetMessageFromType((Message*)data->params[0], (UID)data->params[1]);
+    if(retVal == 0)
+        SyscallSetErrno(-ENOMSG);
+    else
+        SyscallSetErrno(0);
+
+    return retVal;
+}
+
+uint64_t
 PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params) {
