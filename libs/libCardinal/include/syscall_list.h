@@ -51,10 +51,10 @@ typedef enum {
     Syscall_RequestAppointment,         //!< Request an appointment on the other cores.
 
     Syscall_R01_AllocateInterrupts,
-    Syscall_R01_RegisterForInterrupt,
+    Syscall_R01_RegisterForInterrupts,
 
 
-    Syscall_NumEnd = Syscall_GetIPCMessageMsgType,
+    Syscall_NumEnd = Syscall_R01_RegisterForInterrupts,
 } SyscallFunctions;
 
 #ifdef __cplusplus

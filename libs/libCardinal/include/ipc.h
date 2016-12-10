@@ -134,76 +134,35 @@ PostIPCMessages(UID dstPID, Message **m, uint64_t cnt) {
 }
 
 /**
- * @brief      Request the process's IPC response buffer.
+ * @brief      Allocate a block of interrupts.
  *
- * @param      address  The address of the response buffer
- * @param      size     The size of the response buffer in bytes
- *
- * @return     Error code on failure, 0 on success.
- */
-/*static __inline int
-RequestResponseBuffer(uint64_t *address, uint64_t *size) {
-    if(address != NULL)
-        *address = Syscall1(Syscall_RequestResponseBuffer, 0);
-
-    if(size != NULL)
-        *size = Syscall1(Syscall_RequestResponeBuffer, 1);
-
-    return GetErrno();
-}*/
-
-/**
- * @brief      Gets the single use response key to allow writing to the response buffer.
- *
- * @param[in]  offset  The offset
- * @param[in]  len     The length
- * @param      key     The key
+ * @param[in]  cnt   The count
+ * @param      irq   The irq number that the block starts from
  *
  * @return     Error code on failure, 0 on success.
  */
-/*static __inline int
-GetResponseKey(uint32_t offset, uint32_t len, uint64_t *key) {
-    if(key == NULL)
+static __inline uint64_t
+R01AllocateInterrupts(int cnt, int *irq) {
+    if(irq == NULL)
         return -EINVAL;
 
-    *key = Syscall2(Syscall_GetResponseKey, offset, len);
+    *irq = Syscall1(Syscall_R01_AllocateInterrupts, cnt);
     return GetErrno();
-}*/
+}
 
 /**
- * @brief      Submit a response using a response key.
+ * @brief      Register to a previously allocated block of interrupts.
  *
- * @param[in]  key     The key
- * @param      buffer  The buffer
- * @param[in]  length  The length of the buffer
+ * @param[in]  irq   The irq
+ * @param[in]  cnt   The count
  *
  * @return     Error code on failure, 0 on success.
  */
-/*static __inline int
-SubmitResponse(uint64_t key, void *buffer, uint32_t length) {
-    if(buffer == NULL)
-        return -EINVAL;
-
-    Syscall3(Syscall_SubmitResponse, key, (uint64_t)buffer, length);
+static __inline uint64_t
+R01RegisterInterrupts(int irq, int cnt) {
+    Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
     return GetErrno();
-}*/
-
-/**
- * @brief      Queries a response key length.
- *
- * @param[in]  key     The key
- * @param      length  The length
- *
- * @return     Error code on failure, 0 on success.
- */
-/*static __inline int
-QueryResponseKeyLength(uint64_t key, uint32_t *length) {
-    if(length == NULL)
-        return -EINVAL;
-
-    *length = Syscall1(Syscall_QueryResponseKeyLength, key);
-    return GetErrno();
-}*/
+}
 
 #endif
 

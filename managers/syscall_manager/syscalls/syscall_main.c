@@ -44,4 +44,7 @@ RegisterAllSyscalls(void) {
 
     RegisterSyscall(Syscall_WaitForMessage, WaitForMessage_Syscall);
     RegisterSyscall(Syscall_GetIPCMessageMsgType, GetIPCMessageMsgType_Syscall);
+
+    RegisterSyscall(Syscall_R01_RegisterForInterrupts, R01RegisterForInterrupts_Syscall);
+    RegisterSyscall(Syscall_R01_AllocateInterrupts, R01AllocateInterrupts_Syscall);
 }

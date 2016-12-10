@@ -7,6 +7,7 @@
 #define MAX_SUBSCRIBERS 4
 
 static UID irq_subscriber_pids[IRQ_COUNT][MAX_SUBSCRIBERS];
+static char irq_sub_slot_count[IRQ_COUNT];
 
 static void
 InterruptMan_InterruptHandler(uint32_t int_no,
@@ -31,13 +32,14 @@ InterruptMan_Initialize(void) {
         memset(irq_subscriber_pids[i], 0, MAX_SUBSCRIBERS * sizeof(UID));
         RegisterInterruptHandler(i, InterruptMan_InterruptHandler);
         SetInterruptEnableMode(i, TRUE);
+        irq_sub_slot_count[i] = MAX_SUBSCRIBERS;
     }
 }
 
 int
 InterruptMan_RegisterProcess(UID pid,
-                             uint32_t irq,
-                             uint32_t cnt) {
+                             int irq,
+                             int cnt) {
 
     ProcessInformation *pInfo = NULL;
     if(GetProcessReference(pid, &pInfo) != ProcessErrors_None)
@@ -48,7 +50,7 @@ InterruptMan_RegisterProcess(UID pid,
     //Mark that this process is using interrupts
     pInfo->InterruptsUsed = 1;
 
-    for(uint32_t i = irq; i < cnt; i++) {
+    for(int i = irq; i < cnt; i++) {
 
         bool irq_filled = FALSE;
         for(uint32_t j = 0; j < MAX_SUBSCRIBERS; j++) {
@@ -76,4 +78,24 @@ InterruptMan_UnregisterProcess(UID pid) {
                 irq_subscriber_pids[i][j] = 0;
         }
     }
+}
+
+int
+InterruptMan_AllocateBlock(int cnt) {
+
+	int pos = 0;
+	int score = 0;
+
+	for(int i = 0; i < IRQ_COUNT && score < cnt; i++) {
+		if(irq_sub_slot_count[i] > 0)score++;
+		else {
+			pos = i + 1;
+			score = 0;
+		}
+	}
+
+	if((pos + cnt) >= IRQ_COUNT)
+		return -1;
+
+	return pos;
 }

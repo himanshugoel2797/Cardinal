@@ -8,10 +8,13 @@ InterruptMan_Initialize(void);
 
 int
 InterruptMan_RegisterProcess(UID pid,
-                             uint32_t irq,
-                             uint32_t cnt);
+                             int irq,
+                             int cnt);
 
 void
 InterruptMan_UnregisterProcess(UID pid);
+
+int
+InterruptMan_AllocateBlock(int cnt);
 
 #endif
