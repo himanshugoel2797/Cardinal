@@ -11,7 +11,6 @@ typedef struct {
     int (*write)(uint64_t, uint64_t, void*, uint64_t, UID);
     void (*close)(uint64_t, UID);
     void (*remove)(uint64_t, UID);
-    int (*get_info)(const char *, UID);
     int (*rename)(uint64_t, const char *, UID);
     void (*sync)(uint64_t, UID);
 } FileServerHandlers;

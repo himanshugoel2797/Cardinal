@@ -1,8 +1,8 @@
-#include <cardinal/cardinal_types.h>
-#include <cardinal/shared_memory.h>
-#include <cardinal/file_server.h>
-#include <cardinal/syscall.h>
-#include <cardinal/ipc.h>
+#include "cardinal_types.h"
+#include "shared_memory.h"
+#include "file_server.h"
+#include "syscall.h"
+#include "ipc.h"
 #include <string.h>
 #include "io/fileserver.h"
 

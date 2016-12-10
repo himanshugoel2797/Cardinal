@@ -1,8 +1,8 @@
 #ifndef _LIB_FILESERVER_H_
 #define _LIB_FILESERVER_H_
 
-#include <cardinal/cardinal_types.h>
-#include <cardinal/file_server.h>
+#include "../cardinal_types.h"
+#include "../file_server.h"
 
 typedef struct {
     uint64_t Size;

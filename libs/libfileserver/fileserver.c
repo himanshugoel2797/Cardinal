@@ -141,10 +141,6 @@ Server_HandleOpRequest(Message *m) {
         return;
     }
     break;
-    case FileSystemOpType_GetInfo: {
-
-    }
-    break;
     case FileSystemOpType_Rename: {
 
     }

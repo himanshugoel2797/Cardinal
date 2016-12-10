@@ -1,8 +1,8 @@
 #ifndef _PROC_SRV_H_
 #define _PROC_SRV_H_
 
-#include <cardinal/cardinal_types.h>
-#include <cardinal/ipc.h>
+#include "../cardinal_types.h"
+#include "../ipc.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,25 +3,15 @@
 SRC_DIR=$(pwd)
 ROOTDIR=$(pwd)/root
 
-mkdir -p $ROOTDIR/sys/include/cardinal
-cp $SRC_DIR/libs/libCardinal/include/* $ROOTDIR/sys/include/cardinal
+cd $SRC_DIR/libs/libCardinal
+	make uninstall 
+	make clean
+	make all
+	make install
+cd ..
 
 cd $SRC_DIR/libs/libfileserver
 	make uninstall
-	make clean
-	make all
-	make install
-cd ..
-
-cd $SRC_DIR/libs/libio
-	make uninstall
-	make clean
-	make all
-	make install
-cd ..
-
-cd $SRC_DIR/libs/libipc
-	make uninstall 
 	make clean
 	make all
 	make install
@@ -34,21 +24,7 @@ cd $SRC_DIR/libs/liblist
 	make install
 cd ..
 
-cd $SRC_DIR/srv/mem_srv/lib
-	make uninstall 
-	make clean
-	make all
-	make install
-cd ..
-
-cd $SRC_DIR/srv/proc_srv/lib
-	make uninstall 
-	make clean
-	make all
-	make install
-cd ..
-
-cd $SRC_DIR/srv/namespace_dir/lib
+cd $SRC_DIR/libs/libdisplay
 	make uninstall 
 	make clean
 	make all

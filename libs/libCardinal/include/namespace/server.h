@@ -1,8 +1,8 @@
 #ifndef _CARDINAL_NAMESPACE_DIR_SERVER_H_
 #define _CARDINAL_NAMESPACE_DIR_SERVER_H_
 
-#include <cardinal/cardinal_types.h>
-#include <cardinal/ipc.h>
+#include "../cardinal_types.h"
+#include "../ipc.h"
 
 #define NAMESPACE_NAME_LEN 64
 

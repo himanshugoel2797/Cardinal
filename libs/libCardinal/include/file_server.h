@@ -34,7 +34,6 @@ typedef enum {
     FileSystemOpType_Write = (1 << 2),
     FileSystemOpType_Close = (1 << 3),
     FileSystemOpType_Remove = (1 << 4),
-    FileSystemOpType_GetInfo = (1 << 5),
     FileSystemOpType_Rename = (1 << 6),
     FileSystemOpType_Sync = (1 << 7),
 } FileSystemOpType;
@@ -107,6 +106,7 @@ typedef struct {
 typedef enum {
     FileSystemOpFlag_Read = (1 << 0),
     FileSystemOpFlag_Write = (1 << 1),
+    FileSystemOpFlag_Info = (1 << 2)
 } FileSystemOpFlag;
 
 #endif

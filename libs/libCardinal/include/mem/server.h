@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <cardinal/cardinal_types.h>
-#include <cardinal/memory.h>
-#include <cardinal/ipc.h>
+#include "../cardinal_types.h"
+#include "../memory.h"
+#include "../ipc.h"
 
 #ifdef __cplusplus
 extern "C" {
