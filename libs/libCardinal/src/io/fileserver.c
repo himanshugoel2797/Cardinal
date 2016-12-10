@@ -4,7 +4,7 @@
 #include "syscall.h"
 #include "ipc.h"
 #include <string.h>
-#include "io/fileserver.h"
+#include "io/server.h"
 
 static uint32_t 
 fill_struct(FileSystemOpRequestHeader *op,
@@ -116,12 +116,12 @@ IO_Open(const char * path,
     uint64_t shmem_len = path_len;
     char * vAddr = NULL;
 
-    if(setup_shmem(&shmem_len, 0, &op->filename_key, (uint64_t*)&vAddr) != 0)
+    if(setup_shmem(&shmem_len, 0, &op->path_key, (uint64_t*)&vAddr) != 0)
         return -1;
 
     strcpy(vAddr, path);
 
-    op->filename_offset = 0;
+    op->path_offset = 0;
     op->flags = flags;
     op->mode = mode;
 
@@ -134,7 +134,7 @@ IO_Open(const char * path,
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
-    FreeSharedMemoryKey(op->filename_key);
+    FreeSharedMemoryKey(op->path_key);
 
     *fd = resp->fd;
     return resp->error_code;
@@ -212,13 +212,30 @@ IO_Rename(uint64_t fd,
           const char *dst,
           UID pid) {
 
-}
+    CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpRename, op);
+    uint32_t msgID = fill_struct(&op->op_h, FileSystemOpType_Rename);
 
-void
-IO_GetInfo(const char *path,
-           UID pid,
-           FileInfo *info) {
+    uint64_t path_len = strlen(dst);
+    uint64_t shmem_len = path_len;
+    char * vAddr = NULL;
 
+    if(setup_shmem(&shmem_len, 0, &op->name_key, (uint64_t*)&vAddr) != 0)
+        return -1;
+
+    strcpy(vAddr, dst);
+
+    op->name_offset = 0;
+    op->fd = fd;
+
+    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+        return -1;
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
+    POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
+
+    FreeSharedMemoryKey(op->name_key);
+
+    return resp->error_code;
 }
 
 void

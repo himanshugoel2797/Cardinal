@@ -49,9 +49,6 @@ IO_Close(uint64_t, UID);
 void
 IO_Remove(uint64_t, UID);
 
-void
-IO_GetInfo(const char*, UID, FileInfo*);
-
 int
 IO_Rename(uint64_t, const char*, UID);
 

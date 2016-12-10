@@ -25,6 +25,9 @@ typedef struct {
 } DisplayInfo;
 
 int
+Display_Initialize(void);
+
+int
 Display_GetDisplayCount(void);
 
 int
@@ -43,7 +46,7 @@ Display_GetDisplayImage(int display_index,
 						uint64_t key);
 
 uint64_t
-Display_LockDisplay(int display_index);
+Display_TryLockDisplay(int display_index);
 
 int
 Display_UnlockDisplay(uint64_t display_key);

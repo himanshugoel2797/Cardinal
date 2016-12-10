@@ -37,24 +37,24 @@ Server_HandleOpRequest(Message *m) {
     case FileSystemOpType_Open: {
         FileSystemOpOpen *op = (FileSystemOpOpen*)m;
 
-        if(op->filename_key == 0) {
+        if(op->path_key == 0) {
             retVal = -EINVAL;
             break;
         }
 
         UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->filename_key, &shmem_data) != 0) {
+        if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
             retVal = -EINVAL;
             break;
         }
 
-        if(shmem_data.Length < op->filename_offset) {
+        if(shmem_data.Length < op->path_offset) {
             retVal = -EINVAL;
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
             break;
         }
 
-        retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->filename_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
+        retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->path_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
 
         Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
     }
@@ -142,7 +142,28 @@ Server_HandleOpRequest(Message *m) {
     }
     break;
     case FileSystemOpType_Rename: {
+        FileSystemOpRename *op = (FileSystemOpRename*)m;
 
+        if(op->name_key == 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        UserSharedMemoryData shmem_data;
+        if(ApplySharedMemoryKey(op->name_key, &shmem_data) != 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        if(shmem_data.Length < op->name_offset) {
+            retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+            break;
+        }
+
+        retVal = fs_handlers->rename(op->fd, (const char *)shmem_data.VirtualAddress + op->name_offset, m->SourcePID);
+
+        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
     }
     break;
     case FileSystemOpType_Sync: {

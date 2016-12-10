@@ -10,6 +10,7 @@
 #include "ipc.h"
 
 #define PATH_MAX KiB(64)
+#define NAME_MAX 256
 #define KEY_BYTES 64
 
 typedef enum {
@@ -59,8 +60,8 @@ typedef struct {
 
 typedef struct {
     FileSystemOpRequestHeader op_h;
-    uint64_t filename_key;
-    uint64_t filename_offset;
+    uint64_t path_key;
+    uint64_t path_offset;
     int flags;
     uint64_t mode;
     uint8_t access_pass[KEY_BYTES];
@@ -98,15 +99,41 @@ typedef struct {
 } FileSystemOpWrite;
 
 typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t fd;
+    uint64_t name_key;
+    uint64_t name_offset;
+} FileSystemOpRename;
+
+typedef struct {
     Message m;
     int error_code;
     uint64_t fd;
 } FileSystemOpResponse;
 
+
+typedef struct {
+    uint64_t EntryCount;
+    uint32_t EntryVersion;
+    uint32_t EntrySize;
+} FileSystemDirectoryHeader;
+
+typedef struct {
+    char Name[NAME_MAX];
+    FileTypeFlag FileType;
+} FileSystemDirectoryEntry;
+
+typedef struct {
+    FileSystemDirectoryHeader hdr;
+    FileSystemDirectoryEntry entries[1];
+} FileSystemDirectoryData;
+
+
 typedef enum {
     FileSystemOpFlag_Read = (1 << 0),
     FileSystemOpFlag_Write = (1 << 1),
-    FileSystemOpFlag_Info = (1 << 2)
+    FileSystemOpFlag_Info = (1 << 2),
+    FileSystemOpFlag_Create = (1 << 3)
 } FileSystemOpFlag;
 
 #endif
