@@ -2,7 +2,7 @@ TARGET=sibyl.elf
 
 OBJS=main.o
 
-LIBS=-lcrypto
+LIBS=-lcrypto -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

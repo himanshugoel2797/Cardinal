@@ -1,11 +1,12 @@
-#include "common.h"
-#include "proc_db.h"
-#include "server.h"
-#include "program.h"
-#include <string.h>
+#include <cardinal/proc/server.h>
 #include <cardinal/process.h>
 #include <cardinal/shared_memory.h>
-#include <libipc/ipc.h>
+#include <cardinal/ipc.h>
+#include <string.h>
+
+#include "common.h"
+#include "proc_db.h"
+#include "program.h"
 
 void
 send_existence_notification(UID pid) {

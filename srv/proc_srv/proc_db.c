@@ -1,5 +1,5 @@
 #include "common.h"
-#include "server.h"
+#include <cardinal/proc/server.h>
 #include <liblist/list.h>
 #include <stdlib.h>
 #include <string.h>

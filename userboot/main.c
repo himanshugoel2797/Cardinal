@@ -2,7 +2,7 @@
 #include "program.h"
 #include <string.h>
 #include <cardinal/process.h>
-#include <procserver/server.h>
+#include <cardinal/proc/server.h>
 
 int
 LoadProgram(char *name) {

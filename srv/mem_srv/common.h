@@ -2,8 +2,8 @@
 #define _MEM_SRV_COMMON_H_
 
 #include <cardinal/cardinal_types.h>
+#include <cardinal/mem/server.h>
 #include <cardinal/ipc.h>
-#include "server.h"
 
 
 void

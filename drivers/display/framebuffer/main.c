@@ -4,8 +4,11 @@
 #include <cardinal/memory.h>
 #include <cardinal/shared_memory.h>
 #include <cardinal/syscall_property.h>
+
+#include <cardinal/namespace/server.h>
+
 #include <libfileserver/fileserver.h>
-#include <namespaceserver/server.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

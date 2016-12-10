@@ -1,9 +1,10 @@
-#include "server.h"
+#include <cardinal/mem/server.h>
+#include <cardinal/proc/server.h>
+#include <cardinal/ipc.h>
+
 #include "common.h"
 #include "mem_db.h"
 
-#include <cardinal/ipc.h>
-#include <procserver/server.h>
 
 //TODO implement mmap and grant support for now, to allow musl to initialize, namespace_dir relies on it.
 //namespace_dir implements a simple list of namespaces and associated pids, it can receive process death notifications from the process server.
@@ -65,13 +66,6 @@ int main() {
                 mmap_handler(msg);
             }
             break;
-            case MemoryServerMessageType_GrantCreationRequest: {
-                grant_create_handler(msg);
-            }
-            break;
-            case MemoryServerMessageType_GrantRequest: {
-                grant_request_handler(msg);
-            }
             }
 
 

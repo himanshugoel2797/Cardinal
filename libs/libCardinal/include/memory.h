@@ -122,7 +122,7 @@ R0_Map(UID pid,
     p.AllocationType = type;
     p.AllocationFlags = flags;
 
-    *virt = Syscall1(Syscall_R0_Map, &p);
+    *virt = Syscall1(Syscall_R0_Map, (uint64_t)&p);
     return GetErrno();
 }
 

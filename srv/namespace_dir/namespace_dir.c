@@ -1,9 +1,8 @@
-#include "server.h"
-
-#include <string.h>
-#include <stdlib.h>
+#include <cardinal/namespace/server.h>
 #include <cardinal/cardinal_types.h>
 #include <cardinal/process.h>
+#include <string.h>
+#include <stdlib.h>
 
 typedef struct {
     UID pid;

@@ -127,16 +127,15 @@ static __inline void*
 R0_GetThreadUserStack(UID tid) {
     uint64_t addr = 0;
     R0_GetThreadInfo(tid, R0_ThreadInfoType_UserStackAddress, &addr);
-    return addr;
+    return (void*)addr;
 }
 
 static __inline void
 SleepThread(uint64_t ns_time) {
     Syscall1(Syscall_Nanosleep, ns_time);
-    return GetErrno();
 }
 
-static __inline void
+static __inline uint64_t
 WaitForMessage(MessageWaitType waitType, uint64_t wait_val) {
     Syscall2(Syscall_WaitForMessage, waitType, wait_val);
     return GetErrno();

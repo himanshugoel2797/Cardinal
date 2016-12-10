@@ -2,7 +2,7 @@ TARGET=proc_server.elf
 
 OBJS=main.o proc_db.o proc_create.o elf.o program.o
 
-LIBS=-llist -lipc
+LIBS=-llist -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

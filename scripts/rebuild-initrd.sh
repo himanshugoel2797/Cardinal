@@ -53,3 +53,5 @@ cd $SRC_DIR/drivers/display/framebuffer
 	make all
 	cp framebuffer.elf $INITRD_INST_DIR
 cd $SRC_DIR
+
+cp wallpaper.png $SRC_DIR/initrd/wallpaper.png

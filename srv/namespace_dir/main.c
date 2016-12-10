@@ -1,9 +1,9 @@
-#include "server.h"
+#include <cardinal/cardinal_types.h>
+#include <cardinal/namespace/server.h>
+#include <cardinal/proc/server.h>
+#include <cardinal/ipc.h>
 #include "namespace_dir.h"
 
-#include <cardinal/cardinal_types.h>
-#include <cardinal/ipc.h>
-#include <procserver/server.h>
 
 typedef struct {
     Message m;

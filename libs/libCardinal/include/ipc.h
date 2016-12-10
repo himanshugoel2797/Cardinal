@@ -103,7 +103,7 @@ GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
  */
 static __inline int
 GetIPCMessageOfType(Message *m, CardinalMsgType msgType) {
-    return (int)Syscall2(Syscall_GetIPCMessageMsgType, m, msgType);
+    return (int)Syscall2(Syscall_GetIPCMessageMsgType, (uint64_t)m, msgType);
 }
 
 /**
@@ -163,6 +163,10 @@ R01RegisterInterrupts(int irq, int cnt) {
     Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
     return GetErrno();
 }
+
+
+uint32_t
+RequestMessageID(void);
 
 #endif
 

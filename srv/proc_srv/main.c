@@ -1,10 +1,8 @@
-#include "server.h"
+#include <cardinal/proc/server.h>
+#include <cardinal/process.h>
+#include <cardinal/ipc.h>
 #include "common.h"
 #include "proc_db.h"
-
-#include <cardinal/ipc.h>
-#include <errno.h>
-#include <cardinal/process.h>
 
 void
 HandleSystemMessages(Message *m) {

@@ -15,7 +15,7 @@
 #include "file_server.h"
 #include "ipc.h"
 
-#include <memserver/server.h>
+#include <cardinal/mem/server.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,8 +1,10 @@
-#include "initrd.h"
-#include <libio/fileserver.h>
-#include <namespaceserver/server.h>
+#include <cardinal/io/fileserver.h>
+#include <cardinal/namespace/server.h>
 #include <string.h>
 #include <stdio.h>
+
+#include "initrd.h"
+#include "png.h"
 
 int main() {
     //First map in the initrd
@@ -39,8 +41,6 @@ int main() {
     sscanf((char*)vAddr, "Width:%d Height:%d Pitch:%d", &w, &h, &p);
 
     IO_FreeBuffer(vAddr, buf_len, read_key, write_key);
-    
-    __asm__("hlt" :: "a"( (h << 16) | p ));
 
     buf_len = h * p;
     IO_AllocateBuffer(&buf_len,
@@ -49,6 +49,19 @@ int main() {
                       &write_key);
 
     memset((void*)vAddr, 0xFF, buf_len);
+
+    void *file_loc = NULL;
+    size_t file_size = 0;
+    GetFile("wallpaper.png", &file_loc, &file_size);
+
+    int img_w = 0;
+    int img_h = 0;
+    int img_p = 0;
+    int res_len = 0;
+
+    void *result = DecodePNGtoRGBA(file_loc, file_size, &img_w, &img_h, &img_p, &res_len);
+
+    memcpy(vAddr, result, res_len);
 
     IO_Open(":framebuffer0", FileSystemOpFlag_Write, 0, key, pid, &fd);
     IO_Write(fd, 0, write_key, buf_len, pid);

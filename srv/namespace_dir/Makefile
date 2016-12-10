@@ -2,7 +2,7 @@ TARGET=namespace_srv.elf
 
 OBJS=main.o namespace_dir.o
 
-LIBS=-llist
+LIBS=-llist -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

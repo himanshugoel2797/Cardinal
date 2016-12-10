@@ -1,8 +1,8 @@
 TARGET=mem_server.elf
 
-OBJS=main.o mmap.o grant.o mem_db.o
+OBJS=main.o mmap.o mem_db.o
 
-LIBS=-llist
+LIBS=-llist -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

@@ -2,7 +2,7 @@ TARGET=framebuffer.elf
 
 OBJS=main.o
 
-LIBS=-lfileserver -lnamespaceserver -lipc
+LIBS=-lfileserver -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
