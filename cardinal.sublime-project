@@ -2,6 +2,6 @@
     "folders": [{
         "path": ".",
         "folder_exclude_patterns": ["docs", "root", "build", "iso"],
-        "file_exclude_patterns": ["*.bc", "*.iso", "*.bin", "*.elf", "*.img", "tmp.S"]
+        "file_exclude_patterns": ["*.bc", "*.iso", "*.bin", "*.elf", "*.img", "tmp.S", ".git*"]
     }]
 }
