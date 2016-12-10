@@ -37,3 +37,5 @@ setup_env.sh
 
 # Debug files
 *.dSYM/
+
+*.sub*
