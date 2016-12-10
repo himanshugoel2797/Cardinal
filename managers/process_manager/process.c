@@ -192,7 +192,7 @@ TerminateProcess(UID pid) {
     FreeSpinlock(pinfo->MessageLock);
 
     if(pinfo->InterruptsUsed)
-        InterruptMan_UnregisterProcess(pid);    
+        InterruptMan_UnregisterProcess(pid);
 
     FreeVirtualMemoryInstance(pinfo->PageTable);
 
@@ -367,7 +367,7 @@ GetMessageFromType(Message *msg,
     }
 
     UnlockSpinlock(pInfo->MessageLock);
-    return FALSE;    
+    return FALSE;
 }
 
 uint64_t

@@ -971,7 +971,7 @@ DeleteThread(void) {
     if(thd == NULL)
         return;
 
-                    
+
 //TODO Free these as per AllocateStack's allocation
 //                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
 //                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
@@ -999,7 +999,7 @@ DeleteThread(void) {
     if(List_Length(GET_PROPERTY_PROC_VAL(thd, ThreadInfos)) == 0) {
         TerminateProcess(GET_PROPERTY_PROC_VAL(thd, ID));
     }
-  
+
     UnlockSpinlock(thd->lock);
     FreeSpinlock(thd->lock);
 
@@ -1009,23 +1009,23 @@ DeleteThread(void) {
 void
 WakeReadyThreads(void) {
 
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
+    ThreadInfo *thd = (ThreadInfo*)List_RotNext(sleeping_thds);
 
-        if(thd != NULL) {
-            LockSpinlock(thd->lock);
-            uint64_t cur_time = GetTimerValue();
+    if(thd != NULL) {
+        LockSpinlock(thd->lock);
+        uint64_t cur_time = GetTimerValue();
 
-            if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
-                if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
-                    SET_PROPERTY_VAL(thd, State, ThreadState_Running);
+        if(thd->WakeCondition == ThreadWakeCondition_SleepEnd) {
+            if(GetTimerInterval_NS(cur_time - thd->SleepStartTime) >= thd->SleepDurationNS) {
+                SET_PROPERTY_VAL(thd, State, ThreadState_Running);
 
-                    List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
-                    List_AddEntry(neutral, thd);
-                }
+                List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
+                List_AddEntry(neutral, thd);
             }
-
-            UnlockSpinlock(thd->lock);
         }
 
-        DeleteThread();
+        UnlockSpinlock(thd->lock);
+    }
+
+    DeleteThread();
 }

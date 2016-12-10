@@ -175,15 +175,13 @@ MapPage(ManagedPageTable *pageTable,
         MemoryAllocationsMap *prev = NULL;
         MemoryAllocationsMap **map_root = NULL;
 
-        if(flags & MemoryAllocationFlags_Kernel){
+        if(flags & MemoryAllocationFlags_Kernel) {
             map = KernelMap;
             map_root = &KernelMap;
-        }
-        else if(flags & MemoryAllocationFlags_User){
+        } else if(flags & MemoryAllocationFlags_User) {
             map = pageTable->UserMap;
             map_root = &pageTable->UserMap;
-        }
-        else 
+        } else
             __asm__("cli\n\thlt");
 
         do {
@@ -220,7 +218,7 @@ MapPage(ManagedPageTable *pageTable,
 
                     if(map->next != NULL)
                         map->next->prev = prev;
-                    
+
                     kfree(map);
                 }
                 break;
@@ -336,15 +334,13 @@ UnmapPage(ManagedPageTable 	*pageTable,
         MemoryAllocationsMap *prev = NULL;
         MemoryAllocationsMap **map_root = NULL;
 
-        if(flags & MemoryAllocationFlags_Kernel){
+        if(flags & MemoryAllocationFlags_Kernel) {
             map = KernelMap;
             map_root = &KernelMap;
-        }
-        else if(flags & MemoryAllocationFlags_User){
+        } else if(flags & MemoryAllocationFlags_User) {
             map = pageTable->UserMap;
             map_root = &pageTable->UserMap;
-        }
-        else 
+        } else
             __asm__("cli\n\thlt");
 
         do {
@@ -370,7 +366,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
                 if(top->Length != 0) {
                     top->next = map->next;
                     top->prev = map;
-                    
+
                     if(map->next != NULL)
                         map->next->prev = top;
 
@@ -397,7 +393,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
                     if(map->next != NULL)
                         map->next->prev = map->prev;
-                    
+
                     kfree(map);
                 }
                 break;
@@ -668,10 +664,10 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
     MemoryAllocationType t = 0;
 
     LockSpinlock(pageTable->lock);
-    
+
     MemoryAllocationsMap *map = KernelMap;
 
-    for(int i = 0; i < 2; i++){
+    for(int i = 0; i < 2; i++) {
         do {
             if(addr >= map->VirtualAddress && addr < (map->VirtualAddress + map->Length)) {
                 t = map->AllocationType;
@@ -684,7 +680,7 @@ GetAddressPermissions(ManagedPageTable      *pageTable,
 
         if(t == 0 && c == 0 && a == 0 && pageTable->UserMap != NULL) {
             map = pageTable->UserMap;
-        }else
+        } else
             break;
     }
 
@@ -856,10 +852,10 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
                 FreePhysicalPageCont(map->PhysicalAddress, map->Length / PAGE_SIZE);
             }
 
-            if(!(map->AllocationType & MemoryAllocationType_ReservedAllocation)){
+            if(!(map->AllocationType & MemoryAllocationType_ReservedAllocation)) {
                 UnmapPage(pageTable,
-                        map->VirtualAddress,
-                        map->Length);
+                          map->VirtualAddress,
+                          map->Length);
             }
 
         }

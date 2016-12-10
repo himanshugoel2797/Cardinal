@@ -7,9 +7,9 @@ void
 InterruptMan_Initialize(void);
 
 int
-InterruptMan_RegisterProcess(UID pid, 
-							 uint32_t irq, 
-							 uint32_t cnt);
+InterruptMan_RegisterProcess(UID pid,
+                             uint32_t irq,
+                             uint32_t cnt);
 
 void
 InterruptMan_UnregisterProcess(UID pid);
