@@ -19,6 +19,11 @@ typedef enum {
 } FileSystemRequestType;
 
 typedef enum {
+    FileTypeFlag_DataFile = (1 << 0),
+    FiletypeFlag_Directory = (1 << 1),
+} FileTypeFlag;
+
+typedef enum {
     FileSystemType_Hierarchical = (1 << 0),
     FileSystemType_Relational = (1 << 1)
 } FileSystemType;

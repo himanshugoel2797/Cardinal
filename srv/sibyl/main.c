@@ -38,9 +38,8 @@ int main(int arc, char *argv[]) {
     /* Encrypt the plaintext */
     ciphertext_len = encrypt(plaintext, strlen(plaintext), aad, strlen(aad), key, iv, ciphertext, tag);
 
-    /* Do something useful with the ciphertext here */
-    BIO_dump_fp(stdout, ciphertext, ciphertext_len);
-    BIO_dump_fp(stdout, tag, 14);
+
+    //Ciphertext is ready
 
     /* Mess with stuff */
     /* ciphertext[0] ^= 1; */
@@ -48,11 +47,6 @@ int main(int arc, char *argv[]) {
 
     /* Decrypt the ciphertext */
     decryptedtext_len = decrypt(ciphertext, ciphertext_len, aad, strlen(aad), tag, key, iv, decryptedtext);
-
-    if(decryptedtext_len == strlen(plaintext)) {
-        __asm__("hlt");
-    }
-    __asm__("hlt" :: "a"(0xF00F1E50F00F1E50));
 
     if(decryptedtext_len < 0) {
         /* Verify error */
@@ -66,6 +60,7 @@ int main(int arc, char *argv[]) {
     /* Remove error strings */
     ERR_free_strings();
 
+    while(1);
     return 0;
 }
 

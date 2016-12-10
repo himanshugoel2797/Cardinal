@@ -31,7 +31,7 @@ fbuf_open(const char *path,
           UID pid,
           uint64_t* fd) {
 
-    if(strcmp(path, ":framebuffer") == 0) {
+    if(strcmp(path, ":framebuffer0") == 0) {
         if(flags & FileSystemOpFlag_Write && write_pid == 0)
             write_pid = pid;
         else if(flags & FileSystemOpFlag_Write && write_pid != 0) {
@@ -41,7 +41,7 @@ fbuf_open(const char *path,
 
         *fd = 2;
 
-    } else if(strcmp(path, ":info") == 0) {
+    } else if(strcmp(path, ":info0") == 0) {
         if(flags & FileSystemOpFlag_Write)
             return -ERDONLY;
 
@@ -57,7 +57,6 @@ fbuf_read(uint64_t fd,
           void *dst,
           uint64_t len,
           UID pid) {
-    __asm__("hlt");
     if(fd == 1) {
 
         if(offset >= fbuf_info_len)
@@ -156,7 +155,7 @@ int main() {
 
     uint32_t op_key = 0;
     uint64_t op_error = 0;
-    RegisterNamespace("disp0", &op_key);
+    RegisterNamespace("display", &op_key);
     while(!IsNamespaceRequestReady(op_key, &op_error));
 
     FileServerHandlers handlers;

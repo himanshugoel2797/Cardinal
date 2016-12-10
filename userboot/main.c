@@ -49,6 +49,10 @@ int _start() {
     if(err != 0)
         __asm__("hlt");
 
+    err = LoadProgram("sibyl.elf");
+    if(err != 0)
+        __asm__("hlt");
+
     //Begin system initialization
     err = LoadProgram("sys_init.elf");
     if(err != 0)
@@ -56,10 +60,6 @@ int _start() {
 
     R0_ExitProcess(0);
     while(1);
-
-    err = LoadProgram("sibyl.elf");
-    if(err != 0)
-        __asm__("hlt");
 
     //Now exit the process, allowing the init process to take control of the system
 }

@@ -6,6 +6,7 @@
 
 typedef struct {
     uint64_t Size;
+    FileTypeFlag FileType;
 } FileInfo;
 
 int
