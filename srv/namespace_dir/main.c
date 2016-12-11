@@ -74,6 +74,10 @@ handle_notification(MsgHeader *m) {
 int main() {
     NamespaceDir_Initialize();
 
+    uint32_t op_key = 0;
+    uint64_t op_error = 0;
+    RegisterNamespace("namespaces", &op_key);
+
     while(1) {
         CREATE_NEW_MESSAGE_PTR(m);
         POLL_MESSAGE(m);

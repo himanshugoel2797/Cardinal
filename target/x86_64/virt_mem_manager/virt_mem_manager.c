@@ -62,7 +62,7 @@ typedef struct VirtMemManData {
 static uint64_t coreLocalSpace;
 static Spinlock vmem_lock = NULL;
 
-static volatile VirtMemManData CORE_LOCAL* virtMemData = (volatile VirtMemManData CORE_LOCAL*)0;
+static volatile VirtMemManData CORE_LOCAL* virtMemData = NULL;
 
 void
 VirtMemMan_InitializeBootstrap(void) {

@@ -53,6 +53,7 @@ __attribute__((section(".entry_point")))    //Ensure that this is always the fir
 void
 bootstrap_kernel(void *param,
                  uint64_t magic) {
+
     //Initialize the bootstrap mappings
     VirtMemMan_InitializeBootstrap();
 
