@@ -1,6 +1,6 @@
 TARGET=framebuffer.elf
 
-OBJS=main.o
+OBJS=main.o fileserver.o
 
 LIBS=-lfileserver -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 

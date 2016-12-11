@@ -135,6 +135,7 @@ IO_Open(const char * path,
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
     FreeSharedMemoryKey(op->path_key);
+    Unmap((uint64_t)vAddr, shmem_len);
 
     *fd = resp->fd;
     return resp->error_code;
@@ -234,6 +235,7 @@ IO_Rename(uint64_t fd,
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
     FreeSharedMemoryKey(op->name_key);
+    Unmap((uint64_t)vAddr, shmem_len);
 
     return resp->error_code;
 }

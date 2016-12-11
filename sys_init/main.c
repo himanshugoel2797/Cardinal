@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <display/display.h>
+
 #include "initrd.h"
 #include "png.h"
 
@@ -10,45 +12,13 @@ int main() {
     //First map in the initrd
     ImportInitrd();
 
-    //Use it along with the loaded elf loader to load the initial system processes
-    uint8_t key[KEY_BYTES];
-    uint64_t fd = 0;
+    Display_Initialize();
 
-    UID pid = 0;
-    uint64_t error = 0;
+    int disp_cnt = Display_GetDisplayCount();
 
-    uint32_t tmp_key = 0;
-    RetrieveNamespace("display", &tmp_key);
-    while(!IsNamespaceRetrieved(tmp_key, &pid, &error));
-
-    uint64_t buf_len = 1024;
-    uint64_t vAddr = 0;
-    uint64_t read_key = 0, write_key = 0;
-    IO_AllocateBuffer(&buf_len,
-                      &vAddr,
-                      &read_key,
-                      &write_key);
-
-    memset((void*)vAddr, 0x00, buf_len);
-
-    IO_Open(":info0", FileSystemOpFlag_Read, 0, key, pid, &fd);
-    IO_Read(fd, 0, read_key, buf_len, pid);
-    IO_Close(fd, pid);
-
-    uint32_t w = 0;
-    uint32_t h = 0;
-    uint32_t p = 0;
-    sscanf((char*)vAddr, "Width:%d Height:%d Pitch:%d", &w, &h, &p);
-
-    IO_FreeBuffer(vAddr, buf_len, read_key, write_key);
-
-    buf_len = h * p;
-    IO_AllocateBuffer(&buf_len,
-                      &vAddr,
-                      &read_key,
-                      &write_key);
-
-    memset((void*)vAddr, 0xFF, buf_len);
+    DisplayInfo disp_info;
+    Display_GetInfo(0, &disp_info);
+    uint64_t disp_fd = Display_TryLockDisplay(0);
 
     void *file_loc = NULL;
     size_t file_size = 0;
@@ -61,10 +31,20 @@ int main() {
 
     void *result = DecodePNGtoRGBA(file_loc, file_size, &img_w, &img_h, &img_p, &res_len);
 
-    memcpy(vAddr, result, res_len);
 
-    IO_Open(":framebuffer0", FileSystemOpFlag_Write, 0, key, pid, &fd);
-    IO_Write(fd, 0, write_key, buf_len, pid);
+    uint64_t buf_len = disp_info.pitch * disp_info.height;
+    uint64_t vAddr = 0;
+    uint64_t read_key = 0, write_key = 0;
+    IO_AllocateBuffer(&buf_len,
+                      &vAddr,
+                      &read_key,
+                      &write_key);
+
+    memcpy(vAddr, result, (buf_len > res_len)?res_len : buf_len);
+
+    Display_Update(disp_fd, write_key, buf_len);
+
+    Display_UnlockDisplay(disp_fd);
 
     //Wait until exit requested on power off
     while(1);

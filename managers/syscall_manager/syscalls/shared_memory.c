@@ -29,7 +29,7 @@ AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
         length += PAGE_SIZE - length % PAGE_SIZE;
 
     CachingMode cacheMode = data->params[1];
-    MemoryAllocationType allocType = data->params[2];
+    MemoryAllocationType allocType = MemoryAllocationType_MMap;
     MemoryAllocationFlags flags = data->params[3];
 
     flags &= ~MemoryAllocationFlags_Kernel;

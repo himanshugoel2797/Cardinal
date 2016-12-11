@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include "sibyl/server.h"
 #include "cardinal_io.h"
 #include "syscall_property.h"
 #include "syscall.h"
@@ -11,7 +12,8 @@
 
 #define PATH_MAX KiB(64)
 #define NAME_MAX 256
-#define KEY_BYTES 64
+
+#define MAX_TAG_COUNT 4096
 
 typedef enum {
     FileSystemRequestType_GetOpMask = 0,
@@ -38,6 +40,16 @@ typedef enum {
     FileSystemOpType_Rename = (1 << 6),
     FileSystemOpType_Sync = (1 << 7),
 } FileSystemOpType;
+
+typedef enum {
+    FileSystemOpFlag_Read = (1 << 0),
+    FileSystemOpFlag_Write = (1 << 1),
+    FileSystemOpFlag_Create = (1 << 2),
+    FileSystemOpFlag_Directory = (1 << 3),
+    FileSystemOpFlag_Exclusive = (1 << 4),  //One writer, many readers OR many readers, no writer
+    FileSystemOpFlag_Append = (1 << 5),
+    FileSystemOpFlag_Locked = (1 << 6),     //One reader/writer
+} FileSystemOpFlag;
 
 typedef struct {
     Message m;
@@ -114,26 +126,23 @@ typedef struct {
 
 typedef struct {
     uint64_t EntryCount;
-    uint32_t EntryVersion;
-    uint32_t EntrySize;
 } FileSystemDirectoryHeader;
 
 typedef struct {
     char Name[NAME_MAX];
     FileTypeFlag FileType;
+    FileSystemOpFlag AccessMode;
+    uint64_t Length;
+    char ReadKID[KID_SIZE_BYTES];
+    char WriteKID[KID_SIZE_BYTES];
+    char ExecuteKID[KID_SIZE_BYTES];
 } FileSystemDirectoryEntry;
 
 typedef struct {
     FileSystemDirectoryHeader hdr;
-    FileSystemDirectoryEntry entries[1];
+    FileSystemDirectoryEntry Entries[0];
 } FileSystemDirectoryData;
 
 
-typedef enum {
-    FileSystemOpFlag_Read = (1 << 0),
-    FileSystemOpFlag_Write = (1 << 1),
-    FileSystemOpFlag_Info = (1 << 2),
-    FileSystemOpFlag_Create = (1 << 3)
-} FileSystemOpFlag;
 
 #endif

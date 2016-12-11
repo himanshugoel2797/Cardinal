@@ -21,6 +21,8 @@ extern "C" {
 #define EINUSE           8
 #define EEOF             9
 #define ENAVAIL          10
+#define EISDIR           11
+#define EISFILE          12
 
 static __inline uint64_t
 Syscall0(uint32_t syscall_num) {
