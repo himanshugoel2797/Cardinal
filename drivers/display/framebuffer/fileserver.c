@@ -7,7 +7,7 @@
 
 #include <cardinal/namespace/server.h>
 
-#include <libfileserver/fileserver.h>
+#include <fileserver/fileserver.h>
 #include <display/display.h>
 
 #include <string.h>

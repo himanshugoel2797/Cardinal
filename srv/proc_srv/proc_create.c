@@ -3,10 +3,41 @@
 #include <cardinal/shared_memory.h>
 #include <cardinal/ipc.h>
 #include <string.h>
+#include <list/list.h>
 
 #include "common.h"
 #include "proc_db.h"
 #include "program.h"
+
+
+static List *exit_subs = NULL;
+static List *create_subs = NULL;
+
+void
+proc_initialize(void) {
+    exit_subs = List_Create();
+    create_subs = List_Create();
+
+    List_AddEntry(exit_subs, (void*)NAMESPACE_SRV_PID);
+    List_AddEntry(exit_subs, (void*)MEMORY_SRV_PID);
+
+    List_AddEntry(create_subs, (void*)NAMESPACE_SRV_PID);
+    List_AddEntry(create_subs, (void*)MEMORY_SRV_PID);
+}
+
+void
+send_exit_notification(UID pid) {
+    CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServerNotificationType_Notification, note);
+    note->m.MsgID = RequestMessageID();
+    note->m.MsgType = CardinalMsgType_Notification;
+    note->MsgType = ProcessServerNotificationType_ProcessExited;
+    note->pid = pid;
+
+    //Post this message to the various servers that need this info.
+    for(uint64_t i = 0; i < List_Length(exit_subs); i++){
+        PostIPCMessages((UID)List_EntryAt(exit_subs, i), (Message**)&note, 1);
+    }
+}
 
 void
 send_existence_notification(UID pid) {
@@ -17,9 +48,45 @@ send_existence_notification(UID pid) {
     note->pid = pid;
 
     //Post this message to the various servers that need this info.
-    Message *m = (Message*)note;
-    PostIPCMessages(MEMORY_SRV_PID, &m, 1);
-    PostIPCMessages(NAMESPACE_SRV_PID, &m, 1);
+    for(uint64_t i = 0; i < List_Length(create_subs); i++){
+        PostIPCMessages((UID)List_EntryAt(create_subs, i), (Message**)&note, 1);
+    }
+}
+
+
+void
+subscribe_creation(Message *m) {
+
+    if(ProcDB_GetCreateSubsFlag(m->SourcePID) != 1) {
+        ProcDB_SetCreateSubsFlag(m->SourcePID, 1);
+        List_AddEntry(create_subs, (void*)m->SourcePID);
+    }
+}
+
+void
+subscribe_exit(Message *m) {
+
+    if(ProcDB_GetExitSubsFlag(m->SourcePID) != 1){
+        ProcDB_SetExitSubsFlag(m->SourcePID, 1);
+        List_AddEntry(exit_subs, (void*)m->SourcePID);
+    }
+}
+
+void
+exit_process(Message *m) {
+
+    if(ProcDB_GetCreateSubsFlag(m->SourcePID)) {
+        //TODO remove the entry from the list
+    }
+
+    if(ProcDB_GetExitSubsFlag(m->SourcePID)) {
+        //TODO remove the entry from the list
+    }
+
+    ProcessServer_ExitRequest *exit_req = (ProcessServer_ExitRequest*)m;    
+    R0_KillProcess(m->SourcePID, exit_req->exit_code);
+
+    send_exit_notification(m->SourcePID);
 }
 
 void
@@ -93,6 +160,7 @@ create_process_handler(Message *m) {
     Unmap((uint64_t)exec_data.VirtualAddress, exec_data.Length);
     Unmap((uint64_t)arg_data.VirtualAddress, arg_data.Length);
 
+    send_existence_notification(pid);
 
     CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_CreateRequest_Response, resp);
     resp->m.MsgID = msg->m.MsgID;
@@ -103,7 +171,6 @@ create_process_handler(Message *m) {
     Message *m2 = (Message*)resp;
     PostIPCMessages(m->SourcePID, &m2, 1);
 
-    send_existence_notification(pid);
 }
 
 void

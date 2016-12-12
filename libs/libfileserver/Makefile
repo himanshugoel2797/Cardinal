@@ -3,7 +3,7 @@ TARGET=libfileserver.a
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=libfileserver
+HEADER_INSTALL_DIR=fileserver
 
 OBJS=fileserver.o
 

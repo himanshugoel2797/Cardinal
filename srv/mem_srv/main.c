@@ -51,8 +51,13 @@ HandleSystemMessages(Message *m) {
 
 
 int main() {
-
     MemDB_Initialize();
+
+    CREATE_NEW_MESSAGE_PTR(msg);
+    msg->MsgType = CardinalMsgType_Notification;
+    msg->MsgID = 0;
+    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+
     while(1) {
         CREATE_NEW_MESSAGE_PTR(msg);
         POLL_MESSAGE(msg);

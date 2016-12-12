@@ -148,4 +148,9 @@ R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t syscall_num,
                               uint64_t *syscall_params);
 
+uint64_t
+R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params);
+
 #endif

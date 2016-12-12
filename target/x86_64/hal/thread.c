@@ -128,7 +128,7 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
 
 void
 SetupPreemption(void) {
-    uint64_t timer_freq = APIC_GetTimerFrequency()/1000;
+    uint64_t timer_freq = APIC_GetTimerFrequency()/5000;
     //uint64_t timer_freq = 1000000000;
     SetPeriodicPreemptVector(IRQ(1), timer_freq);
     APIC_SetVector(APIC_TIMER, IRQ(1));
@@ -142,6 +142,6 @@ SetupPreemption(void) {
 void
 ResetPreemption(void) {
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/1000);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/5000);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

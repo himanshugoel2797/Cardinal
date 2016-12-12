@@ -162,3 +162,40 @@ RequestCreateProcess(void *exec,
 
     return (int)resp->err_code;
 }
+
+
+int
+SubscribeToProcessExitNotification(void) {
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_SubscribeToExitNotification, create_req);
+    create_req->m.MsgID = RequestMessageID();
+    create_req->m.MsgType = CardinalMsgType_Request;
+    create_req->MsgType = ProcessServerMessageType_SubscribeToExitNotification;
+
+    PostIPCMessages(PROCESS_SRV_PID, (Message**)&create_req, 1);
+    return 0;
+}
+
+int
+SubscribeToProcessCreateNotification(void) {
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_SubscribeToExitNotification, create_req);
+    create_req->m.MsgID = RequestMessageID();
+    create_req->m.MsgType = CardinalMsgType_Request;
+    create_req->MsgType = ProcessServerMessageType_SubscribeToCreateNotification;
+
+    PostIPCMessages(PROCESS_SRV_PID, (Message**)&create_req, 1);
+    return 0;
+}
+
+void
+ExitProcess(uint64_t exit_code) {
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(ProcessServer_ExitRequest, exit_req);
+    exit_req->m.MsgID = RequestMessageID();
+    exit_req->m.MsgType = CardinalMsgType_Request;
+    exit_req->MsgType = ProcessServerMessageType_ExitProcess;
+
+    PostIPCMessages(PROCESS_SRV_PID, (Message**)&exit_req, 1);
+    while(1);
+}

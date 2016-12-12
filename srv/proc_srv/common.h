@@ -5,6 +5,19 @@
 #include <cardinal/proc/server.h>
 #include <cardinal/ipc.h>
 
+
+void
+proc_initialize(void);
+
+void
+subscribe_creation(Message *m);
+
+void
+subscribe_exit(Message *m);
+
+void
+exit_process(Message *m);
+
 void
 create_process_handler(Message *m);
 

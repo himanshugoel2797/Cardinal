@@ -38,9 +38,9 @@ typedef enum {
 static __inline
 uint64_t
 R0_CreateThread(UID parent_pid,
-                int (*entry_point)(void *arg),
-                void *arg,
-                UID *tid) {
+             int (*entry_point)(void *arg),
+             void *arg,
+             UID *tid) {
     if(tid != NULL) {
         *tid = Syscall3(Syscall_R0_CreateThread, parent_pid, (uint64_t)entry_point, (uint64_t)arg);
         return GetErrno();
@@ -49,7 +49,7 @@ R0_CreateThread(UID parent_pid,
 }
 
 /**
- * @brief      Set the thread execution status. R0 process only.
+ * @brief      Set the thread execution status.
  *
  * @param[in]  tid    The tid
  * @param[in]  pause  The pause status
@@ -58,14 +58,14 @@ R0_CreateThread(UID parent_pid,
  */
 static __inline
 uint64_t
-R0_SetThreadIsPaused(UID tid,
-                     bool pause) {
-    Syscall2(Syscall_R0_SetThreadIsPaused, tid, pause);
+SetThreadIsPaused(UID tid,
+                  bool pause) {
+    Syscall2(Syscall_SetThreadIsPaused, tid, pause);
     return GetErrno();
 }
 
 /**
- * @brief      Kill a thread by its TID. R0 process only.
+ * @brief      Kill a thread by its TID.
  *
  * @param[in]  tid   The tid
  *
@@ -73,20 +73,20 @@ R0_SetThreadIsPaused(UID tid,
  */
 static __inline
 uint64_t
-R0_KillThread(UID tid) {
-    Syscall1(Syscall_R0_KillThread, tid);
+KillThread(UID tid) {
+    Syscall1(Syscall_KillThread, tid);
     return GetErrno();
 }
 
 /**
- * @brief      Exit and delete the current thread. R0 process only.
+ * @brief      Exit and delete the current thread.
  *
  * @return     Error code on failure, does not return on success.
  */
 static __inline
 uint64_t
-R0_ExitDeleteThread(void) {
-    Syscall0(Syscall_R0_ExitDeleteThread);
+ExitDeleteThread(void) {
+    Syscall0(Syscall_ExitDeleteThread);
     return GetErrno();
 }
 

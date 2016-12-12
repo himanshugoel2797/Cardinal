@@ -5,7 +5,7 @@
 #include <cardinal/shared_memory.h>
 #include <cardinal/syscall_property.h>
 #include <cardinal/namespace/server.h>
-#include <libfileserver/fileserver.h>
+#include <fileserver/fileserver.h>
 
 #include <string.h>
 #include <stdio.h>

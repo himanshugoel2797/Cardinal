@@ -27,12 +27,12 @@ Server_HandleOpRequest(Message *m) {
 
     FileSystemOpRequestHeader *h = (FileSystemOpRequestHeader*)m;
 
-    if(!(h->OpType & op_mask)) {
-        //Respond with 'unsupported' as the response.
-    }
-
     int retVal = -EINVAL;
     uint64_t fd = 0;
+
+    //Mask out the unsupported functions
+    if(h->OpType & op_mask){
+
     switch(h->OpType) {
     case FileSystemOpType_Open: {
         FileSystemOpOpen *op = (FileSystemOpOpen*)m;
@@ -184,6 +184,7 @@ Server_HandleOpRequest(Message *m) {
         else
             retVal = -EINVAL;
         break;
+    }
     }
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, op_response);

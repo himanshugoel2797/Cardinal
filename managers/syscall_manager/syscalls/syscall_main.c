@@ -30,6 +30,7 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_R0_CreateProcess, R0CreateProcess_Syscall);
     RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
     RegisterSyscall(Syscall_R0_CreateThread, R0CreateThread_Syscall);
+    RegisterSyscall(Syscall_R0_KillProcess, R0KillProcess_Syscall);
     RegisterSyscall(Syscall_R0_GetBootInfo, R0GetBootInfo_Syscall);
 
     RegisterSyscall(Syscall_R0_GetPhysicalAddress, R0GetPhysicalAddress_Syscall);

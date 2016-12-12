@@ -13,4 +13,16 @@ ProcDB_AddProcess(UID pid,
 void
 ProcDB_RemoveProcess(UID pid);
 
+void
+ProcDB_SetCreateSubsFlag(UID pid, char val);
+
+void
+ProcDB_SetExitSubsFlag(UID pid, char val);
+
+int
+ProcDB_GetCreateSubsFlag(UID pid);
+
+int
+ProcDB_GetExitSubsFlag(UID pid);
+
 #endif

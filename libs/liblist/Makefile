@@ -3,7 +3,7 @@ TARGET=liblist.a
 CC=x86_64-elf-cardinal-gcc
 AR=x86_64-elf-cardinal-ar
 
-HEADER_INSTALL_DIR=liblist
+HEADER_INSTALL_DIR=list
 
 OBJS=list.o
 

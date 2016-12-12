@@ -54,4 +54,22 @@ cd $SRC_DIR/drivers/display/framebuffer
 	cp framebuffer.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
+cd $SRC_DIR/drivers/ps2/mouse
+	make clean
+	make all
+	cp ps2_mouse.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
+cd $SRC_DIR/drivers/ps2/keyboard
+	make clean
+	make all
+	cp ps2_keyboard.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
+cd $SRC_DIR/drivers/ps2
+	make clean
+	make all
+	cp ps2.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
 cp wallpaper.png $SRC_DIR/initrd/wallpaper.png

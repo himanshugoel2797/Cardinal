@@ -13,6 +13,9 @@ extern "C" {
 typedef enum {
     ProcessServerMessageType_R0_ProcessExistenceNotification,
     ProcessServerMessageType_CreateProcessRequest,
+    ProcessServerMessageType_SubscribeToExitNotification,
+    ProcessServerMessageType_SubscribeToCreateNotification,
+    ProcessServerMessageType_ExitProcess
 } ProcessServerMessageType;
 
 typedef enum {
@@ -44,6 +47,19 @@ typedef struct {
 
 typedef struct {
     Message m;
+    ProcessServerMessageType MsgType;
+} ProcessServer_SubscribeToExitNotification;
+
+typedef ProcessServer_SubscribeToExitNotification ProcessServer_SubscribeToCreateNotification;
+
+typedef struct {
+    Message m;
+    ProcessServerNotificationType MsgType;
+    uint64_t exit_code;
+} ProcessServer_ExitRequest;
+
+typedef struct {
+    Message m;
     ProcessServerNotificationType MsgType;
     UID pid;
 } ProcessServerNotificationType_Notification;
@@ -60,6 +76,15 @@ RequestCreateProcess(void *exec,
                      char **argv,
                      uint32_t argc,
                      UID *pid);
+
+int
+SubscribeToProcessExitNotification(void);
+
+int
+SubscribeToProcessCreateNotification(void);
+
+void
+ExitProcess(uint64_t exit_code);
 
 #ifdef __cplusplus
 }

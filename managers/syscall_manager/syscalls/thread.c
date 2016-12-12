@@ -162,3 +162,33 @@ WaitForMessage_Syscall(uint64_t UNUSED(instruction_pointer),
     SyscallSetErrno(0);
     return 0;
 }
+
+
+uint64_t
+R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
+                      uint64_t syscall_num,
+                      uint64_t *syscall_params) {
+
+    if(syscall_num != Syscall_R0_KillProcess) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    SyscallData *data = (SyscallData*)syscall_params;
+
+    if(data->param_num != 2) {
+        SyscallSetErrno(-ENOSYS);
+        return -1;
+    }
+
+    uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
+    if(rVal != 0) {
+        SyscallSetErrno(-EPERM);
+        return -1;
+    }
+
+    ScheduleProcessForTermination(data->params[0], data->params[1]);
+    
+    SyscallSetErrno(0);
+    return 0;
+}

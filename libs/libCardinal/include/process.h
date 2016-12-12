@@ -15,15 +15,28 @@ extern "C" {
  */
 
 /**
+ * @brief      Gets the current process uid.
+ *
+ * @return     The current process uid.
+ */
+static __inline UID
+GetCurrentProcessUID(void) {
+    UID id = 0;
+    GetProperty(CardinalProperty_PID, 0, &id);
+    return id;
+}
+
+/**
  * @brief      Exit and delete a process. R0 process only.
  *
- * @param[in]  pid   The pid
+ * @param[in]  pid        The pid
+ * @param[in]  exit_code  The exit code
  *
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_KillProcess(UID pid) {
-    Syscall1(Syscall_R0_KillProcess, pid);       //Exit and delete a process by its PID
+R0_KillProcess(UID pid, uint64_t exit_code) {
+    Syscall2(Syscall_R0_KillProcess, pid, exit_code);       //Exit and delete a process by its PID
     return GetErrno();
 }
 
@@ -36,7 +49,7 @@ R0_KillProcess(UID pid) {
  */
 static __inline uint64_t
 R0_ExitProcess(uint64_t exit_code) {
-    SetProperty(CardinalProperty_R0_Exit, 0, exit_code);
+    R0_KillProcess(GetCurrentProcessUID(), exit_code);
     return GetErrno();
 }
 
@@ -71,17 +84,7 @@ R0_StartProcess(UID pid) {
     return GetErrno();
 }
 
-/**
- * @brief      Gets the current process uid.
- *
- * @return     The current process uid.
- */
-static __inline UID
-GetCurrentProcessUID(void) {
-    UID id = 0;
-    GetProperty(CardinalProperty_PID, 0, &id);
-    return id;
-}
+
 
 /**
  * @brief      Gets the process group id.

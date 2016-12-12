@@ -29,9 +29,9 @@ typedef enum {
     Syscall_R0_GetThreadInfo,           //!< Get the kernel's thread information.
     Syscall_R0_CreateThread,            //!< Create a new thread.
     Syscall_R0_WipeMemoryMap,           //!< Wipe the memory map of a process.
-    Syscall_R0_SetThreadIsPaused,       //!< Allow pausing/resuming threads.
-    Syscall_R0_KillThread,              //!< Kill a thread by its TID.
-    Syscall_R0_ExitDeleteThread,        //!< Exit and delete the current thread.
+    Syscall_SetThreadIsPaused,          //!< Allow pausing/resuming threads.
+    Syscall_KillThread,                 //!< Kill a thread by its TID.
+    Syscall_ExitDeleteThread,           //!< Exit and delete the current thread.
     Syscall_R0_KillProcess,             //!< Kill a process by its PID.
     Syscall_R0_GetBootInfo,             //!< Get the boot information.
 
@@ -46,15 +46,14 @@ typedef enum {
     Syscall_GetSharedMemoryKeyUsageCount,//!< Get the number of times a key has been used.
 
     Syscall_WaitForMessage,             //!< Pause this thread until a message is received.
-    Syscall_GetIPCMessageMsgType,
+    Syscall_GetIPCMessageMsgType,       //!< Get an IPC message of the given type.
 
     Syscall_RequestAppointment,         //!< Request an appointment on the other cores.
 
-    Syscall_R01_AllocateInterrupts,
-    Syscall_R01_RegisterForInterrupts,
+    Syscall_R01_AllocateInterrupts,     //!< Allocate a block of interrupts
+    Syscall_R01_RegisterForInterrupts,  //!< Register for a block of interrupts
 
-
-    Syscall_NumEnd = Syscall_R01_RegisterForInterrupts,
+    Syscall_NumEnd = Syscall_R01_RegisterForInterrupts, 
 } SyscallFunctions;
 
 #ifdef __cplusplus

@@ -49,19 +49,6 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         return retVal;
     }
     break;
-    case CardinalProperty_R0_Exit: {
-        uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
-        if(rVal != 0) {
-            SyscallSetErrno(-EPERM);
-            UnlockSpinlock(set_prop_lock);
-            return 0;
-        }
-
-        UnlockSpinlock(set_prop_lock);
-        ScheduleProcessForTermination(GetCurrentProcessUID(), data->params[1]);
-        return 0;
-    }
-    break;
     case CardinalProperty_GroupID: {
         uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), data->params[2]);
         UnlockSpinlock(set_prop_lock);

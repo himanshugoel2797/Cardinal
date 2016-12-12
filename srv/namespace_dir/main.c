@@ -74,9 +74,15 @@ handle_notification(MsgHeader *m) {
 int main() {
     NamespaceDir_Initialize();
 
+    CREATE_NEW_MESSAGE_PTR(msg);
+    msg->MsgType = CardinalMsgType_Notification;
+    msg->MsgID = 0;
+    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+
     uint32_t op_key = 0;
     uint64_t op_error = 0;
     RegisterNamespace("namespaces", &op_key);
+
 
     while(1) {
         CREATE_NEW_MESSAGE_PTR(m);

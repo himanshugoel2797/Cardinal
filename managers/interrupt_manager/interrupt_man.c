@@ -18,6 +18,9 @@ InterruptMan_InterruptHandler(uint32_t int_no,
     m->m.MsgID = int_no;
     m->vector = int_no;
 
+    if(int_no == 12 + 32)
+        __asm__("cli\n\thlt");
+
     for(int i = 0; i < MAX_SUBSCRIBERS; i++) {
         if(irq_subscriber_pids[int_no][i] != 0) {
             PostMessages(irq_subscriber_pids[int_no][i], (Message**)&m, 1);
