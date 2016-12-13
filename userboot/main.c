@@ -55,9 +55,9 @@ int _start() {
         __asm__("hlt");
     while(!GetIPCMessage(msg));
 
-    //err = LoadProgram("sibyl.elf", &pid);
-    //if(err != 0)
-    //    __asm__("hlt");
+    err = LoadProgram("sibyl.elf", &pid);
+    if(err != 0)
+        __asm__("hlt");
 
     err = LoadProgram("initrd_srv.elf", &pid);
     if(err != 0)

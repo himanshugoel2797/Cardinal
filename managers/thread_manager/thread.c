@@ -1034,5 +1034,5 @@ WakeReadyThreads(void) {
         UnlockSpinlock(thd->lock);
     }
 
-    //DeleteThread();
+    DeleteThread();
 }
