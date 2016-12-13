@@ -30,11 +30,11 @@ KeyMan_Initialize(void) {
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
-               0,//AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
+               AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
                keyTable_addr,
                KEY_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
+               MemoryAllocationType_Heap,// | MemoryAllocationType_ReservedAllocation,
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
