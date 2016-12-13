@@ -117,6 +117,12 @@ idle_thread(void) {
                                  &len);
             __asm__("sti");
 
+            __asm__("cli");
+            UnmapPage(GetActiveVirtualMemoryInstance(),
+                      vAddr,
+                      len);
+            __asm__("sti");
+
             kfree(m2);
         }
 
@@ -144,17 +150,37 @@ idle_thread(void) {
                                 &m->key);
             __asm__("sti");                           
 
-            while(wait_cnt < 20);
             __asm__("cli");
             PostMessages(GetCurrentProcessUID() - 1, (Message**)&m, 1);
             __asm__("sti");
+
+            while(1){
+            __asm__("cli");
+            uint64_t k_cnt = 0;
+            GetSharedMemoryKeyUsageCount(m->key, &k_cnt);
+            __asm__("sti");
+
+            if(k_cnt != 0)
+                break;
+            }
+
+            __asm__("cli");
+            FreeSharedMemoryKey(GetCurrentProcessUID(), m->key);
+            __asm__("sti");
+
+            __asm__("cli");
+            UnmapPage(GetActiveVirtualMemoryInstance(),
+                      virtAddr,
+                      4096);
+            __asm__("sti");
+
             kfree(m);
         }
 
         c++;
 
         __asm__("cli");
-        ScheduleProcessForTermination(GetCurrentProcessUID(), 0);
+        if(c == 50000)ScheduleProcessForTermination(GetCurrentProcessUID(), 0);
         __asm__("sti");
         while(1);        
     }
