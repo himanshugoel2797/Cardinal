@@ -18,11 +18,12 @@ InterruptMan_InterruptHandler(uint32_t int_no,
     m->m.MsgID = int_no;
     m->vector = int_no;
 
-    if(int_no == 12 + 32)
-        __asm__("cli\n\thlt");
-
+    
     for(int i = 0; i < MAX_SUBSCRIBERS; i++) {
+        
+            
         if(irq_subscriber_pids[int_no][i] != 0) {
+            
             PostMessages(irq_subscriber_pids[int_no][i], (Message**)&m, 1);
         }
     }
@@ -34,7 +35,6 @@ InterruptMan_Initialize(void) {
     for(int i = 0x10; i < IRQ_COUNT; i++) {
         memset(irq_subscriber_pids[i], 0, MAX_SUBSCRIBERS * sizeof(UID));
         RegisterInterruptHandler(i, InterruptMan_InterruptHandler);
-        SetInterruptEnableMode(i, TRUE);
         irq_sub_slot_count[i] = MAX_SUBSCRIBERS;
     }
 }
@@ -53,13 +53,14 @@ InterruptMan_RegisterProcess(UID pid,
     //Mark that this process is using interrupts
     pInfo->InterruptsUsed = 1;
 
-    for(int i = irq; i < cnt; i++) {
+    for(int i = irq; i < irq + cnt; i++) {
 
         bool irq_filled = FALSE;
         for(uint32_t j = 0; j < MAX_SUBSCRIBERS; j++) {
             if(irq_subscriber_pids[i][j] == 0) {
                 irq_subscriber_pids[i][j] = pid;
                 irq_filled = TRUE;
+                SetInterruptEnableMode(i, TRUE);
                 break;
             }
         }

@@ -58,6 +58,7 @@ GetFile(const char *file,
     }
 
     if(*loc == NULL)return 0;
+
     return 1;
 }
 

@@ -126,7 +126,7 @@ MapPage(ManagedPageTable *pageTable,
     if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
 
     if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
-    if(physicalAddress % 4096) __asm__("cli\n\thlt" :: "a"(virtualAddress), "b"(physicalAddress));
+    if(physicalAddress % 4096) __asm__("cli\n\thlt" :: "a"(virtualAddress), "b"(physicalAddress), "c"(__builtin_return_address(0)));
 
     //If this allocation is just reserved vmem, mark the page as not present
     if(allocType & MemoryAllocationType_ReservedAllocation) {
@@ -955,6 +955,7 @@ AllocateSharedMemoryPhys(UID pid,
             map->AllocationType |= MemoryAllocationType_Shared;
 
             map->SharedMemoryInfo = kmalloc(sizeof(SharedMemoryData));
+
             map->SharedMemoryInfo->PhysicalAddress = mem;
             map->SharedMemoryInfo->Length = length;
             map->SharedMemoryInfo->ReferenceCount = 1;

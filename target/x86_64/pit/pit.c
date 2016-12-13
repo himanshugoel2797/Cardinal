@@ -110,6 +110,11 @@ PIT_Sleep(uint32_t interval) {
 void
 PIT_SetEnableMode(bool enabled) {
     SetInterruptEnableMode(IRQ(0), enabled);
+
+    if(!enabled)
+        PIT_SetFrequency(PIT_CH0, PIT_ACCESS_HI_BYTE | PIT_ACCESS_LO_BYTE, PIT_MODE_INTERRUPT, PIT_VAL_16BIT, 1);
+    else
+        PIT_SetFrequency(PIT_CH0, PIT_ACCESS_HI_BYTE | PIT_ACCESS_LO_BYTE, PIT_MODE_RATE, PIT_VAL_16BIT, PIT_FREQUENCY_HZ);    
 }
 
 

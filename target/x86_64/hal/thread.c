@@ -130,8 +130,8 @@ void
 SetupPreemption(void) {
     uint64_t timer_freq = APIC_GetTimerFrequency()/5000;
     //uint64_t timer_freq = 1000000000;
-    SetPeriodicPreemptVector(IRQ(1), timer_freq);
-    APIC_SetVector(APIC_TIMER, IRQ(1));
+    SetPeriodicPreemptVector(IRQ(0), timer_freq);
+    APIC_SetVector(APIC_TIMER, IRQ(0));
     APIC_SetTimerValue(timer_freq);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");

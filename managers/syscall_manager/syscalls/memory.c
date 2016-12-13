@@ -132,6 +132,9 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
     LockSpinlock(map_lock);
 
+    if(mmap_params->PhysicalAddress % PAGE_SIZE)
+        __asm__("cli\n\thlt");
+
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
     mmap_params->Length += PAGE_SIZE - mmap_params->Length % PAGE_SIZE;

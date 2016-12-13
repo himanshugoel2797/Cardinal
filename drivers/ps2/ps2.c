@@ -70,7 +70,7 @@ uint8_t PS2_Initialize()
             //PS2Keyboard_Initialize();
             char* argv[] = {"ps2_keyboard.elf"};
             UID kb_pid = 0;
-            //__asm__("hlt":: "a"(StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid)));
+            StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid);
 
         }
 
@@ -80,26 +80,8 @@ uint8_t PS2_Initialize()
             char* argv[] = {"ps2_mouse.elf"};
             UID mouse_pid = 0;
 
-            //__asm__("hlt":: "a"(StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid)));
+            StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid);
         }
-
-    cfg = PS2_ReadConfig();
-    if(port1_test_result == 0)
-        {
-            outb(CMD_PORT, ENABLE_PORT1_CMD);
-            cfg |= 1;
-            cfg &= ~(1 << 4);
-            WAIT_CMD_SENT;
-        }
-
-    if(port2_test_result == 0)
-        {
-            outb(CMD_PORT, ENABLE_PORT2_CMD);
-            cfg |= 2;
-            cfg &= ~(1 << 5);
-            WAIT_CMD_SENT;
-        }
-    PS2_WriteConfig(cfg);
 
 
     return 0;

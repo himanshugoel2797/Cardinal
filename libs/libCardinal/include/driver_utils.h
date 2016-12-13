@@ -2,6 +2,8 @@
 #define _CARDINAL_DRIVER_UTILS_H_
 
 #include "cardinal_types.h"
+#include "syscall.h"
+#include "syscall_list.h"
 
 #ifdef __x86_64__
 static __inline void
@@ -58,6 +60,23 @@ R0_ExitCriticalSection(void) {
 #ifdef __x86_64__
     __asm__("sti");
 #endif
+}
+
+static __inline uint64_t
+R01_AllocateInterrupts(uint32_t cnt,
+                       uint32_t *val) {
+    if(val == NULL)
+        return -EINVAL;
+
+    *val = Syscall1(Syscall_R01_AllocateInterrupts, cnt);
+    return GetErrno();
+}
+
+static __inline uint64_t
+R01_RegisterForInterrupts(uint32_t irq,
+                          uint32_t cnt) {
+    Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
+    return GetErrno();
 }
 
 #endif
