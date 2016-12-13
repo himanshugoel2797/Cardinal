@@ -77,6 +77,89 @@ load_exec(UID pid, const char *exec) {
     return;
 }
 
+static int wait_cnt = 0;
+
+typedef struct {
+    Message m;
+    uint64_t key;
+} KeyMessage;
+
+void
+idle_thread(void) {
+
+    int c = 0;
+
+    while(1) {
+
+        kfree(kmalloc(512));
+
+        if(GetCurrentProcessUID() % 3 == 0) {
+            wait_cnt++;
+            __asm__("cli");
+            SleepThreadForMessage(GetCurrentProcessUID(), MessageWaitType_Any, 0);
+            __asm__("sti");
+            KeyMessage *m2 = kmalloc(512);
+            __asm__("cli");
+            GetMessageFrom((Message*)m2, 0, 0);
+            __asm__("sti");
+
+            uint64_t vAddr = 0;
+            MemoryAllocationFlags flags = 0;
+            CachingMode cacheMode;
+            uint64_t len = 0;
+
+            __asm__("cli");
+            ApplySharedMemoryKey(GetCurrentProcessUID(),
+                                 m2->key,
+                                 &vAddr,
+                                 &flags,
+                                 &cacheMode,
+                                 &len);
+            __asm__("sti");
+
+            kfree(m2);
+        }
+
+        if(GetCurrentProcessUID() % 3 == 1) {
+            
+            KeyMessage *m = kmalloc(512);
+
+            uint64_t virtAddr = 0;
+
+            __asm__("cli");
+            AllocateSharedMemory(GetCurrentProcessUID(),
+                                 4096,
+                                 CachingModeWriteBack,
+                                 MemoryAllocationType_MMap,
+                                 MemoryAllocationFlags_Present | MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel,
+                                 &virtAddr);
+            __asm__("sti");
+
+            __asm__("cli");
+            GetSharedMemoryKey(GetCurrentProcessUID(),
+                                virtAddr,
+                                4096,
+                                CachingModeWriteBack,
+                                MemoryAllocationFlags_Present | MemoryAllocationFlags_Write | MemoryAllocationFlags_Kernel,
+                                &m->key);
+            __asm__("sti");                           
+
+            while(wait_cnt < 20);
+            __asm__("cli");
+            PostMessages(GetCurrentProcessUID() - 1, (Message**)&m, 1);
+            __asm__("sti");
+            kfree(m);
+        }
+
+        c++;
+
+        __asm__("cli");
+        ScheduleProcessForTermination(GetCurrentProcessUID(), 0);
+        __asm__("sti");
+        while(1);        
+    }
+}
+
 void
 kernel_main(void) {
 
@@ -98,14 +181,20 @@ kernel_main(void) {
     SetupPreemption();
     target_device_setup();
 
-    UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
+    for(int i = 0; i < 500; i++){
 
-    load_exec(cpid, "userboot.bin");
+        UID cpid = 0;
+        if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+            HaltProcessor();
 
+        CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_thread, NULL);
+        StartProcess(cpid);
+    }
     while(1)
         WakeReadyThreads();
+
+    //load_exec(cpid, "userboot.bin");
+
 }
 
 void

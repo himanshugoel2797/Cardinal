@@ -70,7 +70,7 @@ uint8_t PS2_Initialize()
             //PS2Keyboard_Initialize();
             char* argv[] = {"ps2_keyboard.elf"};
             UID kb_pid = 0;
-            //__asm__("hlt":: "a"(StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid)));
+            StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid);
 
         }
 
@@ -80,7 +80,7 @@ uint8_t PS2_Initialize()
             char* argv[] = {"ps2_mouse.elf"};
             UID mouse_pid = 0;
 
-            //__asm__("hlt":: "a"(StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid)));
+            StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid);
         }
 
     cfg = PS2_ReadConfig();

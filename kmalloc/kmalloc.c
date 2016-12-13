@@ -31,7 +31,7 @@ Spinlock alloc_sync;
 
 //Allocate a 256MB pool for the kernel and map it to a free address space
 void kmalloc_init(void) {
-#define STORE_SIZE MiB(128)
+#define STORE_SIZE MiB(256)
 
     //TODO Setup TLB shootdowns
     alloc_sync = CreateBootstrapSpinlock();
@@ -40,7 +40,7 @@ void kmalloc_init(void) {
     FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                            &virtBaseAddr_base,
                            STORE_SIZE,
-                           MemoryAllocationType_Heap | MemoryAllocationType_Global,
+                           MemoryAllocationType_Heap,
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
     uint64_t phys_addr = AllocatePhysicalPageCont(STORE_SIZE/PAGE_SIZE);
@@ -54,11 +54,11 @@ void kmalloc_init(void) {
             MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
 
     next_free_block = allocation_info = (kmalloc_info*)virtBaseAddr_base;
-    k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(1));
-    max_allocs = MiB(1)/sizeof(kmalloc_info);
-    free_space = STORE_SIZE - MiB(1);
+    k_pages_base_addr = (void*)(virtBaseAddr_base + MiB(16));
+    max_allocs = MiB(16)/sizeof(kmalloc_info);
+    free_space = STORE_SIZE - MiB(16);
 
-    memset(allocation_info, 0, MiB(1));
+    memset(allocation_info, 0, MiB(16));
     allocation_info->pointer = (uint64_t)k_pages_base_addr;
     allocation_info->size = free_space;
     allocation_info->next = NULL;
@@ -124,14 +124,14 @@ void *kmalloc(size_t size) {
 #define ksetup_instrumentation(a, b) a
 
 #endif
-
+/*
     if(size < LARGE_HEAP_BLOCK_SIZE) {
         UID a = Balloc_Alloc(size);
         if(a != (UID)-1) {
             return Balloc_GetBaseAddress(a);
         }
     }
-
+*/
 
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
@@ -146,6 +146,7 @@ void *kmalloc(size_t size) {
     if(IS_USED(a_info) | (a_info->size < size)) {
         //Compact the allocation info and try again, if failed, return NULL
         if(!retry) {
+            __asm__("cli\n\thlt");
             retry = TRUE;
             //kcompact();
             uint64_t res = (uint64_t)kmalloc(size);
@@ -181,11 +182,11 @@ void kfree(void *addr) {
     SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);
 
     //Find the block that matches the address specified
-    UID a = Balloc_GetUID(addr);
+  /*  UID a = Balloc_GetUID(addr);
     if(a != (UID)-1) {
         Balloc_Free(a);
         return;
-    }
+    }*/
     if(((uint64_t)addr < (uint64_t)k_pages_base_addr) | ((uint64_t)addr >= ((uint64_t)k_pages_base_addr + STORE_SIZE))) {
         return;
     }

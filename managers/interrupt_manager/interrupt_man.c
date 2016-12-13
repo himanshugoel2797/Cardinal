@@ -53,7 +53,7 @@ InterruptMan_RegisterProcess(UID pid,
     //Mark that this process is using interrupts
     pInfo->InterruptsUsed = 1;
 
-    for(int i = irq; i < cnt; i++) {
+    for(int i = irq; i < irq+cnt; i++) {
 
         bool irq_filled = FALSE;
         for(uint32_t j = 0; j < MAX_SUBSCRIBERS; j++) {

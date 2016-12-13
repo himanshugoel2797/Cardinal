@@ -265,10 +265,6 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
     ProcessInformation *cur_procInfo = NULL;
     GetProcessReference(GetCurrentProcessUID(), &cur_procInfo);
 
-    //Check to ensure that the destination ID is of the same user ID, and if not, if it belongs to the lowest group ID, if not, fail
-    if(cur_procInfo->UserID != pInfo->UserID && (cur_procInfo->GroupID != 0 | pInfo->GroupID != 0))
-        return -1;
-
     for(uint64_t i = 0; i < cnt; i++) {
 
         Message *m = NULL;

@@ -203,7 +203,7 @@ IO_GetFileProperties(const char *path,
     uint64_t shmem_len = path_len + sizeof(FileSystemDirectoryEntry) + 1;
     char * vAddr = NULL;
 
-    if(setup_shmem(&shmem_len, 0, &op->path_key, (uint64_t*)&vAddr) != 0)
+    if(setup_shmem(&shmem_len, MemoryAllocationFlags_Write, &op->path_key, (uint64_t*)&vAddr) != 0)
         return -1;
 
     strcpy(vAddr, path);
@@ -216,7 +216,6 @@ IO_GetFileProperties(const char *path,
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
-    __asm__("hlt");
     memcpy(info, vAddr + op->result_offset, sizeof(FileSystemDirectoryEntry));
 
     FreeSharedMemoryKey(op->path_key);

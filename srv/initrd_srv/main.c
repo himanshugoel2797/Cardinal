@@ -47,7 +47,7 @@ fbuf_open(const char *path,
 		fd_e->pid = pid;
         fd_e->fd = ++fd_cnt;
 
-		List_AddEntry(fds, fd);
+		List_AddEntry(fds, fd_e);
 
         *fd = fd_e->fd;
     } else
@@ -63,7 +63,6 @@ fbuf_read(uint64_t fd,
           uint64_t len,
           UID pid) {
 
-    __asm__("hlt" :: "a"(fd));
     if(fd < fd_cnt) {
 
         for(uint64_t i = 0; i < List_Length(fds); i++) {

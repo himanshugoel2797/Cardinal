@@ -193,7 +193,6 @@ StartProcess(const char *str,
     if(IO_AllocateBuffer(&len, &addr, &read_key, &write_key) != 0)
         return -3;
 
-    __asm__("hlt");
     if(IO_Read(fd, 0, read_key, file_dat.Length, dst_pid) != file_dat.Length)
         return -4;
 
@@ -202,7 +201,6 @@ StartProcess(const char *str,
     int retVal = RequestCreateProcess((void*)addr, file_dat.Length, argv, argc, pid);
 
     IO_FreeBuffer(addr, len, read_key, write_key);
-    Unmap(addr, len);
 
     return retVal;
 }
