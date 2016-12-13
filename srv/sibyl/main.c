@@ -60,7 +60,6 @@ int main(int arc, char *argv[]) {
     /* Remove error strings */
     ERR_free_strings();
 
-    while(1);
     return 0;
 }
 

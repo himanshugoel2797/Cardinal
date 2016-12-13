@@ -1,10 +1,12 @@
 #include <cardinal/cardinal_types.h>
 #include <cardinal/file_server.h>
+#include <cardinal/namespace/server.h>
 
 #include <fileserver/fileserver.h>
 #include <list/list.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "initrd.h"
 
@@ -12,9 +14,11 @@ typedef struct {
 	void *loc;
 	uint64_t len;
 	UID pid;
+    uint64_t fd;
 } FD_Entry;
 
 static List *fds;
+static uint64_t fd_cnt = 0;
 
 void
 UnknMessage(Message *m) {
@@ -29,21 +33,23 @@ fbuf_open(const char *path,
           UID pid,
           uint64_t* fd) {
 
-	if(flags & (FileSystemOpFlag_Create | FileSystemOpFlag_Append | FileSystemOpFlag_Locked | FileSystemOpFlag_Exclusive | FileSystemOpFlag_Directory | FilesystemOpFlag_Write))
+	if(flags & (FileSystemOpFlag_Create | FileSystemOpFlag_Append | FileSystemOpFlag_Locked | FileSystemOpFlag_Exclusive | FileSystemOpFlag_Directory | FileSystemOpFlag_Write))
 		return -EINVAL;
 
 	void *loc = NULL;
 	size_t size = 0;
 
-	if(GetFile(path, &loc, &size)) {
+	if(path[0] == ':' && GetFile(path + 1, &loc, &size)) {
 
-		FD_Entry *fd = malloc(sizeof(FD_Entry));
-		fd->loc = loc;
-		fd->len = size;
-		fd->pid = pid;
+		FD_Entry *fd_e = malloc(sizeof(FD_Entry));
+		fd_e->loc = loc;
+		fd_e->len = size;
+		fd_e->pid = pid;
+        fd_e->fd = ++fd_cnt;
 
 		List_AddEntry(fds, fd);
 
+        *fd = fd_e->fd;
     } else
         return -EINVAL;
     
@@ -56,70 +62,68 @@ fbuf_read(uint64_t fd,
           void *dst,
           uint64_t len,
           UID pid) {
-    if(fd == ROOT_FD) {
 
-        if(offset >= dir_data_len)
-            return -EEOF;
+    __asm__("hlt" :: "a"(fd));
+    if(fd < fd_cnt) {
 
-        if(offset + len > dir_data_len)
-            len = dir_data_len - offset;
+        for(uint64_t i = 0; i < List_Length(fds); i++) {
+            FD_Entry *fd_e = (FD_Entry*)List_EntryAt(fds, i);
 
-        memcpy(dst, (uint8_t*)dir_data + offset, len);
-        return (int)len;
+            if(fd_e->fd == fd && fd_e->pid == pid) {
 
-    } else if(fd == FRAMEBUFFER0_FD) {
+                if(offset > fd_e->len)
+                    return -EEOF;
 
-    	uint32_t fbuf_len = p * h;
-        if(offset >= fbuf_len)
-            return -EEOF;
+                if(offset + len > fd_e->len) {
+                    len = fd_e->len - offset;
+                }
 
-        if(offset + len > fbuf_len)
-            len = fbuf_len - offset;
+                memcpy(dst, fd_e->loc, len);
+                return len;
+            }
+        }
 
-        memcpy(dst, (uint8_t*)fb + offset, len);
-        return (int)len;
+    }
+    return -EINVAL;
+}
 
-    } else if(fd == FRAMEBUFFER0_INFO_FD ) {
+void fbuf_close(uint64_t fd,
+                UID pid) {
+    
+    if(fd < fd_cnt) {
+        for(uint64_t i = 0; i < List_Length(fds); i++) {
+            FD_Entry *fd_e = (FD_Entry*)List_EntryAt(fds, i);
 
-        if(offset >= display0000_info_len)
-            return -EEOF;
+            if(fd_e->fd == fd && fd_e->pid == pid) {
+                List_Remove(fds, i);
+                free(fd_e);
+                break;
+            }
+        }
+    }
 
-        if(offset + len > display0000_info_len)
-            len = display0000_info_len - offset;
+}
 
-        memcpy(dst, (uint8_t*)display0000_info + offset, len);
-        return (int)len;
+int
+get_file_properties(const char *file,
+                    FileSystemDirectoryEntry *dir,
+                    UID pid) {
+    
+    void *loc = NULL;
+    size_t size = 0;
+
+    if(file[0] == ':' && GetFile(file + 1, &loc, &size)) {
+
+        dir->Length = size;
+        return 0;
 
     } else
         return -EINVAL;
 }
 
-void fbuf_close(uint64_t fd,
-                UID pid) {
-    if(fd == FRAMEBUFFER0_FD && pid == write_pid) {
-        write_pid = 0;
-    }
-}
-
 
 void
 start_server(void) {
-
-	dir_data_len = sizeof(FileSystemDirectoryData) + sizeof(FileSystemDirectoryEntry) * 1;
-	dir_data = malloc(dir_data_len);
-
-	dir_data->hdr.EntryCount = 1;
-	strcpy(dir_data->Entries[0].Name, DISPLAY0000_STR);
-	dir_data->Entries[0].FileType = FileTypeFlag_DataFile;
-	dir_data->Entries[0].AccessMode = FileSystemOpFlag_Exclusive;
-	dir_data->Entries[0].Length = p * h;
-	memset(dir_data->Entries[0].ReadKID, 0, KID_SIZE_BYTES);
-	memset(dir_data->Entries[0].WriteKID, 0, KID_SIZE_BYTES);
-	memset(dir_data->Entries[0].ExecuteKID, 0, KID_SIZE_BYTES);
-
-	display0000_info_len = snprintf(NULL, 0, DISPLAY_INFO_STRING, "VESA", w, h, p, bpp, r_off, r_len, g_off, g_len, b_off, b_len, a_off, a_len);
-    display0000_info = malloc(display0000_info_len + 1);
-    sprintf(display0000_info, DISPLAY_INFO_STRING, "VESA", w, h, p, bpp, r_off, r_len, g_off, g_len, b_off, b_len, a_off, a_len);
 
     FileServerHandlers handlers;
     handlers.open = fbuf_open;
@@ -129,6 +133,7 @@ start_server(void) {
     handlers.remove = NULL;
     handlers.rename = NULL;
     handlers.sync = NULL;
+    handlers.get_file_properties = get_file_properties;
     Server_Start(&handlers, NULL);
 }
 
@@ -137,6 +142,13 @@ int main() {
 	ImportInitrd();
 
 	//Serve the initrd's files, read only
-	start_server();
+	fds = List_Create();
+
+    uint32_t op_key = 0;
+    uint64_t op_error = 0;
+    RegisterNamespace("initrd", &op_key);
+    while(!IsNamespaceRequestReady(op_key, &op_error));
+
+    start_server();
 
 }

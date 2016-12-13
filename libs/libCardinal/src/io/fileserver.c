@@ -42,6 +42,8 @@ setup_shmem(uint64_t *len,
         return -1;
     }
 
+    memset((void*)*vAddress, 0, *len);
+
     return 0;
 }
 
@@ -185,6 +187,40 @@ IO_Write(uint64_t fd,
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
+
+    return resp->error_code;
+}
+
+int
+IO_GetFileProperties(const char *path,
+                     FileSystemDirectoryEntry *info,
+                     UID pid) {
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpGetProperties, op);
+    uint32_t msgID = fill_struct(&op->op_h, FileSystemOpType_GetFileProperties);
+
+    uint64_t path_len = strlen(path);
+    uint64_t shmem_len = path_len + sizeof(FileSystemDirectoryEntry) + 1;
+    char * vAddr = NULL;
+
+    if(setup_shmem(&shmem_len, 0, &op->path_key, (uint64_t*)&vAddr) != 0)
+        return -1;
+
+    strcpy(vAddr, path);
+
+    op->result_offset = path_len + 1;
+
+    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+        return -1;
+
+    CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
+    POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
+
+    __asm__("hlt");
+    memcpy(info, vAddr + op->result_offset, sizeof(FileSystemDirectoryEntry));
+
+    FreeSharedMemoryKey(op->path_key);
+    Unmap((uint64_t)vAddr, shmem_len);
 
     return resp->error_code;
 }

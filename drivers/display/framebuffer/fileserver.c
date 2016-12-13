@@ -202,6 +202,16 @@ void fbuf_close(uint64_t fd,
     }
 }
 
+int
+fbuf_get_file_properties(const char *file,
+                         FileSystemDirectoryEntry *dir,
+                         UID pid) {
+  if(strcmp(file, DISPLAY0000_STR) == 0) {
+      memcpy(dir, &dir_data->Entries[0], sizeof(FileSystemDirectoryEntry));
+      return 0;
+  }else 
+    return -EINVAL;
+}
 
 void
 start_server(void) {

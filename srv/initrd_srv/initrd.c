@@ -6,6 +6,7 @@
 #include <cardinal/bootinfo.h>
 #include <cardinal/memory.h>
 #include <cardinal/syscall_property.h>
+#include <string.h>
 
 static uint64_t InitrdStartAddress = 0;
 
@@ -29,25 +30,6 @@ unsigned int getsize(const char *in) {
     for (j = 11; j > 0; j--, count *= 8)
         size += ((in[j - 1] - '0') * count);
 
-    return size;
-}
-
-int
-strncmp(const char* s1,
-        const char* s2,
-        size_t n) {
-    while(n--)
-        if(*s1++!=*s2++)
-            return *(unsigned char*)(s1 - 1) - *(unsigned char*)(s2 - 1);
-    return 0;
-}
-
-size_t
-strlen(const char *str) {
-    size_t size = 0;
-    while(str[size] != 0) {
-        size++;
-    }
     return size;
 }
 

@@ -11,7 +11,6 @@ int main() {
 
 	//Surrender IOPL
 	SetProperty(CardinalProperty_IOPL, 0, 0);
-	
+
 	while(1);
-	//TODO Exit
 }

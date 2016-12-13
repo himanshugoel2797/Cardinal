@@ -11,17 +11,40 @@ extern "C" {
 
 #define MAX_PARAM_COUNT 6
 
+#undef EPERM
 #define EPERM            1
+
+#undef EINVAL
 #define EINVAL           2
+
+#undef ENOSYS
 #define ENOSYS           3
+
+#undef EUNKNWN
 #define EUNKNWN          4
+
+#undef ERDONLY
 #define ERDONLY          5
+
+#undef ENOMEM
 #define ENOMEM           6
+
+#undef ENOMSG
 #define ENOMSG           7
+
+#undef EINUSE
 #define EINUSE           8
+
+#undef EEOF
 #define EEOF             9
+
+#undef ENAVAIL
 #define ENAVAIL          10
+
+#undef EISDIR
 #define EISDIR           11
+
+#undef EISFILE
 #define EISFILE          12
 
 static __inline uint64_t

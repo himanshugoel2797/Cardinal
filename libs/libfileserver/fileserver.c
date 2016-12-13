@@ -129,6 +129,32 @@ Server_HandleOpRequest(Message *m) {
         Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
     }
     break;
+    case FileSystemOpType_GetFileProperties: {
+        FileSystemOpGetProperties *op = (FileSystemOpGetProperties*)m;
+
+        if(op->path_key == 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        UserSharedMemoryData shmem_data;
+        if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
+            retVal = -EINVAL;
+            break;
+        }
+
+        if(shmem_data.Length < op->result_offset + sizeof(FileSystemDirectoryEntry)) {
+            retVal = -EINVAL;
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+            break;
+        }
+
+        retVal = fs_handlers->get_file_properties((const char *)shmem_data.VirtualAddress, shmem_data.VirtualAddress + op->result_offset, m->SourcePID);
+
+        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+
+    }
+    break;
     case FileSystemOpType_Remove: {
         FileSystemOpRemove *op = (FileSystemOpRemove*)m;
 
@@ -230,6 +256,9 @@ Server_Start(FileServerHandlers *handlers,
 
         if(handlers->sync != NULL)
             op_mask |= FileSystemOpType_Sync;
+
+        if(handlers->get_file_properties != NULL)
+            op_mask |= FileSystemOpType_GetFileProperties;
 
     }
 

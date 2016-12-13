@@ -1,7 +1,10 @@
 #ifndef _CARDINAL_LIMITS_H_
 #define _CARDINAL_LIMITS_H_
 
-#define NAME_MAX 255
-#define PATH_MAX 4096
+#undef NAME_MAX
+#define NAME_MAX 256
+
+#undef PATH_MAX
+#define PATH_MAX (64 * 1024)
 
 #endif

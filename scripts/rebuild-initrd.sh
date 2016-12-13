@@ -48,6 +48,13 @@ cd sibyl
 	mv *.elf $INITRD_INST_DIR
 cd ..
 
+cd $SRC_DIR/srv/initrd_srv
+	make clean
+	make all
+	cp initrd_srv.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
+
 cd $SRC_DIR/drivers/display/framebuffer
 	make clean
 	make all

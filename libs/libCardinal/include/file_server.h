@@ -9,11 +9,7 @@
 #include "syscall_property.h"
 #include "syscall.h"
 #include "ipc.h"
-
-#define PATH_MAX KiB(64)
-#define NAME_MAX 256
-
-#define MAX_TAG_COUNT 4096
+#include "limits.h"
 
 typedef enum {
     FileSystemRequestType_GetOpMask = 0,
@@ -39,6 +35,8 @@ typedef enum {
     FileSystemOpType_Remove = (1 << 4),
     FileSystemOpType_Rename = (1 << 6),
     FileSystemOpType_Sync = (1 << 7),
+    FileSystemOpType_GetFileProperties = (1 << 8),
+    FileSystemOpType_SetFileProperties = (1 << 9),
 } FileSystemOpType;
 
 typedef enum {
@@ -78,6 +76,12 @@ typedef struct {
     uint64_t mode;
     uint8_t access_pass[KEY_BYTES];
 } FileSystemOpOpen;
+
+typedef struct {
+    FileSystemOpRequestHeader op_h;
+    uint64_t path_key;
+    uint64_t result_offset;
+} FileSystemOpGetProperties;
 
 typedef struct {
     FileSystemOpRequestHeader op_h;

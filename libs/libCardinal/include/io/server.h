@@ -4,11 +4,6 @@
 #include "../cardinal_types.h"
 #include "../file_server.h"
 
-typedef struct {
-    uint64_t Size;
-    FileTypeFlag FileType;
-} FileInfo;
-
 int
 IO_AllocateBuffer(uint64_t* len,
                   uint64_t* address,
@@ -42,6 +37,11 @@ IO_Write(uint64_t fd,
          uint64_t key,
          uint64_t len,
          UID pid);
+
+int
+IO_GetFileProperties(const char *path,
+                     FileSystemDirectoryEntry *info,
+                     UID pid);
 
 void
 IO_Close(uint64_t, UID);

@@ -126,6 +126,7 @@ MapPage(ManagedPageTable *pageTable,
     if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
 
     if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
+    if(physicalAddress % 4096) __asm__("cli\n\thlt" :: "a"(virtualAddress), "b"(physicalAddress));
 
     //If this allocation is just reserved vmem, mark the page as not present
     if(allocType & MemoryAllocationType_ReservedAllocation) {
@@ -848,7 +849,7 @@ WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
 
         if(allocType == type) {
 
-            if(map->AllocationType & MemoryAllocationType_ReservedBacking) {
+            if(map->AllocationType & (MemoryAllocationType_ReservedBacking | MemoryAllocationType_Heap)) {
                 FreePhysicalPageCont(map->PhysicalAddress, map->Length / PAGE_SIZE);
             }
 

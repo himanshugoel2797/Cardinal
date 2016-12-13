@@ -13,6 +13,7 @@ typedef struct {
     void (*remove)(uint64_t, UID);
     int (*rename)(uint64_t, const char *, UID);
     void (*sync)(uint64_t, UID);
+    int (*get_file_properties)(const char *, FileSystemDirectoryEntry*, UID);
 } FileServerHandlers;
 
 int

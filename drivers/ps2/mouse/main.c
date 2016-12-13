@@ -11,10 +11,12 @@ int main() {
 	//Start the mouse driver
 	PS2Mouse_Initialize();
 
+	__asm__("hlt");
+
 	while(1) 
 	{
 		CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
-		POLL_MESSAGE_MSGTYPE(m, CardinalMsgType_Interrupt);
+		POLL_MESSAGE_MSGTYPE((Message*)m, CardinalMsgType_Interrupt);
 
 	}
 }

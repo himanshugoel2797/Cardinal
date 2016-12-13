@@ -1,6 +1,9 @@
 #include "proc/server.h"
 #include "ipc.h"
+#include "io/server.h"
+
 #include "shared_memory.h"
+
 
 #include <string.h>
 
@@ -163,6 +166,46 @@ RequestCreateProcess(void *exec,
     return (int)resp->err_code;
 }
 
+
+int
+StartProcess(const char *str, 
+             char *argv[], 
+             int argc,
+             UID dst_pid,
+             uint8_t *key, 
+             UID *pid) {
+    
+    uint64_t len = 0;
+    uint64_t addr = 0;
+    uint64_t read_key = 0, write_key = 0;
+
+    uint64_t fd = 0;
+
+    if(IO_Open(str, FileSystemOpFlag_Read, 0, key, dst_pid, &fd) != 0)
+        return -1;
+
+    FileSystemDirectoryEntry file_dat;
+    if(IO_GetFileProperties(str, &file_dat, dst_pid) != 0)
+        return -2;
+
+    len = file_dat.Length;
+
+    if(IO_AllocateBuffer(&len, &addr, &read_key, &write_key) != 0)
+        return -3;
+
+    __asm__("hlt");
+    if(IO_Read(fd, 0, read_key, file_dat.Length, dst_pid) != file_dat.Length)
+        return -4;
+
+    IO_Close(fd, dst_pid);
+
+    int retVal = RequestCreateProcess((void*)addr, file_dat.Length, argv, argc, pid);
+
+    IO_FreeBuffer(addr, len, read_key, write_key);
+    Unmap(addr, len);
+
+    return retVal;
+}
 
 int
 SubscribeToProcessExitNotification(void) {

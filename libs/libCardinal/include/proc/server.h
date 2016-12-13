@@ -77,6 +77,15 @@ RequestCreateProcess(void *exec,
                      uint32_t argc,
                      UID *pid);
 
+
+int
+StartProcess(const char *str, 
+             char *argv[], 
+             int argc,
+             UID dst_pid,
+             uint8_t *key, 
+             UID *pid);
+
 int
 SubscribeToProcessExitNotification(void);
 

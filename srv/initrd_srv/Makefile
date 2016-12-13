@@ -2,7 +2,7 @@ TARGET=initrd_srv.elf
 
 OBJS=main.o initrd.o
 
-LIBS=-lfileserver -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
+LIBS=-llist -lfileserver -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

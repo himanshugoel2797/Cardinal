@@ -1,6 +1,9 @@
 #include "ps2.h"
 #include "priv_ps2.h"
 #include <cardinal/driver_utils.h>
+#include <cardinal/io/server.h>
+#include <cardinal/namespace/server.h>
+#include <cardinal/proc/server.h>
 
 uint8_t PS2_Initialize()
 {
@@ -55,16 +58,29 @@ uint8_t PS2_Initialize()
     //If both tests failed, return -1
     if(port1_test_result != 0 && port2_test_result != 0) return -1;
 
+    uint32_t key = 0;
+    uint64_t error = 0;
+    uint8_t access_pass[KEY_BYTES];
+    UID dst_pid = 0;
+    RetrieveNamespace("initrd", &key);
+    while(!IsNamespaceRetrieved(key, &dst_pid, &error));
 
     if(port1_test_result == 0)
         {
             //PS2Keyboard_Initialize();
-            
+            char* argv[] = {"ps2_keyboard.elf"};
+            UID kb_pid = 0;
+            //__asm__("hlt":: "a"(StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid)));
+
         }
 
     if(port2_test_result == 0)
         {
             //PS2Mouse_Initialize();
+            char* argv[] = {"ps2_mouse.elf"};
+            UID mouse_pid = 0;
+
+            //__asm__("hlt":: "a"(StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid)));
         }
 
     cfg = PS2_ReadConfig();
@@ -84,6 +100,7 @@ uint8_t PS2_Initialize()
             WAIT_CMD_SENT;
         }
     PS2_WriteConfig(cfg);
+
 
     return 0;
 }

@@ -680,7 +680,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
             LockSpinlock(next_thread->lock);
             List_AddEntry(exiting_thds, next_thread);
-
+/*
             CachingMode cMode = 0;
             MemoryAllocationFlags cFlags = 0;
             GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
@@ -695,7 +695,7 @@ GetNextThread(ThreadInfo *prevThread) {
                                           (uint32_t*)next_thread->ClearChildTID,
                                           0);
             }
-
+*/
             UnlockSpinlock(next_thread->lock);
             break;
         case ThreadState_Paused:
@@ -971,6 +971,7 @@ DeleteThread(void) {
     if(thd == NULL)
         return;
 
+    LockSpinlock(thd->lock);
 
 //TODO Free these as per AllocateStack's allocation
 //                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
