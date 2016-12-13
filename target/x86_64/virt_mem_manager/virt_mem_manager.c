@@ -796,8 +796,11 @@ VirtMemMan_GetMapping(uint64_t *pml, uint64_t *pdpt, MemoryAllocationType allocT
     int pdpt_base = 0;
 
     switch(allocType) {
+    case MemoryAllocationType_Heap:
+        pml_base = 300;
+        break;
     default:
-        pml_base = 511;
+        pml_base = 500;
         break;
     }
 

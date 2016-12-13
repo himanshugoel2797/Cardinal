@@ -67,8 +67,13 @@ LoadElf64(void *loc,
         if(phdr->p_flags & PF_X)flags |= MemoryAllocationFlags_Exec;
         if(phdr->p_flags & PF_W)flags |= MemoryAllocationFlags_Write;
 
-        uint32_t page_count = (phdr->p_vaddr % PAGE_SIZE + phdr->p_memsz)/PAGE_SIZE;
-        if(page_count * PAGE_SIZE < (phdr->p_vaddr % PAGE_SIZE + phdr->p_memsz))page_count++;
+
+        uint32_t pages_net_size = (phdr->p_vaddr % PAGE_SIZE + phdr->p_memsz);
+
+        if(pages_net_size % PAGE_SIZE)
+          pages_net_size += PAGE_SIZE - pages_net_size % PAGE_SIZE;
+
+        uint32_t page_count = pages_net_size / PAGE_SIZE;
 
         uint64_t p_addr = 0;
         uint64_t p_vaddr = phdr->p_vaddr;
@@ -93,7 +98,6 @@ LoadElf64(void *loc,
                       MemoryAllocationType_Application,
                       flags) != 0)
                 return ElfLoaderError_OutOfMemory;
-
 
             uint64_t v_tmp_addr = 0;
             if(R0_Map(GetCurrentProcessUID(),

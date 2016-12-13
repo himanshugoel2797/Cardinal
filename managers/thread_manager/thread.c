@@ -724,11 +724,11 @@ void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
-    //outb(0x3f8, (GetCurrentThreadUID() % 1000)/100 + '0');
-    //outb(0x3f8, (GetCurrentThreadUID() % 100)/10 + '0');
-    //outb(0x3f8, (GetCurrentThreadUID() % 10) + '0');
-    //outb(0x3f8, '\r');
-    //outb(0x3f8, '\n');
+    outb(0x3f8, (GetCurrentThreadUID() % 1000)/100 + '0');
+    outb(0x3f8, (GetCurrentThreadUID() % 100)/10 + '0');
+    outb(0x3f8, (GetCurrentThreadUID() % 10) + '0');
+    outb(0x3f8, '\r');
+    outb(0x3f8, '\n');
 
     {
         err_code = 0;

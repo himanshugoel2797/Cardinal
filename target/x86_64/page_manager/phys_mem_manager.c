@@ -66,13 +66,13 @@ MemMan_Initialize(void) {
 
 static void
 MemMan_SetPageUsed(uint64_t addr) {
-    KB4_Blocks_Bitmap[addr/block_size] |= (1 << (addr/PAGE_SIZE % 32));
+    KB4_Blocks_Bitmap[addr/block_size] |= (1 << ((addr % block_size)/PAGE_SIZE));
     freePageCount--;
 }
 
 static void
 MemMan_SetPageFree(uint64_t addr) {
-    KB4_Blocks_Bitmap[addr/block_size] &= ~(1 << (addr/PAGE_SIZE % 32));
+    KB4_Blocks_Bitmap[addr/block_size] &= ~(1 << ((addr % block_size)/PAGE_SIZE));
     freePageCount++;
 }
 
@@ -82,8 +82,6 @@ MemMan_MarkUsed(uint64_t addr,
     if(size == 0)return;
 
     if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
-
-    addr = addr/PAGE_SIZE * PAGE_SIZE;
 
     for(uint64_t i = 0; i < size/PAGE_SIZE; i++) {
         MemMan_SetPageUsed(addr);
@@ -96,8 +94,6 @@ MemMan_MarkFree(uint64_t addr,
                 uint64_t size) {
     if(size == 0)return;
     if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
-
-    addr = addr/PAGE_SIZE * PAGE_SIZE;
 
     for(uint64_t i = 0; i < size/PAGE_SIZE; i++) {
         MemMan_SetPageFree(addr);

@@ -238,7 +238,7 @@ MapPage(ManagedPageTable *pageTable,
         allocMap->prev = NULL;
         pageTable->UserMap = allocMap;
 
-    } else if(flags * MemoryAllocationFlags_Kernel) {
+    } else if(flags & MemoryAllocationFlags_Kernel) {
         allocMap->next = KernelMap;
         allocMap->prev = NULL;
         KernelMap = allocMap;
@@ -604,7 +604,7 @@ HandlePageFault(uint64_t virtualAddress,
     //Check the current process's memory info table
     ProcessInformation *procInfo = NULL;
     GetProcessReference(GetCurrentProcessUID(), &procInfo);
-    if(procInfo == NULL | KernelMap == NULL | procInfo->PageTable->UserMap == NULL) {
+    if(procInfo == NULL) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->ID));
         //while(1)debug_gfx_writeLine("Error: Page Fault");
     }
