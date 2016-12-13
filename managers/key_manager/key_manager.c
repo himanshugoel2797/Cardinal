@@ -3,7 +3,7 @@
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE MiB(16)
+#define KEY_TABLE_SIZE MiB(512)
 
 typedef struct {
     uint32_t key;
@@ -23,18 +23,18 @@ KeyMan_Initialize(void) {
     if(FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                               &keyTable_addr,
                               KEY_TABLE_SIZE,
-                              MemoryAllocationType_Heap,// | MemoryAllocationType_ReservedAllocation,
+                              MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
                               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel
                              ) != MemoryAllocationErrors_None) {
         //TODO go back and make the kernel panic on any initialization failures.
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
-               AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
+               0,//AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
                keyTable_addr,
                KEY_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap,// | MemoryAllocationType_ReservedAllocation,
+               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic

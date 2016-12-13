@@ -180,9 +180,9 @@ idle_thread(void) {
         c++;
 
         __asm__("cli");
-        if(c == 50000)ScheduleProcessForTermination(GetCurrentProcessUID(), 0);
+        if(c == 1)ScheduleProcessForTermination(GetCurrentProcessUID(), 0);
         __asm__("sti");
-        while(1);        
+        if(c == 1)while(1);        
     }
 }
 
