@@ -134,6 +134,7 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
+    mmap_params->Length += PAGE_SIZE - mmap_params->Length % PAGE_SIZE;
 
     uint64_t virt_addr = mmap_params->VirtualAddress;
 
@@ -197,6 +198,9 @@ R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
+    if(data->params[2] % PAGE_SIZE)
+        data->params[2] += PAGE_SIZE - data->params[2] % PAGE_SIZE;
+    
     UnmapPage(p_info->PageTable,
               data->params[1],
               data->params[2]);

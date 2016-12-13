@@ -680,7 +680,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
             LockSpinlock(next_thread->lock);
             List_AddEntry(exiting_thds, next_thread);
-/*
+
             CachingMode cMode = 0;
             MemoryAllocationFlags cFlags = 0;
             GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
@@ -695,7 +695,7 @@ GetNextThread(ThreadInfo *prevThread) {
                                           (uint32_t*)next_thread->ClearChildTID,
                                           0);
             }
-*/
+
             UnlockSpinlock(next_thread->lock);
             break;
         case ThreadState_Paused:
@@ -966,10 +966,14 @@ WakeThread(UID id) {
 void
 DeleteThread(void) {
 
+    LockSpinlock(sync_lock);
+
     ThreadInfo* thd = List_RotNext(exiting_thds);
     List_Remove(exiting_thds, List_GetLastIndex(exiting_thds));
-    if(thd == NULL)
+    if(thd == NULL){
+        UnlockSpinlock(sync_lock);
         return;
+    }
 
     LockSpinlock(thd->lock);
 
@@ -1005,6 +1009,8 @@ DeleteThread(void) {
     FreeSpinlock(thd->lock);
 
     kfree(thd);
+
+    UnlockSpinlock(sync_lock);
 }
 
 void
@@ -1028,5 +1034,5 @@ WakeReadyThreads(void) {
         UnlockSpinlock(thd->lock);
     }
 
-    DeleteThread();
+    //DeleteThread();
 }

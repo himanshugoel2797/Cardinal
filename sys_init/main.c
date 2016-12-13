@@ -46,4 +46,6 @@ int main() {
 
     Display_UnlockDisplay(disp_fd);
 
+    //Wait until exit requested on power off
+    while(1);
 }
