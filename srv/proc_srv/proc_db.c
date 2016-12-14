@@ -54,7 +54,7 @@ List_EntryFinder(void *val, void *s_val) {
 }
 
 void
-ProcDB_SetCreateSubsFlag(UID pid, char val){
+ProcDB_SetCreateSubsFlag(UID pid, char val) {
 
     uint64_t index = List_Find(processes, List_EntryFinder, (void*)pid);
 
@@ -67,7 +67,7 @@ ProcDB_SetCreateSubsFlag(UID pid, char val){
 }
 
 void
-ProcDB_SetExitSubsFlag(UID pid, char val){
+ProcDB_SetExitSubsFlag(UID pid, char val) {
 
     uint64_t index = List_Find(processes, List_EntryFinder, (void*)pid);
 
@@ -76,11 +76,11 @@ ProcDB_SetExitSubsFlag(UID pid, char val){
         return;
 
     ProcessEntry *proc_entry = (ProcessEntry*)List_EntryAt(processes, index);
-    proc_entry->exit_subbed = val;    
+    proc_entry->exit_subbed = val;
 }
 
 int
-ProcDB_GetCreateSubsFlag(UID pid){
+ProcDB_GetCreateSubsFlag(UID pid) {
     uint64_t index = List_Find(processes, List_EntryFinder, (void*)pid);
 
     //This shouldn't really trigger
@@ -88,11 +88,11 @@ ProcDB_GetCreateSubsFlag(UID pid){
         return -1;
 
     ProcessEntry *proc_entry = (ProcessEntry*)List_EntryAt(processes, index);
-    return proc_entry->exit_subbed;    
+    return proc_entry->exit_subbed;
 }
 
 int
-ProcDB_GetExitSubsFlag(UID pid){
+ProcDB_GetExitSubsFlag(UID pid) {
 
     uint64_t index = List_Find(processes, List_EntryFinder, (void*)pid);
 
@@ -101,5 +101,5 @@ ProcDB_GetExitSubsFlag(UID pid){
         return -1;
 
     ProcessEntry *proc_entry = (ProcessEntry*)List_EntryAt(processes, index);
-    return proc_entry->exit_subbed;    
+    return proc_entry->exit_subbed;
 }

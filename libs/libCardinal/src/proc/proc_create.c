@@ -171,13 +171,13 @@ RequestCreateProcess(void *exec,
 
 
 int
-StartProcess(const char *str, 
-             char *argv[], 
+StartProcess(const char *str,
+             char *argv[],
              int argc,
              UID dst_pid,
-             uint8_t *key, 
+             uint8_t *key,
              UID *pid) {
-    
+
     uint64_t len = 0;
     uint64_t addr = 0;
     uint64_t read_key = 0, write_key = 0;

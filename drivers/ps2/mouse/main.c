@@ -7,30 +7,29 @@
 
 int main() {
 
-	//Request IO privileges
-	SetProperty(CardinalProperty_IOPL, 0, 3);
+    //Request IO privileges
+    SetProperty(CardinalProperty_IOPL, 0, 3);
 
-	//Start the mouse driver
-	PS2Mouse_Initialize();
+    //Start the mouse driver
+    PS2Mouse_Initialize();
 
-	R01_RegisterForInterrupts(44, 1);
+    R01_RegisterForInterrupts(44, 1);
 
-	while(IS_DATA_AVL)
-		inb(DATA_PORT);
-	
-	int cnt = 0;
+    while(IS_DATA_AVL)
+        inb(DATA_PORT);
 
-	while(1) 
-	{
-		CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
-		POLL_MESSAGE_MSGTYPE((Message*)m, CardinalMsgType_Interrupt);
+    int cnt = 0;
 
-		cnt++;
+    while(1) {
+        CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
+        POLL_MESSAGE_MSGTYPE((Message*)m, CardinalMsgType_Interrupt);
 
-		if(cnt == 50)
-			__asm__("hlt");
+        cnt++;
 
-		while(IS_DATA_AVL)
-		inb(DATA_PORT);
-	}
+        if(cnt == 50)
+            __asm__("hlt");
+
+        while(IS_DATA_AVL)
+            inb(DATA_PORT);
+    }
 }

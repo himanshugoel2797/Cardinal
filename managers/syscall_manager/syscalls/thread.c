@@ -188,7 +188,7 @@ R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     ScheduleProcessForTermination(data->params[0], data->params[1]);
-    
+
     SyscallSetErrno(0);
     return 0;
 }

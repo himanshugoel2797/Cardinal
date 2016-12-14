@@ -71,7 +71,7 @@ LoadElf64(void *loc,
         uint32_t pages_net_size = (phdr->p_vaddr % PAGE_SIZE + phdr->p_memsz);
 
         if(pages_net_size % PAGE_SIZE)
-          pages_net_size += PAGE_SIZE - pages_net_size % PAGE_SIZE;
+            pages_net_size += PAGE_SIZE - pages_net_size % PAGE_SIZE;
 
         uint32_t page_count = pages_net_size / PAGE_SIZE;
 

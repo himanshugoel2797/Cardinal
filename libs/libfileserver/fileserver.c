@@ -31,186 +31,186 @@ Server_HandleOpRequest(Message *m) {
     uint64_t fd = 0;
 
     //Mask out the unsupported functions
-    if(h->OpType & op_mask){
+    if(h->OpType & op_mask) {
 
-    switch(h->OpType) {
-    case FileSystemOpType_Open: {
-        FileSystemOpOpen *op = (FileSystemOpOpen*)m;
+        switch(h->OpType) {
+        case FileSystemOpType_Open: {
+            FileSystemOpOpen *op = (FileSystemOpOpen*)m;
 
-        if(op->path_key == 0) {
-            retVal = -EINVAL;
-            break;
-        }
+            if(op->path_key == 0) {
+                retVal = -EINVAL;
+                break;
+            }
 
-        UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
-            retVal = -EINVAL;
-            break;
-        }
+            UserSharedMemoryData shmem_data;
+            if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
+                retVal = -EINVAL;
+                break;
+            }
 
-        if(shmem_data.Length < op->path_offset) {
-            retVal = -EINVAL;
+            if(shmem_data.Length < op->path_offset) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->path_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
+
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
         }
-
-        retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->path_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
-
-        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-    }
-    break;
-    case FileSystemOpType_Close: {
-        FileSystemOpClose *op = (FileSystemOpClose*)m;
-
-        if(op->fd == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        fs_handlers->close(op->fd, m->SourcePID);
-        return;
-    }
-    break;
-    case FileSystemOpType_Read: {
-        FileSystemOpRead *op = (FileSystemOpRead*)m;
-
-        //Map the destination key and ensure it has the desired permissions
-        if(op->key == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        if(shmem_data.Length < op->len) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        if(!(shmem_data.Flags & MemoryAllocationFlags_Write)) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
-
-        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-    }
-    break;
-    case FileSystemOpType_Write: {
-        FileSystemOpWrite *op = (FileSystemOpWrite*)m;
-
-        //Map the destination key and ensure it has the desired permissions
-        if(op->key == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        if(shmem_data.Length < op->len) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        retVal = fs_handlers->write(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
-
-        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-    }
-    break;
-    case FileSystemOpType_GetFileProperties: {
-        FileSystemOpGetProperties *op = (FileSystemOpGetProperties*)m;
-
-        if(op->path_key == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        if(shmem_data.Length < op->result_offset + sizeof(FileSystemDirectoryEntry)) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        retVal = fs_handlers->get_file_properties((const char *)shmem_data.VirtualAddress, shmem_data.VirtualAddress + op->result_offset, m->SourcePID);
-
-        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-
-    }
-    break;
-    case FileSystemOpType_Remove: {
-        FileSystemOpRemove *op = (FileSystemOpRemove*)m;
-
-        if(op->fd == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        fs_handlers->remove(op->fd, m->SourcePID);
-        return;
-    }
-    break;
-    case FileSystemOpType_Rename: {
-        FileSystemOpRename *op = (FileSystemOpRename*)m;
-
-        if(op->name_key == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        UserSharedMemoryData shmem_data;
-        if(ApplySharedMemoryKey(op->name_key, &shmem_data) != 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        if(shmem_data.Length < op->name_offset) {
-            retVal = -EINVAL;
-            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-            break;
-        }
-
-        retVal = fs_handlers->rename(op->fd, (const char *)shmem_data.VirtualAddress + op->name_offset, m->SourcePID);
-
-        Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
-    }
-    break;
-    case FileSystemOpType_Sync: {
-        FileSystemOpSync *op = (FileSystemOpSync*)m;
-
-        if(op->fd == 0) {
-            retVal = -EINVAL;
-            break;
-        }
-
-        fs_handlers->sync(op->fd, m->SourcePID);
-        return;
-    }
-    break;
-    default:
-        if(unkn_msg_handler != NULL)
-            unkn_msg_handler(m);	//TODO return error message if this handler is absent
-        else
-            retVal = -EINVAL;
         break;
-    }
+        case FileSystemOpType_Close: {
+            FileSystemOpClose *op = (FileSystemOpClose*)m;
+
+            if(op->fd == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            fs_handlers->close(op->fd, m->SourcePID);
+            return;
+        }
+        break;
+        case FileSystemOpType_Read: {
+            FileSystemOpRead *op = (FileSystemOpRead*)m;
+
+            //Map the destination key and ensure it has the desired permissions
+            if(op->key == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            UserSharedMemoryData shmem_data;
+            if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            if(shmem_data.Length < op->len) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            if(!(shmem_data.Flags & MemoryAllocationFlags_Write)) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+        }
+        break;
+        case FileSystemOpType_Write: {
+            FileSystemOpWrite *op = (FileSystemOpWrite*)m;
+
+            //Map the destination key and ensure it has the desired permissions
+            if(op->key == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            UserSharedMemoryData shmem_data;
+            if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            if(shmem_data.Length < op->len) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            retVal = fs_handlers->write(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+        }
+        break;
+        case FileSystemOpType_GetFileProperties: {
+            FileSystemOpGetProperties *op = (FileSystemOpGetProperties*)m;
+
+            if(op->path_key == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            UserSharedMemoryData shmem_data;
+            if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            if(shmem_data.Length < op->result_offset + sizeof(FileSystemDirectoryEntry)) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            retVal = fs_handlers->get_file_properties((const char *)shmem_data.VirtualAddress, shmem_data.VirtualAddress + op->result_offset, m->SourcePID);
+
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+
+        }
+        break;
+        case FileSystemOpType_Remove: {
+            FileSystemOpRemove *op = (FileSystemOpRemove*)m;
+
+            if(op->fd == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            fs_handlers->remove(op->fd, m->SourcePID);
+            return;
+        }
+        break;
+        case FileSystemOpType_Rename: {
+            FileSystemOpRename *op = (FileSystemOpRename*)m;
+
+            if(op->name_key == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            UserSharedMemoryData shmem_data;
+            if(ApplySharedMemoryKey(op->name_key, &shmem_data) != 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            if(shmem_data.Length < op->name_offset) {
+                retVal = -EINVAL;
+                Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+                break;
+            }
+
+            retVal = fs_handlers->rename(op->fd, (const char *)shmem_data.VirtualAddress + op->name_offset, m->SourcePID);
+
+            Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
+        }
+        break;
+        case FileSystemOpType_Sync: {
+            FileSystemOpSync *op = (FileSystemOpSync*)m;
+
+            if(op->fd == 0) {
+                retVal = -EINVAL;
+                break;
+            }
+
+            fs_handlers->sync(op->fd, m->SourcePID);
+            return;
+        }
+        break;
+        default:
+            if(unkn_msg_handler != NULL)
+                unkn_msg_handler(m);	//TODO return error message if this handler is absent
+            else
+                retVal = -EINVAL;
+            break;
+        }
     }
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, op_response);

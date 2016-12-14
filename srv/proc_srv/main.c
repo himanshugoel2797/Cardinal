@@ -52,23 +52,19 @@ int main() {
             MsgHeader *msg_h = (MsgHeader*)msg;
 
             switch(msg_h->MsgType) {
-            case ProcessServerMessageType_CreateProcessRequest: 
-            {
+            case ProcessServerMessageType_CreateProcessRequest: {
                 create_process_handler(msg);
             }
             break;
-            case ProcessServerMessageType_SubscribeToExitNotification: 
-            {
+            case ProcessServerMessageType_SubscribeToExitNotification: {
                 subscribe_exit(msg);
             }
             break;
-            case ProcessServerMessageType_SubscribeToCreateNotification: 
-            {
+            case ProcessServerMessageType_SubscribeToCreateNotification: {
                 subscribe_creation(msg);
             }
             break;
-            case ProcessServerMessageType_ExitProcess: 
-            {
+            case ProcessServerMessageType_ExitProcess: {
                 exit_process(msg);
             }
             break;

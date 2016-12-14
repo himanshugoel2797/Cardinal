@@ -189,7 +189,7 @@ AllocateStack(UID parentProcess,
 
 uint64_t
 GetStackSize(ThreadPermissionLevel perm_level) {
-    return (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;    
+    return (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;
 }
 
 UID
@@ -985,7 +985,7 @@ DeleteThread(void) {
 
     ThreadInfo* thd = List_RotNext(exiting_thds);
     List_Remove(exiting_thds, List_GetLastIndex(exiting_thds));
-    if(thd == NULL){
+    if(thd == NULL) {
         UnlockSpinlock(sync_lock);
         return;
     }
@@ -1044,7 +1044,7 @@ WakeReadyThreads(void) {
                 List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
                 List_AddEntry(neutral, thd);
             }
-        }else {
+        } else {
             ProcessCheckWakeThreads(thd->ParentProcess->ID);
         }
 

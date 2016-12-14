@@ -79,11 +79,11 @@ RequestCreateProcess(void *exec,
 
 
 int
-StartProcess(const char *str, 
-             char *argv[], 
+StartProcess(const char *str,
+             char *argv[],
              int argc,
              UID dst_pid,
-             uint8_t *key, 
+             uint8_t *key,
              UID *pid);
 
 int

@@ -18,12 +18,12 @@ InterruptMan_InterruptHandler(uint32_t int_no,
     m->m.MsgID = int_no;
     m->vector = int_no;
 
-    
+
     for(int i = 0; i < MAX_SUBSCRIBERS; i++) {
-        
-            
+
+
         if(irq_subscriber_pids[int_no][i] != 0) {
-            
+
             PostMessages(irq_subscriber_pids[int_no][i], (Message**)&m, 1);
         }
     }
@@ -87,19 +87,19 @@ InterruptMan_UnregisterProcess(UID pid) {
 int
 InterruptMan_AllocateBlock(int cnt) {
 
-	int pos = 0;
-	int score = 0;
+    int pos = 0;
+    int score = 0;
 
-	for(int i = 0; i < IRQ_COUNT && score < cnt; i++) {
-		if(irq_sub_slot_count[i] > 0)score++;
-		else {
-			pos = i + 1;
-			score = 0;
-		}
-	}
+    for(int i = 0; i < IRQ_COUNT && score < cnt; i++) {
+        if(irq_sub_slot_count[i] > 0)score++;
+        else {
+            pos = i + 1;
+            score = 0;
+        }
+    }
 
-	if((pos + cnt) >= IRQ_COUNT)
-		return -1;
+    if((pos + cnt) >= IRQ_COUNT)
+        return -1;
 
-	return pos;
+    return pos;
 }

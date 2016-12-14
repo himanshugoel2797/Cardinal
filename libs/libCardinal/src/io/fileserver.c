@@ -6,7 +6,7 @@
 #include <string.h>
 #include "io/server.h"
 
-static uint32_t 
+static uint32_t
 fill_struct(FileSystemOpRequestHeader *op,
             FileSystemOpType op_type) {
 

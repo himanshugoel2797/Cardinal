@@ -5,8 +5,7 @@
 #include <cardinal/namespace/server.h>
 #include <cardinal/proc/server.h>
 
-uint8_t PS2_Initialize()
-{
+uint8_t PS2_Initialize() {
     //Disable the ports
     outb(CMD_PORT, DISABLE_PORT1_CMD);
     WAIT_CMD_SENT;
@@ -34,26 +33,24 @@ uint8_t PS2_Initialize()
     //If test didn't pass, return -1
     if(test_result != 0x55) return -1;
 
-    if(isDualChannel)   //If test showed it was dual channel first, check properly
-        {
-            outb(CMD_PORT, ENABLE_PORT2_CMD);
-            cfg = PS2_ReadConfig();
-            if(cfg & (1<<5)) isDualChannel = 0; //If bit is still set, not dual channel
+    if(isDualChannel) { //If test showed it was dual channel first, check properly
+        outb(CMD_PORT, ENABLE_PORT2_CMD);
+        cfg = PS2_ReadConfig();
+        if(cfg & (1<<5)) isDualChannel = 0; //If bit is still set, not dual channel
 
-            if(isDualChannel) outb(CMD_PORT, DISABLE_PORT2_CMD);
-        }
+        if(isDualChannel) outb(CMD_PORT, DISABLE_PORT2_CMD);
+    }
 
     outb(CMD_PORT, PERFORM_PORT1TEST);
     WAIT_DATA_AVL;
     uint8_t port1_test_result = inb(DATA_PORT);
     uint8_t port2_test_result = 1;
 
-    if(isDualChannel)
-        {
-            outb(CMD_PORT, PERFORM_PORT2TEST);
-            WAIT_DATA_AVL;
-            port2_test_result = inb(DATA_PORT);
-        }
+    if(isDualChannel) {
+        outb(CMD_PORT, PERFORM_PORT2TEST);
+        WAIT_DATA_AVL;
+        port2_test_result = inb(DATA_PORT);
+    }
 
     //If both tests failed, return -1
     if(port1_test_result != 0 && port2_test_result != 0) return -1;
@@ -65,43 +62,38 @@ uint8_t PS2_Initialize()
     RetrieveNamespace("initrd", &key);
     while(!IsNamespaceRetrieved(key, &dst_pid, &error));
 
-    if(port1_test_result == 0)
-        {
-            //PS2Keyboard_Initialize();
-            char* argv[] = {"ps2_keyboard.elf"};
-            UID kb_pid = 0;
-            StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid);
+    if(port1_test_result == 0) {
+        //PS2Keyboard_Initialize();
+        char* argv[] = {"ps2_keyboard.elf"};
+        UID kb_pid = 0;
+        StartProcess(":ps2_keyboard.elf", argv, 1, dst_pid, access_pass, &kb_pid);
 
-        }
+    }
 
-    if(port2_test_result == 0)
-        {
-            //PS2Mouse_Initialize();
-            char* argv[] = {"ps2_mouse.elf"};
-            UID mouse_pid = 0;
+    if(port2_test_result == 0) {
+        //PS2Mouse_Initialize();
+        char* argv[] = {"ps2_mouse.elf"};
+        UID mouse_pid = 0;
 
-            StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid);
-        }
+        StartProcess(":ps2_mouse.elf", argv, 1, dst_pid, access_pass, &mouse_pid);
+    }
 
 
     return 0;
 }
 
-uint8_t PS2_ReadStatus()
-{
+uint8_t PS2_ReadStatus() {
     return inb(CMD_PORT);
 }
 
-uint8_t PS2_ReadConfig()
-{
+uint8_t PS2_ReadConfig() {
     outb(CMD_PORT, READ_CFG_CMD);
     WAIT_CMD_SENT;
     WAIT_DATA_AVL;
     return inb(DATA_PORT);
 }
 
-void PS2_WriteConfig(uint8_t cfg)
-{
+void PS2_WriteConfig(uint8_t cfg) {
     outb(CMD_PORT, WRITE_CFG_CMD);
     WAIT_CMD_SENT;
     WAIT_DATA_SENT;

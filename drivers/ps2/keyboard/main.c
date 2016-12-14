@@ -7,13 +7,13 @@
 
 int main() {
 
-	//Request IO privileges
-	SetProperty(CardinalProperty_IOPL, 0, 3);
+    //Request IO privileges
+    SetProperty(CardinalProperty_IOPL, 0, 3);
 
 
-	//Start the keyboard driver
-	PS2Keyboard_Initialize();
-	R01_RegisterForInterrupts(33, 1);
+    //Start the keyboard driver
+    PS2Keyboard_Initialize();
+    R01_RegisterForInterrupts(33, 1);
 
     uint8_t cfg = PS2_ReadConfig();
     outb(CMD_PORT, ENABLE_PORT1_CMD);
@@ -24,18 +24,17 @@ int main() {
 
     int cnt = 0;
 
-	while(1) 
-	{
-		CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
-		POLL_MESSAGE_MSGTYPE(m, CardinalMsgType_Interrupt);
+    while(1) {
+        CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
+        POLL_MESSAGE_MSGTYPE(m, CardinalMsgType_Interrupt);
 
-		cnt++;
+        cnt++;
 
-		if(cnt == 50)
-			__asm__("hlt");
+        if(cnt == 50)
+            __asm__("hlt");
 
-		while(IS_DATA_AVL)
-		inb(DATA_PORT);
+        while(IS_DATA_AVL)
+            inb(DATA_PORT);
 
-	}
+    }
 }

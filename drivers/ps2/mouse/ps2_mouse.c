@@ -4,8 +4,7 @@
 static uint8_t mode;
 
 uint8_t
-PS2Mouse_Initialize(void)
-{
+PS2Mouse_Initialize(void) {
     mode = 0;
 
     WAIT_DATA_SENT;
@@ -14,11 +13,10 @@ PS2Mouse_Initialize(void)
     outb(DATA_PORT, 0xFF);
 
     int res = 0;
-    while(res != 0xAA)
-        {
-            WAIT_DATA_AVL;
-            res = inb(DATA_PORT);
-        }
+    while(res != 0xAA) {
+        WAIT_DATA_AVL;
+        res = inb(DATA_PORT);
+    }
 
     inb(DATA_PORT);
 
@@ -143,13 +141,11 @@ PS2Mouse_Initialize(void)
 }
 
 int
-PS2Mouse_HasScrollWheel(void)
-{
+PS2Mouse_HasScrollWheel(void) {
     return (mode == 0x4 || mode == 0x3);
 }
 
 int
-PS2Mouse_IsFiveButton(void)
-{
+PS2Mouse_IsFiveButton(void) {
     return (mode == 0x4);
 }

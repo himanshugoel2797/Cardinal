@@ -170,8 +170,8 @@ void IDT_DefaultHandler() {
 
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
-    
-    if(regs->int_no > 32){
+
+    if(regs->int_no > 32) {
         outb(0x3f8, '\r');
         outb(0x3f8, '\n');
         outb(0x3f8, (regs->int_no % 1000)/100 + '0');

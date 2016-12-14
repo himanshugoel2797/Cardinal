@@ -38,9 +38,9 @@ typedef enum {
 static __inline
 uint64_t
 R0_CreateThread(UID parent_pid,
-             int (*entry_point)(void *arg),
-             void *arg,
-             UID *tid) {
+                int (*entry_point)(void *arg),
+                void *arg,
+                UID *tid) {
     if(tid != NULL) {
         *tid = Syscall3(Syscall_R0_CreateThread, parent_pid, (uint64_t)entry_point, (uint64_t)arg);
         return GetErrno();

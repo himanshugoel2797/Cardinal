@@ -85,8 +85,8 @@ void kfree(void *addr) {
     if(a != (UID)-1) {
 
 #if defined(DEBUG)
-    uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);
-    if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile("cli\n\thlt" :: "a"(addr), "b"(__builtin_return_address(0)));
+        uint64_t *top = (uint64_t*)((uint64_t)addr - 8 * 3);
+        if(top[0] != 0xDEADBEEFCAFEBABE)__asm__ volatile("cli\n\thlt" :: "a"(addr), "b"(__builtin_return_address(0)));
 #endif
 
         Balloc_Free(a);

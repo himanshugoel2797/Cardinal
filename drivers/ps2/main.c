@@ -3,14 +3,14 @@
 
 int main() {
 
-	//Request IO privileges
-	SetProperty(CardinalProperty_IOPL, 0, 3);
+    //Request IO privileges
+    SetProperty(CardinalProperty_IOPL, 0, 3);
 
-	//Initialize the PS/2 devices and load their drivers if available
-	PS2_Initialize();
+    //Initialize the PS/2 devices and load their drivers if available
+    PS2_Initialize();
 
-	//Surrender IOPL
-	SetProperty(CardinalProperty_IOPL, 0, 0);
+    //Surrender IOPL
+    SetProperty(CardinalProperty_IOPL, 0, 0);
 
-	while(1);
+    while(1);
 }

@@ -34,7 +34,7 @@ send_exit_notification(UID pid) {
     note->pid = pid;
 
     //Post this message to the various servers that need this info.
-    for(uint64_t i = 0; i < List_Length(exit_subs); i++){
+    for(uint64_t i = 0; i < List_Length(exit_subs); i++) {
         PostIPCMessages((UID)List_EntryAt(exit_subs, i), (Message**)&note, 1);
     }
 }
@@ -48,7 +48,7 @@ send_existence_notification(UID pid) {
     note->pid = pid;
 
     //Post this message to the various servers that need this info.
-    for(uint64_t i = 0; i < List_Length(create_subs); i++){
+    for(uint64_t i = 0; i < List_Length(create_subs); i++) {
         PostIPCMessages((UID)List_EntryAt(create_subs, i), (Message**)&note, 1);
     }
 }
@@ -66,7 +66,7 @@ subscribe_creation(Message *m) {
 void
 subscribe_exit(Message *m) {
 
-    if(ProcDB_GetExitSubsFlag(m->SourcePID) != 1){
+    if(ProcDB_GetExitSubsFlag(m->SourcePID) != 1) {
         ProcDB_SetExitSubsFlag(m->SourcePID, 1);
         List_AddEntry(exit_subs, (void*)m->SourcePID);
     }
@@ -83,7 +83,7 @@ exit_process(Message *m) {
         //TODO remove the entry from the list
     }
 
-    ProcessServer_ExitRequest *exit_req = (ProcessServer_ExitRequest*)m;    
+    ProcessServer_ExitRequest *exit_req = (ProcessServer_ExitRequest*)m;
     R0_KillProcess(m->SourcePID, exit_req->exit_code);
 
     send_exit_notification(m->SourcePID);

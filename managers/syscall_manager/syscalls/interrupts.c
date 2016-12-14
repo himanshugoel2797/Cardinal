@@ -15,8 +15,7 @@ R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
-    if(GetProcessGroupID(GetCurrentProcessUID()) > 1)
-    {
+    if(GetProcessGroupID(GetCurrentProcessUID()) > 1) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
@@ -28,8 +27,7 @@ R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     int retVal = InterruptMan_AllocateBlock((int)data->params[0]);
-    if(retVal == -1)
-    {
+    if(retVal == -1) {
         SyscallSetErrno(-ENOMEM);
         return (uint64_t)retVal;
     }
@@ -59,8 +57,8 @@ R01RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     int result = InterruptMan_RegisterProcess(GetCurrentProcessUID(),
-                                              data->params[0],
-                                              data->params[1]);
+                 data->params[0],
+                 data->params[1]);
 
     if(result != 0) {
         SyscallSetErrno(-EUNKNWN);
