@@ -32,7 +32,9 @@ mmap_handler(Message *m) {
 
     uint64_t addr = req->address;
     uint64_t sz = req->size;
-    sz += (PAGE_SIZE - sz % PAGE_SIZE);
+
+    if(sz % PAGE_SIZE)
+        sz += (PAGE_SIZE - sz % PAGE_SIZE);
 
     MemoryAllocationFlags flags = req->flags;
     MMapFlags mmap_flags = req->mmap_flags;
@@ -42,7 +44,7 @@ mmap_handler(Message *m) {
 
     if(mmap_flags & MMapFlags_Fixed) {
 
-        if(addr == 0 || addr % PAGE_SIZE) {
+        if(addr == 0 | addr % PAGE_SIZE) {
             err = MemoryAllocationErrors_InvalidVirtualAddress;
             SendErrorMessage(0, err, m->SourcePID, m->MsgID);
         }

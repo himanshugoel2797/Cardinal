@@ -37,7 +37,9 @@ load_exec(UID pid, const char *exec) {
 
     uint64_t orig_exec_size = exec_size;
     exec_size += EXEC_ENTRY_POINT % PAGE_SIZE;
-    exec_size += (PAGE_SIZE - exec_size % PAGE_SIZE);
+
+    if(exec_size % PAGE_SIZE)
+        exec_size += (PAGE_SIZE - exec_size % PAGE_SIZE);
 
     //Map the executable into the process
     ProcessInformation *pinfo = NULL;

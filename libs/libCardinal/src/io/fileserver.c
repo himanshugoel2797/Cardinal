@@ -24,7 +24,8 @@ setup_shmem(uint64_t *len,
             uint64_t *key,
             uint64_t *vAddress) {
 
-    *len += PAGE_SIZE - *len % PAGE_SIZE;
+    if(*len % PAGE_SIZE)
+        *len += PAGE_SIZE - *len % PAGE_SIZE;
 
     if(AllocateSharedMemory(*len,
                             CachingModeWriteBack,
@@ -54,7 +55,8 @@ IO_AllocateBuffer(uint64_t* len,
                   uint64_t* read_key,
                   uint64_t* write_key) {
 
-    *len += PAGE_SIZE - *len % PAGE_SIZE;
+    if(*len % PAGE_SIZE)
+        *len += PAGE_SIZE - *len % PAGE_SIZE;
 
     if(AllocateSharedMemory(*len,
                             CachingModeWriteBack,

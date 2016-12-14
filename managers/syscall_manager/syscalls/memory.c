@@ -137,7 +137,9 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
-    mmap_params->Length += PAGE_SIZE - mmap_params->Length % PAGE_SIZE;
+    
+    if(mmap_params->Length % PAGE_SIZE)
+        mmap_params->Length += PAGE_SIZE - mmap_params->Length % PAGE_SIZE;
 
     uint64_t virt_addr = mmap_params->VirtualAddress;
 

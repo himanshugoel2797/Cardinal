@@ -674,7 +674,7 @@ VirtMemMan_Map(PML_Instance       inst,
         __asm__ volatile("cli\n\thlt" :: "a"(phys_addr), "b"(virt_addr));
 
     while(size > 0) {
-        if(size == KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0) {
+        if(size == KiB(4)) {
             size -= KiB(4);
             VirtMemMan_MapSPage(inst,
                                 virt_addr,
@@ -723,7 +723,7 @@ VirtMemMan_Map(PML_Instance       inst,
                                 sec_perms);
             virt_addr += MiB(2);
             phys_addr += MiB(2);
-        } else if(size >= KiB(4) && virt_addr % KiB(4) == 0 && phys_addr % KiB(4) == 0) {
+        } else if(size >= KiB(4)) {
             size -= KiB(4);
             VirtMemMan_MapSPage(inst,
                                 virt_addr,

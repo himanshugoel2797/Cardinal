@@ -87,7 +87,9 @@ RequestCreateProcess(void *exec,
     create_req->argc = argc;
     create_req->exec_size = exec_len;
 
-    exec_len += PAGE_SIZE - exec_len % PAGE_SIZE;
+    if(exec_len % PAGE_SIZE)
+        exec_len += PAGE_SIZE - exec_len % PAGE_SIZE;
+
     uint64_t vAddress = 0;
     if(AllocateSharedMemory(exec_len,
                             CachingModeWriteBack,
@@ -115,7 +117,8 @@ RequestCreateProcess(void *exec,
     for(uint32_t i = 0; i < argc; i++)
         arg_len += strlen(argv[i]);
 
-    arg_len += PAGE_SIZE - arg_len % PAGE_SIZE;
+    if(arg_len % PAGE_SIZE)
+        arg_len += PAGE_SIZE - arg_len % PAGE_SIZE;
 
     if(arg_len > 0) {
         if(AllocateSharedMemory(arg_len,

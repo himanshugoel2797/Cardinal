@@ -77,7 +77,7 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
    	png_uint_32 bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
 
    	char* rowData = malloc(bytesPerRow);
-   	uint32_t *data = malloc(bytesPerRow * height);
+   	char* data = malloc(bytesPerRow * height);
 
       *img_w = width;
       *img_h = height;
@@ -89,18 +89,16 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
    {
       png_read_row(png_ptr, (png_bytep)rowData, NULL);
 
-      uint32_t rowOffset = rowIdx * width;
-
       uint32_t byteIndex = 0;
       for(uint32_t colIdx = 0; colIdx < width; ++colIdx)
       {
          uint32_t red   = rowData[byteIndex++];
          uint32_t green = rowData[byteIndex++];
          uint32_t blue  = rowData[byteIndex++];
-         uint32_t alpha = rowData[byteIndex++];
 
-         uint32_t targetPixelIndex = rowOffset + colIdx;
-         data[rowIdx * bytesPerRow/sizeof(uint32_t) + colIdx] = (red << 24 | green < 16 | blue << 8 | alpha);
+         data[rowIdx * bytesPerRow + (3 * colIdx)] = red;
+         data[rowIdx * bytesPerRow + (3 * colIdx) + 1] = green;
+         data[rowIdx * bytesPerRow + (3 * colIdx) + 2] = blue;
       }
    }
 
