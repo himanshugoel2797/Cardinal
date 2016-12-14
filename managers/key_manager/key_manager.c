@@ -3,7 +3,7 @@
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE MiB(1024)
+#define KEY_TABLE_SIZE MiB(64)
 
 typedef struct {
     uint32_t key;

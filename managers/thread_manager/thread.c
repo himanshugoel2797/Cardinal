@@ -1045,7 +1045,7 @@ WakeReadyThreads(void) {
                 List_AddEntry(neutral, thd);
             }
         }else {
-            //ProcessCheckWakeThreads(thd->ParentProcess->ID);
+            ProcessCheckWakeThreads(thd->ParentProcess->ID);
         }
 
         UnlockSpinlock(thd->lock);
