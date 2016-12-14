@@ -5,6 +5,8 @@
 #include "kmalloc.h"
 #include "common.h"
 
+#include "utils/native.h"
+
 Spinlock
 CreateSpinlock(void) {
     Spinlock p = kmalloc(CPUID_GetCacheLineSize());
@@ -149,6 +151,7 @@ GetSpinlockContenderCount(Spinlock primitive) {
 
 bool
 TryLockSpinlock(Spinlock primitive) {
+
     bool locked = FALSE;
     uint64_t iflag = 0;
     __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
@@ -176,6 +179,7 @@ TryLockSpinlock(Spinlock primitive) {
 
 Spinlock
 LockSpinlock(Spinlock primitive) {
+    outb(0x3f8, 'L');
     while(!TryLockSpinlock(primitive));
     return primitive;
 }
@@ -187,6 +191,7 @@ AutounlockSpinlock(Spinlock *prim) {
 
 bool
 UnlockSpinlock(Spinlock primitive) {
+    outb(0x3f8, 'U');
     bool locked = FALSE;
     uint64_t iflag = 0;
 

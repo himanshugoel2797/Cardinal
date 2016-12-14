@@ -54,6 +54,8 @@ MemMan_Initialize(void) {
     //Mark important regions that have been preallocated
     MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress), info->FramebufferPitch * info->FramebufferHeight);
 
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), KB4_Blocks_Bitmap), KB4_Blocks_Count * sizeof(uint32_t));
+
     MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->InitrdStartAddress), info->InitrdLength);
 
     MemMan_MarkUsed((uint64_t)&_region_kernel_start_,
@@ -168,12 +170,12 @@ void
 MemMan_Free(uint64_t ptr) {
     ptr = ptr/PAGE_SIZE * PAGE_SIZE;
 
-    MemMan_SetPageFree(ptr);
-    lastNonFullPage = ptr/block_size;
+    //MemMan_SetPageFree(ptr);
+    //lastNonFullPage = ptr/block_size;
 }
 
 void
-MemMan_FreeCont(uint64_t ptr,
-                int pageCount) {
-    MemMan_MarkFree(ptr, pageCount * KiB(4));
+MemMan_FreeCont(uint64_t UNUSED(ptr),
+                int UNUSED(pageCount)) {
+    //MemMan_MarkFree(ptr, pageCount * KiB(4));
 }

@@ -89,6 +89,7 @@ LoadElf64(void *loc,
             if(R0_AllocatePages(1, &p_addr) != 0)
                 return ElfLoaderError_OutOfMemory;
 
+
             uint64_t vaddr = p_vaddr - p_vaddr % PAGE_SIZE;
             if(R0_Map(pid,
                       p_addr,

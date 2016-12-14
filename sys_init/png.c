@@ -77,12 +77,12 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
    	png_uint_32 bytesPerRow = png_get_rowbytes(png_ptr, info_ptr);
 
    	char* rowData = malloc(bytesPerRow);
-   	char* data = malloc(bytesPerRow * height);
+   	char* data = malloc(4 * width * height);
 
       *img_w = width;
       *img_h = height;
       *img_p = bytesPerRow;
-      *res_len = bytesPerRow * height;
+      *res_len = 4 * width * height;
 
    // read single row at a time
    for(uint32_t rowIdx = 0; rowIdx < height; ++rowIdx)
@@ -96,9 +96,10 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
          uint32_t green = rowData[byteIndex++];
          uint32_t blue  = rowData[byteIndex++];
 
-         data[rowIdx * bytesPerRow + (3 * colIdx)] = red;
-         data[rowIdx * bytesPerRow + (3 * colIdx) + 1] = green;
-         data[rowIdx * bytesPerRow + (3 * colIdx) + 2] = blue;
+         data[rowIdx * bytesPerRow + (4 * colIdx)] = blue;
+         data[rowIdx * bytesPerRow + (4 * colIdx) + 1] = green;
+         data[rowIdx * bytesPerRow + (4 * colIdx) + 2] = red;
+         data[rowIdx * bytesPerRow + (4 * colIdx) + 3] = 255;
       }
    }
 
