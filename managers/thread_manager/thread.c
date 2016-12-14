@@ -182,7 +182,12 @@ AllocateStack(UID parentProcess,
            );
 
     UnlockSpinlock(pInfo->lock);
-    return user_stack_base + stack_Size - 256;
+    return user_stack_base;
+}
+
+uint64_t
+GetStackSize(ThreadPermissionLevel perm_level) {
+    return (perm_level == ThreadPermissionLevel_User)?USER_STACK_SIZE : KERNEL_STACK_SIZE;    
 }
 
 UID
@@ -192,7 +197,7 @@ CreateThread(UID parentProcess,
              void *arg) {
 
 
-    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
+    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level) + GetStackSize(perm_level) - 256;   //Subtract 256 to allocate space for red zone
 
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
@@ -256,11 +261,11 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, Errno, 0);
 
     //Setup kernel stack
-    uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase);
+    uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase) + GetStackSize(ThreadPermissionLevel_Kernel) - 256;
     SET_PROPERTY_VAL(thd, KernelStackAligned, kstack);
 
     //Setup interrupt stack
-    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase);
+    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase) + GetStackSize(ThreadPermissionLevel_Kernel) - 256;
     SET_PROPERTY_VAL(thd, InterruptStackAligned, istack);
 
     //Setup FPU state
@@ -740,7 +745,7 @@ TaskSwitch(uint32_t int_no,
 
 //        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
-//        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
+        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
@@ -977,9 +982,8 @@ DeleteThread(void) {
 
     LockSpinlock(thd->lock);
 
-//TODO Free these as per AllocateStack's allocation
-//                kfree((void*)(next_thread->KernelStackBase - STACK_SIZE));
-//                kfree((void*)(next_thread->InterruptStackBase - STACK_SIZE));
+    FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
+    FreeMapping((void*)thd->InterruptStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *tInfo = List_RotNext(thds);

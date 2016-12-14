@@ -74,7 +74,7 @@ build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
 	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
-	llc tmp.bc -O=0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
+	llc tmp0.bc -O=0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
 	rm -f tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
