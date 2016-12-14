@@ -19,7 +19,7 @@
 #define ROOT_PID 1
 
 //! The maximum number of keys a process may have for itself.
-#define MAX_KEYS_PER_PROCESS 4096
+#define MAX_KEYS_PER_PROCESS 4000
 
 /**
  * The process status.

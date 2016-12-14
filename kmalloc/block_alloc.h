@@ -7,11 +7,11 @@
 #define LARGE_HEAP_MEM_SIZE 0
 
 //Size of a single block in the chain
-#define LARGE_HEAP_BLOCK_SIZE KiB(4)
+#define LARGE_HEAP_BLOCK_SIZE KiB(32)
 #define LARGE_HEAP_BLOCK_COUNT (LARGE_HEAP_MEM_SIZE/LARGE_HEAP_BLOCK_SIZE)
 
 //Allocate 512MB of memory for the small heap
-#define SMALL_HEAP_MEM_SIZE MiB(8)
+#define SMALL_HEAP_MEM_SIZE MiB(128)
 #define SMALL_HEAP_BLOCK_SIZE 32
 #define SMALL_HEAP_BLOCK_COUNT (SMALL_HEAP_MEM_SIZE/SMALL_HEAP_BLOCK_SIZE)
 

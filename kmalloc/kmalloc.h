@@ -28,12 +28,6 @@ void* kmalloc(size_t size);
 //! \sa kmalloc()
 void kfree(void* addr);
 
-//! Compact the kernel memory allocation table
-
-//! This shouldn't need to be called from outside
-//! \sa kmalloc(), kfree()
-void kcompact();
-
 void* AllocateMapping(MemoryAllocationType t, MemoryAllocationFlags flags, size_t size);
 
 void FreeMapping(void* mem, size_t size);

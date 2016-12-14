@@ -672,6 +672,8 @@ GetNextThread(ThreadInfo *prevThread) {
 
         if(next_thread == NULL)continue;
 
+//        debug_gfx_writeLine(" Trying: %x, State: %x , %x%x ", next_thread->ParentProcess->ID, next_thread->ParentProcess->Status, (uint32_t)((uint64_t)next_thread->ParentProcess >> 32), (uint32_t)next_thread->ParentProcess);
+
         //If the process is terminating, terminate the thread
         if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)) {
             SET_PROPERTY_VAL(next_thread, State, ThreadState_Exiting);
@@ -726,6 +728,8 @@ TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
     {
+
+
         err_code = 0;
 
         LockSpinlock(sync_lock);
@@ -734,7 +738,9 @@ TaskSwitch(uint32_t int_no,
         PerformArchSpecificTaskSave(coreState->cur_thread);
         SavePreviousThread(coreState->cur_thread);
 
+//        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
+//        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));

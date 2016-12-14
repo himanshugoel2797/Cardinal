@@ -1,5 +1,6 @@
-#include "kmalloc.h"
+#include "synchronization.h"
 #include "managers.h"
+#include "memory.h"
 #include "block_alloc.h"
 #include "common.h"
 
@@ -16,8 +17,26 @@ static bool initialized = FALSE;
 int
 Balloc_Initialize() {
     if (initialized)return 0;
-    uint64_t addr = (uint64_t)kmalloc(LARGE_HEAP_MEM_SIZE + SMALL_HEAP_MEM_SIZE);
 
+    uint64_t virtBaseAddr_base = 0;
+    FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
+                           &virtBaseAddr_base,
+                           SMALL_HEAP_MEM_SIZE,
+                           MemoryAllocationType_Heap | MemoryAllocationType_Global,
+                           MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
+
+    uint64_t phys_addr = AllocatePhysicalPageCont(SMALL_HEAP_MEM_SIZE/PAGE_SIZE);
+
+    MapPage(GetActiveVirtualMemoryInstance(),
+            phys_addr,
+            virtBaseAddr_base,
+            SMALL_HEAP_MEM_SIZE,
+            CachingModeWriteBack,
+            MemoryAllocationType_Heap,
+            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write | MemoryAllocationFlags_Present);
+
+
+    uint64_t addr = virtBaseAddr_base;
 
     _smallH_Loc = (void*)addr;
     _smallH_FreeSize = SMALL_HEAP_MEM_SIZE;
