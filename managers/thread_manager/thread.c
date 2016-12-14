@@ -89,11 +89,13 @@ PROPERTY_GET_SET(ProcessInformation*, ParentProcess, NULL)
 PROPERTY_GET_SET(ThreadState, State, 0)
 PROPERTY_GET_SET(ThreadWakeCondition, WakeCondition, 0)
 PROPERTY_GET_SET(ThreadPriority, Priority, 0)
+PROPERTY_GET_SET(ThreadPermissionLevel, PermissionLevel, 0)
 
 PROPERTY_GET_SET(uint64_t, InterruptStackBase, 0)
 PROPERTY_GET_SET(uint64_t, InterruptStackAligned, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackBase, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackAligned, 0)
+PROPERTY_GET_SET(uint64_t, UserStackBase, 0)
 PROPERTY_GET_SET(uint64_t, CurrentStack, 0)
 PROPERTY_GET_SET(uint64_t, SleepDurationNS, 0)
 PROPERTY_GET_SET(uint64_t, TargetMsgSourcePID, 0)
@@ -197,7 +199,10 @@ CreateThread(UID parentProcess,
              void *arg) {
 
 
-    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level) + GetStackSize(perm_level) - 256;   //Subtract 256 to allocate space for red zone
+    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
+    uint64_t user_stack_bottom = user_stack_base;
+
+    user_stack_base += GetStackSize(perm_level) - 256;   //Subtract 256 to allocate space for red zone
 
     CRegisters regs;
     regs.rip = (uint64_t)entry_point;
@@ -236,11 +241,13 @@ CreateThread(UID parentProcess,
     regs.p_tid = NULL;
     regs.tls = NULL;
 
-    return CreateThreadADV(parentProcess, &regs);
+    return CreateThreadADV(parentProcess, perm_level, user_stack_bottom, &regs);
 }
 
 UID
 CreateThreadADV(UID parentProcess,
+                ThreadPermissionLevel perm_level,
+                uint64_t user_stack_bottom,
                 CRegisters *regs) {
 
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
@@ -250,6 +257,7 @@ CreateThreadADV(UID parentProcess,
 
     SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);
     SET_PROPERTY_VAL(thd, Priority, ThreadPriority_Neutral);
+    SET_PROPERTY_VAL(thd, PermissionLevel, perm_level);
     SET_PROPERTY_VAL(thd, SleepDurationNS, 0);
     SET_PROPERTY_VAL(thd, FPUState, kmalloc(GetFPUStateSize() + 64));
     SET_PROPERTY_VAL(thd, InterruptStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
@@ -259,6 +267,8 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, SetChildTID, regs->set_tid);
     SET_PROPERTY_VAL(thd, SetParentTID, regs->p_tid);
     SET_PROPERTY_VAL(thd, Errno, 0);
+
+    SET_PROPERTY_VAL(thd, UserStackBase, user_stack_bottom);
 
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase) + GetStackSize(ThreadPermissionLevel_Kernel) - 256;
@@ -984,6 +994,7 @@ DeleteThread(void) {
 
     FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->InterruptStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
+    FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
 
     for(uint64_t i = 0; i < List_Length(thds); i++) {
         ThreadInfo *tInfo = List_RotNext(thds);

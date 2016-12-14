@@ -82,15 +82,17 @@ typedef struct ThreadInfo {
 
     ProcessInformation  *ParentProcess; //!< Process the thread belongs to.
 
-    ThreadState         State;          //!< Thread state.
-    ThreadWakeCondition WakeCondition;  //!< Thread wake condition.
-    ThreadPriority      Priority;       //!< Thread priority.
+    ThreadState           State;          //!< Thread state.
+    ThreadWakeCondition   WakeCondition;  //!< Thread wake condition.
+    ThreadPriority        Priority;       //!< Thread priority.
+    ThreadPermissionLevel PermissionLevel;
 
-    uint64_t            InterruptStackBase;     //!< Base of interrupt stack.
-    uint64_t            InterruptStackAligned;  //!< Aligned address of interrupt stack.
-    uint64_t            KernelStackBase;        //!< Base of kernel stack.
-    uint64_t            KernelStackAligned;     //!< Aligned address of kernel stack.
-    uint64_t            CurrentStack;           //!< Current stack address.
+    uint64_t              InterruptStackBase;     //!< Base of interrupt stack.
+    uint64_t              InterruptStackAligned;  //!< Aligned address of interrupt stack.
+    uint64_t              KernelStackBase;        //!< Base of kernel stack.
+    uint64_t              KernelStackAligned;     //!< Aligned address of kernel stack.
+    uint64_t              UserStackBase;          //!< Base of user stack.
+    uint64_t              CurrentStack;           //!< Current stack address.
 
     union {
         uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
@@ -208,13 +210,16 @@ CreateThread(UID parentProcess,
 /**
  * @brief      Creates a thread with just the register state.
  *
- * @param[in]  parentProcess  The parent process
- * @param      regs           The register state of the process
+ * @param[in]  parentProcess      The parent process
+ * @param[in]  user_stack_bottom  The user stack bottom
+ * @param      regs               The register state of the process
  *
  * @return     The UID of the new thread.
  */
 UID
 CreateThreadADV(UID parentProcess,
+                ThreadPermissionLevel perm_level,
+                uint64_t user_stack_bottom,
                 CRegisters *regs);
 
 /**
