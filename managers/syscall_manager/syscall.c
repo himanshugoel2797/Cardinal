@@ -23,7 +23,6 @@ SyscallReceived(uint64_t instruction_pointer,
                 uint64_t syscall_num,
                 uint64_t *syscall_params,
                 uint64_t syscall_param_cnt) {
-
     /*
     Copy the parameters over to a kernel buffer, Now function only with the kernel buffer
     */

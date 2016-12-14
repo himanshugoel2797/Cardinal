@@ -638,6 +638,8 @@ YieldThread(void) {
     RaiseInterrupt(preempt_vector);
 }
 
+#include "debug_gfx.h"
+
 ThreadInfo*
 GetNextThread(ThreadInfo *prevThread) {
 
@@ -718,17 +720,10 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
-#include "utils/native.h"
 
 void
 TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
-
-    outb(0x3f8, (GetCurrentThreadUID() % 1000)/100 + '0');
-    outb(0x3f8, (GetCurrentThreadUID() % 100)/10 + '0');
-    outb(0x3f8, (GetCurrentThreadUID() % 10) + '0');
-    outb(0x3f8, '\r');
-    outb(0x3f8, '\n');
 
     {
         err_code = 0;
@@ -741,6 +736,7 @@ TaskSwitch(uint32_t int_no,
 
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
 
+
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
         SetInterruptStack((void*)coreState->cur_thread->InterruptStackAligned);
         SetKernelStack((void*)coreState->cur_thread->KernelStackAligned);
@@ -750,7 +746,6 @@ TaskSwitch(uint32_t int_no,
 
         if(coreState->cur_thread->State == ThreadState_Initialize) {
             coreState->cur_thread->State = ThreadState_Running;
-
             CachingMode cMode = 0;
             MemoryAllocationFlags cFlags = 0;
             GetAddressPermissions(GET_PROPERTY_PROC_VAL(coreState->cur_thread, PageTable),
@@ -778,7 +773,6 @@ TaskSwitch(uint32_t int_no,
                                               (uint32_t)coreState->cur_thread->ID);
                 }
             }
-
         }
 
         UnlockSpinlock(sync_lock);

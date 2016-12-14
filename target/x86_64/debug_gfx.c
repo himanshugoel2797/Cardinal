@@ -3,8 +3,7 @@
 #include "bootinfo.h"
 #include "font.h"
 #include "common.h"
-
-static int xPos = 0, yPos = 0;
+#include "utils/native.h"
 
 void
 debug_gfx_writeLine(const char *fmt, ...) {
@@ -17,23 +16,9 @@ debug_gfx_writeLine(const char *fmt, ...) {
     vsnprintf(str, fmt, vl);
     va_end(vl);
 
-    CardinalBootInfo *b = GetBootInfo();
+    int i = 0;
 
-    int yOff = yPos, xOff = xPos;
-    int pitch = b->FramebufferPitch;
+    while(str[i])
+        outb(0x3f8, str[i++]);
 
-    uint32_t *backBuffer = (uint32_t*)b->FramebufferAddress;
-
-    for (int i = 0; str[i] != 0; i++)
-        for (int b = 0; b < 8; b++) {
-            for (int a = xOff; a < xOff + 13; a++) {
-                backBuffer[(yOff + (8 - b) + (a * pitch))] =
-                    (((letters[str[i] - 32][13 - (a - xOff)] >> b) & 1)) *
-                    (0xDDDDDDDD);
-            }
-            yOff += 8;
-        }
-
-    xPos = xOff;
-    yPos = yOff;
 }

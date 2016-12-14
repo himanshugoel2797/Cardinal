@@ -66,7 +66,7 @@ void kmalloc_init(void) {
 
     next_free_block++;
 
-    //Balloc_Initialize();
+    Balloc_Initialize();
 }
 
 void kcompact() {
@@ -124,14 +124,13 @@ void *kmalloc(size_t size) {
 #define ksetup_instrumentation(a, b) a
 
 #endif
-/*
+
     if(size < LARGE_HEAP_BLOCK_SIZE) {
         UID a = Balloc_Alloc(size);
         if(a != (UID)-1) {
             return Balloc_GetBaseAddress(a);
         }
     }
-*/
 
     kmalloc_info *a_info = allocation_info;
     while(a_info != NULL && a_info->next != NULL) {
@@ -181,11 +180,11 @@ void kfree(void *addr) {
     SpinlockUnlocker unlocker = LockSpinlock(alloc_sync);
 
     //Find the block that matches the address specified
-    /*UID a = Balloc_GetUID(addr);
+    UID a = Balloc_GetUID(addr);
     if(a != (UID)-1) {
         Balloc_Free(a);
         return;
-    }*/
+    }
     if(((uint64_t)addr < (uint64_t)k_pages_base_addr) | ((uint64_t)addr >= ((uint64_t)k_pages_base_addr + STORE_SIZE))) {
         return;
     }

@@ -30,9 +30,6 @@ ProcessSys_Initialize(void) {
     root->ThreadInfos = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
-    root->PendingMessages = List_Create(CreateSpinlock());
-    root->MessageLock = CreateSpinlock();
-
     root->reference_count = 0;
     root->lock = CreateSpinlock();
 
@@ -231,7 +228,6 @@ GetProcessInformation(UID           pid,
 ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
-
     List_RotPrev(processes); //Move back one entry to force the current entry to be tested first
     for(uint64_t i = 0; i < List_Length(processes); i++) {
         ProcessInformation *pInf = List_RotNext(processes);

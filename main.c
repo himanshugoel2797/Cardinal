@@ -100,6 +100,7 @@ kernel_main(void) {
     SetupPreemption();
     target_device_setup();
 
+    
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();

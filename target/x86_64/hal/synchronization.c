@@ -179,7 +179,7 @@ TryLockSpinlock(Spinlock primitive) {
 
 Spinlock
 LockSpinlock(Spinlock primitive) {
-    outb(0x3f8, 'L');
+    //outb(0x3f8, 'L');
     while(!TryLockSpinlock(primitive));
     return primitive;
 }
@@ -191,7 +191,7 @@ AutounlockSpinlock(Spinlock *prim) {
 
 bool
 UnlockSpinlock(Spinlock primitive) {
-    outb(0x3f8, 'U');
+    //outb(0x3f8, 'U');
     bool locked = FALSE;
     uint64_t iflag = 0;
 
