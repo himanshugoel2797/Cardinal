@@ -40,7 +40,19 @@ int main() {
                       &read_key,
                       &write_key);
 
-    memcpy(vAddr, result, (buf_len > res_len)?res_len : buf_len);
+    uint8_t *display_addr = (uint8_t*)vAddr;
+    uint8_t *src_img = (uint8_t*)result;
+
+    for(int y = 0; y < img_h; y++) {
+        for(int x = 0; x < img_w; x++) {
+
+            display_addr[y * disp_info.pitch + (disp_info.bpp/8 * x)] = src_img[y * img_p + (4 * x)];
+            display_addr[y * disp_info.pitch + (disp_info.bpp/8 * x) + 1] = src_img[y * img_p + (4 * x) + 1];
+            display_addr[y * disp_info.pitch + (disp_info.bpp/8 * x) + 2] = src_img[y * img_p + (4 * x) + 2];
+            display_addr[y * disp_info.pitch + (disp_info.bpp/8 * x) + 3] = src_img[y * img_p + (4 * x) + 3];
+
+        }
+    }
 
     Display_Update(disp_fd, write_key, buf_len);
 

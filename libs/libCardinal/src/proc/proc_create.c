@@ -66,6 +66,7 @@ RequestCreateProcess(void *exec,
                      uint64_t exec_len,
                      char **argv,
                      uint32_t argc,
+                     uint64_t group_id,
                      UID *pid) {
     if(exec == NULL)
         return -1;
@@ -86,6 +87,7 @@ RequestCreateProcess(void *exec,
     create_req->args_key = 0;
     create_req->argc = argc;
     create_req->exec_size = exec_len;
+    create_req->group_id = group_id;
 
     if(exec_len % PAGE_SIZE)
         exec_len += PAGE_SIZE - exec_len % PAGE_SIZE;
@@ -176,6 +178,7 @@ StartProcess(const char *str,
              int argc,
              UID dst_pid,
              uint8_t *key,
+             uint64_t group_id,
              UID *pid) {
 
     uint64_t len = 0;
@@ -201,7 +204,7 @@ StartProcess(const char *str,
 
     IO_Close(fd, dst_pid);
 
-    int retVal = RequestCreateProcess((void*)addr, file_dat.Length, argv, argc, pid);
+    int retVal = RequestCreateProcess((void*)addr, file_dat.Length, argv, argc, group_id, pid);
 
     IO_FreeBuffer(addr, len, read_key, write_key);
 

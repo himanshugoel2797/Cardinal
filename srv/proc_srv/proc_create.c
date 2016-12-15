@@ -150,7 +150,7 @@ create_process_handler(Message *m) {
     }
 
     UID pid = 0;
-    R0_CreateProcess(msg->m.SourcePID, 0, &pid);
+    R0_CreateProcess(msg->m.SourcePID, msg->group_id, &pid);
 
     LoadAndStartApplication(pid, elf_loc, elf_size, argv, argc, arg_len);
 

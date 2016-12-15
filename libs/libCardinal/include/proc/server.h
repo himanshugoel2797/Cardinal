@@ -30,6 +30,7 @@ typedef struct {
     uint64_t exec_key;
     uint64_t exec_size;
     uint64_t args_key;
+    uint64_t group_id;
 } ProcessServer_CreateRequest;
 
 typedef struct {
@@ -75,6 +76,7 @@ RequestCreateProcess(void *exec,
                      uint64_t exec_len,
                      char **argv,
                      uint32_t argc,
+                     uint64_t group_id,
                      UID *pid);
 
 
@@ -84,6 +86,7 @@ StartProcess(const char *str,
              int argc,
              UID dst_pid,
              uint8_t *key,
+             uint64_t group_id,
              UID *pid);
 
 int

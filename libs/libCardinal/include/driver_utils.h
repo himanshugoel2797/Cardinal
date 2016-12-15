@@ -4,6 +4,7 @@
 #include "cardinal_types.h"
 #include "syscall.h"
 #include "syscall_list.h"
+#include "syscall_property.h"
 
 #ifdef __x86_64__
 static __inline void
@@ -77,6 +78,15 @@ R01_RegisterForInterrupts(uint32_t irq,
                           uint32_t cnt) {
     Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
     return GetErrno();
+}
+
+static __inline uint64_t
+R01_GetIOPrivileges(void) {
+#ifdef __x86_64__
+    SetProperty(CardinalProperty_IOPL, 0, 3);
+    return GetErrno();
+#endif
+    return -ENOSYS;
 }
 
 #endif

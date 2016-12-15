@@ -56,16 +56,16 @@ R0_ExitProcess(uint64_t exit_code) {
 /**
  * @brief      Create a new process without starting. R0 process only.
  *
- * @param[in]  parent  The parent PID
- * @param[in]  userID  The user ID
- * @param      uid     The uid of the created process
+ * @param[in]  parent   The parent PID
+ * @param[in]  groupID  The group id
+ * @param      uid      The uid of the created process
  *
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_CreateProcess(UID parent, UID userID, UID *uid) {
+R0_CreateProcess(UID parent, UID groupID, UID *uid) {
     if(uid != NULL) {
-        *uid = Syscall2(Syscall_R0_CreateProcess, parent, userID);
+        *uid = Syscall2(Syscall_R0_CreateProcess, parent, groupID);
         return GetErrno();
     }
     return -EINVAL;

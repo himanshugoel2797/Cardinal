@@ -79,7 +79,7 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
 
     *img_w = width;
     *img_h = height;
-    *img_p = bytesPerRow;
+    *img_p = 4 * width;
     *res_len = 4 * width * height;
 
     // read single row at a time

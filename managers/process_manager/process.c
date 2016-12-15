@@ -43,7 +43,7 @@ ProcessSys_IsInitialized(void) {
 }
 
 ProcessErrors
-CreateProcess(UID parent, UID userID, UID *pid) {
+CreateProcess(UID parent, UID group_id, UID *pid) {
 
     if(pid == NULL)
         return ProcessErrors_InvalidParameters;
@@ -55,8 +55,7 @@ CreateProcess(UID parent, UID userID, UID *pid) {
 
     ProcessInformation *dst = kmalloc(sizeof(ProcessInformation));
     *pid = dst->ID = new_proc_uid();
-    dst->UserID = userID;
-    dst->GroupID = src->GroupID;           //All processes inherit their parent's group.
+    dst->GroupID = group_id;           //All processes inherit their parent's group.
     dst->Status = ProcessStatus_Stopped;
 
     dst->PageTable = kmalloc(sizeof(ManagedPageTable));

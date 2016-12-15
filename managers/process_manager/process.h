@@ -17,14 +17,14 @@
 /**
  * @brief      Creates a process.
  *
- * @param[in]  parent  The parent PID
- * @param[in]  userID  The user ID
- * @param[out] pid     The PID
+ * @param[in]  parent    The parent PID
+ * @param[in]  group_id  The group identifier
+ * @param[out] pid       The PID
  *
  * @return     Error code on failure, ProcessErrors_None on success.
  */
 ProcessErrors
-CreateProcess(UID parent, UID userID, UID *pid);
+CreateProcess(UID parent, UID group_id, UID *pid);
 
 /**
  * @brief      Starts a process.

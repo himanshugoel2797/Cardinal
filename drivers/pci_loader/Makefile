@@ -1,8 +1,8 @@
 TARGET=pci_loader.elf
 
-OBJS=main.o
+OBJS=main.o pci.o
 
-LIBS=
+LIBS=-Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc

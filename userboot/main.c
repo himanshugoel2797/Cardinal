@@ -16,7 +16,7 @@ LoadProgram(char *name, UID *p_pid) {
         char *argv[] = {name};
         static int call_cnt = 0;
         if(call_cnt++) {
-            return RequestCreateProcess(elf_loc, elf_sz, argv, 1, &pid);
+            return RequestCreateProcess(elf_loc, elf_sz, argv, 1, 0, &pid);
             //R0NotifyProcessExistence(pid, name, strlen(name));
         }
 
@@ -64,10 +64,6 @@ int _start() {
         __asm__("hlt");
 
     err = LoadProgram("framebuffer.elf", &pid);
-    if(err != 0)
-        __asm__("hlt");
-
-    err = LoadProgram("ps2.elf", &pid);
     if(err != 0)
         __asm__("hlt");
 
