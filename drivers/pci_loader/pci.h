@@ -50,4 +50,8 @@ uint32_t
 PCI_IsIOSpaceBAR(PCI_Device *device,
                  uint32_t bar_index);
 
+uint64_t
+PCI_GetBARSize(PCI_Device *device,
+			   uint32_t bar_index);
+
 #endif

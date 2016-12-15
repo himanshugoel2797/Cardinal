@@ -112,3 +112,16 @@ PCI_IsIOSpaceBAR(PCI_Device *device,
     return l_word & 1;
 }
 
+uint64_t
+PCI_GetBARSize(PCI_Device *device,
+               uint32_t bar_index)
+{
+    uint64_t bar_val = PCI_GetBAR(device, bar_index);
+
+    PCI_WriteDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4), 0xFFFFFFFF);
+    uint32_t val = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4));
+
+    PCI_WriteDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4), bar_val);
+
+    return ~val + 1;
+}

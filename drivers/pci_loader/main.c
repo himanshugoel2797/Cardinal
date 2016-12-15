@@ -2,6 +2,7 @@
 #include <cardinal/syscall_property.h>
 #include <cardinal/driver_utils.h>
 #include <cardinal/io/server.h>
+#include <cardinal/shared_memory.h>
 #include <cardinal/namespace/server.h>
 #include <cardinal/proc/server.h>
 
@@ -112,12 +113,58 @@ int main() {
 						char devStr[512];
 						sprintf(devStr, "B:%d D:%d F:%d DID:%x VID:%x", bus, device, f, device_id, vendor_id);
 
-						char *argv[] = { driver_file + 1, devStr };
+						uint64_t bar_vals[6];
+						uint64_t bar_sz[6];
+
+						for(int i = 0; i < devInfo.BarCount; i++) {
+							bar_vals[i] = PCI_GetBAR(&devInfo, i);
+
+							uint64_t sz = PCI_GetBARSize(&devInfo, i);
+							bar_sz[i] = sz;
+
+							if(bar_vals[i] != 0 && !PCI_IsIOSpaceBAR(&devInfo, i))
+							{
+
+								//Setup the mapping
+								R0_AllocateSharedMemory(sz,
+														CachingModeUncachable,
+														MemoryAllocationType_MMap | 
+														MemoryAllocationType_Phys,
+														MemoryAllocationFlags_Write | 
+														MemoryAllocationFlags_Read | 
+														MemoryAllocationFlags_User | 
+														MemoryAllocationFlags_Present,
+														bar_vals[i],
+														&bar_vals[i]);
+
+								GetSharedMemoryKey(bar_vals[i],
+												   sz,
+												   CachingModeUncachable,
+												   MemoryAllocationFlags_Write | 
+												   MemoryAllocationFlags_Read | 
+												   MemoryAllocationFlags_User | 
+												   MemoryAllocationFlags_Present,
+												   &bar_vals[i]);
+							}else{
+								bar_vals[i] = 0;
+							}
+						}
+
+						char bars[512];
+						sprintf(bars, "B0:%x B1:%x B2:%x B3:%x B4:%x B5:%x", 
+							bar_vals[0],
+							bar_vals[1],
+							bar_vals[2],
+							bar_vals[3],
+							bar_vals[4],
+							bar_vals[5]);
+
+						char *argv[] = { driver_file + 1, devStr, bars };
 
 						UID pid = 0;
 						StartProcess(driver_file,
 									 argv,
-									 2,
+									 3,
 									 dst_pid,
 									 access_key,
 									 1,

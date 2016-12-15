@@ -33,10 +33,6 @@ uint32_t
 PCI_IsIOSpaceBAR(PCI_Device *device,
                  uint32_t bar_index);
 
-void*
-PCI_MapMemorySpaceBAR(uint64_t address,
-					  uint32_t len);
-
 void
 PCI_EnableBusMaster(PCI_Device *device);
 
@@ -44,5 +40,9 @@ void
 PCI_DetectAndAllocateMSI(PCI_Device *device,
 						 uint32_t *irq_base,
 						 uint32_t *cnt);
+
+uint64_t
+PCI_GetBARSize(PCI_Device *device,
+               uint32_t bar_index);
 
 #endif
