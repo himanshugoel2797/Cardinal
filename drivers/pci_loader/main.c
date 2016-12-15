@@ -109,7 +109,7 @@ int main() {
 							continue;
 						}
 
-						char devStr[256];
+						char devStr[512];
 						sprintf(devStr, "B:%d D:%d F:%d DID:%x VID:%x", bus, device, f, device_id, vendor_id);
 
 						char *argv[] = { driver_file + 1, devStr };
@@ -117,7 +117,7 @@ int main() {
 						UID pid = 0;
 						StartProcess(driver_file,
 									 argv,
-									 1,
+									 2,
 									 dst_pid,
 									 access_key,
 									 1,

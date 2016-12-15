@@ -54,7 +54,8 @@ LoadAndStartApplication(UID pid,
               (uint64_t*)&params,
               net_size,
               CachingModeWriteBack,
-              MemoryAllocationType_Application,
+              MemoryAllocationType_Application |
+              MemoryAllocationType_Phys,
               MemoryAllocationFlags_NoExec |
               MemoryAllocationFlags_Read |
               MemoryAllocationFlags_Write |

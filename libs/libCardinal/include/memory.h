@@ -36,6 +36,7 @@ typedef enum {
     MemoryAllocationType_MMapLo = (1 << 7),                 //!< Memory Mapped (32 bit address).
     MemoryAllocationType_ReservedBacking = (1 << 8),        //!< Page was allocated passively by ReservedAllocation, must free as part of page table.
     MemoryAllocationType_Shared = (1 << 9),                 //!< Shared memory.
+    MemoryAllocationType_Phys = (1 << 10),                  //!< Mapped region should not be automatically freed.
 } MemoryAllocationType;
 
 #ifdef _KERNEL_

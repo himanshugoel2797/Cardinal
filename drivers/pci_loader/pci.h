@@ -3,9 +3,6 @@
 
 #include <cardinal/cardinal_types.h>
 
-#define MAX_DEVICE_COUNT 128
-#define PCI_MASS_STORAGE_DEVICE_CLASS 0x1
-#define PCI_BUS_MASTER_CMD (1<<2)
 #define PCI_ADDR 0xCF8
 #define PCI_DATA 0xCFC
 

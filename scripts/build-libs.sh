@@ -30,3 +30,10 @@ cd $SRC_DIR/libs/libdisplay
 	make all
 	make install
 cd ..
+
+cd $SRC_DIR/libs/libpci
+	make uninstall 
+	make clean
+	make all
+	make install
+cd ..

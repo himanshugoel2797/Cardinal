@@ -101,7 +101,8 @@ LoadElf64(void *loc,
                       &v_tmp_addr,
                       PAGE_SIZE,
                       CachingModeWriteBack,
-                      MemoryAllocationType_Heap,
+                      MemoryAllocationType_Heap |
+                      MemoryAllocationType_Phys,
                       MemoryAllocationFlags_User | MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Present))
                 return ElfLoaderError_OutOfMemory;
 

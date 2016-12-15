@@ -381,10 +381,15 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
                         if(map->SharedMemoryInfo->ReferenceCount == 0) {
                             //Delete the mapping and free the memory
-                            //TODO Is this a good idea? Freeing shouldn't be mixed in here if allocation isn't
-                            FreePhysicalPageCont(map->SharedMemoryInfo->PhysicalAddress, map->SharedMemoryInfo->Length / PAGE_SIZE);
+                            if(!(map->AllocationType & MemoryAllocationType_Phys))
+                                FreePhysicalPageCont(map->SharedMemoryInfo->PhysicalAddress, map->SharedMemoryInfo->Length / PAGE_SIZE);
+                            
                             kfree(map->SharedMemoryInfo);
                         }
+                    }else if(map->Flags & MemoryAllocationFlags_User) {
+
+                        if(!(map->AllocationType & MemoryAllocationType_Phys))
+                                FreePhysicalPageCont(map->PhysicalAddress, size / PAGE_SIZE);
                     }
 
                     if(*map_root != map)

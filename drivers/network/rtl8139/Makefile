@@ -2,7 +2,7 @@ TARGET=rtl8139.elf
 
 OBJS=main.o
 
-LIBS=-Wl,--start-group -lcardinalcore -lc -Wl,--end-group
+LIBS=-lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
 CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
