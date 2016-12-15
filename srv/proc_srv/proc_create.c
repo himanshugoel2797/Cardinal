@@ -104,7 +104,7 @@ create_process_handler(Message *m) {
     }
 
     char *argv = NULL;
-    uint32_t argc = 0;
+    uint32_t argc = msg->argc;
     uint64_t maxLen = 0;
 
     UserSharedMemoryData arg_data;
