@@ -67,6 +67,10 @@ int _start() {
     if(err != 0)
         __asm__("hlt");
 
+    err = LoadProgram("pci_loader.elf", &pid);
+    if(err != 0)
+        __asm__("hlt");
+
     //Begin system initialization
     err = LoadProgram("sys_init.elf", &pid);
     if(err != 0)

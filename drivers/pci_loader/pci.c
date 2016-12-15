@@ -68,8 +68,8 @@ PCI_GetPCIDevice(uint32_t bus,
 {
 
     devInfo->ClassCode = PCI_ReadDWord(bus, device, function, 8) >> 24;
-    devInfo->SubClassCode = PCI_ReadDWord(bus, device, function, 8) >> 16;
-    devInfo->ProgIF = PCI_ReadDWord(bus, device, function, 8) >> 8;
+    devInfo->SubClassCode = (PCI_ReadDWord(bus, device, function, 8) >> 16) & 0xFF;
+    devInfo->ProgIF = (PCI_ReadDWord(bus, device, function, 8) >> 8) & 0xFF;
 
     devInfo->HdrType = (PCI_ReadDWord(bus, device, function, 0x0C) >> 16) & 0xFF;
 

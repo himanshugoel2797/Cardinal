@@ -755,7 +755,7 @@ TaskSwitch(uint32_t int_no,
 
 //        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
-        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
+//        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
