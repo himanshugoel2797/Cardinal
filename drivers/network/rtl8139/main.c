@@ -92,17 +92,27 @@ int main(int argc, char *argv[]) {
 	while(Read8(0x37) & 0x10);
 
 	//Setup receive buffer
+	//Allocate 32K + 16 + 1500 bytes for buffer
 
-
-	//Setup transmit buffer
-
+	//Configure the receive buffer to receive all broadcast packets, but no promiscious mode
+	//Buffer size = 32K + 16 bytes + 1500 bytes
+	Write32(0x44, (2 << 11) | 0xE | (1 << 7));
 
 	//Enable receiver and transmit, poll
+	Write8(0x37, 0x0C);
 
+	while(1) {
 
-	int i = 0;
-	while(argv[0][i])
-		outb(0x3f8, argv[0][i++]);
+		//Check for messages
 
-//	__asm__("hlt" :: "a"(argc));
+	
+		//Receive transmit request through writes
+	
+	
+		//Respond to reads with receive buffers
+	
+
+	}
+
+	return 0;
 }
