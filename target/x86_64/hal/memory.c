@@ -514,9 +514,10 @@ FreePhysicalPage(uint64_t ptr) {
 }
 
 uint64_t
-AllocatePhysicalPageCont(int pageCount) {
+AllocatePhysicalPageCont(int pageCount,
+                         PhysicalMemoryAllocationFlags flags) {
     LockSpinlock(vmem_lock);
-    uint64_t ret = MemMan_Alloc4KiBPageCont(pageCount);
+    uint64_t ret = MemMan_Alloc4KiBPageCont(pageCount, flags);
     UnlockSpinlock(vmem_lock);
     return ret;
 }
@@ -559,7 +560,7 @@ MakeReservationReal(ManagedPageTable *pageTable,
             &page_size) == MemoryAllocationErrors_None) {
 
         //Give this page actual backing memory!
-        uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE);
+        uint64_t phys_addr = AllocatePhysicalPageCont(page_size / PAGE_SIZE, PhysicalMemoryAllocationFlags_None);
 
         //Mark the pages as present
         AllocationFlags &= ~MemoryAllocationFlags_NotPresent;
@@ -879,7 +880,7 @@ AllocateSharedMemory(UID pid,
                      MemoryAllocationType allocType,
                      MemoryAllocationFlags flags,
                      uint64_t *virtualAddress) {
-    uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE);
+    uint64_t mem = AllocatePhysicalPageCont(length / PAGE_SIZE, PhysicalMemoryAllocationFlags_None);
     MemoryAllocationErrors err = AllocateSharedMemoryPhys(pid,
                                  length,
                                  cacheMode,

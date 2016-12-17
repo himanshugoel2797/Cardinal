@@ -91,7 +91,7 @@ ImportInitrd(void) {
     if(GetProperty(CardinalProperty_PID, 0, &pid) != 0)
         return -1;
 
-    if(R0_GetPhysicalAddress(pid, b_info.InitrdStartAddress, &initrd_addr) != 0)
+    if(R01_GetPhysicalAddress(pid, b_info.InitrdStartAddress, &initrd_addr) != 0)
         return -1;
 
     uint64_t InitrdLength = b_info.InitrdLength;

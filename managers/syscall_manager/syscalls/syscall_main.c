@@ -33,7 +33,7 @@ RegisterAllSyscalls(void) {
     RegisterSyscall(Syscall_R0_KillProcess, R0KillProcess_Syscall);
     RegisterSyscall(Syscall_R0_GetBootInfo, R0GetBootInfo_Syscall);
 
-    RegisterSyscall(Syscall_R0_GetPhysicalAddress, R0GetPhysicalAddress_Syscall);
+    RegisterSyscall(Syscall_R01_GetPhysicalAddress, R01GetPhysicalAddress_Syscall);
 
     RegisterSyscall(Syscall_R0_AllocateSharedMemory, R0AllocateSharedMemory_Syscall);
 

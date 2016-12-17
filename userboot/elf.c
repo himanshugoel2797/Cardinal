@@ -81,7 +81,7 @@ LoadElf64(void *loc,
             uint64_t mem_clr_sz = p_memsz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE):p_memsz;
             uint64_t mem_cpy_sz = p_filesz > (PAGE_SIZE - p_vaddr % PAGE_SIZE)?(PAGE_SIZE - p_vaddr % PAGE_SIZE) : p_filesz;
 
-            if(R0_AllocatePages(1, &p_addr) != 0)
+            if(R0_AllocatePages(1, PhysicalMemoryAllocationFlags_None, &p_addr) != 0)
                 return ElfLoaderError_OutOfMemory;
 
             uint64_t vaddr = p_vaddr - p_vaddr % PAGE_SIZE;

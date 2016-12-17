@@ -35,7 +35,7 @@ typedef enum {
     Syscall_R0_KillProcess,             //!< Kill a process by its PID.
     Syscall_R0_GetBootInfo,             //!< Get the boot information.
 
-    Syscall_R0_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
+    Syscall_R01_GetPhysicalAddress,      //!< Get a physical address for a virtual address for the provided pid.
 
     Syscall_Unmap,                      //!< Unmap any shared memory region.
     Syscall_AllocateSharedMemory,       //!< Allocate shared memory.

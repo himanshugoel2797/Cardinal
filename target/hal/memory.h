@@ -348,11 +348,13 @@ FreePhysicalPage(uint64_t ptr);
  * @brief      Allocate a continuous set of physical pages.
  *
  * @param[in]  pageCount  The page count
+ * @param[in]  flags      The flags
  *
  * @return     0 on error, The physical address of the allocation on success.
  */
 uint64_t
-AllocatePhysicalPageCont(int pageCount);
+AllocatePhysicalPageCont(int pageCount,
+                         PhysicalMemoryAllocationFlags flags);
 
 /**
  * @brief      Free a continuous set of previously allocated pages.

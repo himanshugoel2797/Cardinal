@@ -310,7 +310,7 @@ VirtMemMan_Initialize(void) {
 
 
     virtMemData->curPML = pml;
-    virtMemData->coreLocalStorage = MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE);
+    virtMemData->coreLocalStorage = MemMan_Alloc4KiBPageCont(APLS_SIZE/PAGE_SIZE, PhysicalMemoryAllocationFlags_None);
     VirtMemMan_SetCurrent(pml);
 }
 

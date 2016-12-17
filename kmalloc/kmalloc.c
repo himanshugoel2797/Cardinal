@@ -170,7 +170,7 @@ void* AllocateMappingCont(MemoryAllocationType t, MemoryAllocationFlags flags, s
     if(user_stack_base == 0)while(1);
 
     MapPage(GetActiveVirtualMemoryInstance(),
-            AllocatePhysicalPageCont(size/PAGE_SIZE),
+            AllocatePhysicalPageCont(size/PAGE_SIZE, PhysicalMemoryAllocationFlags_None),
             user_stack_base,
             size,
             CachingModeWriteBack,

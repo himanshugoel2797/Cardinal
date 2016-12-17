@@ -262,12 +262,12 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
 
     SyscallData *data = (SyscallData*)syscall_params;
 
-    if(data->param_num != 1) {
+    if(data->param_num != 2) {
         SyscallSetErrno(-ENOSYS);
         return 0;
     }
-
-    uint64_t retVal = AllocatePhysicalPageCont(data->params[0]);
+    
+    uint64_t retVal = AllocatePhysicalPageCont(data->params[0], data->params[1]);
     if(retVal == 0)
         SyscallSetErrno(-ENOMEM);
     else
@@ -302,11 +302,11 @@ R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R0GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
+R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                              uint64_t syscall_num,
                              uint64_t *syscall_params) {
 
-    if(syscall_num != Syscall_R0_GetPhysicalAddress) {
+    if(syscall_num != Syscall_R01_GetPhysicalAddress) {
         SyscallSetErrno(-ENOSYS);
         return 0;
     }
@@ -318,7 +318,7 @@ R0GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
         return 0;
     }
 
-    if(GetProcessGroupID(data->params[0]) != 0) {
+    if(GetProcessGroupID(data->params[0]) > 1) {
         SyscallSetErrno(-EPERM);
         return 0;
     }

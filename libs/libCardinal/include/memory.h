@@ -46,6 +46,11 @@ typedef enum {
 #define PAGE_SIZE 4096
 #endif
 
+typedef enum {
+    PhysicalMemoryAllocationFlags_None,
+    PhysicalMemoryAllocationFlags_32Bit,
+} PhysicalMemoryAllocationFlags;
+
 //! Memory Allocation Flags.
 typedef enum {
     MemoryAllocationFlags_NoExec = (0 << 1),  //!< Execute Disable.
@@ -173,7 +178,7 @@ R0_GetBootInfo(CardinalBootInfo *bInfo) {
 }
 
 /**
- * @brief      Translate a virtual address to a physical address. R0 process
+ * @brief      Translate a virtual address to a physical address. R0 and R1 processes
  *             only.
  *
  * @param[in]  pid     The pid
@@ -183,9 +188,9 @@ R0_GetBootInfo(CardinalBootInfo *bInfo) {
  * @return     The error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_GetPhysicalAddress(UID pid, uint64_t v_addr, uint64_t *p_addr) {
+R01_GetPhysicalAddress(UID pid, uint64_t v_addr, uint64_t *p_addr) {
     if(p_addr != NULL)
-        *p_addr = Syscall2(Syscall_R0_GetPhysicalAddress, pid, v_addr);
+        *p_addr = Syscall2(Syscall_R01_GetPhysicalAddress, pid, v_addr);
     else
         return -EINVAL;
 
@@ -196,14 +201,15 @@ R0_GetPhysicalAddress(UID pid, uint64_t v_addr, uint64_t *p_addr) {
  * @brief      Allocate a continuous range of physical pages. R0 process only.
  *
  * @param[in]  cnt     The page count
+ * @param[in]  flags   The flags
  * @param[out] p_addr  The physical address
  *
  * @return     The error code on failure, 0 on success.
  */
 static __inline uint64_t
-R0_AllocatePages(uint64_t cnt, uint64_t *p_addr) {
+R0_AllocatePages(uint64_t cnt, PhysicalMemoryAllocationFlags flags, uint64_t *p_addr) {
     if(p_addr != NULL) {
-        *p_addr = Syscall1(Syscall_R0_AllocatePages, cnt);
+        *p_addr = Syscall2(Syscall_R0_AllocatePages, cnt, flags);
         return GetErrno();
     }
     return -EINVAL;

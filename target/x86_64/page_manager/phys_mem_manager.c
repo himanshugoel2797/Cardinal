@@ -14,6 +14,7 @@ static uint32_t* KB4_Blocks_Bitmap,
        KB4_Blocks_Count;
 
 static const uint64_t block_size = PAGE_SIZE * 32;
+static uint64_t dma_store = 0;
 
 extern uint64_t _region_kernel_start_, _region_kernel_end_,
        _bootstrap_region_start, _bootstrap_region_end,
@@ -63,6 +64,8 @@ MemMan_Initialize(void) {
 
     MemMan_MarkUsed(0, MiB(2));
 
+    dma_store = MiB(128) / block_size;
+
     return 0;
 }
 
@@ -107,42 +110,42 @@ uint64_t
 MemMan_Alloc(void) {
     if(freePageCount == 0)return 0;
 
-    while(KB4_Blocks_Bitmap[lastNonFullPage] == 0xFFFFFFFF)
-        lastNonFullPage = (lastNonFullPage + 1) % page_count;
-
-    uint32_t block = ~KB4_Blocks_Bitmap[lastNonFullPage];
-    for(int i = 0; i < 32; i++) {
-        if((block >> i) & 1) {
-            uint64_t addr = lastNonFullPage * block_size + i * PAGE_SIZE;
-            MemMan_SetPageUsed(addr);
-            memset(VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)addr), 0, PAGE_SIZE);
-            return addr;
-        }
-    }
-
-    return -1;
+    return MemMan_Alloc4KiBPageCont(1, PhysicalMemoryAllocationFlags_None);
 }
 
 uint64_t
-MemMan_Alloc2MiBPage(void) {
-    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4));
+MemMan_Alloc2MiBPage(PhysicalMemoryAllocationFlags flags) {
+    return MemMan_Alloc2MiBPageCont(1, flags);
 }
 
 uint64_t
-MemMan_Alloc2MiBPageCont(int pageCount) {
-    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4) * pageCount);
+MemMan_Alloc2MiBPageCont(int pageCount,
+                         PhysicalMemoryAllocationFlags flags) {
+    return MemMan_Alloc4KiBPageCont(MiB(2)/KiB(4) * pageCount, flags);
 }
 
 uint64_t
-MemMan_Alloc4KiBPageCont(int pageCount) {
+MemMan_Alloc4KiBPageCont(int pageCount,
+                         PhysicalMemoryAllocationFlags flags) {
     if(freePageCount == 0)return 0;
 
     int score = 0;
     uint64_t addr = 0;
     int b_j = 0;
 
+    uint32_t j_min = 0;
+    uint32_t j_max = 0;
 
-    for(uint32_t j = 0; j < KB4_Blocks_Count; j++) {
+    if(flags == PhysicalMemoryAllocationFlags_None) {
+        j_min = dma_store;
+        j_max = KB4_Blocks_Count;
+    }else if(flags == PhysicalMemoryAllocationFlags_32Bit) {
+        j_min = 0;
+        j_max = dma_store;
+    }else
+        __asm__("cli\n\thlt");
+
+    for(uint32_t j = j_min; j < j_max; j++) {
         uint32_t block = ~KB4_Blocks_Bitmap[j];
         for(int i = 0; i < 32; i++) {
             if(score == pageCount)break;
@@ -170,12 +173,12 @@ void
 MemMan_Free(uint64_t ptr) {
     ptr = ptr/PAGE_SIZE * PAGE_SIZE;
 
-    //MemMan_SetPageFree(ptr);
-    //lastNonFullPage = ptr/block_size;
+    MemMan_SetPageFree(ptr);
+    lastNonFullPage = ptr/block_size;
 }
 
 void
-MemMan_FreeCont(uint64_t UNUSED(ptr),
-                int UNUSED(pageCount)) {
-    //MemMan_MarkFree(ptr, pageCount * KiB(4));
+MemMan_FreeCont(uint64_t ptr,
+                int pageCount) {
+    MemMan_MarkFree(ptr, pageCount * KiB(4));
 }

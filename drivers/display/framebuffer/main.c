@@ -24,7 +24,7 @@ int main() {
         return -1;
 
     uint64_t fb_addr = 0;
-    R0_GetPhysicalAddress(GetCurrentProcessUID(), b_info.FramebufferAddress, &fb_addr);
+    R01_GetPhysicalAddress(GetCurrentProcessUID(), b_info.FramebufferAddress, &fb_addr);
 
     uint64_t fb_len = b_info.FramebufferPitch * b_info.FramebufferHeight;
 

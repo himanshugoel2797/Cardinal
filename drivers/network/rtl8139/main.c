@@ -1,5 +1,6 @@
 #include <cardinal/driver_utils.h>
 #include <cardinal/shared_memory.h>
+#include <cardinal/mem/server.h>
 #include <pci/pci.h>
 
 #include <stdio.h>
@@ -93,7 +94,15 @@ int main(int argc, char *argv[]) {
 
 	//Setup receive buffer
 	//Allocate 32K + 16 + 1500 bytes for buffer
-
+	/*uint64_t dma_buffer = 0;
+	uint64_t dma_phys_addr = 0;
+	MMap(&dma_buffer,
+		 36 * 1024,
+		 MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
+		 MMapFlags_DMA,
+		 CachingModeWriteBack
+		);
+	*/
 	//Configure the receive buffer to receive all broadcast packets, but no promiscious mode
 	//Buffer size = 32K + 16 bytes + 1500 bytes
 	Write32(0x44, (2 << 11) | 0xE | (1 << 7));

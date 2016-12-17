@@ -2,6 +2,7 @@
 #define _PHYS_MEM_MANAGER_H_
 
 #include "types.h"
+#include "libs/libCardinal/include/memory.h"
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
@@ -26,13 +27,15 @@ MemMan_MarkFree(uint64_t addr,
                 uint64_t size);
 
 uint64_t
-MemMan_Alloc2MiBPage(void);
+MemMan_Alloc2MiBPage(PhysicalMemoryAllocationFlags flags);
 
 uint64_t
-MemMan_Alloc2MiBPageCont(int pageCount);
+MemMan_Alloc2MiBPageCont(int pageCount,
+						 PhysicalMemoryAllocationFlags flags);
 
 uint64_t
-MemMan_Alloc4KiBPageCont(int pageCount);
+MemMan_Alloc4KiBPageCont(int pageCount,
+						 PhysicalMemoryAllocationFlags flags);
 
 void
 MemMan_FreeCont(uint64_t addr,

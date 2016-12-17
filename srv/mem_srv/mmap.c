@@ -36,7 +36,7 @@ mmap_handler(Message *m) {
     if(sz % PAGE_SIZE)
         sz += (PAGE_SIZE - sz % PAGE_SIZE);
 
-    MemoryAllocationFlags flags = req->flags;
+    MemoryAllocationFlags flags = req->flags | MemoryAllocationFlags_User | MemoryAllocationFlags_Present;
     MMapFlags mmap_flags = req->mmap_flags;
     CachingMode cacheMode = req->cachingMode;
 
@@ -52,7 +52,7 @@ mmap_handler(Message *m) {
         //Ensure the entire range is free
         for(uint64_t tmp_addr = addr; tmp_addr < addr + sz; tmp_addr += PAGE_SIZE) {
             uint64_t p_addr = 0;
-            error = R0_GetPhysicalAddress(m->SourcePID, addr, &p_addr);
+            error = R01_GetPhysicalAddress(m->SourcePID, addr, &p_addr);
             if(error) {
                 err = TranslateError(error);
                 SendErrorMessage(0, err, m->SourcePID, m->MsgID);
@@ -66,8 +66,12 @@ mmap_handler(Message *m) {
         //Ok, this virtual address is safe to continue with.
     }
 
+    PhysicalMemoryAllocationFlags memdb_alloc_flags = PhysicalMemoryAllocationFlags_None;
+    if(mmap_flags & MMapFlags_DMA)
+        memdb_alloc_flags = PhysicalMemoryAllocationFlags_32Bit;
+
     uint64_t address = 0;
-    error = MemDB_AllocateMemory(m->SourcePID, sz, &address);
+    error = MemDB_AllocateMemory(m->SourcePID, sz, memdb_alloc_flags, &address);
     if(error != 0) {
         SendErrorMessage(0, MemoryAllocationErrors_Unknown, m->SourcePID, m->MsgID);
     }

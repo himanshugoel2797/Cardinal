@@ -17,7 +17,8 @@ typedef enum {
 
 typedef enum {
     MMapFlags_None,
-    MMapFlags_Fixed
+    MMapFlags_Fixed,
+    MMapFlags_DMA,
 } MMapFlags;
 
 typedef struct {

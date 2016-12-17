@@ -175,7 +175,7 @@ AllocateStack(UID parentProcess,
     user_stack_base += PAGE_SIZE;
 
     MapPage(pInfo->PageTable,
-            (perm_level == ThreadPermissionLevel_User)?0:AllocatePhysicalPageCont(stack_Size/PAGE_SIZE),
+            (perm_level == ThreadPermissionLevel_User)?0:AllocatePhysicalPageCont(stack_Size/PAGE_SIZE, PhysicalMemoryAllocationFlags_None),
             user_stack_base,
             stack_Size,
             CachingModeWriteBack,

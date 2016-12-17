@@ -91,6 +91,7 @@ MemDB_ProcessExists(UID pid) {
 int
 MemDB_AllocateMemory(UID pid,
                      uint64_t len,
+                     PhysicalMemoryAllocationFlags flags,
                      uint64_t *address) {
 
     if(len % PAGE_SIZE)
@@ -105,7 +106,7 @@ MemDB_AllocateMemory(UID pid,
             if(mem_data->totalMemory_allocated + len > mem_data->memoryBudget)
                 return -2;
 
-            if(R0_AllocatePages(len / PAGE_SIZE, address) != 0)
+            if(R0_AllocatePages(len / PAGE_SIZE, flags, address) != 0)
                 return -2;
 
             ProcessMemoryAllocation *alloc = malloc(sizeof(ProcessMemoryAllocation));

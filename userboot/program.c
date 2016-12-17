@@ -45,7 +45,7 @@ LoadAndStartApplication(UID pid,
     uint64_t phys_addr = 0;
     struct ElfSetupParameters *params = NULL;//MAP
 
-    if(R0_AllocatePages(net_size / PAGE_SIZE, &phys_addr) != 0)
+    if(R0_AllocatePages(net_size / PAGE_SIZE, PhysicalMemoryAllocationFlags_None, &phys_addr) != 0)
         return -3;
 
     //Map the memory into the current process to allow editing

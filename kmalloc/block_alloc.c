@@ -25,7 +25,7 @@ Balloc_Initialize() {
                            MemoryAllocationType_Heap | MemoryAllocationType_Global,
                            MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Write);
 
-    uint64_t phys_addr = AllocatePhysicalPageCont(SMALL_HEAP_MEM_SIZE/PAGE_SIZE);
+    uint64_t phys_addr = AllocatePhysicalPageCont(SMALL_HEAP_MEM_SIZE/PAGE_SIZE, PhysicalMemoryAllocationFlags_None);
 
     MapPage(GetActiveVirtualMemoryInstance(),
             phys_addr,

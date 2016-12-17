@@ -38,7 +38,7 @@ ShadowInterruptHandler(Registers *regs) {
     }
 
     if(*int_stack == 0) {
-        *int_stack = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)AllocatePhysicalPageCont(4)) + 4096 * 4 - 1;
+        *int_stack = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)AllocatePhysicalPageCont(4, PhysicalMemoryAllocationFlags_None)) + 4096 * 4 - 1;
         *int_stack -= *int_stack % 16;
     }
 

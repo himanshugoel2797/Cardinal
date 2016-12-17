@@ -2,6 +2,7 @@
 #define _MEM_SRV_DB_H_
 
 #include <cardinal/cardinal_types.h>
+#include <cardinal/memory.h>
 
 void
 MemDB_Initialize(void);
@@ -15,6 +16,7 @@ MemDB_ProcessExists(UID pid);
 int
 MemDB_AllocateMemory(UID pid,
                      uint64_t len,
+                     PhysicalMemoryAllocationFlags flags,
                      uint64_t *address);
 
 void
