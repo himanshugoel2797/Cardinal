@@ -16,9 +16,9 @@ typedef enum {
 } MemoryServerMessageType;
 
 typedef enum {
-    MMapFlags_None,
-    MMapFlags_Fixed,
-    MMapFlags_DMA,
+    MMapFlags_None = 0,
+    MMapFlags_Fixed = (1 << 0),
+    MMapFlags_DMA = (1 << 1),
 } MMapFlags;
 
 typedef struct {

@@ -88,6 +88,7 @@ int main() {
 					uint32_t prog_if = 0;
 
 					char driver_file[256];
+					memset(driver_file, 0, 256);
 					driver_file[0] = ':';
 
 					sscanf(cur_loc, "%s |%x|%x|%x|%x|%x\n", driver_file + 1, 
@@ -99,16 +100,14 @@ int main() {
 
 					cur_loc = strchr(cur_loc, '\n') + 1;
 
+					int vendor_m = (vendor_id == devInfo.VendorID || vendor_id == 0xFFFF);
+					int dev_m = (device_id == devInfo.DeviceID || device_id == 0xFFFF);
+					int class_m = (class_code == devInfo.ClassCode || class_code == 0xFFFF);
+					int subclass_m = (subclass_code == devInfo.SubClassCode || subclass_code == 0xFFFF);
+					int prog_if_m = (prog_if == devInfo.ProgIF || prog_if == 0xFFFF);
 
-					if(vendor_id == devInfo.VendorID && 
-						device_id == devInfo.DeviceID &&
-						class_code == devInfo.ClassCode &&
-						subclass_code == devInfo.SubClassCode) {
 
-
-						if(prog_if != -1 && prog_if != devInfo.ProgIF) {
-							continue;
-						}
+					if(vendor_m && dev_m && class_m && subclass_m && prog_if_m) {
 
 						char devStr[512];
 						sprintf(devStr, "B:%d D:%d F:%d DID:%x VID:%x", bus, device, f, device_id, vendor_id);
@@ -161,14 +160,20 @@ int main() {
 
 						char *argv[] = { driver_file + 1, devStr, bars };
 
+						int devStr_i = 0;
+						while(driver_file[devStr_i]){
+							outb(0x3f8, driver_file[devStr_i++]);
+						}	
+
 						UID pid = 0;
-						StartProcess(driver_file,
+						if(StartProcess(driver_file,
 									 argv,
 									 3,
 									 dst_pid,
 									 access_key,
 									 1,
-									 &pid);
+									 &pid) != 0)
+							__asm__("hlt");
 						break;
 					}
 				}

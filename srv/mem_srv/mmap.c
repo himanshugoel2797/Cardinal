@@ -34,7 +34,7 @@ mmap_handler(Message *m) {
     uint64_t sz = req->size;
 
     if(sz % PAGE_SIZE)
-        sz += (PAGE_SIZE - sz % PAGE_SIZE);
+        sz += PAGE_SIZE - (sz % PAGE_SIZE);
 
     MemoryAllocationFlags flags = req->flags | MemoryAllocationFlags_User | MemoryAllocationFlags_Present;
     MMapFlags mmap_flags = req->mmap_flags;

@@ -1,1 +1,2 @@
-rtl8139.elf |10EC|8139|2|0|0
+rtl8139.elf |10EC|8139|2|FFFF|FFFF
+uhci.elf |FFFF|FFFF|0C|03|00

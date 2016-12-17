@@ -58,19 +58,25 @@ cd $SRC_DIR
 cd $SRC_DIR/drivers/display/framebuffer
 	make clean
 	make all
-	cp framebuffer.elf $INITRD_INST_DIR
+	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
 cd $SRC_DIR/drivers/pci_loader
 	make clean
 	make all
-	cp pci_loader.elf $INITRD_INST_DIR
+	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
 cd $SRC_DIR/drivers/network/rtl8139
 	make clean
 	make all
-	cp rtl8139.elf $INITRD_INST_DIR
+	cp *.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
+cd $SRC_DIR/drivers/usb/uhci
+	make clean
+	make all
+	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
 cp $SRC_DIR/drivers/pci_devices.txt $SRC_DIR/initrd/pci_devices.txt

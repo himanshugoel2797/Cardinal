@@ -25,6 +25,8 @@ UnknMessage(Message *m) {
     __asm__("hlt");
 }
 
+static int cnt = 0;
+
 int
 fbuf_open(const char *path,
           int flags,
@@ -38,8 +40,9 @@ fbuf_open(const char *path,
 
     void *loc = NULL;
     size_t size = 0;
-
+    
     if(path[0] == ':' && GetFile(path + 1, &loc, &size)) {
+
 
         FD_Entry *fd_e = malloc(sizeof(FD_Entry));
         fd_e->loc = loc;
@@ -52,6 +55,8 @@ fbuf_open(const char *path,
         *fd = fd_e->fd;
     } else
         return -EINVAL;
+
+
 
     return 0;
 }

@@ -318,10 +318,14 @@ R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
         return 0;
     }
 
-    if(GetProcessGroupID(data->params[0]) > 1) {
+    uint32_t gid = GetProcessGroupID(GetCurrentProcessUID());
+    if(gid > 1) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
+
+    if(gid == 1)
+        data->params[0] = GetCurrentProcessUID();
 
     ProcessInformation *p_info = NULL;
     if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None) {

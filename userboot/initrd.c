@@ -103,7 +103,7 @@ ImportInitrd(void) {
               &InitrdStartAddress,
               InitrdLength,
               CachingModeWriteBack,
-              MemoryAllocationType_MMap,
+              MemoryAllocationType_MMap | MemoryAllocationType_Phys,
               MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present) != 0)
         return -1;
 

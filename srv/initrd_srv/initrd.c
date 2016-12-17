@@ -43,9 +43,8 @@ GetFile(const char *file,
     TARHeader *file_entry = (TARHeader*)InitrdStartAddress;
 
     while(file_entry != NULL && file_entry->filename[0] != 0) {
-        uint32_t len = strlen(file_entry->filename);
 
-        if(strlen(file) == len && strncmp(file_entry->filename, file, len) == 0) {
+        if(strcmp(file_entry->filename, file) == 0) {
             *loc = (void*)((uint64_t)file_entry + 512);
             *size = getsize(file_entry->size);
             break;
@@ -86,7 +85,7 @@ ImportInitrd(void) {
               &InitrdStartAddress,
               InitrdLength,
               CachingModeWriteBack,
-              MemoryAllocationType_MMap,
+              MemoryAllocationType_MMap | MemoryAllocationType_Phys,
               MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Read | MemoryAllocationFlags_User | MemoryAllocationFlags_Present) != 0)
         return -1;
 

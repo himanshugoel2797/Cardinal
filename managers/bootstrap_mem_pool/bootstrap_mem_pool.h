@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define BOOTSTRAP_MEM_POOL MiB(32)
+#define BOOTSTRAP_MEM_POOL MiB(64)
 
 void*
 bootstrap_malloc(size_t size);
