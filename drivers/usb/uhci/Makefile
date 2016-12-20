@@ -19,8 +19,6 @@ $(TARGET): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
 
 install:
-	mkdir -p $(shell cctool --srv)/elf
-	cp $(TARGET) $(shell cctool --srv)/elf/server.elf
 	cp $(TARGET) $(INSTALL_DIR)
 
 clean:

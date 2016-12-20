@@ -755,7 +755,7 @@ TaskSwitch(uint32_t int_no,
 
 //        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
-        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
+//        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));
@@ -990,8 +990,6 @@ DeleteThread(void) {
         return;
     }
 
-    LockSpinlock(thd->lock);
-
     FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->InterruptStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
@@ -1013,6 +1011,10 @@ DeleteThread(void) {
         }
     }
 
+    FreeSpinlock(thd->lock);
+
+    kfree(thd);
+
     //LockSpinlock(next_thread->ParentProcess->lock);
 
     AtomicDecrement32(&thd->ParentProcess->reference_count);
@@ -1020,10 +1022,6 @@ DeleteThread(void) {
         TerminateProcess(GET_PROPERTY_PROC_VAL(thd, ID));
     }
 
-    UnlockSpinlock(thd->lock);
-    FreeSpinlock(thd->lock);
-
-    kfree(thd);
 
     UnlockSpinlock(sync_lock);
 }

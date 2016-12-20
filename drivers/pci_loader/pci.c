@@ -36,7 +36,7 @@ PCI_GetNextDevice(uint32_t *bus,
         for(;d < 32; d++) {
             uint32_t v_id = PCI_ReadDWord(b, d, 0, 0);
 
-            if((v_id >> 16) != 0xFFFF)
+            if(v_id != 0xFFFFFFFF)
             {
                 *bus = b;
                 *device = d;

@@ -75,13 +75,21 @@ subscribe_exit(Message *m) {
 void
 exit_process(Message *m) {
 
-    if(ProcDB_GetCreateSubsFlag(m->SourcePID)) {
-        //TODO remove the entry from the list
-    }
+    if(ProcDB_GetCreateSubsFlag(m->SourcePID))
+        for(uint64_t i = 0; i < List_Length(create_subs); i++) {
+            if((UID)List_EntryAt(create_subs, i) == m->SourcePID){
+                List_Remove(create_subs, i);
+                break;
+            }
+        }
 
-    if(ProcDB_GetExitSubsFlag(m->SourcePID)) {
-        //TODO remove the entry from the list
-    }
+    if(ProcDB_GetExitSubsFlag(m->SourcePID))
+        for(uint64_t i = 0; i < List_Length(create_subs); i++) {
+            if((UID)List_EntryAt(create_subs, i) == m->SourcePID){
+                List_Remove(create_subs, i);
+                break;
+            }
+        }
 
     ProcessServer_ExitRequest *exit_req = (ProcessServer_ExitRequest*)m;
     R0_KillProcess(m->SourcePID, exit_req->exit_code);
