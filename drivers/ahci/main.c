@@ -84,6 +84,22 @@ InitializePort(int index, uint32_t dma_base) {
 
 	//Ensure the device is idle before starting initialization
 	if(cmd & (HBA_PxCMD_FRE | HBA_PxCMD_FR | HBA_PxCMD_CR | HBA_PxCMD_ST) != 0) {
+		//Attempt to clear the offending bits
+
+		cmd &= ~(HBA_PxCMD_ST | HBA_PxCMD_FRE);
+		
+		for(int i = 0; i < 5; i++) {
+			SleepThread(500 * 1000 * 1000);	//Sleep 500ms
+			
+			if((Read32(HBA_PxCMD(index)) & (HBA_PxCMD_FR | HBA_PxCMD_CR)) == 0) {
+				break;
+			}
+		}
+
+		//Failed to bring the device into an idle state, can't continue with init
+		if((Read32(HBA_PxCMD(index)) & (HBA_PxCMD_FR | HBA_PxCMD_CR)) != 0) {
+			return;
+		}
 
 	}
 
@@ -133,6 +149,10 @@ int main(int argc, char *argv[]) {
 	ApplySharedMemoryKey(bar5_key, &data);
 	PCI_BAR = (uint64_t)data.VirtualAddress;
 
+	//Not actually an AHCI device, exit
+	if(PCI_BAR == 0)
+		return -1;
+
 	PCI_EnableBusMaster(&device);
 	
 	//Report that the OS is now AHCI aware
@@ -161,14 +181,11 @@ int main(int argc, char *argv[]) {
 	//Initialize the active device bitmap
 	activeDevices = 0;
 
-	while(1);
-
 	//Initialize the implemented ports
 	for(int i = 0; i < 32; i++)
 		if(ports_implemented & (1 << i))
 			InitializePort(i, dma_phys_addr);
 
-	__asm__("hlt" :: "a"(PCI_BAR));
 	while(1) {
 
 		//Check for messages
