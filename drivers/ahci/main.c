@@ -4,6 +4,7 @@
 #include <pci/pci.h>
 
 #include <stdio.h>
+#include <string.h>
 
 //Register offsets
 #define HBA_GHC 0x4
@@ -29,74 +30,37 @@
 #define CMD_BUF_SIZE 1024
 
 static uint64_t PCI_BAR;
-static uint32_t isPCI_BAR_IO;
 
 static uint32_t activeDevices;
 
 void
 Write8(uint32_t off, uint8_t val) {
-	if(isPCI_BAR_IO) 
-	{
-		outb(PCI_BAR + off, val);
-	}else
-	{
-		*(uint8_t*)(PCI_BAR + off) = val;
-	}
+	*(uint8_t*)(PCI_BAR + off) = val;
 }
 
 uint8_t
 Read8(uint32_t off) {
-	if(isPCI_BAR_IO) 
-	{
-		return inb(PCI_BAR + off);
-	}else
-	{
-		return *(uint8_t*)(PCI_BAR + off);
-	}
+	return *(uint8_t*)(PCI_BAR + off);
 }
 
 void
 Write16(uint32_t off, uint16_t val) {
-	if(isPCI_BAR_IO) 
-	{
-		outw(PCI_BAR + off, val);
-	}else
-	{
-		*(uint16_t*)(PCI_BAR + off) = val;
-	}
+	*(uint16_t*)(PCI_BAR + off) = val;
 }
 
 uint16_t
 Read16(uint32_t off) {
-	if(isPCI_BAR_IO) 
-	{
-		return inw(PCI_BAR + off);
-	}else
-	{
-		return *(uint16_t*)(PCI_BAR + off);
-	}
+	return *(uint16_t*)(PCI_BAR + off);
 }
 
 void
 Write32(uint32_t off, uint32_t val) {
-	if(isPCI_BAR_IO) 
-	{
-		outl(PCI_BAR + off, val);
-	}else
-	{
-		*(uint32_t*)(PCI_BAR + off) = val;
-	}
+	*(uint32_t*)(PCI_BAR + off) = val;
 }
 
 uint32_t
 Read32(uint32_t off) {
-	if(isPCI_BAR_IO) 
-	{
-		return inl(PCI_BAR + off);
-	}else
-	{
-		return *(uint32_t*)(PCI_BAR + off);
-	}
+	return *(uint32_t*)(PCI_BAR + off);
 }
 
 void
@@ -163,7 +127,7 @@ int main(int argc, char *argv[]) {
 
 	//Parse BAR0's key from the args		
 	uint64_t bar5_key = 0;
-	sscanf(argv[2], "B0:%*x B1:%*x B2:%*x B3:%*x B4:%*x B5:%x", &bar5_key);
+	sscanf(argv[2], "B0:%*llx B1:%*llx B2:%*llx B3:%*llx B4:%*llx B5:%llx", &bar5_key);
 
 	UserSharedMemoryData data;
 	ApplySharedMemoryKey(bar5_key, &data);
@@ -192,15 +156,19 @@ int main(int argc, char *argv[]) {
 		);
 	R01_GetPhysicalAddress(0, dma_buffer, &dma_phys_addr);
 
+	memset((void*)dma_buffer, 0, 32 * (CMD_BUF_SIZE + FIS_SIZE));
+
 	//Initialize the active device bitmap
 	activeDevices = 0;
+
+	while(1);
 
 	//Initialize the implemented ports
 	for(int i = 0; i < 32; i++)
 		if(ports_implemented & (1 << i))
 			InitializePort(i, dma_phys_addr);
 
-
+	__asm__("hlt" :: "a"(PCI_BAR));
 	while(1) {
 
 		//Check for messages

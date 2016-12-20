@@ -54,8 +54,8 @@ privMemDB_FreeMemory(ProcessMemoryData *mem_data,
                 free(alloc);
             }
 
-            if(R0_FreePages(address, len / PAGE_SIZE) != 0)
-                return;
+            //if(R0_FreePages(address, len / PAGE_SIZE) != 0)
+            //    return;
 
             break;
         }
@@ -119,7 +119,7 @@ MemDB_AllocateMemory(UID pid,
             return 0;
         }
     }
-    return -1;
+    return -3;
 }
 
 void

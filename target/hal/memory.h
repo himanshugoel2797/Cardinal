@@ -31,6 +31,7 @@
 
 typedef struct SharedMemoryData {
     uint64_t PhysicalAddress;
+    MemoryAllocationType AllocationType;
     uint64_t Length;
     _Atomic uint64_t ReferenceCount;
 } SharedMemoryData;

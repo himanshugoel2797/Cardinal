@@ -72,9 +72,11 @@ mmap_handler(Message *m) {
 
     uint64_t address = 0;
     error = MemDB_AllocateMemory(m->SourcePID, sz, memdb_alloc_flags, &address);
+    
     if(error != 0) {
         SendErrorMessage(0, MemoryAllocationErrors_Unknown, m->SourcePID, m->MsgID);
     }
+
 
     error = R0_Map(m->SourcePID,
                    address,

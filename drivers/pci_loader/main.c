@@ -150,7 +150,7 @@ int main() {
 						}
 
 						char bars[512];
-						sprintf(bars, "B0:%x B1:%x B2:%x B3:%x B4:%x B5:%x", 
+						sprintf(bars, "B0:%llx B1:%llx B2:%llx B3:%llx B4:%llx B5:%llx", 
 							bar_vals[0],
 							bar_vals[1],
 							bar_vals[2],
@@ -191,4 +191,6 @@ int main() {
 
 		device++;
 	}
+
+	//while(1);
 }

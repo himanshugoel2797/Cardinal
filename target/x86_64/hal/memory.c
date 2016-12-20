@@ -964,6 +964,7 @@ AllocateSharedMemoryPhys(UID pid,
 
             map->SharedMemoryInfo->PhysicalAddress = mem;
             map->SharedMemoryInfo->Length = length;
+            map->SharedMemoryInfo->AllocationType = map->AllocationType;
             map->SharedMemoryInfo->ReferenceCount = 1;
 
             break;
@@ -1121,10 +1122,9 @@ ApplySharedMemoryKey(UID pid,
     while(map != NULL) {
         if(*virtualAddress == map->VirtualAddress && *length == map->Length) {
 
-            map->AllocationType |= MemoryAllocationType_Shared;
-
             map->SharedMemoryInfo = shmem_info;
             map->SharedMemoryInfo->ReferenceCount++;
+            map->AllocationType = map->SharedMemoryInfo->AllocationType;
 
             break;
         }

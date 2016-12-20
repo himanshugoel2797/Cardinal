@@ -86,7 +86,6 @@ int main(int argc, char *argv[]) {
 
 	PCI_BAR = PCI_GetBAR(&device, 4);
 	
-	PCI_EnableBusMaster(&device);
 
 	InitController();
 
@@ -94,18 +93,22 @@ int main(int argc, char *argv[]) {
 	//Allocate 64K bytes for buffer
 	uint64_t dma_buffer_vaddr = 0;
 	uint64_t dma_phys_addr = 0;
-	MMap(&dma_buffer_vaddr,
+		MMap(&dma_buffer_vaddr,
 		 64 * 1024,
 		 MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
 		 MMapFlags_DMA,
 		 CachingModeWriteBack
 		);
+	R01_GetPhysicalAddress(0, dma_buffer_vaddr, &dma_phys_addr);
 
 	uint8_t *dma_buffer = (uint8_t*)dma_buffer_vaddr;
+
 
 	//Initialize the frame list entries
 	memset(dma_buffer, 0xFF, 1024 * 4);
 
+	PCI_EnableBusMaster(&device);
+	
 	//Set the frame list base address
 	SetFrameNumber(0);
 	SetFrameListBaseAddress(dma_phys_addr);

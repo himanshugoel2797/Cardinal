@@ -169,6 +169,10 @@ TerminateProcess(UID pid) {
     GetProcessReference(ROOT_PID, &root_p);
     for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
         List_AddEntry(root_p->Children, List_EntryAt(pinfo->Children, i));
+
+        //The root process is now the parent of the children
+        ProcessInformation *child = (ProcessInformation*)List_EntryAt(pinfo->Children, i);
+        child->Parent = root_p;
     }
 
     List_Free(pinfo->Children);

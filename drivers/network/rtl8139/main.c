@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 		//Parse BAR0's key from the args
 		uint64_t bar0_key = 0;
 
-		sscanf(argv[2], "B0:%x", &bar0_key);
+		sscanf(argv[2], "B0:%llx", &bar0_key);
 
 		UserSharedMemoryData data;
 		ApplySharedMemoryKey(bar0_key, &data);
@@ -167,13 +167,11 @@ int main(int argc, char *argv[]) {
 		 MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
 		 MMapFlags_DMA,
 		 CachingModeWriteBack
-		)
+		);
 	
-	__asm__("hlt" ::"a"(trn_dma_buffer));
 
 	R01_GetPhysicalAddress(0, trn_dma_buffer, &trn_dma_phys_addr);
 	Write32(0x20, (uint32_t)trn_dma_phys_addr);	
-
 
 	ARP_Packet *packet = (ARP_Packet*)trn_dma_buffer;
 
