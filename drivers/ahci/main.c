@@ -13,6 +13,11 @@
 #define HBA_PxSERR(x) (0x130 + 0x80 * x)
 #define HBA_PxTFD(x) (0x120 + 0x80 * x)
 #define HBA_PxSSTS(x) (0x128 + 0x80 * x)
+#define HBA_PxCLB(x) (0x100 + 0x80 * x)
+#define HBA_PxCLBU(x) (0x104 + 0x80 * x)
+#define HBA_PxFB(x) (0x108 + 0x80 * x)
+#define HBA_PxFBU(x) (0x10C + 0x80 * x)
+
 
 //Register bits and masks
 #define HBA_PxCMD_ST (1 << 0)
@@ -103,9 +108,13 @@ InitializePort(int index, uint32_t dma_base) {
 
 	}
 
-	//TODO setup the DMA buffers
-	//FIS buffer is 256 bytes
 	//Command buffer is 1024 bytes
+	Write32(HBA_PxCLB(index), dma_base + (index * CMD_BUF_SIZE));
+	Write32(HBA_PxCLBU(index), 0);
+
+	//FIS buffer is 256 bytes
+	Write32(HBA_PxFB(index), dma_base + 32 * CMD_BUF_SIZE + (index * FIS_SIZE));
+	Write32(HBA_PxFBU(index), 0);
 
 	//Enable receiving FIS's
 	Write32(HBA_PxCMD(index), Read32(HBA_PxCMD(index)) | HBA_PxCMD_FRE);
