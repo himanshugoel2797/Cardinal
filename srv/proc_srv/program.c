@@ -91,6 +91,6 @@ LoadAndStartApplication(UID pid,
     int (*entry_point)(void*) = (int(*)(void*))elf_info.entry_point;
     if(R0_CreateThread(pid, entry_point, (void*)target_virt_addr, &tid) != 0)
         return -6;
-      
+
     return 0;
 }

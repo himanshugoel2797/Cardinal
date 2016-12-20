@@ -31,11 +31,11 @@ MemMan_Alloc2MiBPage(PhysicalMemoryAllocationFlags flags);
 
 uint64_t
 MemMan_Alloc2MiBPageCont(int pageCount,
-						 PhysicalMemoryAllocationFlags flags);
+                         PhysicalMemoryAllocationFlags flags);
 
 uint64_t
 MemMan_Alloc4KiBPageCont(int pageCount,
-						 PhysicalMemoryAllocationFlags flags);
+                         PhysicalMemoryAllocationFlags flags);
 
 void
 MemMan_FreeCont(uint64_t addr,

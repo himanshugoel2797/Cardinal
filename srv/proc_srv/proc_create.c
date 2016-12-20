@@ -75,18 +75,18 @@ subscribe_exit(Message *m) {
 void
 exit_process(Message *m) {
 
-    if(ProcDB_GetCreateSubsFlag(m->SourcePID)){
+    if(ProcDB_GetCreateSubsFlag(m->SourcePID)) {
         for(uint64_t i = 0; i < List_Length(create_subs); i++) {
-            if((UID)List_EntryAt(create_subs, i) == m->SourcePID){
+            if((UID)List_EntryAt(create_subs, i) == m->SourcePID) {
                 List_Remove(create_subs, i);
                 break;
             }
         }
     }
 
-    if(ProcDB_GetExitSubsFlag(m->SourcePID)){
+    if(ProcDB_GetExitSubsFlag(m->SourcePID)) {
         for(uint64_t i = 0; i < List_Length(create_subs); i++) {
-            if((UID)List_EntryAt(create_subs, i) == m->SourcePID){
+            if((UID)List_EntryAt(create_subs, i) == m->SourcePID) {
                 List_Remove(create_subs, i);
                 break;
             }
@@ -163,7 +163,7 @@ create_process_handler(Message *m) {
     R0_CreateProcess(msg->m.SourcePID, msg->group_id, &pid);
 
     LoadAndStartApplication(pid, elf_loc, elf_size, argv, argc, arg_len);
-    
+
     //Add the process to the database
     ProcDB_AddProcess(pid, argv);
     send_existence_notification(pid);

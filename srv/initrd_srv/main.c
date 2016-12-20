@@ -40,7 +40,7 @@ fbuf_open(const char *path,
 
     void *loc = NULL;
     size_t size = 0;
-    
+
     if(path[0] == ':' && GetFile(path + 1, &loc, &size)) {
 
 

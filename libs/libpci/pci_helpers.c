@@ -11,8 +11,7 @@ static uint32_t
 PCI_ReadDWord(uint32_t bus,
               uint32_t device,
               uint32_t function,
-              uint32_t offset)
-{
+              uint32_t offset) {
     outl(PCI_ADDR, 0x80000000 | bus << 16 | device << 11 | function <<  8 | (offset & 0xfc));
     return inl(PCI_DATA);
 }
@@ -22,8 +21,7 @@ PCI_WriteDWord(uint32_t bus,
                uint32_t device,
                uint32_t function,
                uint32_t offset,
-               uint32_t val)
-{
+               uint32_t val) {
     outl(PCI_ADDR, 0x80000000 | bus << 16 | device << 11 | function <<  8 | (offset & 0xfc));
     outl(PCI_DATA, val);
 }
@@ -31,18 +29,17 @@ PCI_WriteDWord(uint32_t bus,
 
 void
 PCI_GetPCIDevice(char *str,
-                 PCI_Device *devInfo) 
-{
+                 PCI_Device *devInfo) {
 
-	sscanf(str, "B:%d D:%d F:%d DID:%x VID:%x", &devInfo->Bus, 
-												&devInfo->Device, 
-												&devInfo->Function, 
-												&devInfo->DeviceID, 
-												&devInfo->VendorID);
+    sscanf(str, "B:%d D:%d F:%d DID:%x VID:%x", &devInfo->Bus,
+           &devInfo->Device,
+           &devInfo->Function,
+           &devInfo->DeviceID,
+           &devInfo->VendorID);
 
-	uint32_t bus = devInfo->Bus;
-	uint32_t device = devInfo->Device;
-	uint32_t function = devInfo->Function;
+    uint32_t bus = devInfo->Bus;
+    uint32_t device = devInfo->Device;
+    uint32_t function = devInfo->Function;
 
     devInfo->ClassCode = PCI_ReadDWord(bus, device, function, 8) >> 24;
     devInfo->SubClassCode = (PCI_ReadDWord(bus, device, function, 8) >> 16) & 0xFF;
@@ -61,15 +58,14 @@ PCI_GetPCIDevice(char *str,
 
 uint64_t
 PCI_GetBAR(PCI_Device *device,
-           uint32_t bar_index)
-{
+           uint32_t bar_index) {
     uint32_t l_word = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4));
 
     if(l_word & 1) {
         return l_word & ~1;
-    }else if(((l_word >> 1) & 3) == 0) {
+    } else if(((l_word >> 1) & 3) == 0) {
         return l_word & ~0xF;
-    }else if(((l_word >> 1) & 3) == 2) {
+    } else if(((l_word >> 1) & 3) == 2) {
         return (l_word & ~0xF) | (uint64_t)(PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index + 1) * 4)) << 32;
     }
 
@@ -78,8 +74,7 @@ PCI_GetBAR(PCI_Device *device,
 
 uint32_t
 PCI_IsIOSpaceBAR(PCI_Device *device,
-                 uint32_t bar_index)
-{
+                 uint32_t bar_index) {
     uint32_t l_word = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4));
 
     return l_word & 1;
@@ -88,8 +83,7 @@ PCI_IsIOSpaceBAR(PCI_Device *device,
 
 uint64_t
 PCI_GetBARSize(PCI_Device *device,
-               uint32_t bar_index)
-{
+               uint32_t bar_index) {
     uint64_t bar_val = PCI_GetBAR(device, bar_index);
 
     PCI_WriteDWord(device->Bus, device->Device, device->Function, 0x10 + (bar_index * 4), 0xFFFFFFFF);
@@ -101,8 +95,7 @@ PCI_GetBARSize(PCI_Device *device,
 }
 
 void
-PCI_EnableBusMaster(PCI_Device *device)
-{
+PCI_EnableBusMaster(PCI_Device *device) {
     uint64_t cmd_val = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x4);
     cmd_val |= 4;
     PCI_WriteDWord(device->Bus, device->Device, device->Function, 0x4, cmd_val);

@@ -383,13 +383,13 @@ UnmapPage(ManagedPageTable 	*pageTable,
                             //Delete the mapping and free the memory
                             if(!(map->AllocationType & MemoryAllocationType_Phys))
                                 FreePhysicalPageCont(map->SharedMemoryInfo->PhysicalAddress, map->SharedMemoryInfo->Length / PAGE_SIZE);
-                            
+
                             kfree(map->SharedMemoryInfo);
                         }
-                    }else if(map->Flags & MemoryAllocationFlags_User) {
+                    } else if(map->Flags & MemoryAllocationFlags_User) {
 
                         if(!(map->AllocationType & MemoryAllocationType_Phys))
-                                FreePhysicalPageCont(map->PhysicalAddress, size / PAGE_SIZE);
+                            FreePhysicalPageCont(map->PhysicalAddress, size / PAGE_SIZE);
                     }
 
                     if(*map_root != map)

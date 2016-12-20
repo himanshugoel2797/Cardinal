@@ -42,18 +42,18 @@ int main() {
 
     uint8_t *display_addr = (uint8_t*)vAddr;
     uint8_t *src_img = (uint8_t*)result;
-/*
-    for(int y = 0; y < img_h; y++) {
-        for(int x = 0; x < img_w; x++) {
+    /*
+        for(int y = 0; y < img_h; y++) {
+            for(int x = 0; x < img_w; x++) {
 
-            display_addr[y * disp_info.pitch + (4 * x)] = src_img[y * img_p + (4 * x)];
-            display_addr[y * disp_info.pitch + (4 * x) + 1] = src_img[y * img_p + (4 * x) + 1];
-            display_addr[y * disp_info.pitch + (4 * x) + 2] = src_img[y * img_p + (4 * x) + 2];
-            display_addr[y * disp_info.pitch + (4 * x) + 3] = src_img[y * img_p + (4 * x) + 3];
+                display_addr[y * disp_info.pitch + (4 * x)] = src_img[y * img_p + (4 * x)];
+                display_addr[y * disp_info.pitch + (4 * x) + 1] = src_img[y * img_p + (4 * x) + 1];
+                display_addr[y * disp_info.pitch + (4 * x) + 2] = src_img[y * img_p + (4 * x) + 2];
+                display_addr[y * disp_info.pitch + (4 * x) + 3] = src_img[y * img_p + (4 * x) + 3];
 
+            }
         }
-    }
-*/
+    */
     Display_Update(disp_fd, write_key, buf_len);
 
     Display_UnlockDisplay(disp_fd);

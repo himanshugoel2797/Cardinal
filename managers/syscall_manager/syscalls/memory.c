@@ -266,7 +266,7 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
         SyscallSetErrno(-ENOSYS);
         return 0;
     }
-    
+
     uint64_t retVal = AllocatePhysicalPageCont(data->params[0], data->params[1]);
     if(retVal == 0)
         SyscallSetErrno(-ENOMEM);
@@ -303,8 +303,8 @@ R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
 
 uint64_t
 R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
-                             uint64_t syscall_num,
-                             uint64_t *syscall_params) {
+                              uint64_t syscall_num,
+                              uint64_t *syscall_params) {
 
     if(syscall_num != Syscall_R01_GetPhysicalAddress) {
         SyscallSetErrno(-ENOSYS);

@@ -139,10 +139,10 @@ MemMan_Alloc4KiBPageCont(int pageCount,
     if(flags == PhysicalMemoryAllocationFlags_None) {
         j_min = dma_store;
         j_max = KB4_Blocks_Count;
-    }else if(flags == PhysicalMemoryAllocationFlags_32Bit) {
+    } else if(flags == PhysicalMemoryAllocationFlags_32Bit) {
         j_min = 0;
         j_max = dma_store;
-    }else
+    } else
         __asm__("cli\n\thlt");
 
     for(uint32_t j = j_min; j < j_max; j++) {
