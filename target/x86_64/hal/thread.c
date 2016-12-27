@@ -126,9 +126,12 @@ PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
     SetRFLAGS(data[ARCH_DATA_FLAGS_OFFSET]);
 }
 
+#include "debug_gfx.h"
 void
 SetupPreemption(void) {
-    uint64_t timer_freq = APIC_GetTimerFrequency()/10000;
+    uint64_t timer_freq = APIC_GetTimerFrequency()/(1000 * 7000) * 1000;
+    debug_gfx_writeLine("Timer: %d\r\n", (uint32_t)timer_freq);
+
     //uint64_t timer_freq = 1000000000;
     SetPeriodicPreemptVector(IRQ(0), timer_freq);
     APIC_SetVector(APIC_TIMER, IRQ(0));
@@ -142,6 +145,6 @@ SetupPreemption(void) {
 void
 ResetPreemption(void) {
     APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/10000);
+    APIC_SetTimerValue(APIC_GetTimerFrequency()/(1000 * 7000) * 1000);
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
 }

@@ -719,6 +719,9 @@ GetNextThread(ThreadInfo *prevThread) {
             break;
         case ThreadState_Paused:
             break;
+        case ThreadState_Sleep:
+                __asm__("hlt");
+            break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
                 exit_loop = TRUE;
@@ -899,7 +902,7 @@ void
 SleepThreadForMessage(UID id,
                       MessageWaitType wait_type,
                       uint64_t val) {
-
+ 
     ThreadWakeCondition condition;
     switch(wait_type) {
     case MessageWaitType_Any:
@@ -918,16 +921,15 @@ SleepThreadForMessage(UID id,
 
     if( GET_PROPERTY_VAL(coreState->cur_thread, ID) == id) {
 
-
         SET_PROPERTY_VAL(coreState->cur_thread, State, ThreadState_Sleep);
         SET_PROPERTY_VAL(coreState->cur_thread, WakeCondition, condition);
         SET_PROPERTY_VAL(coreState->cur_thread, SleepStartTime, GetTimerValue());
         SET_PROPERTY_VAL(coreState->cur_thread, TargetMsgSourcePID, val);
 
         List_AddEntry(sleeping_thds, coreState->cur_thread);
-        UnlockSpinlock(sync_lock);
 
         ProcessCheckWakeThreads(GetCurrentProcessUID());
+        UnlockSpinlock(sync_lock);
 
         YieldThread();
         return;

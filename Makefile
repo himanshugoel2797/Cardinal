@@ -74,7 +74,7 @@ build:$(SOURCES:.o=.bc) clean_output initrd
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
 	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
-	llc tmp0.bc -O=0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
+	llc tmp.bc -O=0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
 	rm -f tmp0.bc tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
@@ -109,7 +109,7 @@ build-tests:build
 # run tests
 test: build-tests
 # Add your pre 'test' code here...
-	qemu-system-x86_64 --enable-kvm -m 1024M -machine q35, -cpu Haswell,+invtsc,+xsave,+aes -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=disk.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net dump,file=../dump.pcap -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso"
+	qemu-system-x86_64 --enable-kvm -m 1024M -machine q35, -cpu Haswell,+invtsc,+xsave,+aes -smp 4 -d int,cpu_reset,guest_errors -drive id=disk,file=disk.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net dump,file=../dump.pcap -net user -device intel-hda -device hda-duplex -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -cdrom "ISO/os.iso" -boot d
 
 install:clean build-tests
 	sudo dd if="ISO/os.iso" of=/dev/$(OUTDISK) && sync

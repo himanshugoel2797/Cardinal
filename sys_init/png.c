@@ -92,10 +92,10 @@ DecodePNGtoRGBA(void *src, int len, int *img_w, int *img_h, int *img_p, int *res
             uint32_t green = rowData[byteIndex++];
             uint32_t blue  = rowData[byteIndex++];
 
-            data[rowIdx * bytesPerRow + (4 * colIdx)] = blue;
-            data[rowIdx * bytesPerRow + (4 * colIdx) + 1] = green;
-            data[rowIdx * bytesPerRow + (4 * colIdx) + 2] = red;
-            data[rowIdx * bytesPerRow + (4 * colIdx) + 3] = 255;
+            data[rowIdx * *img_p + (4 * colIdx)] = blue;
+            data[rowIdx * *img_p + (4 * colIdx) + 1] = green;
+            data[rowIdx * *img_p + (4 * colIdx) + 2] = red;
+            data[rowIdx * *img_p + (4 * colIdx) + 3] = 255;
         }
     }
 
