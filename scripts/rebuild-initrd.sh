@@ -85,5 +85,11 @@ cd $SRC_DIR/drivers/ahci
 	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
+cd $SRC_DIR/drivers/audio/ihda
+	make clean
+	make all
+	cp *.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
 cp $SRC_DIR/drivers/pci_devices.txt $SRC_DIR/initrd/pci_devices.txt
 cp wallpaper.png $SRC_DIR/initrd/wallpaper.png
