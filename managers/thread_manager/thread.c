@@ -720,7 +720,7 @@ GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Paused:
             break;
         case ThreadState_Sleep:
-                __asm__("hlt");
+            __asm__("hlt");
             break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
@@ -902,7 +902,7 @@ void
 SleepThreadForMessage(UID id,
                       MessageWaitType wait_type,
                       uint64_t val) {
- 
+
     ThreadWakeCondition condition;
     switch(wait_type) {
     case MessageWaitType_Any:

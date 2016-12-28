@@ -51,9 +51,9 @@
 #define IHDA_CORB_VERB(codec, node, cmd, data) IHDA_VERB(codec, node, ((cmd << 8) | (data)))
 
 typedef enum {
-	CMD_GetParameter = 0xf00,
-	CMD_GetSelectedInput = 0xf01,
-	CMD_SetSelectedInput = 0x701,
+    CMD_GetParameter = 0xf00,
+    CMD_GetSelectedInput = 0xf01,
+    CMD_SetSelectedInput = 0x701,
 } IHDA_CORB_CMDs;
 
 #endif

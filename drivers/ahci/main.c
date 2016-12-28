@@ -134,7 +134,7 @@ InitializePort(int index, uint32_t dma_base) {
 
     //Setup the first command table entry
     AHCICommand *cmd_entry = (AHCICommand*)(dma_vaddr + (index * CMD_BUF_SIZE));
-    for(int i = 0; i < 32; i++){
+    for(int i = 0; i < 32; i++) {
         cmd_entry->PRDTL = 64;
         cmd_entry->commandTableBaseAddress = (dma_base + 32 * (CMD_BUF_SIZE + FIS_SIZE) + index * sizeof(AHCICommandTable));
         cmd_entry->commandTableBaseAddressUpper = 0;
@@ -206,7 +206,7 @@ int ReadDevice(int index, uint64_t loc, void *addr, uint32_t len) {
     uint64_t p_curaddr = p_addr;
 
     int i = 0;
-    for(; i < 127 && target_len > 32 * 1024; i++){
+    for(; i < 127 && target_len > 32 * 1024; i++) {
         cmd_table->prdt[i].baseAddress = (uint32_t)p_curaddr;
         cmd_table->prdt[i].baseAddressUpper = (uint32_t)(p_curaddr >> 32);
         cmd_table->prdt[i].rsv0 = 0;
@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
     ObtainOwnership();
     //Wait 2 seconds to allow the BIOS to finish up any commands
     //SleepThread(2 * 1000 * 1000 * 1000);
-    
+
     //Report that the OS is now AHCI aware
     ReportAHCIAwareness();
     ResetHBA();
