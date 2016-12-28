@@ -14,6 +14,7 @@ static uint32_t isPCI_BAR_IO;
 static uint32_t *corb_buffer;
 static uint64_t *rirb_buffer;
 static uint16_t write_pos;
+static uint16_t response_pos;
 static uint16_t corb_buf_sz;
 
 void
@@ -115,11 +116,13 @@ IHDA_WriteCommand(uint32_t codec, uint32_t node, IHDA_CORB_CMDs cmd, uint8_t dat
     Write16(IHDA_CORB_WRITE_REG, write_pos);
 }
 
-uint32_t
+uint64_t
 IHDA_ReadResponse(void) {
 
     uint16_t rirb_pos = Read16(IHDA_RIRB_WRITE_REG);
-    return rirb_buffer[rirb_pos];
+    uint64_t retVal = rirb_buffer[rirb_pos];
+    rirb_buffer[rirb_pos] = 0;
+    return retVal;
 }
 
 int main(int argc, char *argv[]) {
@@ -227,37 +230,35 @@ int main(int argc, char *argv[]) {
         Write16(IHDA_CORB_WRITE_REG, 0);
 
         //Reset the read corb register
-        Write16(IHDA_CORB_READ_REG, 1 << 15);
         while(!(Read16(IHDA_CORB_READ_REG) & (1 << 15)))
-            ;
+           Write16(IHDA_CORB_READ_REG, 1 << 15);
+
         Write16(IHDA_CORB_READ_REG, 0);
         while(Read16(IHDA_CORB_READ_REG) & (1 << 15))
             ;
 
-        Write8(IHDA_CORB_CTRL_REG, IHDA_CORB_RUN);
         while(!(Read8(IHDA_CORB_CTRL_REG) & IHDA_CORB_RUN))
-            ;
+           Write8(IHDA_CORB_CTRL_REG, IHDA_CORB_RUN);
+
     }
 
     //Setup the RIRB pointers
     {
-        for(int i = 0; i < rirb_buf_sz; i++)
-            rirb_buffer[i] = 0x02;
-
         //Reset the write rirb register
         Write16(IHDA_RIRB_WRITE_REG, 1 << 15);
 
-        Write8(IHDA_RIRB_CTRL_REG, IHDA_RIRB_RUN);
+        Write16(IHDA_RIRB_INTCNT_REG, 1);
+
         while(!(Read8(IHDA_RIRB_CTRL_REG) & IHDA_RIRB_RUN))
-            ;
+            Write8(IHDA_RIRB_CTRL_REG, IHDA_RIRB_RUN);
     }
 
-    IHDA_WriteCommand(0, 0, CMD_GetParameter, 0);
+    IHDA_WriteCommand(0, 0, CMD_GetParameter, 4);
 
     while(Read16(IHDA_CORB_READ_REG) == 0)
         ;
     
-    __asm__("hlt" :: "a"(Read16(IHDA_CORB_READ_REG)));
+    __asm__("hlt" :: "a"(IHDA_ReadResponse()));
     
 
 
