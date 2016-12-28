@@ -11,6 +11,11 @@
 static uint64_t PCI_BAR;
 static uint32_t isPCI_BAR_IO;
 
+static uint32_t *corb_buffer;
+static uint64_t *rirb_buffer;
+static uint16_t write_pos;
+static uint16_t corb_buf_sz;
+
 void
 Write8(uint32_t off, uint8_t val) {
     if(isPCI_BAR_IO) {
@@ -68,28 +73,53 @@ Read32(uint32_t off) {
 void
 IHDA_Reset(void){
 
+    Write16(IHDA_STATESTS_REG, (1 << 15) - 1);
+
     //Reset
     Write32(IHDA_GCTL_REG, 0);  //Clear the reset bit
     while((Read32(IHDA_GCTL_REG) & 1) != 0)
         ;
+    
     Write32(IHDA_GCTL_REG, IHDA_GCTL_RESET);
     while((Read32(IHDA_GCTL_REG) & 1) == 0)
         ;
+
+    while(Read16(IHDA_STATESTS_REG) == 0)
+        ;
 }
 
-int
+uint16_t
 IHDA_AllocateMaxSizeBuffer(uint8_t reg, uint8_t *ret_val){
 
     if(reg & IHDA_1024B_SUP_BIT) {
         *ret_val = IHDA_1024B_VAL;
-        return 1024;
+        return 256;
     }else if(reg & IHDA_64B_SUP_BIT) {
         *ret_val = IHDA_64B_VAL;
-        return 64;
+        return 16;
     }
 
     *ret_val = IHDA_8B_VAL;
-    return 8;
+    return 2;
+}
+
+void
+IHDA_WriteCommand(uint32_t codec, uint32_t node, IHDA_CORB_CMDs cmd, uint8_t data){
+
+    while(Read16(IHDA_CORB_READ_REG) != Read16(IHDA_CORB_WRITE_REG))
+        ;
+
+    write_pos = (write_pos + 1) % corb_buf_sz;
+    corb_buffer[write_pos] = IHDA_CORB_VERB(codec, node, cmd, data);
+    
+    Write16(IHDA_CORB_WRITE_REG, write_pos);
+}
+
+uint32_t
+IHDA_ReadResponse(void) {
+
+    uint16_t rirb_pos = Read16(IHDA_RIRB_WRITE_REG);
+    return rirb_buffer[rirb_pos];
 }
 
 int main(int argc, char *argv[]) {
@@ -132,8 +162,9 @@ int main(int argc, char *argv[]) {
         uint8_t vmaj = Read8(IHDA_VMAJ_REG);
         uint16_t outpay = Read16(IHDA_OUTPAY_REG);
 
-        if(vmin == IHDA_MINOR_VER && vmaj == IHDA_MAJOR_VER && outpay == IHDA_OUTPAY_RESETVAL)
+        if(vmin == IHDA_MINOR_VER && vmaj == IHDA_MAJOR_VER && outpay == IHDA_OUTPAY_RESETVAL){
             break;  //Valid BAR has been found.
+        }
 
         if(i + 1 == device.BarCount){
             //No BAR found that matches
@@ -141,18 +172,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    IHDA_Reset();
     PCI_EnableBusMaster(&device);
+    IHDA_Reset();
 
-    //Determine the maximum size of the corb buffer available
-    uint8_t corb_sz = 0;
-    int corb_buf_sz = IHDA_AllocateMaxSizeBuffer(Read8(IHDA_CORB_SZ_REG), &corb_sz);
-    Write8(IHDA_CORB_SZ_REG, corb_sz);
 
-    //Determine the maximum size of the rirb buffer avaiable
-    uint8_t rirb_sz = 0;
-    int rirb_buf_sz = IHDA_AllocateMaxSizeBuffer(Read8(IHDA_RIRB_SZ_REG), &rirb_sz);
-    Write8(IHDA_RIRB_SZ_REG, rirb_sz);
 
 
     //Allocate a buffer for all the dma needs of the device
@@ -166,9 +189,29 @@ int main(int argc, char *argv[]) {
         );
     R01_GetPhysicalAddress(0, dma_buffer, &dma_phys_addr);
 
+    corb_buffer = (uint32_t*)dma_buffer;
+    rirb_buffer = (uint64_t*)(dma_buffer + 1024);
+    write_pos = 0;
+
     uint64_t corb_base_addr = dma_phys_addr;
     uint64_t rirb_base_addr = dma_phys_addr + 1024; //Always allocate 1024 bytes since we need to do alignment.
 
+    while(Read8(IHDA_CORB_CTRL_REG) & IHDA_CORB_RUN)
+        Write8(IHDA_CORB_CTRL_REG, 0);
+    
+    while(Read8(IHDA_RIRB_CTRL_REG) & IHDA_RIRB_RUN)
+        Write8(IHDA_RIRB_CTRL_REG, 0);
+    
+    //Determine the maximum size of the corb buffer available
+    uint8_t corb_sz = 0;
+    corb_buf_sz = IHDA_AllocateMaxSizeBuffer(Read8(IHDA_CORB_SZ_REG), &corb_sz);
+    Write8(IHDA_CORB_SZ_REG, (Read8(IHDA_CORB_SZ_REG) & ~3) | corb_sz);
+
+    //Determine the maximum size of the rirb buffer avaiable
+    uint8_t rirb_sz = 0;
+    int rirb_buf_sz = IHDA_AllocateMaxSizeBuffer(Read8(IHDA_RIRB_SZ_REG), &rirb_sz);
+    Write8(IHDA_RIRB_SZ_REG, (Read8(IHDA_RIRB_SZ_REG) & ~3) | rirb_sz);
+    
     //Setup the CORB base address
     Write32(IHDA_CORB_LO_REG, (uint32_t)corb_base_addr);
     Write32(IHDA_CORB_HI_REG, (uint32_t)(corb_base_addr >> 32));
@@ -177,16 +220,46 @@ int main(int argc, char *argv[]) {
     Write32(IHDA_RIRB_LO_REG, (uint32_t)rirb_base_addr);
     Write32(IHDA_RIRB_HI_REG, (uint32_t)(rirb_base_addr >> 32));
 
+
     //Setup the CORB pointers
-    Write16(IHDA_CORB_WRITE_REG, 0);
-    Write16(IHDA_CORB_READ_REG, 0);
-    Write8(IHDA_CORB_CTRL_REG, IHDA_CORB_RUN);
+    {
+        
+        Write16(IHDA_CORB_WRITE_REG, 0);
+
+        //Reset the read corb register
+        Write16(IHDA_CORB_READ_REG, 1 << 15);
+        while(!(Read16(IHDA_CORB_READ_REG) & (1 << 15)))
+            ;
+        Write16(IHDA_CORB_READ_REG, 0);
+        while(Read16(IHDA_CORB_READ_REG) & (1 << 15))
+            ;
+
+        Write8(IHDA_CORB_CTRL_REG, IHDA_CORB_RUN);
+        while(!(Read8(IHDA_CORB_CTRL_REG) & IHDA_CORB_RUN))
+            ;
+    }
 
     //Setup the RIRB pointers
-    Write16(IHDA_RIRB_WRITE_REG, 0);
-    Write8(IHDA_RIRB_CTRL_REG, IHDA_RIRB_RUN);
+    {
+        for(int i = 0; i < rirb_buf_sz; i++)
+            rirb_buffer[i] = 0x02;
 
-    __asm__("hlt");
+        //Reset the write rirb register
+        Write16(IHDA_RIRB_WRITE_REG, 1 << 15);
+
+        Write8(IHDA_RIRB_CTRL_REG, IHDA_RIRB_RUN);
+        while(!(Read8(IHDA_RIRB_CTRL_REG) & IHDA_RIRB_RUN))
+            ;
+    }
+
+    IHDA_WriteCommand(0, 0, CMD_GetParameter, 0);
+
+    while(Read16(IHDA_CORB_READ_REG) == 0)
+        ;
+    
+    __asm__("hlt" :: "a"(Read16(IHDA_CORB_READ_REG)));
+    
+
 
     while(1) {
 

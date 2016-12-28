@@ -6,6 +6,7 @@
 #define IHDA_OUTPAY_REG 0x04
 
 #define IHDA_GCTL_REG 0x08
+#define IHDA_STATESTS_REG 0x0e
 
 #define IHDA_CORB_LO_REG 0x40
 #define IHDA_CORB_HI_REG 0x44
@@ -45,5 +46,14 @@
 #define IHDA_MINOR_VER 0x00
 #define IHDA_MAJOR_VER 0x01
 #define IHDA_OUTPAY_RESETVAL 0x3C
+
+#define IHDA_VERB(codec, node, payload) ((codec << 28) | (node << 20) | (payload))
+#define IHDA_CORB_VERB(codec, node, cmd, data) IHDA_VERB(codec, node, ((cmd << 8) | (data)))
+
+typedef enum {
+	CMD_GetParameter = 0xf00,
+	CMD_GetSelectedInput = 0xf01,
+	CMD_SetSelectedInput = 0x701,
+} IHDA_CORB_CMDs;
 
 #endif
