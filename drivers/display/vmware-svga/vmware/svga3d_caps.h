@@ -41,6 +41,8 @@
 #ifndef _SVGA3D_CAPS_H_
 #define _SVGA3D_CAPS_H_
 
+#include "types.h"
+
 #define SVGA_FIFO_3D_CAPS_SIZE   (SVGA_FIFO_3D_CAPS_LAST - \
                                   SVGA_FIFO_3D_CAPS + 1)
 

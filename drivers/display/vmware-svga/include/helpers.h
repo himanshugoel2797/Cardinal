@@ -2,6 +2,7 @@
 #define _CARDINAL_VMWARE_SVGA_HELPERS_H_
 
 #include <cardinal/cardinal_types.h>
+#include <cardinal/driver_utils.h>
 
 #include "svga.h"
 #include "svga_reg.h"

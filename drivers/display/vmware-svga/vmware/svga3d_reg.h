@@ -32,6 +32,7 @@
 #ifndef _SVGA3D_REG_H_
 #define _SVGA3D_REG_H_
 
+#include "types.h"
 #include "svga_reg.h"
 
 

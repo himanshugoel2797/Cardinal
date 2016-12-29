@@ -1,6 +1,6 @@
 TARGET=vmware-svga.elf
 
-OBJS=src/main.o src/fileserver.o src/svga.o
+OBJS=src/main.o src/fileserver.o src/svga.o src/screen.o src/svga3d.o src/gmr.o
 
 LIBS=-lfileserver -lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
