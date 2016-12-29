@@ -7,7 +7,7 @@
 
 #include "svga.h"
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
     R01_GetIOPrivileges();
 
     SVGA_Context ctxt;
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]){
     UserSharedMemoryData data;
     ApplySharedMemoryKey(bar0_key, &data);
     ctxt.iobase = (uint64_t)data.VirtualAddress;
-	*/
+    */
 
     UserSharedMemoryData data;
     ApplySharedMemoryKey(bar1_key, &data);

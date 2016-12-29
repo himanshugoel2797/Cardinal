@@ -68,80 +68,74 @@ GMRState gGMR;
  */
 
 void
-Heap_Reset(void)
-{
-   extern uint8 _end[];
-   heapTop = (uint64_t) _end;
+Heap_Reset(void) {
+    extern uint8 _end[];
+    heapTop = (uint64_t) _end;
 }
 
 void
-Heap_ProbeMem(volatile uint32 *addr, uint32 size)
-{
-   const uint32 probe = 0x55AA55AA;
-   while (size > sizeof *addr) {
-      *addr = probe;
-      if (*addr != probe) {
-         goto error;
-      }
-      *addr = ~probe;
-      if (*addr != ~probe) {
-         goto error;
-      }
-      size -= sizeof *addr;
-      addr++;
-   }
-   return;
- error:
-  return;
-  /*TODO SVGA_Panic("Out of physical memory.\n\n"
-              "Increase the amount of memory allocated to this VM.\n"
-              "128MB of RAM is recommended.\n");*/
+Heap_ProbeMem(volatile uint32 *addr, uint32 size) {
+    const uint32 probe = 0x55AA55AA;
+    while (size > sizeof *addr) {
+        *addr = probe;
+        if (*addr != probe) {
+            goto error;
+        }
+        *addr = ~probe;
+        if (*addr != ~probe) {
+            goto error;
+        }
+        size -= sizeof *addr;
+        addr++;
+    }
+    return;
+error:
+    return;
+    /*TODO SVGA_Panic("Out of physical memory.\n\n"
+                "Increase the amount of memory allocated to this VM.\n"
+                "128MB of RAM is recommended.\n");*/
 }
 
 void *
-Heap_Alloc(uint32 bytes)
-{
-   const uint32 padding = 16;
-   void *result;
+Heap_Alloc(uint32 bytes) {
+    const uint32 padding = 16;
+    void *result;
 
-   heapTop = (heapTop + 3) & ~3;
-   result = (void*) heapTop;
+    heapTop = (heapTop + 3) & ~3;
+    result = (void*) heapTop;
 
-   bytes += padding;
-   heapTop += bytes;
-   Heap_ProbeMem(result, bytes);
+    bytes += padding;
+    heapTop += bytes;
+    Heap_ProbeMem(result, bytes);
 
-   return result;
+    return result;
 }
 
 PPN
-Heap_AllocPages(uint32 numPages)
-{
-   const uint32 padding = 1;
-   PPN result;
-   uint32 bytes;
+Heap_AllocPages(uint32 numPages) {
+    const uint32 padding = 1;
+    PPN result;
+    uint32 bytes;
 
-   heapTop = (heapTop + PAGE_MASK) & ~PAGE_MASK;
-   result = heapTop / PAGE_SIZE;
+    heapTop = (heapTop + PAGE_MASK) & ~PAGE_MASK;
+    result = heapTop / PAGE_SIZE;
 
-   numPages += padding;
-   bytes = numPages * PAGE_SIZE;
-   heapTop += bytes;
-   Heap_ProbeMem(PPN_POINTER(result), bytes);
+    numPages += padding;
+    bytes = numPages * PAGE_SIZE;
+    heapTop += bytes;
+    Heap_ProbeMem(PPN_POINTER(result), bytes);
 
-   return result;
+    return result;
 }
 
 void
-Heap_Discard(void *data, uint32 bytes)
-{
-   memset(data, 0xAA, bytes);
+Heap_Discard(void *data, uint32 bytes) {
+    memset(data, 0xAA, bytes);
 }
 
 void
-Heap_DiscardPages(PPN firstPage, uint32 numPages)
-{
-   memset(PPN_POINTER(firstPage), 0xAA, numPages * PAGE_SIZE);
+Heap_DiscardPages(PPN firstPage, uint32 numPages) {
+    memset(PPN_POINTER(firstPage), 0xAA, numPages * PAGE_SIZE);
 }
 
 
@@ -167,45 +161,44 @@ Heap_DiscardPages(PPN firstPage, uint32 numPages)
 
 PPN
 GMR_AllocDescriptor(SVGAGuestMemDescriptor *descArray,
-                    uint32 numDescriptors)
-{
-   const uint32 descPerPage = PAGE_SIZE / sizeof(SVGAGuestMemDescriptor) - 1;
-   SVGAGuestMemDescriptor *desc = NULL;
-   PPN firstPage = 0;
-   PPN page = 0;
-   int i = 0;
+                    uint32 numDescriptors) {
+    const uint32 descPerPage = PAGE_SIZE / sizeof(SVGAGuestMemDescriptor) - 1;
+    SVGAGuestMemDescriptor *desc = NULL;
+    PPN firstPage = 0;
+    PPN page = 0;
+    int i = 0;
 
-   while (numDescriptors) {
-      if (!firstPage) {
-         firstPage = page = Heap_AllocPages(1);
-      }
+    while (numDescriptors) {
+        if (!firstPage) {
+            firstPage = page = Heap_AllocPages(1);
+        }
 
-      desc = PPN_POINTER(page);
+        desc = PPN_POINTER(page);
 
-      if (i == descPerPage) {
-         /*
-          * Terminate this page with a pointer to the next one.
-          */
-         page = Heap_AllocPages(1);
-         desc[i].ppn = page;
-         desc[i].numPages = 0;
-         i = 0;
-         continue;
-      }
+        if (i == descPerPage) {
+            /*
+             * Terminate this page with a pointer to the next one.
+             */
+            page = Heap_AllocPages(1);
+            desc[i].ppn = page;
+            desc[i].numPages = 0;
+            i = 0;
+            continue;
+        }
 
-      desc[i] = *descArray;
-      i++;
-      descArray++;
-      numDescriptors--;
-   }
+        desc[i] = *descArray;
+        i++;
+        descArray++;
+        numDescriptors--;
+    }
 
-   if (desc) {
-      /* Terminate the end of the descriptor list. */
-      desc[i].ppn = 0;
-      desc[i].numPages = 0;
-   }
+    if (desc) {
+        /* Terminate the end of the descriptor list. */
+        desc[i].ppn = 0;
+        desc[i].numPages = 0;
+    }
 
-   return firstPage;
+    return firstPage;
 }
 
 
@@ -232,25 +225,24 @@ void
 GMR_Define(SVGA_Context *ctxt,
            uint32 gmrId,
            SVGAGuestMemDescriptor *descArray,
-           uint32 numDescriptors)
-{
-   PPN desc = GMR_AllocDescriptor(descArray, numDescriptors);
+           uint32 numDescriptors) {
+    PPN desc = GMR_AllocDescriptor(descArray, numDescriptors);
 
-   /*
-    * Define/undefine the GMR. Defining an empty GMR is equivalent to
-    * undefining a GMR.
-    */
+    /*
+     * Define/undefine the GMR. Defining an empty GMR is equivalent to
+     * undefining a GMR.
+     */
 
-   SVGA_Write32(ctxt, SVGA_REG_GMR_ID, gmrId);
-   SVGA_Write32(ctxt, SVGA_REG_GMR_DESCRIPTOR, desc);
+    SVGA_Write32(ctxt, SVGA_REG_GMR_ID, gmrId);
+    SVGA_Write32(ctxt, SVGA_REG_GMR_DESCRIPTOR, desc);
 
-   if (desc) {
-      /*
-       * Clobber the first page, to verify that the device reads our
-       * descriptors synchronously when we write the GMR registers.
-       */
-      Heap_DiscardPages(desc, 1);
-   }
+    if (desc) {
+        /*
+         * Clobber the first page, to verify that the device reads our
+         * descriptors synchronously when we write the GMR registers.
+         */
+        Heap_DiscardPages(desc, 1);
+    }
 }
 
 
@@ -274,16 +266,15 @@ GMR_Define(SVGA_Context *ctxt,
  */
 
 PPN
-GMR_DefineContiguous(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages)
-{
-   SVGAGuestMemDescriptor desc = {
-      .ppn = Heap_AllocPages(numPages),
-      .numPages = numPages,
-   };
+GMR_DefineContiguous(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages) {
+    SVGAGuestMemDescriptor desc = {
+        .ppn = Heap_AllocPages(numPages),
+        .numPages = numPages,
+    };
 
-   GMR_Define(ctxt, gmrId, &desc, 1);
+    GMR_Define(ctxt, gmrId, &desc, 1);
 
-   return desc.ppn;
+    return desc.ppn;
 }
 
 
@@ -311,22 +302,21 @@ GMR_DefineContiguous(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages)
  */
 
 PPN
-GMR_DefineEvenPages(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages)
-{
-   SVGAGuestMemDescriptor *desc;
-   PPN region = Heap_AllocPages(numPages * 2);
-   int i;
+GMR_DefineEvenPages(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages) {
+    SVGAGuestMemDescriptor *desc;
+    PPN region = Heap_AllocPages(numPages * 2);
+    int i;
 
-   desc = Heap_Alloc(sizeof *desc * numPages);
+    desc = Heap_Alloc(sizeof *desc * numPages);
 
-   for (i = 0; i < numPages; i++) {
-      desc[i].ppn = region + i*2;
-      desc[i].numPages = 1;
-   }
+    for (i = 0; i < numPages; i++) {
+        desc[i].ppn = region + i*2;
+        desc[i].numPages = 1;
+    }
 
-   GMR_Define(ctxt, gmrId, desc, numPages);
+    GMR_Define(ctxt, gmrId, desc, numPages);
 
-   return region;
+    return region;
 }
 
 
@@ -351,13 +341,12 @@ GMR_DefineEvenPages(SVGA_Context *ctxt, uint32 gmrId, uint32 numPages)
  */
 
 void
-GMR_FreeAll(SVGA_Context *ctxt)
-{
-   uint32 id;
+GMR_FreeAll(SVGA_Context *ctxt) {
+    uint32 id;
 
-   for (id = 0; id < gGMR.maxIds; id++) {
-      GMR_Define(ctxt, id, NULL, 0);
-   }
+    for (id = 0; id < gGMR.maxIds; id++) {
+        GMR_Define(ctxt, id, NULL, 0);
+    }
 }
 
 
@@ -378,14 +367,13 @@ GMR_FreeAll(SVGA_Context *ctxt)
  */
 
 void
-GMR_Init(SVGA_Context *ctxt)
-{
-   if (ctxt->caps & SVGA_CAP_GMR) {
-      gGMR.maxIds = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_IDS);
-      gGMR.maxDescriptorLen = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_DESCRIPTOR_LENGTH);
-   } else {
-      //TODO SVGA_Panic("Virtual device does not have Guest Memory Region (GMR) support.");
-   }
+GMR_Init(SVGA_Context *ctxt) {
+    if (ctxt->caps & SVGA_CAP_GMR) {
+        gGMR.maxIds = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_IDS);
+        gGMR.maxDescriptorLen = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_DESCRIPTOR_LENGTH);
+    } else {
+        //TODO SVGA_Panic("Virtual device does not have Guest Memory Region (GMR) support.");
+    }
 }
 
 
@@ -406,12 +394,11 @@ GMR_Init(SVGA_Context *ctxt)
  */
 
 void
-GMR2_Init(SVGA_Context *ctxt)
-{
-   if (ctxt->caps & SVGA_CAP_GMR2) {
-      gGMR.maxIds = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_IDS);
-      gGMR.maxPages = SVGA_Read32(ctxt, SVGA_REG_GMRS_MAX_PAGES);
-   } else {
-      //TODO SVGA_Panic("Virtual device does not have Guest Memory Region version 2 (GMR2) support.");
-   }
+GMR2_Init(SVGA_Context *ctxt) {
+    if (ctxt->caps & SVGA_CAP_GMR2) {
+        gGMR.maxIds = SVGA_Read32(ctxt, SVGA_REG_GMR_MAX_IDS);
+        gGMR.maxPages = SVGA_Read32(ctxt, SVGA_REG_GMRS_MAX_PAGES);
+    } else {
+        //TODO SVGA_Panic("Virtual device does not have Guest Memory Region version 2 (GMR2) support.");
+    }
 }

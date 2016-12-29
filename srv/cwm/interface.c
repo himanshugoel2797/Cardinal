@@ -48,22 +48,22 @@ cwm_open(const char *path,
     if(path[0] == ':') {
 
 
-    	if(strcmp(path, ":window_open") == 0){
-        	FD_Entry *fd_e = malloc(sizeof(FD_Entry));
-        	fd_e->loc = loc;
-        	fd_e->len = size;
-        	fd_e->pid = pid;
-        	fd_e->fd = ++fd_cnt;
+        if(strcmp(path, ":window_open") == 0) {
+            FD_Entry *fd_e = malloc(sizeof(FD_Entry));
+            fd_e->loc = loc;
+            fd_e->len = size;
+            fd_e->pid = pid;
+            fd_e->fd = ++fd_cnt;
 
-        	List_AddEntry(fds, fd_e);
+            List_AddEntry(fds, fd_e);
 
-        	*fd = fd_e->fd;
+            *fd = fd_e->fd;
 
-    	}else if(strcmp(path, ":window_prop") == 0){
-    		
-    	}else if(strcmp(path, ":window_close") == 0){
-    		
-    	}
+        } else if(strcmp(path, ":window_prop") == 0) {
+
+        } else if(strcmp(path, ":window_close") == 0) {
+
+        }
 
     } else
         return -EINVAL;
@@ -155,8 +155,8 @@ start_server(void) {
 
 
 void
-InitializeInterface(void){
-	start_server();
+InitializeInterface(void) {
+    start_server();
 
 
 }

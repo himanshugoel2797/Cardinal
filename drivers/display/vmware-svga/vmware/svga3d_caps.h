@@ -57,10 +57,10 @@
  */
 
 typedef enum {
-   SVGA3DCAPS_RECORD_UNKNOWN        = 0,
-   SVGA3DCAPS_RECORD_DEVCAPS_MIN    = 0x100,
-   SVGA3DCAPS_RECORD_DEVCAPS        = 0x100,
-   SVGA3DCAPS_RECORD_DEVCAPS_MAX    = 0x1ff,
+    SVGA3DCAPS_RECORD_UNKNOWN        = 0,
+    SVGA3DCAPS_RECORD_DEVCAPS_MIN    = 0x100,
+    SVGA3DCAPS_RECORD_DEVCAPS        = 0x100,
+    SVGA3DCAPS_RECORD_DEVCAPS_MAX    = 0x1ff,
 } SVGA3dCapsRecordType;
 
 
@@ -75,8 +75,8 @@ typedef enum {
 
 typedef
 struct SVGA3dCapsRecordHeader {
-   uint32 length;
-   SVGA3dCapsRecordType type;
+    uint32 length;
+    SVGA3dCapsRecordType type;
 }
 SVGA3dCapsRecordHeader;
 
@@ -92,8 +92,8 @@ SVGA3dCapsRecordHeader;
 
 typedef
 struct SVGA3dCapsRecord {
-   SVGA3dCapsRecordHeader header;
-   uint32 data[1];
+    SVGA3dCapsRecordHeader header;
+    uint32 data[1];
 }
 SVGA3dCapsRecord;
 
@@ -117,24 +117,23 @@ typedef uint32 SVGA3dCapPair[2];
 static INLINE SVGA3dCapsRecord *
 SVGA3dCaps_FindRecord(const uint32 *capsBlock,
                       SVGA3dCapsRecordType recordTypeMin,
-                      SVGA3dCapsRecordType recordTypeMax)
-{
-   SVGA3dCapsRecord *record, *found = NULL;
-   uint32 offset;
+                      SVGA3dCapsRecordType recordTypeMax) {
+    SVGA3dCapsRecord *record, *found = NULL;
+    uint32 offset;
 
-   /*
-    * Search linearly through the caps block records for the specified type.
-    */
-   for (offset = 0; capsBlock[offset] != 0; offset += capsBlock[offset]) {
-      record = (SVGA3dCapsRecord *) (capsBlock + offset);
-      if ((record->header.type >= recordTypeMin) &&
-          (record->header.type <= recordTypeMax) &&
-          (!found || (record->header.type > found->header.type))) {
-         found = record;
-      }
-   }
+    /*
+     * Search linearly through the caps block records for the specified type.
+     */
+    for (offset = 0; capsBlock[offset] != 0; offset += capsBlock[offset]) {
+        record = (SVGA3dCapsRecord *) (capsBlock + offset);
+        if ((record->header.type >= recordTypeMin) &&
+                (record->header.type <= recordTypeMax) &&
+                (!found || (record->header.type > found->header.type))) {
+            found = record;
+        }
+    }
 
-   return found;
+    return found;
 }
 
 

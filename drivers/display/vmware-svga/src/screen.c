@@ -54,12 +54,11 @@
  */
 
 void
-Screen_Init(SVGA_Context *ctxt)
-{
-   if (!(SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT) ||
-         SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT_2))) {
-      //TODO handle error
-   }
+Screen_Init(SVGA_Context *ctxt) {
+    if (!(SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT) ||
+            SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT_2))) {
+        //TODO handle error
+    }
 }
 
 
@@ -82,19 +81,18 @@ Screen_Init(SVGA_Context *ctxt)
  */
 
 void
-Screen_Create(SVGA_Context *ctxt, SVGAScreenObject *screen)  // IN/OUT
-{
-   if (SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT_2)) {
-      const uint32 pitch = screen->size.width * sizeof(uint32);
-      const uint32 size = screen->size.height*pitch;
-      screen->structSize = sizeof(SVGAScreenObject);
-      SVGA_AllocGMR(ctxt, size, &screen->backingStore.ptr);
-      screen->backingStore.ptr.offset = 0;
-      screen->backingStore.pitch = pitch;
-   } else {
-      screen->structSize = offsetof(SVGAScreenObject, backingStore);
-   }
-   Screen_Define(ctxt, screen);
+Screen_Create(SVGA_Context *ctxt, SVGAScreenObject *screen) { // IN/OUT
+    if (SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_SCREEN_OBJECT_2)) {
+        const uint32 pitch = screen->size.width * sizeof(uint32);
+        const uint32 size = screen->size.height*pitch;
+        screen->structSize = sizeof(SVGAScreenObject);
+        SVGA_AllocGMR(ctxt, size, &screen->backingStore.ptr);
+        screen->backingStore.ptr.offset = 0;
+        screen->backingStore.pitch = pitch;
+    } else {
+        screen->structSize = offsetof(SVGAScreenObject, backingStore);
+    }
+    Screen_Define(ctxt, screen);
 }
 
 
@@ -115,13 +113,12 @@ Screen_Create(SVGA_Context *ctxt, SVGAScreenObject *screen)  // IN/OUT
  */
 
 void
-Screen_Define(SVGA_Context *ctxt, const SVGAScreenObject *screen)  // IN
-{
-   SVGAFifoCmdDefineScreen *cmd = SVGA_FIFOReserveCmd(ctxt,
-                                                      SVGA_CMD_DEFINE_SCREEN,
-                                                      screen->structSize);
-   memcpy(cmd, screen, screen->structSize);
-   SVGA_FIFOCommitAll(ctxt);
+Screen_Define(SVGA_Context *ctxt, const SVGAScreenObject *screen) { // IN
+    SVGAFifoCmdDefineScreen *cmd = SVGA_FIFOReserveCmd(ctxt,
+                                   SVGA_CMD_DEFINE_SCREEN,
+                                   screen->structSize);
+    memcpy(cmd, screen, screen->structSize);
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -142,13 +139,12 @@ Screen_Define(SVGA_Context *ctxt, const SVGAScreenObject *screen)  // IN
  */
 
 void
-Screen_Destroy(SVGA_Context *ctxt, uint32 id)
-{
-   SVGAFifoCmdDestroyScreen *cmd = SVGA_FIFOReserveCmd(ctxt,
-                                                       SVGA_CMD_DESTROY_SCREEN,
-                                                       sizeof *cmd);
-   cmd->screenId = id;
-   SVGA_FIFOCommitAll(ctxt);
+Screen_Destroy(SVGA_Context *ctxt, uint32 id) {
+    SVGAFifoCmdDestroyScreen *cmd = SVGA_FIFOReserveCmd(ctxt,
+                                    SVGA_CMD_DESTROY_SCREEN,
+                                    sizeof *cmd);
+    cmd->screenId = id;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -175,13 +171,12 @@ void
 Screen_DefineGMRFB(SVGA_Context *ctxt,
                    SVGAGuestPtr ptr,           // IN
                    uint32 bytesPerLine,        // IN
-                   SVGAGMRImageFormat format)  // IN
-{
-   SVGAFifoCmdDefineGMRFB *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_DEFINE_GMRFB, sizeof *cmd);
-   cmd->ptr = ptr;
-   cmd->bytesPerLine = bytesPerLine;
-   cmd->format = format;
-   SVGA_FIFOCommitAll(ctxt);
+                   SVGAGMRImageFormat format) { // IN
+    SVGAFifoCmdDefineGMRFB *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_DEFINE_GMRFB, sizeof *cmd);
+    cmd->ptr = ptr;
+    cmd->bytesPerLine = bytesPerLine;
+    cmd->format = format;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -214,14 +209,13 @@ void
 Screen_BlitFromGMRFB(SVGA_Context *ctxt,
                      const SVGASignedPoint *srcOrigin,  // IN
                      const SVGASignedRect *destRect,    // IN
-                     uint32 destScreen)                 // IN
-{
-   SVGAFifoCmdBlitGMRFBToScreen *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_BLIT_GMRFB_TO_SCREEN,
-                                                           sizeof *cmd);
-   cmd->srcOrigin = *srcOrigin;
-   cmd->destRect = *destRect;
-   cmd->destScreenId = destScreen;
-   SVGA_FIFOCommitAll(ctxt);
+                     uint32 destScreen) {               // IN
+    SVGAFifoCmdBlitGMRFBToScreen *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_BLIT_GMRFB_TO_SCREEN,
+                                        sizeof *cmd);
+    cmd->srcOrigin = *srcOrigin;
+    cmd->destRect = *destRect;
+    cmd->destScreenId = destScreen;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -257,14 +251,13 @@ Screen_BlitFromGMRFB(SVGA_Context *ctxt,
 void
 Screen_BlitToGMRFB(SVGA_Context *ctxt, const SVGASignedPoint *destOrigin,  // IN
                    const SVGASignedRect *srcRect,      // IN
-                   uint32 srcScreen)                   // IN
-{
-   SVGAFifoCmdBlitScreenToGMRFB *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_BLIT_SCREEN_TO_GMRFB,
-                                                           sizeof *cmd);
-   cmd->destOrigin = *destOrigin;
-   cmd->srcRect = *srcRect;
-   cmd->srcScreenId = srcScreen;
-   SVGA_FIFOCommitAll(ctxt);
+                   uint32 srcScreen) {                 // IN
+    SVGAFifoCmdBlitScreenToGMRFB *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_BLIT_SCREEN_TO_GMRFB,
+                                        sizeof *cmd);
+    cmd->destOrigin = *destOrigin;
+    cmd->srcRect = *srcRect;
+    cmd->srcScreenId = srcScreen;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -298,12 +291,11 @@ Screen_BlitToGMRFB(SVGA_Context *ctxt, const SVGASignedPoint *destOrigin,  // IN
  */
 
 void
-Screen_AnnotateFill(SVGA_Context *ctxt, SVGAColorBGRX color)  // IN
-{
-   SVGAFifoCmdAnnotationFill *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_ANNOTATION_FILL,
-                                                        sizeof *cmd);
-   cmd->color = color;
-   SVGA_FIFOCommitAll(ctxt);
+Screen_AnnotateFill(SVGA_Context *ctxt, SVGAColorBGRX color) { // IN
+    SVGAFifoCmdAnnotationFill *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_ANNOTATION_FILL,
+                                     sizeof *cmd);
+    cmd->color = color;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -342,11 +334,10 @@ Screen_AnnotateFill(SVGA_Context *ctxt, SVGAColorBGRX color)  // IN
 void
 Screen_AnnotateCopy(SVGA_Context *ctxt,
                     const SVGASignedPoint *srcOrigin,  // IN
-                    uint32 srcScreen)                  // IN
-{
-   SVGAFifoCmdAnnotationCopy *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_ANNOTATION_COPY,
-                                                        sizeof *cmd);
-   cmd->srcOrigin = *srcOrigin;
-   cmd->srcScreenId = srcScreen;
-   SVGA_FIFOCommitAll(ctxt);
+                    uint32 srcScreen) {                // IN
+    SVGAFifoCmdAnnotationCopy *cmd = SVGA_FIFOReserveCmd(ctxt, SVGA_CMD_ANNOTATION_COPY,
+                                     sizeof *cmd);
+    cmd->srcOrigin = *srcOrigin;
+    cmd->srcScreenId = srcScreen;
+    SVGA_FIFOCommitAll(ctxt);
 }

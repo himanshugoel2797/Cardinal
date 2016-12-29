@@ -52,9 +52,9 @@ typedef uint64_t PPN;
  */
 
 typedef struct GMRState {
-   uint32 maxIds;
-   uint32 maxDescriptorLen;
-   uint32 maxPages;
+    uint32 maxIds;
+    uint32 maxDescriptorLen;
+    uint32 maxPages;
 } GMRState;
 
 extern GMRState gGMR;

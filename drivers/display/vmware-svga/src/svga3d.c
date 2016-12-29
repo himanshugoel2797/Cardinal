@@ -70,36 +70,35 @@
  */
 
 void
-SVGA3D_Init(SVGA_Context *ctxt)
-{
-   SVGA3dHardwareVersion hwVersion;
+SVGA3D_Init(SVGA_Context *ctxt) {
+    SVGA3dHardwareVersion hwVersion;
 
-   if (!(ctxt->caps & SVGA_CAP_EXTENDED_FIFO)) {
-      //TODO error
-      return;
-   }
+    if (!(ctxt->caps & SVGA_CAP_EXTENDED_FIFO)) {
+        //TODO error
+        return;
+    }
 
-   if (SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_3D_HWVERSION_REVISED)) {
-      hwVersion = ctxt->fifomem[SVGA_FIFO_3D_HWVERSION_REVISED];
-   } else {
-      if (ctxt->fifomem[SVGA_FIFO_MIN] <= sizeof(uint32) * SVGA_FIFO_GUEST_3D_HWVERSION) {
-         //TODO error SVGA_Panic("GUEST_3D_HWVERSION register not present.");
-      }
-      hwVersion = ctxt->fifomem[SVGA_FIFO_3D_HWVERSION];
-   }
+    if (SVGA_FIFOCapabilityAvailable(ctxt, SVGA_FIFO_CAP_3D_HWVERSION_REVISED)) {
+        hwVersion = ctxt->fifomem[SVGA_FIFO_3D_HWVERSION_REVISED];
+    } else {
+        if (ctxt->fifomem[SVGA_FIFO_MIN] <= sizeof(uint32) * SVGA_FIFO_GUEST_3D_HWVERSION) {
+            //TODO error SVGA_Panic("GUEST_3D_HWVERSION register not present.");
+        }
+        hwVersion = ctxt->fifomem[SVGA_FIFO_3D_HWVERSION];
+    }
 
-   /*
-    * Check the host's version, make sure we're binary compatible.
-    */
+    /*
+     * Check the host's version, make sure we're binary compatible.
+     */
 
-   if (hwVersion == 0) {
-    //TODO error   SVGA_Panic("3D disabled by host.");
-    return;
-   }
-   if (hwVersion < SVGA3D_HWVERSION_WS65_B1) {
-      //TODO error SVGA_Panic("Host SVGA3D protocol is too old, not binary compatible.");
-    return;
-   }
+    if (hwVersion == 0) {
+        //TODO error   SVGA_Panic("3D disabled by host.");
+        return;
+    }
+    if (hwVersion < SVGA3D_HWVERSION_WS65_B1) {
+        //TODO error SVGA_Panic("Host SVGA3D protocol is too old, not binary compatible.");
+        return;
+    }
 }
 
 
@@ -133,15 +132,14 @@ SVGA3D_Init(SVGA_Context *ctxt)
 void *
 SVGA3D_FIFOReserve(SVGA_Context *ctxt,
                    uint32 cmd,      // IN
-                   uint32 cmdSize)  // IN
-{
-   SVGA3dCmdHeader *header;
+                   uint32 cmdSize) { // IN
+    SVGA3dCmdHeader *header;
 
-   header = SVGA_FIFOReserve(ctxt, sizeof *header + cmdSize);
-   header->id = cmd;
-   header->size = cmdSize;
+    header = SVGA_FIFOReserve(ctxt, sizeof *header + cmdSize);
+    header->id = cmd;
+    header->size = cmdSize;
 
-   return &header[1];
+    return &header[1];
 }
 
 
@@ -208,22 +206,21 @@ SVGA3D_BeginDefineSurface(SVGA_Context *ctxt,
                           SVGA3dSurfaceFormat format,  // IN
                           SVGA3dSurfaceFace **faces,   // OUT
                           SVGA3dSize **mipSizes,       // OUT
-                          uint32 numMipSizes)          // IN
-{
-   SVGA3dCmdDefineSurface *cmd;
+                          uint32 numMipSizes) {        // IN
+    SVGA3dCmdDefineSurface *cmd;
 
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DEFINE, sizeof *cmd +
-                            sizeof **mipSizes * numMipSizes);
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DEFINE, sizeof *cmd +
+                             sizeof **mipSizes * numMipSizes);
 
-   cmd->sid = sid;
-   cmd->surfaceFlags = flags;
-   cmd->format = format;
+    cmd->sid = sid;
+    cmd->surfaceFlags = flags;
+    cmd->format = format;
 
-   *faces = &cmd->face[0];
-   *mipSizes = (SVGA3dSize*) &cmd[1];
+    *faces = &cmd->face[0];
+    *mipSizes = (SVGA3dSize*) &cmd[1];
 
-   memset(*faces, 0, sizeof **faces * SVGA3D_MAX_SURFACE_FACES);
-   memset(*mipSizes, 0, sizeof **mipSizes * numMipSizes);
+    memset(*faces, 0, sizeof **faces * SVGA3D_MAX_SURFACE_FACES);
+    memset(*mipSizes, 0, sizeof **mipSizes * numMipSizes);
 }
 
 
@@ -244,12 +241,11 @@ SVGA3D_BeginDefineSurface(SVGA_Context *ctxt,
  */
 
 void
-SVGA3D_DestroySurface(SVGA_Context *ctxt, uint32 sid)  // IN
-{
-   SVGA3dCmdDestroySurface *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DESTROY, sizeof *cmd);
-   cmd->sid = sid;
-   SVGA_FIFOCommitAll(ctxt);
+SVGA3D_DestroySurface(SVGA_Context *ctxt, uint32 sid) { // IN
+    SVGA3dCmdDestroySurface *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DESTROY, sizeof *cmd);
+    cmd->sid = sid;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -311,19 +307,18 @@ SVGA3D_BeginSurfaceDMA(SVGA_Context *ctxt, SVGA3dGuestImage *guestImage,     // 
                        SVGA3dSurfaceImageId *hostImage,  // IN
                        SVGA3dTransferType transfer,      // IN
                        SVGA3dCopyBox **boxes,            // OUT
-                       uint32 numBoxes)                  // IN
-{
-   SVGA3dCmdSurfaceDMA *cmd;
-   uint32 boxesSize = sizeof **boxes * numBoxes;
+                       uint32 numBoxes) {                // IN
+    SVGA3dCmdSurfaceDMA *cmd;
+    uint32 boxesSize = sizeof **boxes * numBoxes;
 
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DMA, sizeof *cmd + boxesSize);
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_DMA, sizeof *cmd + boxesSize);
 
-   cmd->guest = *guestImage;
-   cmd->host = *hostImage;
-   cmd->transfer = transfer;
-   *boxes = (SVGA3dCopyBox*) &cmd[1];
+    cmd->guest = *guestImage;
+    cmd->host = *hostImage;
+    cmd->transfer = transfer;
+    *boxes = (SVGA3dCopyBox*) &cmd[1];
 
-   memset(*boxes, 0, boxesSize);
+    memset(*boxes, 0, boxesSize);
 }
 
 
@@ -356,12 +351,11 @@ SVGA3D_BeginSurfaceDMA(SVGA_Context *ctxt, SVGA3dGuestImage *guestImage,     // 
  */
 
 void
-SVGA3D_DefineContext(SVGA_Context *ctxt, uint32 cid)  // IN
-{
-   SVGA3dCmdDefineContext *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CONTEXT_DEFINE, sizeof *cmd);
-   cmd->cid = cid;
-   SVGA_FIFOCommitAll(ctxt);
+SVGA3D_DefineContext(SVGA_Context *ctxt, uint32 cid) { // IN
+    SVGA3dCmdDefineContext *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CONTEXT_DEFINE, sizeof *cmd);
+    cmd->cid = cid;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -382,12 +376,11 @@ SVGA3D_DefineContext(SVGA_Context *ctxt, uint32 cid)  // IN
  */
 
 void
-SVGA3D_DestroyContext(SVGA_Context *ctxt, uint32 cid)  // IN
-{
-   SVGA3dCmdDestroyContext *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CONTEXT_DESTROY, sizeof *cmd);
-   cmd->cid = cid;
-   SVGA_FIFOCommitAll(ctxt);
+SVGA3D_DestroyContext(SVGA_Context *ctxt, uint32 cid) { // IN
+    SVGA3dCmdDestroyContext *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CONTEXT_DESTROY, sizeof *cmd);
+    cmd->cid = cid;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -422,14 +415,13 @@ SVGA3D_DestroyContext(SVGA_Context *ctxt, uint32 cid)  // IN
 void
 SVGA3D_SetRenderTarget(SVGA_Context *ctxt, uint32 cid,                    // IN
                        SVGA3dRenderTargetType type,   // IN
-                       SVGA3dSurfaceImageId *target)  // IN
-{
-   SVGA3dCmdSetRenderTarget *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETRENDERTARGET, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->type = type;
-   cmd->target = *target;
-   SVGA_FIFOCommitAll(ctxt);
+                       SVGA3dSurfaceImageId *target) { // IN
+    SVGA3dCmdSetRenderTarget *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETRENDERTARGET, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->type = type;
+    cmd->target = *target;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -457,14 +449,13 @@ SVGA3D_SetRenderTarget(SVGA_Context *ctxt, uint32 cid,                    // IN
 void
 SVGA3D_SetTransform(SVGA_Context *ctxt, uint32 cid,                // IN
                     SVGA3dTransformType type,  // IN
-                    const float *matrix)       // IN
-{
-   SVGA3dCmdSetTransform *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETTRANSFORM, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->type = type;
-   memcpy(&cmd->matrix[0], matrix, sizeof(float) * 16);
-   SVGA_FIFOCommitAll(ctxt);
+                    const float *matrix) {     // IN
+    SVGA3dCmdSetTransform *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETTRANSFORM, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->type = type;
+    memcpy(&cmd->matrix[0], matrix, sizeof(float) * 16);
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -487,14 +478,13 @@ SVGA3D_SetTransform(SVGA_Context *ctxt, uint32 cid,                // IN
 void
 SVGA3D_SetMaterial(SVGA_Context *ctxt, uint32 cid,                      // IN
                    SVGA3dFace face,                 // IN
-                   const SVGA3dMaterial *material)  // IN
-{
-   SVGA3dCmdSetMaterial *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETMATERIAL, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->face = face;
-   memcpy(&cmd->material, material, sizeof *material);
-   SVGA_FIFOCommitAll(ctxt);
+                   const SVGA3dMaterial *material) { // IN
+    SVGA3dCmdSetMaterial *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETMATERIAL, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->face = face;
+    memcpy(&cmd->material, material, sizeof *material);
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -517,14 +507,13 @@ SVGA3D_SetMaterial(SVGA_Context *ctxt, uint32 cid,                      // IN
 void
 SVGA3D_SetLightEnabled(SVGA_Context *ctxt, uint32 cid,    // IN
                        uint32 index,  // IN
-                       Bool enabled)  // IN
-{
-   SVGA3dCmdSetLightEnabled *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETLIGHTENABLED, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->index = index;
-   cmd->enabled = enabled;
-   SVGA_FIFOCommitAll(ctxt);
+                       Bool enabled) { // IN
+    SVGA3dCmdSetLightEnabled *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETLIGHTENABLED, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->index = index;
+    cmd->enabled = enabled;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -547,14 +536,13 @@ SVGA3D_SetLightEnabled(SVGA_Context *ctxt, uint32 cid,    // IN
 void
 SVGA3D_SetLightData(SVGA_Context *ctxt, uint32 cid,                   // IN
                     uint32 index,                 // IN
-                    const SVGA3dLightData *data)  // IN
-{
-   SVGA3dCmdSetLightData *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETLIGHTDATA, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->index = index;
-   memcpy(&cmd->data, data, sizeof *data);
-   SVGA_FIFOCommitAll(ctxt);
+                    const SVGA3dLightData *data) { // IN
+    SVGA3dCmdSetLightData *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETLIGHTDATA, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->index = index;
+    memcpy(&cmd->data, data, sizeof *data);
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -591,20 +579,19 @@ SVGA3D_DefineShader(SVGA_Context *ctxt, uint32 cid,                   // IN
                     uint32 shid,                  // IN
                     SVGA3dShaderType type,        // IN
                     const uint32 *bytecode,       // IN
-                    uint32 bytecodeLen)           // IN
-{
-   SVGA3dCmdDefineShader *cmd;
+                    uint32 bytecodeLen) {         // IN
+    SVGA3dCmdDefineShader *cmd;
 
-   if (bytecodeLen & 3) {
-      //TODO SVGA_Panic("Shader bytecode length isn't a multiple of 32 bits!");
-   }
+    if (bytecodeLen & 3) {
+        //TODO SVGA_Panic("Shader bytecode length isn't a multiple of 32 bits!");
+    }
 
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SHADER_DEFINE, sizeof *cmd + bytecodeLen);
-   cmd->cid = cid;
-   cmd->shid = shid;
-   cmd->type = type;
-   memcpy(&cmd[1], bytecode, bytecodeLen);
-   SVGA_FIFOCommitAll(ctxt);
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SHADER_DEFINE, sizeof *cmd + bytecodeLen);
+    cmd->cid = cid;
+    cmd->shid = shid;
+    cmd->type = type;
+    memcpy(&cmd[1], bytecode, bytecodeLen);
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -630,14 +617,13 @@ SVGA3D_DefineShader(SVGA_Context *ctxt, uint32 cid,                   // IN
 void
 SVGA3D_DestroyShader(SVGA_Context *ctxt, uint32 cid,             // IN
                      uint32 shid,            // IN
-                     SVGA3dShaderType type)  // IN
-{
-   SVGA3dCmdDestroyShader *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SHADER_DESTROY, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->shid = shid;
-   cmd->type = type;
-   SVGA_FIFOCommitAll(ctxt);
+                     SVGA3dShaderType type) { // IN
+    SVGA3dCmdDestroyShader *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SHADER_DESTROY, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->shid = shid;
+    cmd->type = type;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -669,33 +655,32 @@ SVGA3D_SetShaderConst(SVGA_Context *ctxt, uint32 cid,                   // IN
                       uint32 reg,                   // IN
                       SVGA3dShaderType type,        // IN
                       SVGA3dShaderConstType ctype,  // IN
-                      const void *value)            // IN
-{
-   SVGA3dCmdSetShaderConst *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SET_SHADER_CONST, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->reg = reg;
-   cmd->type = type;
-   cmd->ctype = ctype;
+                      const void *value) {          // IN
+    SVGA3dCmdSetShaderConst *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SET_SHADER_CONST, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->reg = reg;
+    cmd->type = type;
+    cmd->ctype = ctype;
 
-   switch (ctype) {
+    switch (ctype) {
 
-   case SVGA3D_CONST_TYPE_FLOAT:
-   case SVGA3D_CONST_TYPE_INT:
-      memcpy(&cmd->values, value, sizeof cmd->values);
-      break;
+    case SVGA3D_CONST_TYPE_FLOAT:
+    case SVGA3D_CONST_TYPE_INT:
+        memcpy(&cmd->values, value, sizeof cmd->values);
+        break;
 
-   case SVGA3D_CONST_TYPE_BOOL:
-      memset(&cmd->values, 0, sizeof cmd->values);
-      cmd->values[0] = *(uint32*)value;
-      break;
+    case SVGA3D_CONST_TYPE_BOOL:
+        memset(&cmd->values, 0, sizeof cmd->values);
+        cmd->values[0] = *(uint32*)value;
+        break;
 
-   default:
-      //TODO SVGA_Panic("Bad shader constant type.");
-      break;
+    default:
+        //TODO SVGA_Panic("Bad shader constant type.");
+        break;
 
-   }
-   SVGA_FIFOCommitAll(ctxt);
+    }
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -722,14 +707,13 @@ SVGA3D_SetShaderConst(SVGA_Context *ctxt, uint32 cid,                   // IN
 void
 SVGA3D_SetShader(SVGA_Context *ctxt, uint32 cid,             // IN
                  SVGA3dShaderType type,  // IN
-                 uint32 shid)            // IN
-{
-   SVGA3dCmdSetShader *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SET_SHADER, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->type = type;
-   cmd->shid = shid;
-   SVGA_FIFOCommitAll(ctxt);
+                 uint32 shid) {          // IN
+    SVGA3dCmdSetShader *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SET_SHADER, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->type = type;
+    cmd->shid = shid;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -774,13 +758,12 @@ SVGA3D_SetShader(SVGA_Context *ctxt, uint32 cid,             // IN
 void
 SVGA3D_BeginPresent(SVGA_Context *ctxt, uint32 sid,              // IN
                     SVGA3dCopyRect **rects,  // OUT
-                    uint32 numRects)         // IN
-{
-   SVGA3dCmdPresent *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_PRESENT, sizeof *cmd +
-                            sizeof **rects * numRects);
-   cmd->sid = sid;
-   *rects = (SVGA3dCopyRect*) &cmd[1];
+                    uint32 numRects) {       // IN
+    SVGA3dCmdPresent *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_PRESENT, sizeof *cmd +
+                             sizeof **rects * numRects);
+    cmd->sid = sid;
+    *rects = (SVGA3dCopyRect*) &cmd[1];
 }
 
 
@@ -816,17 +799,16 @@ SVGA3D_BeginClear(SVGA_Context *ctxt, uint32 cid,             // IN
                   float depth,            // IN
                   uint32 stencil,         // IN
                   SVGA3dRect **rects,     // OUT
-                  uint32 numRects)        // IN
-{
-   SVGA3dCmdClear *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CLEAR, sizeof *cmd +
-                            sizeof **rects * numRects);
-   cmd->cid = cid;
-   cmd->clearFlag = flags;
-   cmd->color = color;
-   cmd->depth = depth;
-   cmd->stencil = stencil;
-   *rects = (SVGA3dRect*) &cmd[1];
+                  uint32 numRects) {      // IN
+    SVGA3dCmdClear *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_CLEAR, sizeof *cmd +
+                             sizeof **rects * numRects);
+    cmd->cid = cid;
+    cmd->clearFlag = flags;
+    cmd->color = color;
+    cmd->depth = depth;
+    cmd->stencil = stencil;
+    *rects = (SVGA3dRect*) &cmd[1];
 }
 
 
@@ -860,29 +842,28 @@ SVGA3D_BeginDrawPrimitives(SVGA_Context *ctxt, uint32 cid,                    //
                            SVGA3dVertexDecl **decls,      // OUT
                            uint32 numVertexDecls,         // IN
                            SVGA3dPrimitiveRange **ranges, // OUT
-                           uint32 numRanges)              // IN
-{
-   SVGA3dCmdDrawPrimitives *cmd;
-   SVGA3dVertexDecl *declArray;
-   SVGA3dPrimitiveRange *rangeArray;
-   uint32 declSize = sizeof **decls * numVertexDecls;
-   uint32 rangeSize = sizeof **ranges * numRanges;
+                           uint32 numRanges) {            // IN
+    SVGA3dCmdDrawPrimitives *cmd;
+    SVGA3dVertexDecl *declArray;
+    SVGA3dPrimitiveRange *rangeArray;
+    uint32 declSize = sizeof **decls * numVertexDecls;
+    uint32 rangeSize = sizeof **ranges * numRanges;
 
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_DRAW_PRIMITIVES, sizeof *cmd +
-                            declSize + rangeSize);
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_DRAW_PRIMITIVES, sizeof *cmd +
+                             declSize + rangeSize);
 
-   cmd->cid = cid;
-   cmd->numVertexDecls = numVertexDecls;
-   cmd->numRanges = numRanges;
+    cmd->cid = cid;
+    cmd->numVertexDecls = numVertexDecls;
+    cmd->numRanges = numRanges;
 
-   declArray = (SVGA3dVertexDecl*) &cmd[1];
-   rangeArray = (SVGA3dPrimitiveRange*) &declArray[numVertexDecls];
+    declArray = (SVGA3dVertexDecl*) &cmd[1];
+    rangeArray = (SVGA3dPrimitiveRange*) &declArray[numVertexDecls];
 
-   memset(declArray, 0, declSize);
-   memset(rangeArray, 0, rangeSize);
+    memset(declArray, 0, declSize);
+    memset(rangeArray, 0, rangeSize);
 
-   *decls = declArray;
-   *ranges = rangeArray;
+    *decls = declArray;
+    *ranges = rangeArray;
 }
 
 
@@ -910,18 +891,17 @@ void
 SVGA3D_BeginSurfaceCopy(SVGA_Context *ctxt, SVGA3dSurfaceImageId *src,   // IN
                         SVGA3dSurfaceImageId *dest,  // IN
                         SVGA3dCopyBox **boxes,       // OUT
-                        uint32 numBoxes)             // IN
-{
-   SVGA3dCmdSurfaceCopy *cmd;
-   uint32 boxesSize = sizeof **boxes * numBoxes;
+                        uint32 numBoxes) {           // IN
+    SVGA3dCmdSurfaceCopy *cmd;
+    uint32 boxesSize = sizeof **boxes * numBoxes;
 
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_COPY, sizeof *cmd + boxesSize);
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_COPY, sizeof *cmd + boxesSize);
 
-   cmd->src = *src;
-   cmd->dest = *dest;
-   *boxes = (SVGA3dCopyBox*) &cmd[1];
+    cmd->src = *src;
+    cmd->dest = *dest;
+    *boxes = (SVGA3dCopyBox*) &cmd[1];
 
-   memset(*boxes, 0, boxesSize);
+    memset(*boxes, 0, boxesSize);
 }
 
 
@@ -947,16 +927,15 @@ SVGA3D_SurfaceStretchBlt(SVGA_Context *ctxt, SVGA3dSurfaceImageId *src,   // IN
                          SVGA3dSurfaceImageId *dest,  // IN
                          SVGA3dBox *boxSrc,           // IN
                          SVGA3dBox *boxDest,          // IN
-                         SVGA3dStretchBltMode mode)   // IN
-{
-   SVGA3dCmdSurfaceStretchBlt *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_STRETCHBLT, sizeof *cmd);
-   cmd->src = *src;
-   cmd->dest = *dest;
-   cmd->boxSrc = *boxSrc;
-   cmd->boxDest = *boxDest;
-   cmd->mode = mode;
-   SVGA_FIFOCommitAll(ctxt);
+                         SVGA3dStretchBltMode mode) { // IN
+    SVGA3dCmdSurfaceStretchBlt *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SURFACE_STRETCHBLT, sizeof *cmd);
+    cmd->src = *src;
+    cmd->dest = *dest;
+    cmd->boxSrc = *boxSrc;
+    cmd->boxDest = *boxDest;
+    cmd->mode = mode;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -980,13 +959,12 @@ SVGA3D_SurfaceStretchBlt(SVGA_Context *ctxt, SVGA3dSurfaceImageId *src,   // IN
 
 void
 SVGA3D_SetViewport(SVGA_Context *ctxt, uint32 cid,        // IN
-                   SVGA3dRect *rect)  // IN
-{
-   SVGA3dCmdSetViewport *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETVIEWPORT, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->rect = *rect;
-   SVGA_FIFOCommitAll(ctxt);
+                   SVGA3dRect *rect) { // IN
+    SVGA3dCmdSetViewport *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETVIEWPORT, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->rect = *rect;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -1010,14 +988,13 @@ SVGA3D_SetViewport(SVGA_Context *ctxt, uint32 cid,        // IN
 void
 SVGA3D_SetZRange(SVGA_Context *ctxt, uint32 cid,  // IN
                  float zMin,  // IN
-                 float zMax)  // IN
-{
-   SVGA3dCmdSetZRange *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETZRANGE, sizeof *cmd);
-   cmd->cid = cid;
-   cmd->zRange.min = zMin;
-   cmd->zRange.max = zMax;
-   SVGA_FIFOCommitAll(ctxt);
+                 float zMax) { // IN
+    SVGA3dCmdSetZRange *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETZRANGE, sizeof *cmd);
+    cmd->cid = cid;
+    cmd->zRange.min = zMin;
+    cmd->zRange.max = zMax;
+    SVGA_FIFOCommitAll(ctxt);
 }
 
 
@@ -1049,13 +1026,12 @@ SVGA3D_SetZRange(SVGA_Context *ctxt, uint32 cid,  // IN
 void
 SVGA3D_BeginSetTextureState(SVGA_Context *ctxt, uint32 cid,                   // IN
                             SVGA3dTextureState **states,  // OUT
-                            uint32 numStates)             // IN
-{
-   SVGA3dCmdSetTextureState *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETTEXTURESTATE, sizeof *cmd +
-                            sizeof **states * numStates);
-   cmd->cid = cid;
-   *states = (SVGA3dTextureState*) &cmd[1];
+                            uint32 numStates) {           // IN
+    SVGA3dCmdSetTextureState *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETTEXTURESTATE, sizeof *cmd +
+                             sizeof **states * numStates);
+    cmd->cid = cid;
+    *states = (SVGA3dTextureState*) &cmd[1];
 }
 
 
@@ -1087,13 +1063,12 @@ SVGA3D_BeginSetTextureState(SVGA_Context *ctxt, uint32 cid,                   //
 void
 SVGA3D_BeginSetRenderState(SVGA_Context *ctxt, uint32 cid,                  // IN
                            SVGA3dRenderState **states,  // OUT
-                           uint32 numStates)            // IN
-{
-   SVGA3dCmdSetRenderState *cmd;
-   cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETRENDERSTATE, sizeof *cmd +
-                            sizeof **states * numStates);
-   cmd->cid = cid;
-   *states = (SVGA3dRenderState*) &cmd[1];
+                           uint32 numStates) {          // IN
+    SVGA3dCmdSetRenderState *cmd;
+    cmd = SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_SETRENDERSTATE, sizeof *cmd +
+                             sizeof **states * numStates);
+    cmd->cid = cid;
+    *states = (SVGA3dRenderState*) &cmd[1];
 }
 
 
@@ -1121,12 +1096,11 @@ SVGA3D_BeginSetRenderState(SVGA_Context *ctxt, uint32 cid,                  // I
 
 void
 SVGA3D_BeginPresentReadback(SVGA_Context *ctxt, SVGA3dRect **rects,  // OUT
-                            uint32 numRects)     // IN
-{
-   void *cmd;
-   cmd = (void *) SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_PRESENT_READBACK,
-                                     sizeof **rects * numRects);
-   *rects = (SVGA3dRect*) cmd;
+                            uint32 numRects) {   // IN
+    void *cmd;
+    cmd = (void *) SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_PRESENT_READBACK,
+                                      sizeof **rects * numRects);
+    *rects = (SVGA3dRect*) cmd;
 }
 
 
@@ -1174,20 +1148,19 @@ SVGA3D_BeginBlitSurfaceToScreen(SVGA_Context *ctxt, const SVGA3dSurfaceImageId *
                                 uint32 destScreenId,                   // IN (optional)
                                 const SVGASignedRect *destRect,        // IN
                                 SVGASignedRect **clipRects,            // IN (optional)
-                                uint32 numClipRects)                   // IN (optional)
-{
-   SVGA3dCmdBlitSurfaceToScreen *cmd =
-      SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_BLIT_SURFACE_TO_SCREEN,
-                         sizeof *cmd + numClipRects * sizeof(SVGASignedRect));
+                                uint32 numClipRects) {                 // IN (optional)
+    SVGA3dCmdBlitSurfaceToScreen *cmd =
+        SVGA3D_FIFOReserve(ctxt, SVGA_3D_CMD_BLIT_SURFACE_TO_SCREEN,
+                           sizeof *cmd + numClipRects * sizeof(SVGASignedRect));
 
-   cmd->srcImage = *srcImage;
-   cmd->srcRect = *srcRect;
-   cmd->destScreenId = destScreenId;
-   cmd->destRect = *destRect;
+    cmd->srcImage = *srcImage;
+    cmd->srcRect = *srcRect;
+    cmd->destScreenId = destScreenId;
+    cmd->destRect = *destRect;
 
-   if (clipRects) {
-      *clipRects = (SVGASignedRect*) &cmd[1];
-   }
+    if (clipRects) {
+        *clipRects = (SVGASignedRect*) &cmd[1];
+    }
 }
 
 
@@ -1213,8 +1186,7 @@ void
 SVGA3D_BlitSurfaceToScreen(SVGA_Context *ctxt, const SVGA3dSurfaceImageId *srcImage,  // IN
                            const SVGASignedRect *srcRect,         // IN
                            uint32 destScreenId,                   // IN (optional)
-                           const SVGASignedRect *destRect)        // IN
-{
-   SVGA3D_BeginBlitSurfaceToScreen(ctxt, srcImage, srcRect, destScreenId, destRect, NULL, 0);
-   SVGA_FIFOCommitAll(ctxt);
+                           const SVGASignedRect *destRect) {      // IN
+    SVGA3D_BeginBlitSurfaceToScreen(ctxt, srcImage, srcRect, destScreenId, destRect, NULL, 0);
+    SVGA_FIFOCommitAll(ctxt);
 }

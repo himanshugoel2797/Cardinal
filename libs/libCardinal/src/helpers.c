@@ -3,9 +3,9 @@
 
 int
 __card_setup_shmem(uint64_t *len,
-            MemoryAllocationFlags target,
-            uint64_t *key,
-            uint64_t *vAddress) {
+                   MemoryAllocationFlags target,
+                   uint64_t *key,
+                   uint64_t *vAddress) {
 
     if(*len % PAGE_SIZE)
         *len += PAGE_SIZE - *len % PAGE_SIZE;

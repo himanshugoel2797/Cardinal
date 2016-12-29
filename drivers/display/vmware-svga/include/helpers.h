@@ -8,15 +8,15 @@
 #include "svga_reg.h"
 
 static __inline uint32_t
-SVGA_Read32(SVGA_Context *ctxt, uint32_t off){
-	outw(ctxt->iobase + SVGA_INDEX_PORT, off);
-	return inw(ctxt->iobase + SVGA_VALUE_PORT);
+SVGA_Read32(SVGA_Context *ctxt, uint32_t off) {
+    outw(ctxt->iobase + SVGA_INDEX_PORT, off);
+    return inw(ctxt->iobase + SVGA_VALUE_PORT);
 }
 
 static __inline void
-SVGA_Write32(SVGA_Context *ctxt, uint32_t off, uint32_t val){
-	outw(ctxt->iobase + SVGA_INDEX_PORT, off);
-	outw(ctxt->iobase + SVGA_VALUE_PORT, val);
+SVGA_Write32(SVGA_Context *ctxt, uint32_t off, uint32_t val) {
+    outw(ctxt->iobase + SVGA_INDEX_PORT, off);
+    outw(ctxt->iobase + SVGA_VALUE_PORT, val);
 }
 
 #endif

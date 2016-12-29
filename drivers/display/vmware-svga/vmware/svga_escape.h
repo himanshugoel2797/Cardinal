@@ -79,11 +79,11 @@
 
 typedef
 struct {
-   uint32 command;
-   uint32 fullscreen;
-   struct {
-      int32 x, y;
-   } monitorPosition;
+    uint32 command;
+    uint32 fullscreen;
+    struct {
+        int32 x, y;
+    } monitorPosition;
 } SVGAEscapeHintFullscreen;
 
 #endif /* _SVGA_ESCAPE_H_ */
