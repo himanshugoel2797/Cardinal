@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
     while(Read16(IHDA_CORB_READ_REG) == 0)
         ;
 
-    __asm__("hlt" :: "a"(IHDA_ReadResponse()));
+//    __asm__("hlt" :: "a"(IHDA_ReadResponse()));
 
 
 
