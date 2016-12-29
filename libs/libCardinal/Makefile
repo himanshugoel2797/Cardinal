@@ -9,7 +9,7 @@ SOURCES=$(wildcard src/*.c) $(wildcard src/*/*.c)
 
 OBJS=$(SOURCES:.c=.o)
 
-CFLAGS=-std=c11 -Iinclude -I.
+CFLAGS=-std=c11 -Iinclude -I. -Isrc
 
 all:$(OBJS)
 	$(AR) rcs $(TARGET) $(OBJS)

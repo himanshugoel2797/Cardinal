@@ -54,6 +54,12 @@ cd $SRC_DIR/srv/initrd_srv
 	cp initrd_srv.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
+cd $SRC_DIR/srv/root_srv
+	make clean
+	make all
+	cp root_srv.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
 
 cd $SRC_DIR/drivers/display/framebuffer
 	make clean

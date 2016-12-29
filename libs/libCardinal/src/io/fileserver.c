@@ -5,6 +5,7 @@
 #include "ipc.h"
 #include <string.h>
 #include "io/server.h"
+#include "helpers.h"
 
 static uint32_t
 fill_struct(FileSystemOpRequestHeader *op,
@@ -17,37 +18,6 @@ fill_struct(FileSystemOpRequestHeader *op,
 
     return op->h.m.MsgID;
 }
-
-static int
-setup_shmem(uint64_t *len,
-            MemoryAllocationFlags target,
-            uint64_t *key,
-            uint64_t *vAddress) {
-
-    if(*len % PAGE_SIZE)
-        *len += PAGE_SIZE - *len % PAGE_SIZE;
-
-    if(AllocateSharedMemory(*len,
-                            CachingModeWriteBack,
-                            MemoryAllocationType_MMap,
-                            MemoryAllocationFlags_Write | MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
-                            vAddress) != 0)
-        return -1;
-
-    if(GetSharedMemoryKey(*vAddress,
-                          *len,
-                          CachingModeWriteBack,
-                          target | MemoryAllocationFlags_Read | MemoryAllocationFlags_Present,
-                          key) != 0) {
-        Unmap(*vAddress, *len);
-        return -1;
-    }
-
-    memset((void*)*vAddress, 0, *len);
-
-    return 0;
-}
-
 
 int
 IO_AllocateBuffer(uint64_t* len,
@@ -120,7 +90,7 @@ IO_Open(const char * path,
     uint64_t shmem_len = path_len;
     char * vAddr = NULL;
 
-    if(setup_shmem(&shmem_len, 0, &op->path_key, (uint64_t*)&vAddr) != 0)
+    if(__card_setup_shmem(&shmem_len, 0, &op->path_key, (uint64_t*)&vAddr) != 0)
         return -1;
 
     strcpy(vAddr, path);
@@ -205,7 +175,7 @@ IO_GetFileProperties(const char *path,
     uint64_t shmem_len = path_len + sizeof(FileSystemDirectoryEntry) + 1;
     char * vAddr = NULL;
 
-    if(setup_shmem(&shmem_len, MemoryAllocationFlags_Write, &op->path_key, (uint64_t*)&vAddr) != 0)
+    if(__card_setup_shmem(&shmem_len, MemoryAllocationFlags_Write, &op->path_key, (uint64_t*)&vAddr) != 0)
         return -1;
 
     strcpy(vAddr, path);
@@ -257,7 +227,7 @@ IO_Rename(uint64_t fd,
     uint64_t shmem_len = path_len;
     char * vAddr = NULL;
 
-    if(setup_shmem(&shmem_len, 0, &op->name_key, (uint64_t*)&vAddr) != 0)
+    if(__card_setup_shmem(&shmem_len, 0, &op->name_key, (uint64_t*)&vAddr) != 0)
         return -1;
 
     strcpy(vAddr, dst);
