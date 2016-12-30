@@ -18,8 +18,6 @@ HPET_Initialize(void) {
     HPET_SetCounterValue(0);
     HPET_SetCounterEnableStatus(ENABLE);
 
-    __asm__ ("cli\n\thlt" :: "a"(hpet_regs->Capabilities.LegacyReplacementCapable));
-
     return HPETError_None;
 }
 

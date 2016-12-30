@@ -30,9 +30,18 @@ allowing applications to make syscalls for shared memory and IPC.
 
 ### Ports
 Currently the following have been ported to the OS:
-	- OpenSSL
-	- zlib
-	- libpng
+- OpenSSL
+- zlib
+- libpng
+
+### Supported Hardware
+Currently available device drivers:
+- Intel HD Audio (WIP)
+- VESA Framebuffer (WIP)
+- AHCI (WIP - Read Only)
+- VMWare SVGA (WIP - Needs an interface)
+- RTL8139 (WIP - Needs an interface)
+- USB UHCI (WIP - Initialization only)
 
 ## Build Instructions
 Execute the scripts/build-os.sh script in the source directory.

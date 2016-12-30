@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "svga.h"
+#include "svga3d.h"
 
 int main(int argc, char *argv[]) {
     R01_GetIOPrivileges();
@@ -51,6 +52,8 @@ int main(int argc, char *argv[]) {
     ctxt.fifo.bounceBufferPhys = bounce_phys_addr;
 
     SVGA_Init(&ctxt);
+    SVGA_SetMode(&ctxt, 1280, 720, 32);
+    SVGA3D_Init(&ctxt);
 
     while(1) {
 

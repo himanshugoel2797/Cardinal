@@ -190,7 +190,10 @@ rand(void) {
     const uint64_t a = 6364136223846793005;
     const uint64_t c = 1;
     rng_val = (a * rng_val + c);
-    return (uint32_t)(rng_val >> 32);
+    uint32_t v = (uint32_t)(rng_val >> 32);
+    if(v == 0)
+        return v+1;
+    return v;
 }
 
 int
