@@ -10,10 +10,10 @@ static uint64_t memory_size,
        freePageCount,
        lastNonFullPage;
 
-static uint32_t* KB4_Blocks_Bitmap,
+static uint64_t* KB4_Blocks_Bitmap,
        KB4_Blocks_Count;
 
-static const uint64_t block_size = PAGE_SIZE * 32;
+static const uint64_t block_size = PAGE_SIZE * 64;
 static uint64_t dma_store = 0;
 
 extern uint64_t _region_kernel_start_, _region_kernel_end_,
@@ -32,14 +32,15 @@ MemMan_Initialize(void) {
     // Determine the total number of pages
     freePageCount = page_count = memory_size / PAGE_SIZE;
 
-    if(page_count <= GiB(2)/PAGE_SIZE)lastNonFullPage = (page_count / 32)/2 - 1;
-    else lastNonFullPage = GiB(0)/(PAGE_SIZE * 32);
+    if(page_count <= GiB(2)/PAGE_SIZE)lastNonFullPage = (page_count / 64)/2 - 1;
+    else lastNonFullPage = GiB(0)/(PAGE_SIZE * 64);
 
-    KB4_Blocks_Count = memory_size / (PAGE_SIZE * 32);
-    KB4_Blocks_Bitmap = bootstrap_malloc(KB4_Blocks_Count * sizeof(uint32_t));
+    KB4_Blocks_Count = memory_size / (PAGE_SIZE * 64);
+    KB4_Blocks_Bitmap = bootstrap_malloc(KB4_Blocks_Count * sizeof(uint64_t));
 
     //Mark all memory as being in use
-    memset(KB4_Blocks_Bitmap, 0xFFFFFFFF, KB4_Blocks_Count * sizeof(uint32_t));
+    for(uint64_t i = 0; i < KB4_Blocks_Count; i++)
+        KB4_Blocks_Bitmap[i] = (uint64_t)-1;
 
     //Unmark all the regions specified as being free
     for(uint32_t j = 0; j < info->CardinalMemoryMapLength/sizeof(CardinalMemMap); j++) {
@@ -55,7 +56,7 @@ MemMan_Initialize(void) {
     //Mark important regions that have been preallocated
     MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress), info->FramebufferPitch * info->FramebufferHeight);
 
-    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), KB4_Blocks_Bitmap), KB4_Blocks_Count * sizeof(uint32_t));
+    MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), KB4_Blocks_Bitmap), KB4_Blocks_Count * sizeof(uint64_t));
 
     MemMan_MarkUsed((uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->InitrdStartAddress), info->InitrdLength);
 
@@ -88,9 +89,26 @@ MemMan_MarkUsed(uint64_t addr,
 
     if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
 
-    for(uint64_t i = 0; i < size/PAGE_SIZE; i++) {
+    uint64_t page_cnt = size / PAGE_SIZE;
+
+    for(uint64_t i = 0; page_cnt > 0 && (addr % block_size) != 0; i++) {
         MemMan_SetPageUsed(addr);
         addr += PAGE_SIZE;
+        page_cnt--;
+    }
+
+    for(uint64_t i = 0; page_cnt >= 64 && (addr % block_size) == 0; i++) {
+        KB4_Blocks_Bitmap[addr/block_size] = (uint64_t)-1;
+        freePageCount -= 64;
+        addr += block_size;
+        page_cnt -= 64;
+    }
+
+    for(uint64_t i = 0; page_cnt > 0; i++) {
+        MemMan_SetPageUsed(addr);
+        addr += PAGE_SIZE;
+        page_cnt--;
+
     }
 }
 
@@ -100,9 +118,26 @@ MemMan_MarkFree(uint64_t addr,
     if(size == 0)return;
     if(size % PAGE_SIZE != 0)size = (size/PAGE_SIZE + 1) * PAGE_SIZE;
 
-    for(uint64_t i = 0; i < size/PAGE_SIZE; i++) {
+    uint64_t page_cnt = size / PAGE_SIZE;
+
+    for(uint64_t i = 0; page_cnt > 0 && (addr % block_size) != 0; i++) {
         MemMan_SetPageFree(addr);
         addr += PAGE_SIZE;
+        page_cnt--;
+    }
+
+    for(uint64_t i = 0; page_cnt >= 64 && (addr % block_size) == 0; i++) {
+        KB4_Blocks_Bitmap[addr/block_size] = 0;
+        freePageCount += 64;
+        addr += block_size;
+        page_cnt -= 64;
+    }
+
+    for(uint64_t i = 0; page_cnt > 0; i++) {
+        MemMan_SetPageFree(addr);
+        addr += PAGE_SIZE;
+        page_cnt--;
+
     }
 }
 
@@ -128,6 +163,7 @@ uint64_t
 MemMan_Alloc4KiBPageCont(int pageCount,
                          PhysicalMemoryAllocationFlags flags) {
     if(freePageCount == 0)return 0;
+    if(pageCount == 0)return 0;
 
     int score = 0;
     uint64_t addr = 0;
@@ -146,17 +182,37 @@ MemMan_Alloc4KiBPageCont(int pageCount,
         __asm__("cli\n\thlt");
 
     for(uint32_t j = j_min; j < j_max; j++) {
-        uint32_t block = ~KB4_Blocks_Bitmap[j];
-        for(int i = 0; i < 32; i++) {
-            if(score == pageCount)break;
-            if((block >> i) & 1) {
-                if(score == 0) {
-                    b_j = j;
-                    addr = j * block_size + i * PAGE_SIZE;
-                }
-                score++;
-            } else {
+        if(score == pageCount)
+            break;
+
+        uint64_t block = ~KB4_Blocks_Bitmap[j];
+        if(block == 0)
+            score = 0;
+
+        if((pageCount - score) >= 64){
+            if(block != (uint64_t)-1){
                 score = 0;
+            }else{
+                if(score == 0){
+                    b_j = j;
+                    addr = j * block_size;
+                }
+                score += 64;
+            }
+        }else{
+            for(int i = 0; i < 64; i++) {
+                if(score == pageCount)
+                    break;
+            
+                if((block >> i) & 1) {
+                    if(score == 0) {
+                        b_j = j;
+                        addr = j * block_size + i * PAGE_SIZE;
+                    }
+                    score++;
+                } else {
+                    score = 0;
+                }
             }
         }
     }

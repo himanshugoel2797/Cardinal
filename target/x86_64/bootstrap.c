@@ -87,7 +87,9 @@ bootstrap_kernel(void *param,
 
     FPU_Initialize();   //Setup the FPU
 
+    bootstrap_render(0x0000FF00);
     MemMan_Initialize ();
+    bootstrap_render(0x00FF0000);
     VirtMemMan_Initialize ();
     MemoryHAL_Initialize ();
 
@@ -130,6 +132,7 @@ bootstrap_kernel(void *param,
     info->FramebufferAddress = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress);
     info->FramebufferAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->FramebufferAddress);
 
+    bootstrap_render(0xFF00FF00);
     smp_sync_base = 1;
     APIC_Initialize();
 
@@ -215,6 +218,8 @@ smp_bootstrap_stage2(void) {
     SMP_IncrementCoreCount();
 
     APIC_LocalInitialize();
+    SMP_UnlockTrampoline();
+
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
@@ -226,7 +231,6 @@ smp_bootstrap_stage2(void) {
 
     SetActiveVirtualMemoryInstance(pageTable);
 
-    SMP_UnlockTrampoline();
     while(smp_sync_base);
     smp_core_main(coreID, get_perf_counter);
     while(1);
