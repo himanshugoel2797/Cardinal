@@ -307,7 +307,12 @@ GetMessageFrom(Message *msg,
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
-    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
+    if(List_Length(pInfo->PendingMessages) == 0){
+        YieldThread();
+        
+        if(List_Length(pInfo->PendingMessages) == 0)
+            return FALSE;
+    }
 
     LockSpinlock(pInfo->MessageLock);
     Message *tmp = NULL;

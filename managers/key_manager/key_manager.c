@@ -23,7 +23,7 @@ KeyMan_Initialize(void) {
     if(FindFreeVirtualAddress(GetActiveVirtualMemoryInstance(),
                               &keyTable_addr,
                               KEY_TABLE_SIZE,
-                              MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
+                              MemoryAllocationType_Heap,
                               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel
                              ) != MemoryAllocationErrors_None) {
         //TODO go back and make the kernel panic on any initialization failures.
@@ -34,7 +34,7 @@ KeyMan_Initialize(void) {
                keyTable_addr,
                KEY_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
+               MemoryAllocationType_Heap,
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic

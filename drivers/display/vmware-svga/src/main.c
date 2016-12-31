@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     uint64_t bar1_key = 0;
     uint64_t bar2_key = 0;
 
-    sscanf(argv[2], "B0:%llx B1:%llx B2:%llx", &bar0_key, &bar1_key, &bar2_key);
+    sscanf(argv[2], "B0:%lx B1:%lx B2:%lx", &bar0_key, &bar1_key, &bar2_key);
 
     /*
     UserSharedMemoryData data;

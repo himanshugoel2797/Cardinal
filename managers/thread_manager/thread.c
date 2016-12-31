@@ -7,6 +7,8 @@
 #include "target/hal/syscall.h"
 #include "target/hal/timer.h"
 
+#include "debug_gfx.h"
+
 typedef struct CoreThreadState {
     ThreadInfo *cur_thread;
     uint32_t    coreID;
@@ -358,6 +360,8 @@ CreateThreadADV(UID parentProcess,
     List_AddEntry(thds, thd);
     List_AddEntry(neutral, thd);
 
+    debug_gfx_writeLine("Thread: %x\r\n", GET_PROPERTY_VAL(thd, ID));
+
     UnlockSpinlock(sync_lock);
     UnlockSpinlock(thd->lock);
     return GET_PROPERTY_VAL(thd, ID);
@@ -653,7 +657,6 @@ YieldThread(void) {
     RaiseInterrupt(preempt_vector);
 }
 
-#include "debug_gfx.h"
 
 ThreadInfo*
 GetNextThread(ThreadInfo *prevThread) {
@@ -758,7 +761,7 @@ TaskSwitch(uint32_t int_no,
 
 //        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
         if(List_Length(thds) > 0)coreState->cur_thread = GetNextThread(coreState->cur_thread);
-//        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
+//        debug_gfx_writeLine("To: %x\r\n", List_Length(thds));
 
 
         RestoreFPUState(GET_PROPERTY_VAL(coreState->cur_thread, FPUState));

@@ -66,6 +66,18 @@ cd $SRC_DIR/drivers/display/vmware-svga
 	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
+cd $SRC_DIR/drivers/display/ihd_ironlake
+	make clean
+	make all
+	cp *.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
+cd $SRC_DIR/drivers/display/ihd_hsw
+	make clean
+	make all
+	cp *.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
 cd $SRC_DIR/drivers/pci_loader
 	make clean
 	make all

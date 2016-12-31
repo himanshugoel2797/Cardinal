@@ -146,6 +146,8 @@ bootstrap_kernel(void *param,
     //Initialize PCI, provide interface to OS
     //Initialize syscall mechanism, provide interface to OS for managing syscalls and jumping to user mode
 
+    bootstrap_render(0xFFFFFFFF);
+
     //When threading is up again, call kernel on new thread
     kernel_main_init();
     __asm__ volatile("cli\n\thlt\n\t");

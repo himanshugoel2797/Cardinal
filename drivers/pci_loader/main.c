@@ -149,7 +149,7 @@ int main() {
                         }
 
                         char bars[512];
-                        sprintf(bars, "B0:%llx B1:%llx B2:%llx B3:%llx B4:%llx B5:%llx",
+                        sprintf(bars, "B0:%lx B1:%lx B2:%lx B3:%lx B4:%lx B5:%lx",
                                 bar_vals[0],
                                 bar_vals[1],
                                 bar_vals[2],
@@ -160,8 +160,8 @@ int main() {
                         char *argv[] = { driver_file + 1, devStr, bars };
 
                         int devStr_i = 0;
-                        while(driver_file[devStr_i]) {
-                            outb(0x3f8, driver_file[devStr_i++]);
+                        while(bars[devStr_i]) {
+                            outb(0x3f8, bars[devStr_i++]);
                         }
 
                         UID pid = 0;
