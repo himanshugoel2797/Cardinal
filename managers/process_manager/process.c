@@ -3,8 +3,10 @@
 #include "memory.h"
 #include "common.h"
 
+#include "common/btree.h"
 
-static List *processes;
+
+static BTree *processes;
 static ProcessInformation *root = NULL;
 static volatile _Atomic UID baseID = ROOT_PID;
 
@@ -13,11 +15,13 @@ static UID
 new_proc_uid(void) {
     //register UID dummy = 1;
     //__asm__ volatile("lock xadd %[dummy], (%[bs])" : [dummy]"+r"(dummy) : [bs]"r"(&baseID));
-    return (UID)(uint32_t)baseID++;
+    return (UID)BTree_GetKey(processes);
 }
 
 void
 ProcessSys_Initialize(void) {
+    processes = BTree_Create(3);
+
     root = kmalloc(sizeof(ProcessInformation));
     root->ID = new_proc_uid();  //Root process ID is ROOT_PID
     root->Status = ProcessStatus_Executing;
@@ -33,8 +37,7 @@ ProcessSys_Initialize(void) {
     root->reference_count = 0;
     root->lock = CreateSpinlock();
 
-    processes = List_Create(CreateSpinlock());
-    List_AddEntry(processes, root);
+    BTree_Insert(processes, root->ID, root);
 }
 
 bool
@@ -82,7 +85,7 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
 
     AtomicIncrement32(&src->reference_count);
 
-    List_AddEntry(processes, dst);
+    BTree_Insert(processes, dst->ID, dst);
     return ProcessErrors_None;
 }
 
@@ -125,15 +128,7 @@ TerminateProcess(UID pid) {
     kfree(pinfo->Keys);
 
     //Remove this process from the list of processes
-    List_RotPrev(processes);
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *tmp_procInfo = List_RotNext(processes);
-
-        if(tmp_procInfo->ID == pid) {
-            List_Remove(processes, List_GetLastIndex(processes));
-            break;
-        }
-    }
+    BTree_RemoveEntry(processes, pid);
 
     //Remove this process from its parent's list of children
     if(pinfo->Parent != NULL) {
@@ -210,41 +205,27 @@ ProcessErrors
 GetProcessInformation(UID           pid,
                       ProcessInformation    *procInfo) {
 
-    List_RotPrev(processes);
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_RotNext(processes);
+    ProcessInformation *pInf = BTree_GetValue(processes, pid);
 
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
+    if(pInf == NULL)
+        return ProcessErrors_UIDNotFound;
 
-        if(pInfID == pid) {
-            LockSpinlock(pInf->lock);
-            memcpy(procInfo, pInf, sizeof(ProcessInformation));
-            UnlockSpinlock(pInf->lock);
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
+    LockSpinlock(pInf->lock);
+    memcpy(procInfo, pInf, sizeof(ProcessInformation));
+    UnlockSpinlock(pInf->lock);
+    return ProcessErrors_None;
 }
 
 ProcessErrors
 GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
-    List_RotPrev(processes); //Move back one entry to force the current entry to be tested first
-    for(uint64_t i = 0; i < List_Length(processes); i++) {
-        ProcessInformation *pInf = List_RotNext(processes);
+    ProcessInformation *pInf = BTree_GetValue(processes, pid);
 
-        LockSpinlock(pInf->lock);
-        UID pInfID = pInf->ID;
-        UnlockSpinlock(pInf->lock);
+    if(pInf == NULL)
+        return ProcessErrors_UIDNotFound;
 
-        if(pInfID == pid) {
-            if(procInfo != NULL)*procInfo = pInf;
-            return ProcessErrors_None;
-        }
-    }
-    return ProcessErrors_UIDNotFound;
+    *procInfo = pInf;
+    return ProcessErrors_None;
 }
 
 uint64_t

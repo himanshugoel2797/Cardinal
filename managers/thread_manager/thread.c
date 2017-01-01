@@ -1,8 +1,10 @@
 #include "thread.h"
 #include "common/common.h"
 #include "kmalloc.h"
+
 #include "common/list.h"
 #include "common/heap.h"
+#include "common/btree.h"
 
 #include "target/hal/thread.h"
 #include "target/hal/interrupts.h"
@@ -19,7 +21,8 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 Spinlock sync_lock;
-static List *neutral, *thds, *sleeping_thds, *exiting_thds;
+static List *neutral, *sleeping_thds, *exiting_thds;
+static BTree *thds;
 
 static volatile CoreThreadState *all_states = NULL;
 
@@ -33,8 +36,7 @@ static volatile _Atomic UID base_thread_ID = 1;
 
 static UID
 new_thd_uid(void) {
-    UID id = base_thread_ID++;
-    return id ^ (id >> 1);  //Use this value to track the thread list as a binary tree.
+    return (UID)BTree_GetKey(thds);
 }
 
 #define PROPERTY_GET(type, name, default_val) type get_thread_##name (ThreadInfo *t) \
@@ -150,7 +152,8 @@ void
 Thread_Initialize(void) {
     Spinlock tmp = CreateSpinlock();
     neutral = List_Create(tmp);
-    thds = List_Create(tmp);
+
+    thds = BTree_Create(4); //The thread tree is 4 levels deep
 
     sleeping_thds = List_Create(CreateSpinlock());
     exiting_thds = List_Create(CreateSpinlock());
@@ -371,7 +374,9 @@ CreateThreadADV(UID parentProcess,
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
     List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), (void*)thd);
-    List_AddEntry(thds, thd);
+    
+    BTree_Insert(thds, thd->ID, thd);
+
     List_AddEntry(neutral, thd);
 
     debug_gfx_writeLine("Thread: %x\r\n", GET_PROPERTY_VAL(thd, ID));
@@ -391,19 +396,13 @@ error_exit:
 void
 SetChildTIDAddress(UID id,
                    void *address) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, SetChildTID, address);
+    
+    ThreadInfo *thd = (ThreadInfo*)BTree_GetValue(thds, id);
+    if(thd == NULL)
         return;
-    }
 
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, SetChildTID, address);
-            return;
-        }
-    }
-
+    SET_PROPERTY_VAL(thd, SetChildTID, address);
+    return;
 }
 
 void
