@@ -22,7 +22,7 @@ kernel_main_init(void) {
     ProcessSys_Initialize();
     Thread_Initialize();
     KeyMan_Initialize();
-    RegisterCore(0, NULL);
+    RegisterCore(NULL);
     CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
 
     CoreUpdate();  //BSP is core 0
@@ -117,14 +117,13 @@ idle_main(void) {
 }
 
 void
-smp_core_main(int coreID,
-              int (*getCoreData)(void)) {
+smp_core_main(int (*getCoreData)(void)) {
 
 
     //Expose additional cores as a service
     Syscall_Initialize();
 
-    RegisterCore(coreID, getCoreData);
+    RegisterCore(getCoreData);
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)

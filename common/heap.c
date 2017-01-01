@@ -2,7 +2,7 @@
 #include "kmalloc.h"
 #include "memory.h"
 
-#define NODE_TABLE_SIZE KiB(256)
+#define NODE_TABLE_SIZE KiB(32)
 
 #define GET_LEFT_CHILD(n) ( 2 * n + 1)
 #define GET_RIGHT_CHILD(n) (2 * n + 2)
@@ -19,7 +19,7 @@ struct HeapInt {
     int node_count;
 };
 
-Heap
+Heap*
 Heap_Create(void) {
 
     struct HeapInt *h = kmalloc(sizeof (struct HeapInt));
@@ -52,7 +52,7 @@ Heap_Create(void) {
 }
 
 void
-Heap_Insert(Heap h,
+Heap_Insert(Heap *h,
         uint64_t val,
         void *obj) {
 
@@ -76,13 +76,14 @@ Heap_Insert(Heap h,
 }
 
 void*
-Heap_Peek(Heap h, uint64_t *val) {
+Heap_Peek(Heap *h, uint64_t *val) {
     if(val != NULL)
         *val = h->nodes[0].val;
     return (void*) h->nodes[0].obj;
 }
 
-void siftDown(Heap h, int nodeIndex) {
+static
+void siftDown(Heap *h, int nodeIndex) {
     
     int leftChildIndex, rightChildIndex, maxIndex, tmp;
     leftChildIndex = GET_LEFT_CHILD(nodeIndex);
@@ -107,7 +108,7 @@ void siftDown(Heap h, int nodeIndex) {
 }
 
 void*
-Heap_Pop(Heap h, uint64_t *val) {
+Heap_Pop(Heap *h, uint64_t *val) {
     void *retVal = Heap_Peek(h, val);
     
     h->node_count--;
@@ -118,7 +119,7 @@ Heap_Pop(Heap h, uint64_t *val) {
 }
 
 void
-Heap_Delete(Heap h) {
+Heap_Delete(Heap *h) {
     kfree(h->nodes);
     kfree(h);
 }

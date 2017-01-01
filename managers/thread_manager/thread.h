@@ -360,8 +360,7 @@ SwitchThread(void);
  * @param[in]  getCoreData  The processor load information provider
  */
 void
-RegisterCore(int id,
-             int (*getCoreData)(void));
+RegisterCore(int (*getCoreData)(void));
 
 /**
  * @brief      Gets the core load.

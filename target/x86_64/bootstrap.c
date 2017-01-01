@@ -201,8 +201,6 @@ smp_bootstrap_stage2(void) {
     GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
-    int coreID = SMP_GetCoreCount();
-
     SMP_IncrementCoreCount();
 
     APIC_LocalInitialize();
@@ -220,7 +218,7 @@ smp_bootstrap_stage2(void) {
     SetActiveVirtualMemoryInstance(pageTable);
 
     while(smp_sync_base);
-    smp_core_main(coreID, get_perf_counter);
+    smp_core_main(get_perf_counter);
     while(1);
 }
 

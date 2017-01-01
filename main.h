@@ -11,8 +11,7 @@ void
 target_device_setup(void);
 
 void
-smp_core_main(int coreID,
-              int (*getCoreData)(void));
+smp_core_main(int (*getCoreData)(void));
 
 void
 smp_unlock_cores(void);
