@@ -103,6 +103,7 @@ typedef struct ThreadInfo {
     uint64_t            SleepStartTime;         //!< Sleep start time.
     uint64_t            Errno;                  //!< Errno of last syscall.
 
+    uint64_t            TimeSlice;              //!< The time slice available to this thread.
     int32_t             CoreAffinity;           //!< Core affinity.
 
     void                *SetChildTID;           //!< Set child TID address.

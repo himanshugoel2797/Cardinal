@@ -87,9 +87,7 @@ bootstrap_kernel(void *param,
 
     FPU_Initialize();   //Setup the FPU
 
-    bootstrap_render(0x0000FF00);
     MemMan_Initialize ();
-    bootstrap_render(0x00FF0000);
     VirtMemMan_Initialize ();
     MemoryHAL_Initialize ();
 
@@ -132,7 +130,6 @@ bootstrap_kernel(void *param,
     info->FramebufferAddress = (uint64_t)VirtMemMan_GetPhysicalAddress(VirtMemMan_GetCurrent(), (void*)info->FramebufferAddress);
     info->FramebufferAddress = (uint64_t)VirtMemMan_GetVirtualAddress(CachingModeWriteThrough, (void*)info->FramebufferAddress);
 
-    bootstrap_render(0xFF00FF00);
     smp_sync_base = 1;
     APIC_Initialize();
 
@@ -143,15 +140,6 @@ bootstrap_kernel(void *param,
     SetActiveVirtualMemoryInstance(pageTable);
 
     //Now that all the processors are booted up and ready to do their job
-    //Initialize MTRRs, paging, enable debugging interfaces, find ACPI tables and report them to the kernel - Done
-    //Initialize FPU - Done, setup threading code, provide interfaces to OS
-    //Setup platform specific rendering code and supply interface to the OS (VESA driver?)
-    //Initialize PCI, provide interface to OS
-    //Initialize syscall mechanism, provide interface to OS for managing syscalls and jumping to user mode
-
-    bootstrap_render(0xFFFFFFFF);
-
-    //When threading is up again, call kernel on new thread
     kernel_main_init();
     __asm__ volatile("cli\n\thlt\n\t");
 
