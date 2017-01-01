@@ -34,7 +34,7 @@ KeyMan_Initialize(void) {
                keyTable_addr,
                KEY_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap,
+               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
