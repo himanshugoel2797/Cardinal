@@ -671,7 +671,7 @@ HandlePageFault(uint64_t virtualAddress,
     }
 
     //PerformTLBShootdown();
-    
+
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
 }

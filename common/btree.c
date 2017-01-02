@@ -22,7 +22,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define INDEX_MAX ((1 << BITS_PER_LEVEL) - 3)
 
 typedef struct Node {
-    union{
+    union {
         uint64_t vals[BTREE_NODE_COUNT - 1];
         struct Node *children[BTREE_NODE_COUNT - 1];
     };
@@ -59,9 +59,9 @@ insert(Node *nodes,
         nodes->vals[pos] = (uint64_t)obj;
         UnlockSpinlock(nodes->lock);
 
-    }else{
+    } else {
         LockSpinlock(nodes->lock);
-        if(nodes->children[pos] == NULL){
+        if(nodes->children[pos] == NULL) {
             nodes->children[pos] = kmalloc(sizeof(Node));
             memset(nodes->children[pos], 0, sizeof(Node));
             nodes->children[pos]->cnt = 0;
@@ -80,22 +80,22 @@ insert(Node *nodes,
 
 static void*
 get(Node *nodes,
-       int level,
-       uint64_t key) {
+    int level,
+    uint64_t key) {
 
     int pos = (key >> (level * BITS_PER_LEVEL)) & LEVEL_INDEX_MASK;
 
     if(pos > INDEX_MAX)
         return NULL;  //Invalid index
 
-    if(level == 0){
+    if(level == 0) {
         LockSpinlock(nodes->lock);
         void* retVal = (void*)nodes->vals[pos];
         UnlockSpinlock(nodes->lock);
         return retVal;
-    }else{
+    } else {
         LockSpinlock(nodes->lock);
-        if(nodes->children[pos] == NULL){
+        if(nodes->children[pos] == NULL) {
             UnlockSpinlock(nodes->lock);
             return NULL;
         }
@@ -128,17 +128,17 @@ remove(Node *nodes,
         UnlockSpinlock(nodes->lock);
         return retVal;
 
-    }else{
+    } else {
         LockSpinlock(nodes->lock);
 
-        if(nodes->children[pos] == NULL){
+        if(nodes->children[pos] == NULL) {
             UnlockSpinlock(nodes->lock);
             return NULL;
         }
 
         void *retVal = remove(nodes->children[pos], level - 1, key);
 
-        if(nodes->children[pos]->cnt == 0){
+        if(nodes->children[pos]->cnt == 0) {
             kfree(nodes->children[pos]);
             nodes->children[pos] = NULL;
             nodes->cnt--;
@@ -156,9 +156,9 @@ static void
 delete(Node *nodes,
        int level) {
 
-    for(int pos = 0; pos <= INDEX_MAX; pos++){
-        if(nodes->children[pos] != NULL){
-            
+    for(int pos = 0; pos <= INDEX_MAX; pos++) {
+        if(nodes->children[pos] != NULL) {
+
             if(level > 0)
                 delete(nodes->children[pos], level - 1);
 
@@ -184,10 +184,10 @@ BTree_Create(int max_levels) {
 
 int
 BTree_Insert(BTree *h,
-        uint64_t key,
-        void *obj) {
+             uint64_t key,
+             void *obj) {
 
-    if(h->nodes == NULL){
+    if(h->nodes == NULL) {
         h->nodes = kmalloc(sizeof(Node));
         memset(h->nodes, 0, sizeof(Node));
         h->nodes->cnt = 0;
@@ -213,7 +213,7 @@ BTree_GetValue(BTree *h,
 
 void*
 BTree_RemoveEntry(BTree *h, uint64_t key) {
-    
+
     if(h->nodes == NULL)
         return NULL;
 
@@ -228,7 +228,7 @@ BTree_RemoveEntry(BTree *h, uint64_t key) {
 void
 BTree_Delete(BTree *h) {
 
-    if(h->nodes != NULL){
+    if(h->nodes != NULL) {
         delete(h->nodes, h->max_levels - 1);
     }
 
@@ -241,11 +241,11 @@ BTree_GetKey(BTree *h) {
     LockSpinlock(h->key_lock);
     uint64_t cur_key = h->key++;
     //TODO this routine is bugged, fix it
-    for(int i = 0; i < h->max_levels; i++){
+    for(int i = 0; i < h->max_levels; i++) {
 
         int pos = (cur_key >> (i * BITS_PER_LEVEL)) & LEVEL_INDEX_MASK;
 
-        if(pos > INDEX_MAX){
+        if(pos > INDEX_MAX) {
             cur_key += ((1 << BITS_PER_LEVEL) - pos) << (i * BITS_PER_LEVEL);
         }
     }
@@ -254,6 +254,6 @@ BTree_GetKey(BTree *h) {
 }
 
 uint64_t
-BTree_GetCount(BTree *h){
+BTree_GetCount(BTree *h) {
     return h->item_count;
 }

@@ -25,12 +25,12 @@ Heap_Insert(Heap *h,
             void *obj);
 
 void*
-Heap_Peek(Heap *h, 
-		  uint64_t *val);
+Heap_Peek(Heap *h,
+          uint64_t *val);
 
 void*
-Heap_Pop(Heap *h, 
-		 uint64_t *val);
+Heap_Pop(Heap *h,
+         uint64_t *val);
 
 void
 Heap_Delete(Heap *h);

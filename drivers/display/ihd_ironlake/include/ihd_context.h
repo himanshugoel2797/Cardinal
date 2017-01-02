@@ -17,8 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <pci/pci.h>
 
 typedef struct {
-	PCI_Device device;
-	uint32_t *iobase;
+    PCI_Device device;
+    uint32_t *iobase;
 } IHD_Context;
 
 #endif

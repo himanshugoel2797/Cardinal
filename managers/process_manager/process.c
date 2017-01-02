@@ -35,7 +35,7 @@ ProcessSys_Initialize(void) {
 
     //Get an ID to force the btree id to be equal to the ROOT_PID
     uint64_t pid = new_proc_uid();
-    while(pid != ROOT_PID){
+    while(pid != ROOT_PID) {
         pid = new_proc_uid();
     }
 
@@ -305,9 +305,9 @@ GetMessageFrom(Message *msg,
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
-    if(List_Length(pInfo->PendingMessages) == 0){
+    if(List_Length(pInfo->PendingMessages) == 0) {
         YieldThread();
-        
+
         if(List_Length(pInfo->PendingMessages) == 0)
             return FALSE;
     }

@@ -167,7 +167,7 @@ Thread_Initialize(void) {
 
     sync_lock = CreateSpinlock();
 
-    all_states = kmalloc(GetCoreCount() * sizeof(CoreThreadState));    
+    all_states = kmalloc(GetCoreCount() * sizeof(CoreThreadState));
     cores = kmalloc(GetCoreCount() * sizeof(CoreInfo));
 
     core_id = (uint64_t*)AllocateAPLSMemory(sizeof(uint64_t));
@@ -378,7 +378,7 @@ CreateThreadADV(UID parentProcess,
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
     List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), (void*)thd);
-    
+
     BTree_Insert(thds, thd->ID, thd);
 
     List_AddEntry(neutral, thd);
@@ -398,7 +398,7 @@ error_exit:
 }
 
 ThreadError
-GetThreadReference(UID id, ThreadInfo **thd){
+GetThreadReference(UID id, ThreadInfo **thd) {
 
     *thd = (ThreadInfo*)BTree_GetValue(thds, id);
     if(thd == NULL)
@@ -424,20 +424,20 @@ SleepThread(UID id,
 
     //TODO update this for new scheduler
 
-        ThreadInfo *thd = NULL;
-        GetThreadReference(id, &thd);
-        if(thd != NULL) {
-            SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
-            SET_PROPERTY_VAL(thd, WakeCondition, ThreadWakeCondition_SleepEnd);
-            SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
-            SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL) {
+        SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
+        SET_PROPERTY_VAL(thd, WakeCondition, ThreadWakeCondition_SleepEnd);
+        SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
+        SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
 
-            //Remove the thread from the neutral list and put it into the sleeping list
-            List_Remove(neutral, List_GetLastIndex(neutral));
-            List_AddEntry(sleeping_thds, thd);
-            //A kernel thread will loop through the threads and wake them up as necessary.
-            return;
-        }
+        //Remove the thread from the neutral list and put it into the sleeping list
+        List_Remove(neutral, List_GetLastIndex(neutral));
+        List_AddEntry(sleeping_thds, thd);
+        //A kernel thread will loop through the threads and wake them up as necessary.
+        return;
+    }
 }
 
 ThreadState

@@ -80,8 +80,8 @@ typedef enum {
 } ThreadPermissionLevel;
 
 typedef enum {
-  ThreadError_None = 0,
-  ThreadError_UIDNotFound = 1
+    ThreadError_None = 0,
+    ThreadError_UIDNotFound = 1
 } ThreadError;
 
 /**

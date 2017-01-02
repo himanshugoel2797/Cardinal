@@ -17,16 +17,16 @@ static uint8_t useTSC = 0;
 
 void
 InitializeTimer(void) {
-    if(APIC_IsTSCReliable()){
-    	useTSC = 1;
-    	return;
+    if(APIC_IsTSCReliable()) {
+        useTSC = 1;
+        return;
     }
     if(HPET_Initialize() == HPETError_NotPresent) {
         //No option but to rely on TSC anyway?
         //TODO reevaluate this situation
-  
-  		useTSC = 1;
-  		return;  
+
+        useTSC = 1;
+        return;
     }
     useTSC = 0;
 }

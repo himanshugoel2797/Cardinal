@@ -21,16 +21,16 @@ BTree_Create(int max_levels);
 
 int
 BTree_Insert(BTree *h,
-	         uint64_t key,
-    	     void *obj);
+             uint64_t key,
+             void *obj);
 
 void*
 BTree_GetValue(BTree *h,
                uint64_t key);
 
 void*
-BTree_RemoveEntry(BTree *h, 
-				  uint64_t key);
+BTree_RemoveEntry(BTree *h,
+                  uint64_t key);
 
 void
 BTree_Delete(BTree *h);

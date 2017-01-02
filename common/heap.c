@@ -64,8 +64,8 @@ Heap_Create(void) {
 
 void
 Heap_Insert(Heap *h,
-        uint64_t val,
-        void *obj) {
+            uint64_t val,
+            void *obj) {
 
     h->nodes[h->node_count].val = val;
     h->nodes[h->node_count].obj = (uint64_t) obj;
@@ -95,7 +95,7 @@ Heap_Peek(Heap *h, uint64_t *val) {
 
 static
 void siftDown(Heap *h, int nodeIndex) {
-    
+
     int leftChildIndex, rightChildIndex, maxIndex, tmp;
     leftChildIndex = GET_LEFT_CHILD(nodeIndex);
     rightChildIndex = GET_RIGHT_CHILD(nodeIndex);
@@ -110,7 +110,7 @@ void siftDown(Heap *h, int nodeIndex) {
         else
             maxIndex = rightChildIndex;
     }
-    
+
     if (h->nodes[nodeIndex].val <= h->nodes[maxIndex].val) {
         SWAP(h->nodes[nodeIndex].val, h->nodes[maxIndex].val);
         SWAP(h->nodes[nodeIndex].obj, h->nodes[maxIndex].obj);
@@ -121,11 +121,11 @@ void siftDown(Heap *h, int nodeIndex) {
 void*
 Heap_Pop(Heap *h, uint64_t *val) {
     void *retVal = Heap_Peek(h, val);
-    
+
     h->node_count--;
     if(h->node_count > 0)
         siftDown(h, 0);
-    
+
     return retVal;
 }
 

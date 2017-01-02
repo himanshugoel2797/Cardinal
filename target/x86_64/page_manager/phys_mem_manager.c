@@ -200,21 +200,21 @@ MemMan_Alloc4KiBPageCont(int pageCount,
         if(block == 0)
             score = 0;
 
-        if((pageCount - score) >= 64){
-            if(block != (uint64_t)-1){
+        if((pageCount - score) >= 64) {
+            if(block != (uint64_t)-1) {
                 score = 0;
-            }else{
-                if(score == 0){
+            } else {
+                if(score == 0) {
                     b_j = j;
                     addr = j * block_size;
                 }
                 score += 64;
             }
-        }else{
+        } else {
             for(int i = 0; i < 64; i++) {
                 if(score == pageCount)
                     break;
-            
+
                 if((block >> i) & 1) {
                     if(score == 0) {
                         b_j = j;
