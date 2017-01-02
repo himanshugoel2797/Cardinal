@@ -38,6 +38,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #endif
 
 static volatile int smp_sync_base;
+static uint64_t *int_stack;
 
 void
 bootstrap_render(uint32_t color) {
@@ -108,7 +109,7 @@ bootstrap_kernel(void *param,
     GDT_InitializeMP();
     GDT_Initialize();   //Setup the Bootstrap GDT
 
-    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
+    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(32)) + KiB(32) - 128) ;
     t_addr -= t_addr % 16;
     SetInterruptStack((void*)t_addr);
 
@@ -183,7 +184,7 @@ smp_bootstrap_stage2(void) {
     GDT_Initialize();   //Setup the GDT
 
 
-    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
+    uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(32)) + KiB(32) - 128);
     t_addr -= t_addr % 16;
     SetInterruptStack((void*)t_addr);
 

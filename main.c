@@ -24,6 +24,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "boot_information/boot_information.h"
 
 void
+load_exec(UID pid, const char *exec);
+
+void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
     InitializeTimer();
@@ -34,9 +37,25 @@ kernel_main_init(void) {
     Thread_Initialize();
     KeyMan_Initialize();
     RegisterCore(NULL);
+
     CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
 
-    CoreUpdate();  //BSP is core 0
+    seed(GetTimerValue());
+    InterruptMan_Initialize();       
+    
+    SyscallMan_Initialize();
+    Syscall_Initialize(); 
+    smp_unlock_cores();
+
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    load_exec(cpid, "userboot.bin");
+    SetupPreemption();
+
+    while(1)
+        ;
 }
 
 void
@@ -56,8 +75,6 @@ load_exec(UID pid, const char *exec) {
     ProcessInformation *pinfo = NULL;
     if(GetProcessReference(pid, &pinfo) != ProcessErrors_None)
         return;
-
-
 
     for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++) {
 
@@ -83,9 +100,7 @@ load_exec(UID pid, const char *exec) {
 
     UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
 
-
     CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
-
     StartProcess(pid);
     return;
 }
@@ -96,47 +111,7 @@ static volatile _Atomic int smp_core_count = 0;
 
 void
 kernel_main(void) {
-
-    //Initialize process manager, setup timers, get threading up and running
-    // Enumerate and initialize drivers
-    // Load UI elf from disk
-    // Switch to usermode
-    // Execute UI
-
-    //Seed the rng with the timer value
-    seed(GetTimerValue());
-
-    InterruptMan_Initialize();
-
-    SyscallMan_Initialize();
-    Syscall_Initialize();
-    smp_unlock_cores();
-    SetupPreemption();
-
-    //Wait for all other cores to be in too
-    smp_core_count++;
-    while(smp_core_count != GetCoreCount())
-        ;
-
-    UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    load_exec(cpid, "userboot.bin");
-/*
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    load_exec(cpid, "userboot.bin");
-
-
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    load_exec(cpid, "userboot.bin");*/
-
     while(1)
-        ;
         WakeReadyThreads();
 }
 
@@ -167,14 +142,12 @@ idle_main(void) {
 
 void
 smp_core_main(int (*getCoreData)(void)) {
-    seed(GetTimerValue());
-
-    //Expose additional cores as a service
+    
     Syscall_Initialize();
 
     RegisterCore(getCoreData);
     smp_core_count++;
-
+/*
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
@@ -187,8 +160,7 @@ smp_core_main(int (*getCoreData)(void)) {
 
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
-
+*/
     SetupPreemption();
     while(1);
-    //Start the local timer and set it to call the thread switch handler
 }

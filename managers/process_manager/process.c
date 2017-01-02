@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "kmalloc.h"
 #include "memory.h"
 #include "common.h"
-
+#include "debug_gfx.h"
 #include "common/btree.h"
 
 
@@ -102,6 +102,8 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
 
     AtomicIncrement32(&src->reference_count);
 
+    debug_gfx_writeLine("Create Process: %x\r\n", *pid);
+
     BTree_Insert(processes, dst->ID, dst);
     return ProcessErrors_None;
 }
@@ -117,6 +119,8 @@ StartProcess(UID pid) {
     LockSpinlock(pinfo->lock);
     pinfo->Status = ProcessStatus_Executing;
     UnlockSpinlock(pinfo->lock);
+
+    debug_gfx_writeLine("Start Process: %x\r\n", pid);
 
     return ProcessErrors_None;
 }
@@ -238,8 +242,9 @@ GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
     ProcessInformation *pInf = BTree_GetValue(processes, pid);
 
-    if(pInf == NULL)
+    if(pInf == NULL){
         return ProcessErrors_UIDNotFound;
+    }
 
     *procInfo = pInf;
     return ProcessErrors_None;

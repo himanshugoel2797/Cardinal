@@ -116,12 +116,9 @@ PROPERTY_GET_SET(ThreadWakeCondition, WakeCondition, 0)
 PROPERTY_GET_SET(ThreadPriority, Priority, 0)
 PROPERTY_GET_SET(ThreadPermissionLevel, PermissionLevel, 0)
 
-PROPERTY_GET_SET(uint64_t, InterruptStackBase, 0)
-PROPERTY_GET_SET(uint64_t, InterruptStackAligned, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackBase, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackAligned, 0)
 PROPERTY_GET_SET(uint64_t, UserStackBase, 0)
-PROPERTY_GET_SET(uint64_t, CurrentStack, 0)
 PROPERTY_GET_SET(uint64_t, SleepDurationNS, 0)
 PROPERTY_GET_SET(uint64_t, TargetMsgSourcePID, 0)
 PROPERTY_GET_SET(uint64_t, SleepStartTime, 0)
@@ -159,6 +156,7 @@ GetCurrentProcessParentUID(void) {
 void
 Thread_Initialize(void) {
     thds = BTree_Create(4); //The thread tree is 4 levels deep
+    BTree_GetKey(thds); //Force keys to start from 1
 
     starving_lock = CreateSpinlock();
     pending_thds = List_Create(CreateSpinlock());
@@ -286,7 +284,6 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, PermissionLevel, perm_level);
     SET_PROPERTY_VAL(thd, SleepDurationNS, 0);
     SET_PROPERTY_VAL(thd, FPUState, kmalloc(GetFPUStateSize() + 64));
-    SET_PROPERTY_VAL(thd, InterruptStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, KernelStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, ArchSpecificData, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
     SET_PROPERTY_VAL(thd, Errno, 0);
@@ -297,10 +294,6 @@ CreateThreadADV(UID parentProcess,
     //Setup kernel stack
     uint64_t kstack = GET_PROPERTY_VAL(thd, KernelStackBase) + GetStackSize(ThreadPermissionLevel_Kernel) - 256;
     SET_PROPERTY_VAL(thd, KernelStackAligned, kstack);
-
-    //Setup interrupt stack
-    uint64_t istack = GET_PROPERTY_VAL(thd, InterruptStackBase) + GetStackSize(ThreadPermissionLevel_Kernel) - 256;
-    SET_PROPERTY_VAL(thd, InterruptStackAligned, istack);
 
     //Setup FPU state
     uint64_t FPUState_tmp = (uint64_t)GET_PROPERTY_VAL(thd,FPUState);
@@ -319,63 +312,6 @@ CreateThreadADV(UID parentProcess,
     AtomicIncrement32(&thd->ParentProcess->reference_count);
 
     SetupArchSpecificData(thd, regs);
-
-    uint64_t cur_stack_frame_vaddr = SetupTemporaryWriteMap(pInfo->PageTable, kstack - kstack % PAGE_SIZE, PAGE_SIZE);
-    uint64_t *cur_stack_frame = (uint64_t*)(cur_stack_frame_vaddr + (kstack % PAGE_SIZE));
-    int offset = 0;
-    cur_stack_frame[--offset] = regs->ss;
-    cur_stack_frame[--offset] = regs->rsp;
-    cur_stack_frame[--offset] = (uint64_t)regs->rflags | (1 << 9);
-    cur_stack_frame[--offset] = regs->cs;
-    cur_stack_frame[--offset] = regs->rip;
-    cur_stack_frame[--offset] = 0;
-    cur_stack_frame[--offset] = 0;
-    cur_stack_frame[--offset] = regs->rax;
-    cur_stack_frame[--offset] = regs->rbx;
-    cur_stack_frame[--offset] = regs->rcx;
-    cur_stack_frame[--offset] = regs->rdx;
-    cur_stack_frame[--offset] = regs->rbp;
-    cur_stack_frame[--offset] = regs->rsi;
-    cur_stack_frame[--offset] = regs->rdi;
-    cur_stack_frame[--offset] = regs->r8;
-    cur_stack_frame[--offset] = regs->r9;
-    cur_stack_frame[--offset] = regs->r10;
-    cur_stack_frame[--offset] = regs->r11;
-    cur_stack_frame[--offset] = regs->r12;
-    cur_stack_frame[--offset] = regs->r13;
-    cur_stack_frame[--offset] = regs->r14;
-    cur_stack_frame[--offset] = regs->r15;
-
-    //push ss
-    //push rsp
-    //push rflags
-    //push cs
-    //push rip
-    //push 0
-    //push 0
-    //push rax
-    //push rbx
-    //push rcx
-    //push rdx
-    //push rbp
-    //push rsi
-    //push rdi
-    //push r8
-    //push r9
-    //push r10
-    //push r11
-    //push r12
-    //push r13
-    //push r14
-    //push r15
-
-    uint64_t* kstack_p = (uint64_t*)kstack;
-
-    UninstallTemporaryWriteMap(cur_stack_frame_vaddr, PAGE_SIZE);
-    //Update the thread list
-    //__asm__("cli\n\thlt" :: "a"(kstack), "b"(cur_stack_frame));
-    SET_PROPERTY_VAL(thd, CurrentStack, (uint64_t)(&kstack_p[offset]));
-
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
     List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), (void*)thd);
@@ -401,10 +337,14 @@ error_exit:
 ThreadError
 GetThreadReference(UID id, ThreadInfo **thd) {
 
-    *thd = (ThreadInfo*)BTree_GetValue(thds, id);
-    if(thd == NULL)
+    ThreadInfo *tmp_thd = (ThreadInfo*)BTree_GetValue(thds, id);
+    if(tmp_thd == NULL)
         return ThreadError_UIDNotFound;
 
+    if(tmp_thd->State == ThreadState_Exiting)
+        return ThreadError_UIDNotFound;
+
+    *thd = tmp_thd;
     return ThreadError_None;
 }
 
@@ -461,14 +401,17 @@ GetThreadKernelStack(UID id) {
     return NULL;
 }
 
-void*
-GetThreadCurrentStack(UID id) {
+void
+AddThreadTimeSlice(UID tid,
+                   int64_t slice) {
+    
     ThreadInfo *thd = NULL;
-    GetThreadReference(id, &thd);
+    GetThreadReference(tid, &thd);
     if(thd != NULL) {
-        return (void*)GET_PROPERTY_VAL(thd, CurrentStack);
+        LockSpinlock(thd->lock);
+        thd->TimeSlice += slice;
+        UnlockSpinlock(thd->lock);
     }
-    return NULL;
 }
 
 void
@@ -492,11 +435,12 @@ YieldThread(void) {
 
 void
 TryAddThreads(void){
-    for(int i = 0; i < 10; i++){     
+    for(int i = 0; i < 0x1; i++){     
         ThreadInfo *thd_ad = (ThreadInfo*)List_EntryAt(pending_thds, 0);
         List_Remove(pending_thds, 0);
 
         if(thd_ad != NULL){
+            debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
             Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
         }
     }
@@ -513,7 +457,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
 
     if(prevThread != NULL) {
-        prevThread->TimeSlice -= 0xFF;
+        prevThread->TimeSlice -= 0x100;
         
         switch(GET_PROPERTY_VAL(prevThread, State)){
 
@@ -539,11 +483,25 @@ GetNextThread(ThreadInfo *prevThread) {
     bool exit_loop = FALSE;
     while(!exit_loop) {
         
+        //Exhausted all the items in the current set, switch to the back heap while picking up any new threads if available
         if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0)
         {
+            debug_gfx_writeLine("Swap %x\r\n", Heap_GetItemCount(all_states[*core_id].back_heap));
+
             //Pick up 10 threads from the pending queue if any are available
             if(TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0)
             {
+                TryAddThreads();
+                UnlockSpinlock(starving_lock);
+            }
+
+            //Wait for more threads to be made pending
+            while(Heap_GetItemCount(all_states[*core_id].back_heap) == 0){
+                
+                LockSpinlock(starving_lock);
+                while(List_Length(pending_thds) == 0)
+                    __asm__("pause");
+
                 TryAddThreads();
                 UnlockSpinlock(starving_lock);
             }
@@ -552,23 +510,11 @@ GetNextThread(ThreadInfo *prevThread) {
             Heap *new_front = all_states[*core_id].back_heap;
             all_states[*core_id].back_heap = all_states[*core_id].cur_heap;
             all_states[*core_id].cur_heap = new_front;
-
-            if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0){
-                
-                LockSpinlock(starving_lock);
-                while(List_Length(pending_thds) == 0)
-                    __asm__("pause");
-
-                __asm__("hlt");
-                TryAddThreads();
-                UnlockSpinlock(starving_lock);
-
-            }
         }
 
         next_thread = Heap_Pop(all_states[*core_id].cur_heap, NULL);
 
-//        debug_gfx_writeLine(" Trying: %x, State: %x , %x%x ", next_thread->ParentProcess->ID, next_thread->ParentProcess->Status, (uint32_t)((uint64_t)next_thread->ParentProcess >> 32), (uint32_t)next_thread->ParentProcess);
+        debug_gfx_writeLine(" Trying: %x, TimeSlice: %x \r\n", next_thread->ParentProcess->ID, next_thread->TimeSlice);
 
         //If the process is terminating, terminate the thread
         if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)) {
@@ -576,21 +522,22 @@ GetNextThread(ThreadInfo *prevThread) {
         }
 
         switch(GET_PROPERTY_VAL(next_thread, State)) {
-        case ThreadState_Exiting:
-            List_AddEntry(exiting_thds, next_thread);
-            break;
-        case ThreadState_Paused:
-            break;
-        case ThreadState_Sleep:
-            break;
-        default: {
-            if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
-                exit_loop = TRUE;
-            else {
-                List_AddEntry(sleeping_thds, next_thread);
-            }
-        }
-        break;
+            case ThreadState_Exiting:
+                List_AddEntry(exiting_thds, next_thread);
+                break;
+            case ThreadState_Paused:
+                break;
+            case ThreadState_Sleep:
+                __asm__("hlt");
+                break;
+            default: {
+                    if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
+                        exit_loop = TRUE;
+                    else {  
+                        List_AddEntry(sleeping_thds, next_thread);
+                    }
+                }
+                break;
         }
     }
 
@@ -608,21 +555,19 @@ TaskSwitch(uint32_t int_no,
         if(all_states[*core_id].cur_thread != NULL) {
             SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
             PerformArchSpecificTaskSave(all_states[*core_id].cur_thread);
-            SavePreviousThread(all_states[*core_id].cur_thread);
         }
 
         UID prevId = GetCurrentProcessUID();
+        UID prevTID = GetCurrentThreadUID();
 
         if(BTree_GetCount(thds) > 0)
             all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
-        debug_gfx_writeLine("Core %x Thread From: %x To: %x\r\n", *core_id, prevId, GetCurrentProcessUID());
+        debug_gfx_writeLine("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1, Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId, prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-        SetInterruptStack((void*)all_states[*core_id].cur_thread->InterruptStackAligned);
         SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
         SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable));
-        PerformArchSpecificTaskSwitch(all_states[*core_id].cur_thread);
 
 
         if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
@@ -630,7 +575,7 @@ TaskSwitch(uint32_t int_no,
         }
 
         HandleInterruptNoReturn(int_no);
-        SwitchToThread(all_states[*core_id].cur_thread);
+        PerformArchSpecificTaskSwitch(all_states[*core_id].cur_thread);
     }
 }
 
@@ -640,35 +585,6 @@ SetPeriodicPreemptVector(uint32_t irq,
     RegisterInterruptHandler(irq, TaskSwitch);
     preempt_vector = irq;
     preempt_frequency = frequency;
-}
-
-void
-SwitchThread(void) {
-
-    all_states[*core_id].cur_thread = GetNextThread(NULL);
-
-    RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-    SetInterruptStack((void*)all_states[*core_id].cur_thread->InterruptStackAligned);
-    SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
-
-
-    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable));
-    PerformArchSpecificTaskSwitch(all_states[*core_id].cur_thread);
-
-    //Resume execution of the thread
-    if(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, State) == ThreadState_Initialize) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, State, ThreadState_Running);
-
-        SwitchToThread(all_states[*core_id].cur_thread);
-    }
-}
-
-void
-CoreUpdate() {
-    //Obtain thread to process from the lists
-    while(TRUE) {
-        SwitchThread();
-    }
 }
 
 void
@@ -795,7 +711,6 @@ DeleteThread(void) {
     }
 
     FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
-    FreeMapping((void*)thd->InterruptStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
 
     BTree_RemoveEntry(thds, thd->ID);

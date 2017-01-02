@@ -105,8 +105,6 @@ typedef struct ThreadInfo {
     ThreadPriority        Priority;       //!< Thread priority.
     ThreadPermissionLevel PermissionLevel;
 
-    uint64_t              InterruptStackBase;     //!< Base of interrupt stack.
-    uint64_t              InterruptStackAligned;  //!< Aligned address of interrupt stack.
     uint64_t              KernelStackBase;        //!< Base of kernel stack.
     uint64_t              KernelStackAligned;     //!< Aligned address of kernel stack.
     uint64_t              UserStackBase;          //!< Base of user stack.
@@ -430,6 +428,11 @@ WakeThread(UID id);
  */
 void
 WakeReadyThreads(void);
+
+
+void
+AddThreadTimeSlice(UID tid,
+                   int64_t slice);
 
 
 /**@}*/

@@ -91,6 +91,10 @@ void*
 Heap_Peek(Heap *h, uint64_t *val) {
     if(val != NULL)
         *val = h->nodes[0].val;
+
+    if(h->node_count == 0)
+        return NULL;
+
     return (void*) h->nodes[0].obj;
 }
 
@@ -121,9 +125,20 @@ void siftDown(Heap *h, int nodeIndex) {
 
 void*
 Heap_Pop(Heap *h, uint64_t *val) {
+
+    if(h->node_count == 0)
+        return NULL;
+
     void *retVal = Heap_Peek(h, val);
 
     h->node_count--;
+
+    h->nodes[0].val = 0;
+    h->nodes[0].obj = 0;
+
+    SWAP(h->nodes[0].val, h->nodes[h->node_count].val);
+    SWAP(h->nodes[0].obj, h->nodes[h->node_count].obj);
+
     if(h->node_count > 0)
         siftDown(h, 0);
 
