@@ -37,6 +37,13 @@ SyscallReceived(uint64_t instruction_pointer,
     /*
     Copy the parameters over to a kernel buffer, Now function only with the kernel buffer
     */
+    uint32_t syscall_baseNum = (uint32_t)syscall_num;
+
+    if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd)) {
+        __asm__("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
+        return -ENOSYS;
+    }
+
     MemoryAllocationFlags flags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(), (uint64_t)syscall_params, NULL, &flags, NULL);
 
@@ -50,24 +57,19 @@ SyscallReceived(uint64_t instruction_pointer,
     if(k_data.param_num > MAX_PARAM_COUNT)
         return -EINVAL;
 
+    LockSpinlock(syscall_lock);
     //Create a kernel side copy of the oarameters
     uint64_t k_data_param[MAX_PARAM_COUNT];
     for(uint64_t i = 0; i < k_data.param_num; i++)
         k_data_param[i] = k_data.params[i];
     k_data.params = k_data_param;
 
-    uint32_t syscall_baseNum = (uint32_t)syscall_num;
-
-    if((syscall_baseNum < Syscall_NumStart) | (syscall_baseNum > Syscall_NumEnd)) {
-        __asm__("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
-        return -ENOSYS;
-    }
 
     if(Syscalls[syscall_baseNum] != NULL) {
         uint64_t retVal = Syscalls[syscall_baseNum](instruction_pointer,
                           syscall_num,
                           (uint64_t*)&k_data);
-
+        UnlockSpinlock(syscall_lock);
         return retVal;
     } else __asm__ ("cli\n\thlt" :: "a"(syscall_num), "b"(instruction_pointer));
 

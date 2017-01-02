@@ -191,7 +191,9 @@ TryLockSpinlock(Spinlock primitive) {
 Spinlock
 LockSpinlock(Spinlock primitive) {
     //outb(0x3f8, 'L');
-    while(!TryLockSpinlock(primitive));
+    while(!TryLockSpinlock(primitive))
+        __asm__("pause");
+    
     return primitive;
 }
 

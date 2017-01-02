@@ -90,6 +90,10 @@ load_exec(UID pid, const char *exec) {
     return;
 }
 
+static volatile _Atomic int smp_core_count = 0;
+
+#include "debug_gfx.h"
+
 void
 kernel_main(void) {
 
@@ -109,11 +113,27 @@ kernel_main(void) {
     smp_unlock_cores();
     SetupPreemption();
 
+    //Wait for all other cores to be in too
+    smp_core_count++;
+    while(smp_core_count != GetCoreCount())
+        ;
+
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
 
-    //load_exec(cpid, "userboot.bin");
+    load_exec(cpid, "userboot.bin");
+/*
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    load_exec(cpid, "userboot.bin");
+
+
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    load_exec(cpid, "userboot.bin");*/
 
     while(1)
         ;
@@ -153,6 +173,7 @@ smp_core_main(int (*getCoreData)(void)) {
     Syscall_Initialize();
 
     RegisterCore(getCoreData);
+    smp_core_count++;
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
@@ -160,7 +181,6 @@ smp_core_main(int (*getCoreData)(void)) {
 
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
-
 
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();

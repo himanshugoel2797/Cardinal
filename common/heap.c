@@ -17,7 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define GET_LEFT_CHILD(n) ( 2 * n + 1)
 #define GET_RIGHT_CHILD(n) (2 * n + 2)
-#define GET_PARENT(n) ((n - 1) >> 1)
+#define GET_PARENT(n) ((n - 1)/2)
 #define SWAP(a, b) a ^= b; b ^= a; a ^= b
 
 typedef struct {
@@ -47,11 +47,11 @@ Heap_Create(void) {
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
-               0,//AllocatePhysicalPageCont(KEY_TABLE_SIZE / PAGE_SIZE),
+               AllocatePhysicalPageCont(NODE_TABLE_SIZE / PAGE_SIZE, PhysicalMemoryAllocationFlags_None),
                (uint64_t)h->nodes,
                NODE_TABLE_SIZE,
                CachingModeWriteBack,
-               MemoryAllocationType_Heap | MemoryAllocationType_ReservedAllocation,
+               MemoryAllocationType_Heap,
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
@@ -72,6 +72,8 @@ Heap_Insert(Heap *h,
 
     int node_index = h->node_count++;
     int cur_index = node_index;
+
+
     while (GET_PARENT(cur_index) >= 0) {
         int parent = GET_PARENT(cur_index);
         if (h->nodes[cur_index].val > h->nodes[parent].val) {
@@ -83,7 +85,6 @@ Heap_Insert(Heap *h,
         } else
             break;
     }
-
 }
 
 void*
@@ -133,4 +134,9 @@ void
 Heap_Delete(Heap *h) {
     kfree(h->nodes);
     kfree(h);
+}
+
+uint64_t
+Heap_GetItemCount(Heap *h) {
+    return h->node_count;
 }

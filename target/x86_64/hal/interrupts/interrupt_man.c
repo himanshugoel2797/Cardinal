@@ -19,7 +19,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 static volatile InterruptHandler intHandlers[256] = {0};
 static Registers volatile *regs_saved = NULL;
-static uint64_t* volatile int_stack = NULL;
 
 uint32_t
 RequestInterruptVectorBlock(uint32_t vectorCount) {
@@ -43,27 +42,10 @@ ShadowInterruptHandler(Registers *regs) {
         regs_saved = AllocateAPLSMemory(sizeof(Registers));
     }
 
-    if(int_stack == NULL) {
-        int_stack = (uint64_t*)AllocateAPLSMemory(sizeof(uint64_t*));
-        *int_stack = 0;
-    }
-
-    if(*int_stack == 0) {
-        *int_stack = (uint64_t)GetVirtualAddress(CachingModeWriteBack, (void*)AllocatePhysicalPageCont(4, PhysicalMemoryAllocationFlags_None)) + 4096 * 4 - 1;
-        *int_stack -= *int_stack % 16;
-    }
-
-
     memcpy((void*)regs_saved, regs, sizeof(Registers));
 
     if(intHandlers[regs->int_no] != NULL) {
-        __asm__ volatile("xchgq %%rax, %%rsp\n\t"
-                         "pushq %%rax\n\t"
-                         "callq *%%rbx\n\t"
-                         "popq %%rax\n\t"
-                         "xchgq %%rax, %%rsp\n\t"
-                         :: "a"(*int_stack), "b"(intHandlers[regs->int_no]),
-                         "D"(regs->int_no), "S"(regs->err_code));
+        intHandlers[regs->int_no](regs->int_no, regs->err_code);
     }
 
     HandleInterruptNoReturn(regs->int_no);

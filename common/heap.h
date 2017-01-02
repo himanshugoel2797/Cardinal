@@ -35,5 +35,8 @@ Heap_Pop(Heap *h,
 void
 Heap_Delete(Heap *h);
 
+uint64_t
+Heap_GetItemCount(Heap *h);
+
 #endif /* HEAP_H */
 

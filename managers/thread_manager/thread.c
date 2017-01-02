@@ -32,7 +32,8 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 Spinlock sync_lock;
-static List *neutral, *sleeping_thds, *exiting_thds;
+Spinlock starving_lock;
+static List *pending_thds, *sleeping_thds, *exiting_thds;
 static BTree *thds;
 
 static volatile CoreThreadState *all_states = NULL;
@@ -157,11 +158,10 @@ GetCurrentProcessParentUID(void) {
 
 void
 Thread_Initialize(void) {
-    Spinlock tmp = CreateSpinlock();
-    neutral = List_Create(tmp);
-
     thds = BTree_Create(4); //The thread tree is 4 levels deep
 
+    starving_lock = CreateSpinlock();
+    pending_thds = List_Create(CreateSpinlock());
     sleeping_thds = List_Create(CreateSpinlock());
     exiting_thds = List_Create(CreateSpinlock());
 
@@ -290,6 +290,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, KernelStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, ArchSpecificData, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
     SET_PROPERTY_VAL(thd, Errno, 0);
+    thd->TimeSlice = THREAD_TOTAL_TIMESLICE;
 
     SET_PROPERTY_VAL(thd, UserStackBase, user_stack_bottom);
 
@@ -381,7 +382,7 @@ CreateThreadADV(UID parentProcess,
 
     BTree_Insert(thds, thd->ID, thd);
 
-    List_AddEntry(neutral, thd);
+    List_AddEntry(pending_thds, thd);
 
     debug_gfx_writeLine("Thread: %x\r\n", GET_PROPERTY_VAL(thd, ID));
 
@@ -432,8 +433,8 @@ SleepThread(UID id,
         SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
         SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
 
-        //Remove the thread from the neutral list and put it into the sleeping list
-        List_Remove(neutral, List_GetLastIndex(neutral));
+        //The scheduler will detect the state and move it into the appropriate queue
+
         List_AddEntry(sleeping_thds, thd);
         //A kernel thread will loop through the threads and wake them up as necessary.
         return;
@@ -489,6 +490,17 @@ YieldThread(void) {
     RaiseInterrupt(preempt_vector);
 }
 
+void
+TryAddThreads(void){
+    for(int i = 0; i < 10; i++){     
+        ThreadInfo *thd_ad = (ThreadInfo*)List_EntryAt(pending_thds, 0);
+        List_Remove(pending_thds, 0);
+
+        if(thd_ad != NULL){
+            Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
+        }
+    }
+}
 
 ThreadInfo*
 GetNextThread(ThreadInfo *prevThread) {
@@ -499,28 +511,62 @@ GetNextThread(ThreadInfo *prevThread) {
     - Put the thread back once done
     */
 
-    LockSpinlock(sync_lock);
 
     if(prevThread != NULL) {
-        LockSpinlock(sync_lock);
+        prevThread->TimeSlice -= 0xFF;
+        
+        switch(GET_PROPERTY_VAL(prevThread, State)){
 
-        if(GET_PROPERTY_VAL(prevThread, State) != ThreadState_Sleep)
-            List_AddEntry(neutral, prevThread);
-
-        UnlockSpinlock(sync_lock);
+            case ThreadState_Exiting:
+                List_AddEntry(exiting_thds, prevThread);
+            break;
+            case ThreadState_Sleep:
+            break;
+            default:
+                if(prevThread->TimeSlice <= 0){
+                    prevThread->TimeSlice = THREAD_TOTAL_TIMESLICE;
+                    Heap_Insert(all_states[*core_id].back_heap, prevThread->TimeSlice, prevThread);
+                }
+                else{
+                    Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice, prevThread);
+                }
+            break;
+        }
     }
 
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
+        
+        if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0)
+        {
+            //Pick up 10 threads from the pending queue if any are available
+            if(TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0)
+            {
+                TryAddThreads();
+                UnlockSpinlock(starving_lock);
+            }
 
-        LockSpinlock(sync_lock);
-        next_thread = List_EntryAt(neutral, 0);
-        List_Remove(neutral, 0);
-        UnlockSpinlock(sync_lock);
+            //Swap the front and back heaps
+            Heap *new_front = all_states[*core_id].back_heap;
+            all_states[*core_id].back_heap = all_states[*core_id].cur_heap;
+            all_states[*core_id].cur_heap = new_front;
 
-        if(next_thread == NULL)continue;
+            if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0){
+                
+                LockSpinlock(starving_lock);
+                while(List_Length(pending_thds) == 0)
+                    __asm__("pause");
+
+                __asm__("hlt");
+                TryAddThreads();
+                UnlockSpinlock(starving_lock);
+
+            }
+        }
+
+        next_thread = Heap_Pop(all_states[*core_id].cur_heap, NULL);
 
 //        debug_gfx_writeLine(" Trying: %x, State: %x , %x%x ", next_thread->ParentProcess->ID, next_thread->ParentProcess->Status, (uint32_t)((uint64_t)next_thread->ParentProcess >> 32), (uint32_t)next_thread->ParentProcess);
 
@@ -531,32 +577,23 @@ GetNextThread(ThreadInfo *prevThread) {
 
         switch(GET_PROPERTY_VAL(next_thread, State)) {
         case ThreadState_Exiting:
-
-            LockSpinlock(next_thread->lock);
             List_AddEntry(exiting_thds, next_thread);
-
-            UnlockSpinlock(next_thread->lock);
             break;
         case ThreadState_Paused:
             break;
         case ThreadState_Sleep:
-            __asm__("hlt");
             break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
                 exit_loop = TRUE;
             else {
-                LockSpinlock(sync_lock);
-                List_AddEntry(neutral, next_thread);
-                UnlockSpinlock(sync_lock);
+                List_AddEntry(sleeping_thds, next_thread);
             }
         }
         break;
         }
-
     }
 
-    UnlockSpinlock(sync_lock);
     return next_thread;
 }
 
@@ -566,11 +603,7 @@ TaskSwitch(uint32_t int_no,
            uint32_t err_code) {
 
     {
-
-
         err_code = 0;
-
-        LockSpinlock(sync_lock);
 
         if(all_states[*core_id].cur_thread != NULL) {
             SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
@@ -578,11 +611,11 @@ TaskSwitch(uint32_t int_no,
             SavePreviousThread(all_states[*core_id].cur_thread);
         }
 
-        debug_gfx_writeLine("Core %x ", *core_id);
-        debug_gfx_writeLine("Thread From: %x ", GetCurrentProcessUID());
+        UID prevId = GetCurrentProcessUID();
+
         if(BTree_GetCount(thds) > 0)
             all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
-        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
+        debug_gfx_writeLine("Core %x Thread From: %x To: %x\r\n", *core_id, prevId, GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
@@ -596,7 +629,6 @@ TaskSwitch(uint32_t int_no,
             all_states[*core_id].cur_thread->State = ThreadState_Running;
         }
 
-        UnlockSpinlock(sync_lock);
         HandleInterruptNoReturn(int_no);
         SwitchToThread(all_states[*core_id].cur_thread);
     }
@@ -613,7 +645,6 @@ SetPeriodicPreemptVector(uint32_t irq,
 void
 SwitchThread(void) {
 
-    LockSpinlock(sync_lock);
     all_states[*core_id].cur_thread = GetNextThread(NULL);
 
     RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
@@ -628,7 +659,6 @@ SwitchThread(void) {
     if(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, State) == ThreadState_Initialize) {
         SET_PROPERTY_VAL(all_states[*core_id].cur_thread, State, ThreadState_Running);
 
-        UnlockSpinlock(sync_lock);
         SwitchToThread(all_states[*core_id].cur_thread);
     }
 }
@@ -719,17 +749,16 @@ SleepThreadForMessage(UID id,
         SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
 
         //Remove the thread from the neutral list and put it into the sleeping list
-        List_Remove(neutral, List_GetLastIndex(neutral));
         List_AddEntry(sleeping_thds, thd);
         //A kernel thread will loop through the threads and wake them up as necessary.
 
         ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
 
-        if(id == GetCurrentThreadUID())
-            YieldThread();
     }
-
     UnlockSpinlock(sync_lock);
+
+    if(id == GetCurrentThreadUID())
+        YieldThread();
 }
 
 void
@@ -745,7 +774,7 @@ WakeThread(UID id) {
             SET_PROPERTY_VAL(thd, State, ThreadState_Running);
 
             List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
-            List_AddEntry(neutral, thd);
+            List_AddEntry(pending_thds, thd);
             break;
         }
     }
@@ -809,7 +838,7 @@ WakeReadyThreads(void) {
                 SET_PROPERTY_VAL(thd, State, ThreadState_Running);
 
                 List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
-                List_AddEntry(neutral, thd);
+                List_AddEntry(pending_thds, thd);
             }
         } else {
             ProcessCheckWakeThreads(thd->ParentProcess->ID);

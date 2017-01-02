@@ -36,6 +36,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  */
 #define USER_STACK_SIZE MiB(8)
 
+#define THREAD_TOTAL_TIMESLICE 0xFFFF
+
 /**
  * Thread Priority levels.
  */
@@ -119,7 +121,7 @@ typedef struct ThreadInfo {
     uint64_t            SleepStartTime;         //!< Sleep start time.
     uint64_t            Errno;                  //!< Errno of last syscall.
 
-    uint64_t            TimeSlice;              //!< The time slice available to this thread.
+    int64_t             TimeSlice;              //!< The time slice available to this thread.
     int32_t             CoreAffinity;           //!< Core affinity.
 
     void                *FPUState;              //!< FPU state storage region.
