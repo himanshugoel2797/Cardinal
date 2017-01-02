@@ -84,14 +84,13 @@ GetBG_GSBase(void) {
 }
 
 void
-PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
+PerformArchSpecificTaskSave(ThreadInfo *tInfo, Registers *regs) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
     data[ARCH_DATA_GS_OFFSET] = (uint64_t)GetBG_GSBase();   //The user GS is in the background while in the kernel.
     data[ARCH_DATA_FLAGS_OFFSET] = (uint64_t)GetRFLAGS();
 
-    Registers *regs = GetSavedInterruptState();
     data[ARCH_DATA_R15] = regs->r15;
     data[ARCH_DATA_R14] = regs->r14;
     data[ARCH_DATA_R13] = regs->r13;
@@ -109,16 +108,16 @@ PerformArchSpecificTaskSave(ThreadInfo *tInfo) {
     data[ARCH_DATA_RDI] = regs->rdi;
     data[ARCH_DATA_RIP] = regs->rip;
     data[ARCH_DATA_CS] = regs->cs;
-    data[ARCH_DATA_RFLAGS] = regs->eflags;
+    data[ARCH_DATA_RFLAGS] = regs->rflags;
     data[ARCH_DATA_RSP] = regs->useresp;
     data[ARCH_DATA_SS] = regs->ss;
 }
 
 void
-SetupArchSpecificData(ThreadInfo *tInfo, CRegisters *regs) {
+SetupArchSpecificData(ThreadInfo *tInfo, Registers *regs, void *tls) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
-    data[ARCH_DATA_FS_OFFSET] = (uint64_t)regs->tls;
+    data[ARCH_DATA_FS_OFFSET] = (uint64_t)tls;
     data[ARCH_DATA_GS_OFFSET] = 0;
     data[ARCH_DATA_FLAGS_OFFSET] = 1 << 9;
     data[ARCH_DATA_R15] = regs->r15;

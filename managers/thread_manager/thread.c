@@ -228,7 +228,7 @@ CreateThread(UID parentProcess,
 
     user_stack_base += GetStackSize(perm_level) - 256;   //Subtract 256 to allocate space for red zone
 
-    CRegisters regs;
+    Registers regs;
     regs.rip = (uint64_t)entry_point;
     regs.rsp = user_stack_base;
     regs.rbp = 0;
@@ -247,10 +247,6 @@ CreateThread(UID parentProcess,
     regs.r14 = 0;
     regs.r15 = 0;
     regs.rflags = 0;
-    regs.tls = NULL;
-    regs.p_tid = NULL;
-    regs.clear_tid = NULL;
-    regs.set_tid = NULL;
 
     if(perm_level == ThreadPermissionLevel_User) {
         regs.ss = 0x20 | 3; //DPL: 3
@@ -260,19 +256,15 @@ CreateThread(UID parentProcess,
         regs.cs = 0x08 | 0; //DPL: 0
     }
 
-    regs.set_tid = NULL;
-    regs.clear_tid = NULL;
-    regs.p_tid = NULL;
-    regs.tls = NULL;
-
-    return CreateThreadADV(parentProcess, perm_level, user_stack_bottom, &regs);
+    return CreateThreadADV(parentProcess, perm_level, user_stack_bottom, &regs, NULL);
 }
 
 UID
 CreateThreadADV(UID parentProcess,
                 ThreadPermissionLevel perm_level,
                 uint64_t user_stack_bottom,
-                CRegisters *regs) {
+                Registers *regs,
+                void *tls) {
 
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
@@ -311,7 +303,7 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
     AtomicIncrement32(&thd->ParentProcess->reference_count);
 
-    SetupArchSpecificData(thd, regs);
+    SetupArchSpecificData(thd, regs, tls);
 
     SET_PROPERTY_VAL(thd, ID, new_thd_uid());
     List_AddEntry(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), (void*)thd);
@@ -554,7 +546,7 @@ TaskSwitch(uint32_t int_no,
 
         if(all_states[*core_id].cur_thread != NULL) {
             SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-            PerformArchSpecificTaskSave(all_states[*core_id].cur_thread);
+            PerformArchSpecificTaskSave(all_states[*core_id].cur_thread, GetSavedInterruptState());
         }
 
         UID prevId = GetCurrentProcessUID();

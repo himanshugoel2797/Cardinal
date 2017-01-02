@@ -15,6 +15,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "types.h"
 #include "managers.h"
 
+#include "arch_defs.h"
+
 /**
  * \defgroup threading Threading
  * @{
@@ -24,30 +26,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * The size of the ArchSpecificData area.
  */
 extern const uint64_t ARCH_SPECIFIC_SPACE_SIZE;
-
-/**
- * @brief      Switch to and initialize the thread.
- *
- * @param      thd   The thread
- */
-void
-SwitchAndInitializeThread(ThreadInfo *thd);
-
-/**
- * @brief      Switch to the thread.
- *
- * @param      dst   The thread
- */
-void
-SwitchToThread(ThreadInfo *dst);
-
-/**
- * @brief      Saves the thread state.
- *
- * @param      src   The source
- */
-void
-SavePreviousThread(ThreadInfo *src);
 
 /**
  * @brief      Sets the interrupt stack.
@@ -157,7 +135,8 @@ ResetPreemption(void);
  */
 void
 SetupArchSpecificData(ThreadInfo *tInfo,
-                      CRegisters *regs);
+                      Registers *regs,
+                      void *tls);
 
 /**
  * @brief      Save arch specific data.
@@ -165,7 +144,8 @@ SetupArchSpecificData(ThreadInfo *tInfo,
  * @param      tInfo  The t information
  */
 void
-PerformArchSpecificTaskSave(ThreadInfo *tInfo);
+PerformArchSpecificTaskSave(ThreadInfo *tInfo,
+							Registers *regs);
 
 /**
  * @brief      Switch arch specific data.

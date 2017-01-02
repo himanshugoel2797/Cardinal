@@ -10,6 +10,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "common.h"
+
 void*
 memcpy(void *dest,
        const void *src,
@@ -176,16 +177,10 @@ set_bit_cnt(uint32_t bit_array) {
     return set_bit;
 }
 
-static volatile UID uids_base = 0;
+static volatile _Atomic UID uids_base = 0;
 UID
 new_uid(void) {
-#if defined(x86_64)
-    register UID tmp = 1;
-    __asm__ volatile("lock xadd %[tmp], (%[bs])" : [tmp]"+r"(tmp) : [bs]"r"(&uids_base));
-    return tmp & 0xFFFFFFFF;
-#else
     return (++uids_base & 0xFFFFFFFF);
-#endif
 }
 
 

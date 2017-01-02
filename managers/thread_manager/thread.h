@@ -14,10 +14,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "types.h"
 #include "managers/process_manager/process_info.h"
-#include "libs/libc/include/signal.h"
-#include "libs/libCardinal/include/registers.h"
 #include "libs/libCardinal/include/thread.h"
 #include "synchronization.h"
+
+#include "arch_defs.h"
 
 /**
  * \addtogroup threading
@@ -184,7 +184,8 @@ UID
 CreateThreadADV(UID parentProcess,
                 ThreadPermissionLevel perm_level,
                 uint64_t user_stack_bottom,
-                CRegisters *regs);
+                Registers *regs,
+                void *tls);
 
 /**
  * @brief      Sets the thread state.

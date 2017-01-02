@@ -20,9 +20,6 @@ typedef __builtin_va_list va_list;
 #define va_arg(ap,type) __builtin_va_arg(ap,type)
 #define va_copy(dest, src) __builtin_va_copy(dest,src)
 
-
-#define MAX_CORES 32
-
 #define SET_BIT(x, index) (x | (1 << index))
 #define CLEAR_BIT(x, index) (x & ~(1 << index))
 #define TOGGLE_BIT(x, index) (x ^ (1 << index))
@@ -31,6 +28,8 @@ typedef __builtin_va_list va_list;
 
 #define MAX(x, y)  ((x > y)? x : y)
 #define MIN(x, y)  ((x < y)? x : y)
+
+#define WEAK __attribute__((weak))
 
 void*
 memcpy(void *dest,

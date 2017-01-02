@@ -263,6 +263,7 @@ MapPage(ManagedPageTable *pageTable,
                    cache,
                    access,
                    perms);
+    PerformTLBShootdown();
 
     UnlockSpinlock(pageTable->lock);
 
@@ -425,7 +426,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
                      virtualAddress,
                      (uint64_t)size);
 
-    //PerformTLBShootdown();
+    PerformTLBShootdown();
 
     UnlockSpinlock(pageTable->lock);
     return MemoryAllocationErrors_None;
