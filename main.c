@@ -106,24 +106,42 @@ kernel_main(void) {
 
     SyscallMan_Initialize();
     Syscall_Initialize();
-    DeviceManager_Initialize();
     smp_unlock_cores();
     SetupPreemption();
-    target_device_setup();
-
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
 
-    load_exec(cpid, "userboot.bin");
+    //load_exec(cpid, "userboot.bin");
 
     while(1)
+        ;
         WakeReadyThreads();
 }
 
 void
+idle_main2(void){
+    while(1);
+}
+
+void
 idle_main(void) {
+
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
+    StartProcess(cpid);
+
+
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
+    StartProcess(cpid);
+
     while(1);
 }
 
@@ -143,8 +161,14 @@ smp_core_main(int (*getCoreData)(void)) {
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
 
+
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
+
     SetupPreemption();
-    CoreUpdate();
     while(1);
     //Start the local timer and set it to call the thread switch handler
 }

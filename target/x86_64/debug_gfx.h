@@ -15,6 +15,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "types.h"
 
 void
+debug_gfx_init(void);
+
+void
 debug_gfx_writeLine(const char *str, ...);
 
 #endif

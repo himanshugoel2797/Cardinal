@@ -29,6 +29,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "acpi/acpi_tables.h"
 #include "pci/pci.h"
 #include "thread.h"
+#include "debug_gfx.h"
 
 #ifdef MULTIBOOT1
 #include "multiboot.h"
@@ -95,6 +96,7 @@ bootstrap_kernel(void *param,
     for(int i = 0; i < 32; i++)
         IDT_RegisterHandler(i, bootstrap_pagefault_handler);
 
+    debug_gfx_init();
 
     FPU_Initialize();   //Setup the FPU
 
@@ -157,19 +159,6 @@ bootstrap_kernel(void *param,
     //We aren't supposed to reach here!
 }
 
-void
-setup_preemption(void) {
-    //Start the APIC timer here to act as a reference 'clock'
-    //This is to be used along with the provided frequency to allow threads to sleep
-}
-
-void
-target_device_setup(void) {
-    //A pci device initialization is to be made into a thread spawn, the thread is freed when execution is complete
-    //while(1){__asm__("hlt" :: "a"(APIC_GetTimerFrequency()));}
-    //pci_Initialize();
-}
-
 int get_perf_counter(void) {
     return 0;
 }
@@ -179,6 +168,7 @@ smp_unlock_cores(void) {
     smp_sync_base = 0;
 }
 
+#include "utils/native.h"
 void
 smp_bootstrap_stage2(void) {
     VirtMemMan_InitializeBootstrap();
@@ -191,7 +181,6 @@ smp_bootstrap_stage2(void) {
     MemoryHAL_Initialize();
 
     GDT_Initialize();   //Setup the GDT
-
 
 
     uint64_t t_addr = ((uint64_t)bootstrap_malloc(KiB(16)) + KiB(16));
@@ -212,9 +201,10 @@ smp_bootstrap_stage2(void) {
     GDT_SetIST(0x2, t_addr);
     IDT_ChangeEntry(0x12, 0x08, 0x8E, 0x2); //Setup IST2 for Machine Check
 
-    SMP_IncrementCoreCount();
 
     APIC_LocalInitialize();
+
+    SMP_IncrementCoreCount();
     SMP_UnlockTrampoline();
 
     __asm__ volatile("sti");
@@ -228,15 +218,18 @@ smp_bootstrap_stage2(void) {
 
     SetActiveVirtualMemoryInstance(pageTable);
 
+
     while(smp_sync_base);
     smp_core_main(get_perf_counter);
     while(1);
 }
 
+
 __attribute__((section(".tramp_handler")))
 void
 smp_bootstrap(void) {
     SMP_LockTrampoline();
+
 
     //Allocate a new stack for this thread and put it into the scheduler's queue
     uint64_t stack = (uint64_t)bootstrap_malloc(KiB(16));

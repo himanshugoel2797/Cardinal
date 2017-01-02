@@ -17,7 +17,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "thread_manager/thread.h"				   //Thread Manager
 #include "power_manager/pwm.h"					   //Power Manager
 #include "user_manager/user_manager.h"			   //User Manager
-#include "device_manager/device_manager.h"		   //Device Manager
 #include "syscall_manager/syscall.h"			   //Syscall Manager
 #include "key_manager/key_manager.h"			   //Key Manager
 #include "interrupt_manager/interrupt_man.h"

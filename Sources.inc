@@ -6,7 +6,6 @@ SOURCES=main.o \
 		managers/process_manager/process.o \
 		managers/thread_manager/thread.o \
 		managers/power_manager/pwm.o \
-		managers/device_manager/device_manager.o \
 		managers/syscall_manager/syscall.o \
 		managers/syscall_manager/syscalls/syscall_main.o \
 		managers/syscall_manager/syscalls/time.o \

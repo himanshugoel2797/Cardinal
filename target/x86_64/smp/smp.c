@@ -31,8 +31,9 @@ SMP_GetCoreCount(void) {
 void
 SMP_WaitForCoreCount(int curCC) {
     //Make sure the trampoline has also been unlocked
-    while((curCC == SMP_GetCoreCount()) | smp_lock) __asm__ volatile("pause");
-
+    do{
+        while(smp_lock) __asm__ volatile("pause");
+    }while(SMP_GetCoreCount() == curCC);
 }
 
 void

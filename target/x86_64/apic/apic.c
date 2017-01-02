@@ -91,7 +91,6 @@ APIC_LocalInitialize(void) {
     uint64_t apic_base_msr = rdmsr(IA32_APIC_BASE);
     if(apic_data == NULL)apic_data = (APIC_APLS_Data*)AllocateAPLSMemory(sizeof(APIC_APLS_Data));
 
-
     apic_data->apic_base_addr = (uint32_t*)GetVirtualAddress(CachingModeUncachable ,(void*)(apic_base_msr & 0xfffff000));
 
     apic_base_msr |= (1 << 11); //Enable the apic
@@ -309,12 +308,12 @@ APIC_SetEnableMode(uint8_t enabled) {
     APIC_Write(APIC_SVR, svr);
 }
 
-uint8_t
+uint32_t
 APIC_GetID(void) {
     if(apic_data != NULL)
-        return (uint8_t)APIC_Read(APIC_ID);
+        return APIC_Read(APIC_ID) >> 24;
     else
-        return (uint8_t)-1;
+        return -1;
 }
 
 void

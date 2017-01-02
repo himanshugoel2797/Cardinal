@@ -66,7 +66,7 @@ APIC_Initialize(void);
 void
 APIC_SetEnableMode(uint8_t enabled);
 
-uint8_t
+uint32_t
 APIC_GetID(void);
 
 void

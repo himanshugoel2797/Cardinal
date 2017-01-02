@@ -572,14 +572,17 @@ TaskSwitch(uint32_t int_no,
 
         LockSpinlock(sync_lock);
 
-        SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-        PerformArchSpecificTaskSave(all_states[*core_id].cur_thread);
-        SavePreviousThread(all_states[*core_id].cur_thread);
+        if(all_states[*core_id].cur_thread != NULL) {
+            SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
+            PerformArchSpecificTaskSave(all_states[*core_id].cur_thread);
+            SavePreviousThread(all_states[*core_id].cur_thread);
+        }
 
-//        debug_gfx_writeLine("Core %d ", *core_id);
-//        debug_gfx_writeLine("Thread From: %x ", GetCurrentProcessUID());
-        if(BTree_GetCount(thds) > 0)all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
-//        debug_gfx_writeLine("To: %x\r\n", all_states[*core_id].cur_thread->ID);
+        debug_gfx_writeLine("Core %x ", *core_id);
+        debug_gfx_writeLine("Thread From: %x ", GetCurrentProcessUID());
+        if(BTree_GetCount(thds) > 0)
+            all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
+        debug_gfx_writeLine("To: %x\r\n", GetCurrentProcessUID());
 
 
         RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
@@ -641,6 +644,8 @@ CoreUpdate() {
 void
 RegisterCore(int (*getCoreData)(void)) {
 
+    LockSpinlock(sync_lock);
+
     *core_id = core_id_counter++;
 
     cores[*core_id].ID = *core_id;
@@ -650,6 +655,10 @@ RegisterCore(int (*getCoreData)(void)) {
     all_states[*core_id].cur_heap = Heap_Create();
     all_states[*core_id].back_heap = Heap_Create();
     all_states[*core_id].coreID = *core_id;
+
+    debug_gfx_writeLine("Register Core: %x\r\n", *core_id);
+
+    UnlockSpinlock(sync_lock);
 
     //Threads are placed into the associated heaps when they are scheduled.
     //Replace main thread structure with something with faster indexing

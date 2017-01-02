@@ -19,9 +19,6 @@ void
 kernel_main(void);
 
 void
-target_device_setup(void);
-
-void
 smp_core_main(int (*getCoreData)(void));
 
 void

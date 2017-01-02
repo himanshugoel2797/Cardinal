@@ -99,7 +99,7 @@ GDT_Bootstrap(void) {
 
 void
 GDT_InitializeMP(void) {
-    coreLocalData = AllocateAPLSMemory(sizeof(GDT_CoreData));
+    coreLocalData = (GDT_CoreData*)AllocateAPLSMemory(sizeof(GDT_CoreData));
 }
 
 __attribute__((optnone))

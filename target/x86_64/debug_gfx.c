@@ -14,10 +14,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "bootinfo.h"
 #include "font.h"
 #include "common.h"
+#include "synchronization.h"
 #include "utils/native.h"
+
+static Spinlock lock = NULL;
+
+void
+debug_gfx_init(void){
+	lock = CreateBootstrapSpinlock();
+}
 
 void
 debug_gfx_writeLine(const char *fmt, ...) {
+	LockSpinlock(lock);
+
     char str[256];
     memset(str, 0, 256);
 
@@ -32,4 +42,5 @@ debug_gfx_writeLine(const char *fmt, ...) {
     while(str[i])
         outb(0x3f8, str[i++]);
 
+    UnlockSpinlock(lock);
 }
