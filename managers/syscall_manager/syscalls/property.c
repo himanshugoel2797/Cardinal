@@ -53,13 +53,6 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     LockSpinlock(set_prop_lock);
 
     switch(data->params[0]) {
-    case CardinalProperty_SetTidAddress: {
-        uint64_t retVal = set_tid_address((void*)data->params[2]);
-        SyscallSetErrno(0);
-        UnlockSpinlock(set_prop_lock);
-        return retVal;
-    }
-    break;
     case CardinalProperty_GroupID: {
         uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), data->params[2]);
         UnlockSpinlock(set_prop_lock);

@@ -404,120 +404,36 @@ error_exit:
     return -1;
 }
 
-void
-SetChildTIDAddress(UID id,
-                   void *address) {
-    
-    ThreadInfo *thd = (ThreadInfo*)BTree_GetValue(thds, id);
+ThreadError
+GetThreadReference(UID id, ThreadInfo **thd){
+
+    *thd = (ThreadInfo*)BTree_GetValue(thds, id);
     if(thd == NULL)
-        return;
+        return ThreadError_UIDNotFound;
 
-    SET_PROPERTY_VAL(thd, SetChildTID, address);
-    return;
-}
-
-void
-SetClearChildTIDAddress(UID id,
-                        void *address) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, ClearChildTID, address);
-        return;
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, ClearChildTID, address);
-            return;
-        }
-    }
-
-}
-
-void*
-GetClearChildTIDAddress(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ClearChildTID);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(thds);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, ClearChildTID);
-        }
-    }
-
-    return NULL;
-}
-
-void*
-GetChildTIDAddress(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, SetChildTID);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, SetChildTID);
-        }
-    }
-
-    return NULL;
-}
-
-void*
-GetParentTIDAddress(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, SetParentTID);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, SetParentTID);
-        }
-    }
-
-    return NULL;
+    return ThreadError_None;
 }
 
 void
 SetThreadState(UID id,
                ThreadState state) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, State, state);
-        return;
-    }
 
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, State, state);
-            return;
-        }
-    }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+
+    if(thd != NULL)
+        SET_PROPERTY_VAL(thd, State, state);
 }
 
 void
 SleepThread(UID id,
             uint64_t duration_ns) {
 
-    if( GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID) == id) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, State, ThreadState_Sleep);
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, WakeCondition, ThreadWakeCondition_SleepEnd);
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, SleepStartTime, GetTimerValue());
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, SleepDurationNS, duration_ns);
+    //TODO update this for new scheduler
 
-        List_AddEntry(sleeping_thds, all_states[*core_id].cur_thread);
-        YieldThread();
-        return;
-    }
-
-    List_RotPrev(neutral);
-    for(uint64_t i = 0; i < List_Length(neutral); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
+        ThreadInfo *thd = NULL;
+        GetThreadReference(id, &thd);
+        if(thd != NULL) {
             SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
             SET_PROPERTY_VAL(thd, WakeCondition, ThreadWakeCondition_SleepEnd);
             SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
@@ -529,137 +445,36 @@ SleepThread(UID id,
             //A kernel thread will loop through the threads and wake them up as necessary.
             return;
         }
-    }
 }
 
 ThreadState
 GetThreadState(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, State);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, State);
-        }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL) {
+        return GET_PROPERTY_VAL(thd, State);
     }
     return -1;
 }
 
 void*
-GetThreadUserStack(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        //Setup the user stack
-        uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, ID),
-                                   ThreadPermissionLevel_User);
-
-        return (void*)(user_stack_base);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-
-            uint64_t user_stack_base = AllocateStack(GET_PROPERTY_PROC_VAL(thd, ID),
-                                       ThreadPermissionLevel_User);
-            return (void*)(user_stack_base);
-        }
-    }
-    return NULL;
-}
-
-void*
 GetThreadKernelStack(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return (void*)GET_PROPERTY_VAL(all_states[*core_id].cur_thread, KernelStackAligned);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return (void*)GET_PROPERTY_VAL(thd, KernelStackAligned);
-        }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL) {
+        return (void*)GET_PROPERTY_VAL(thd, KernelStackAligned);
     }
     return NULL;
 }
 
 void*
 GetThreadCurrentStack(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return (void*)GET_PROPERTY_VAL(all_states[*core_id].cur_thread, CurrentStack);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return (void*)GET_PROPERTY_VAL(thd, CurrentStack);
-        }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL) {
+        return (void*)GET_PROPERTY_VAL(thd, CurrentStack);
     }
     return NULL;
-}
-
-void
-SetThreadBasePriority(UID id,
-                      ThreadPriority Priority) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, Priority, Priority);
-        return;
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, Priority, Priority);
-            return;
-        }
-    }
-}
-
-ThreadPriority
-GetThreadPriority(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, Priority);
-    }
-
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, Priority);
-        }
-    }
-    return -1;
-}
-
-
-void
-SetThreadCoreAffinity(UID id,
-                      int coreID) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, CoreAffinity, coreID);
-        return;
-    }
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, CoreAffinity, coreID);
-            return;
-        }
-    }
-}
-
-int
-GetThreadCoreAffinity(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, CoreAffinity);
-    }
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, CoreAffinity);
-        }
-    }
-    return -1;
 }
 
 void
@@ -784,7 +599,7 @@ TaskSwitch(uint32_t int_no,
         SavePreviousThread(all_states[*core_id].cur_thread);
 
 //        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
-        if(List_Length(thds) > 0)all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
+        if(BTree_GetCount(thds) > 0)all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
 //        debug_gfx_writeLine("To: %x\r\n", List_Length(thds));
 
 
@@ -797,33 +612,6 @@ TaskSwitch(uint32_t int_no,
 
         if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
             all_states[*core_id].cur_thread->State = ThreadState_Running;
-            CachingMode cMode = 0;
-            MemoryAllocationFlags cFlags = 0;
-            GetAddressPermissions(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable),
-                                  (uint64_t)all_states[*core_id].cur_thread->SetChildTID,
-                                  &cMode,
-                                  &cFlags,
-                                  NULL);
-
-            if(cMode != 0 && cFlags != 0) {
-                if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
-                    *(uint32_t*)all_states[*core_id].cur_thread->SetChildTID = (uint32_t)all_states[*core_id].cur_thread->ID;
-            }
-
-            if(all_states[*core_id].cur_thread->ParentProcess->Parent != NULL) {
-                GetAddressPermissions(all_states[*core_id].cur_thread->ParentProcess->Parent->PageTable,
-                                      (uint64_t)all_states[*core_id].cur_thread->SetParentTID,
-                                      &cMode,
-                                      &cFlags,
-                                      NULL);
-
-                if(cMode != 0 && cFlags != 0) {
-                    if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
-                        WriteValueAtAddress32(all_states[*core_id].cur_thread->ParentProcess->Parent->PageTable,
-                                              (uint32_t*)all_states[*core_id].cur_thread->SetParentTID,
-                                              (uint32_t)all_states[*core_id].cur_thread->ID);
-                }
-            }
         }
 
         UnlockSpinlock(sync_lock);
@@ -897,31 +685,19 @@ GetCoreLoad(int coreNum) {
 void
 SetThreadErrno(UID id,
                uint64_t errno) {
-
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, Errno, errno);
-        return;
-    }
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, Errno, errno);
-            return;
-        }
-    }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL)
+        SET_PROPERTY_VAL(thd, Errno, errno);
 }
 
 uint64_t
 GetThreadErrno(UID id) {
-    if(id == GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID)) {
-        return GET_PROPERTY_VAL(all_states[*core_id].cur_thread, Errno);
-    }
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_EntryAt(thds, i);
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            return GET_PROPERTY_VAL(thd, Errno);
-        }
-    }
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
+    if(thd != NULL)
+        return GET_PROPERTY_VAL(thd, Errno);
+
     return -1;
 }
 
@@ -945,42 +721,24 @@ SleepThreadForMessage(UID id,
 
 
     LockSpinlock(sync_lock);
+    ThreadInfo *thd = NULL;
+    GetThreadReference(id, &thd);
 
-    if( GET_PROPERTY_VAL(all_states[*core_id].cur_thread, ID) == id) {
+    if(thd != NULL) {
+        SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
+        SET_PROPERTY_VAL(thd, WakeCondition, condition);
+        SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
+        SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
 
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, State, ThreadState_Sleep);
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, WakeCondition, condition);
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, SleepStartTime, GetTimerValue());
-        SET_PROPERTY_VAL(all_states[*core_id].cur_thread, TargetMsgSourcePID, val);
+        //Remove the thread from the neutral list and put it into the sleeping list
+        List_Remove(neutral, List_GetLastIndex(neutral));
+        List_AddEntry(sleeping_thds, thd);
+        //A kernel thread will loop through the threads and wake them up as necessary.
 
-        List_AddEntry(sleeping_thds, all_states[*core_id].cur_thread);
+        ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
 
-        ProcessCheckWakeThreads(GetCurrentProcessUID());
-        UnlockSpinlock(sync_lock);
-
-        YieldThread();
-        return;
-    }
-
-    List_RotPrev(neutral);
-    for(uint64_t i = 0; i < List_Length(neutral); i++) {
-        ThreadInfo *thd = (ThreadInfo*)List_RotNext(neutral);
-
-        if( GET_PROPERTY_VAL(thd, ID) == id) {
-            SET_PROPERTY_VAL(thd, State, ThreadState_Sleep);
-            SET_PROPERTY_VAL(thd, WakeCondition, condition);
-            SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
-            SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
-
-            //Remove the thread from the neutral list and put it into the sleeping list
-            List_Remove(neutral, List_GetLastIndex(neutral));
-            List_AddEntry(sleeping_thds, thd);
-            //A kernel thread will loop through the threads and wake them up as necessary.
-
-            ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
-
-            break;
-        }
+        if(id == GetCurrentThreadUID())
+            YieldThread();
     }
 
     UnlockSpinlock(sync_lock);
@@ -1023,13 +781,7 @@ DeleteThread(void) {
     FreeMapping((void*)thd->InterruptStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
 
-    for(uint64_t i = 0; i < List_Length(thds); i++) {
-        ThreadInfo *tInfo = List_RotNext(thds);
-        if(GET_PROPERTY_VAL(tInfo, ID) == thd->ID) {
-            List_Remove(thds, List_GetLastIndex(thds));
-            break;
-        }
-    }
+    BTree_RemoveEntry(thds, thd->ID);
 
     for(uint64_t i = 0; i < List_Length(GET_PROPERTY_PROC_VAL(thd, ThreadInfos)); i++) {
         ThreadInfo* id = (ThreadInfo*)List_EntryAt(GET_PROPERTY_PROC_VAL(thd, ThreadInfos), i);

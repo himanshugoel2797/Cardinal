@@ -38,4 +38,7 @@ BTree_Delete(BTree *h);
 uint64_t
 BTree_GetKey(BTree *h);
 
+uint64_t
+BTree_GetCount(BTree *h);
+
 #endif

@@ -36,6 +36,7 @@ struct BTreeInt {
     int max_levels;
     _Atomic uint64_t key;
     Spinlock key_lock;
+    uint64_t item_count;
 };
 
 
@@ -177,6 +178,7 @@ BTree_Create(int max_levels) {
     h->level_count = 0;
     h->max_levels = max_levels;
     h->key_lock = CreateSpinlock();
+    h->item_count = 0;
 
     return h;
 }
@@ -192,7 +194,12 @@ BTree_Insert(BTree *h,
         h->nodes->cnt = 0;
     }
 
-    return insert(h->nodes, h->max_levels - 1, key, obj);
+    int retVal = insert(h->nodes, h->max_levels - 1, key, obj);
+
+    if(retVal == 0)
+        h->item_count++;
+
+    return retVal;
 }
 
 void*
@@ -210,7 +217,12 @@ BTree_RemoveEntry(BTree *h, uint64_t key) {
     if(h->nodes == NULL)
         return NULL;
 
-    return remove(h->nodes, h->max_levels - 1, key);
+    void *retVal = remove(h->nodes, h->max_levels - 1, key);
+
+    if(retVal != NULL)
+        h->item_count--;
+
+    return retVal;
 }
 
 void
@@ -239,4 +251,9 @@ BTree_GetKey(BTree *h) {
     }
     UnlockSpinlock(h->key_lock);
     return cur_key;
+}
+
+uint64_t
+BTree_GetCount(BTree *h){
+    return h->item_count;
 }

@@ -79,6 +79,11 @@ typedef enum {
     ThreadPermissionLevel_Kernel  //!< Kernel level thread.
 } ThreadPermissionLevel;
 
+typedef enum {
+  ThreadError_None = 0,
+  ThreadError_UIDNotFound = 1
+} ThreadError;
+
 /**
  * Thread Entry Point.
  */

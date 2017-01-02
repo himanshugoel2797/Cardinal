@@ -1,7 +1,0 @@
-rtl8139.elf |10EC|8139|2|FFFF|FFFF
-uhci.elf |FFFF|FFFF|0C|03|00
-ahci.elf |FFFF|FFFF|01|06|01
-ihda.elf |FFFF|FFFF|04|03|FFFF
-vmware-svga.elf |15AD|0405|FFFF|FFFF|FFFF
-ihd_ironlake.elf |8086|0046|FFFF|FFFF|FFFF
-ihd_hsw.elf |8086|0A16|FFFF|FFFF|FFFF

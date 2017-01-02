@@ -17,14 +17,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "managers.h"
 
 uint64_t
-set_tid_address(void* address) {
-    SetClearChildTIDAddress(GetCurrentThreadUID(),
-                            address);
-
-    return GetCurrentThreadUID();
-}
-
-uint64_t
 R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                         uint64_t syscall_num,
                         uint64_t *syscall_params) {
