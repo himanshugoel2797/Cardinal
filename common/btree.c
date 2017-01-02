@@ -93,8 +93,7 @@ get(Node *nodes,
         void* retVal = (void*)nodes->vals[pos];
         UnlockSpinlock(nodes->lock);
         return retVal;
-    }
-    else {
+    }else{
         LockSpinlock(nodes->lock);
         if(nodes->children[pos] == NULL){
             UnlockSpinlock(nodes->lock);
@@ -192,6 +191,7 @@ BTree_Insert(BTree *h,
         h->nodes = kmalloc(sizeof(Node));
         memset(h->nodes, 0, sizeof(Node));
         h->nodes->cnt = 0;
+        h->nodes->lock = CreateSpinlock();
     }
 
     int retVal = insert(h->nodes, h->max_levels - 1, key, obj);
@@ -240,7 +240,7 @@ uint64_t
 BTree_GetKey(BTree *h) {
     LockSpinlock(h->key_lock);
     uint64_t cur_key = h->key++;
-
+    //TODO this routine is bugged, fix it
     for(int i = 0; i < h->max_levels; i++){
 
         int pos = (cur_key >> (i * BITS_PER_LEVEL)) & LEVEL_INDEX_MASK;

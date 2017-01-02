@@ -53,7 +53,6 @@ typedef enum {
     Cardinal_EmulatedSyscalls_ArchPrctl = 158,
     Cardinal_EmulatedSyscalls_GetTID = 186,
     Cardinal_EmulatedSyscalls_Time = 201,
-    Cardinal_EmulatedSyscalls_SetTidAddress = 218,
 } Cardinal_EmulatedSyscalls;
 
 static __inline uint64_t
@@ -92,9 +91,6 @@ SyscallEmu1(uint32_t syscall_num,
     case Cardinal_EmulatedSyscalls_Time:
         ret_error = Syscall2(Syscall_GetProperty, CardinalProperty_Time, 0);
         if(p0 != 0)*(long*)p0 = (long)ret_error;
-        break;
-    case Cardinal_EmulatedSyscalls_SetTidAddress:
-        ret_error = Syscall3(Syscall_SetProperty, CardinalProperty_SetTidAddress, 0, p0);
         break;
     default:
         __asm__("hlt" :: "a"(syscall_num));

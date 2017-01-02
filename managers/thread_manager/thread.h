@@ -122,9 +122,6 @@ typedef struct ThreadInfo {
     uint64_t            TimeSlice;              //!< The time slice available to this thread.
     int32_t             CoreAffinity;           //!< Core affinity.
 
-    void                *SetChildTID;           //!< Set child TID address.
-    void                *ClearChildTID;         //!< Clear child TID address.
-    void                *SetParentTID;          //!< Set parent TID address.
     void                *FPUState;              //!< FPU state storage region.
     void                *ArchSpecificData;      //!< Architecture specific data storage region.
 
@@ -145,56 +142,6 @@ typedef struct CoreInfo {
  */
 void
 Thread_Initialize(void);
-
-/**
- * @brief      Sets the child tid address.
- *
- * @param[in]  id       The thread ID
- * @param      address  The address
- */
-void
-SetChildTIDAddress(UID id,
-                   void *address);
-
-/**
- * @brief      Sets the clear child tid address.
- *
- * @param[in]  id       The thread ID
- * @param      address  The address
- */
-void
-SetClearChildTIDAddress(UID id,
-                        void *address);
-
-/**
- * @brief      Gets the clear child tid address.
- *
- * @param[in]  id    The thread ID
- *
- * @return     The clear child tid address.
- */
-void*
-GetClearChildTIDAddress(UID id);
-
-/**
- * @brief      Gets the child tid address.
- *
- * @param[in]  id    The thread ID
- *
- * @return     The child tid address.
- */
-void*
-GetChildTIDAddress(UID id);
-
-/**
- * @brief      Gets the parent tid address.
- *
- * @param[in]  id    The thread ID
- *
- * @return     The parent tid address.
- */
-void*
-GetParentTIDAddress(UID id);
 
 /**
  * @brief      Allocate a stack of STACK_SIZE in the specified process.
@@ -268,16 +215,6 @@ SleepThread(UID id,
  */
 ThreadState
 GetThreadState(UID id);
-
-/**
- * @brief      Gets the thread user stack.
- *
- * @param[in]  id    The thread ID
- *
- * @return     The thread user stack.
- */
-void*
-GetThreadUserStack(UID id);
 
 /**
  * @brief      Gets the thread kernel stack.

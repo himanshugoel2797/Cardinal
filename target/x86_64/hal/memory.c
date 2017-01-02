@@ -425,6 +425,8 @@ UnmapPage(ManagedPageTable 	*pageTable,
                      virtualAddress,
                      (uint64_t)size);
 
+    //PerformTLBShootdown();
+
     UnlockSpinlock(pageTable->lock);
     return MemoryAllocationErrors_None;
 }
@@ -667,6 +669,9 @@ HandlePageFault(uint64_t virtualAddress,
     if(map == NULL) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
     }
+
+    //PerformTLBShootdown();
+    
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
 }
@@ -726,7 +731,7 @@ PerformTLBShootdown(void) {
     //Reload the current virtual memory instance
     tlb_shootdown = TRUE;
     __asm__ volatile("mfence");
-    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 34, APIC_DELIVERY_MODE_FIXED);
+    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 32, APIC_DELIVERY_MODE_FIXED);
 
     tlb_core_count = 1;
     while(tlb_core_count < GetCoreCount());

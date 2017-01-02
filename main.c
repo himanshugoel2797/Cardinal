@@ -107,7 +107,7 @@ kernel_main(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
     DeviceManager_Initialize();
-    //smp_unlock_cores();
+    smp_unlock_cores();
     SetupPreemption();
     target_device_setup();
 
@@ -129,7 +129,7 @@ idle_main(void) {
 
 void
 smp_core_main(int (*getCoreData)(void)) {
-
+    seed(GetTimerValue());
 
     //Expose additional cores as a service
     Syscall_Initialize();

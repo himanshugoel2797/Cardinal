@@ -33,8 +33,14 @@ void
 ProcessSys_Initialize(void) {
     processes = BTree_Create(3);
 
+    //Get an ID to force the btree id to be equal to the ROOT_PID
+    uint64_t pid = new_proc_uid();
+    while(pid != ROOT_PID){
+        pid = new_proc_uid();
+    }
+
     root = kmalloc(sizeof(ProcessInformation));
-    root->ID = new_proc_uid();  //Root process ID is ROOT_PID
+    root->ID = pid;  //Root process ID is ROOT_PID
     root->Status = ProcessStatus_Executing;
     root->PageTable = GetActiveVirtualMemoryInstance();
     root->HeapBreak = 0;

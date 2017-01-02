@@ -43,7 +43,6 @@ static volatile _Atomic uint64_t core_id_counter = 0;
 
 static uint64_t preempt_frequency;
 static uint32_t preempt_vector;
-static volatile _Atomic UID base_thread_ID = 1;
 
 static UID
 new_thd_uid(void) {
@@ -129,9 +128,6 @@ PROPERTY_GET_SET(uint64_t, Errno, 0)
 
 PROPERTY_GET_SET(int32_t, CoreAffinity, 0)
 
-PROPERTY_GET_SET(void*, SetChildTID, NULL)
-PROPERTY_GET_SET(void*, ClearChildTID, NULL)
-PROPERTY_GET_SET(void*, SetParentTID, NULL)
 PROPERTY_GET_SET(void*, FPUState, NULL)
 PROPERTY_GET_SET(void*, ArchSpecificData, NULL)
 
@@ -293,9 +289,6 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, InterruptStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, KernelStackBase, AllocateStack(parentProcess, ThreadPermissionLevel_Kernel));
     SET_PROPERTY_VAL(thd, ArchSpecificData, kmalloc(ARCH_SPECIFIC_SPACE_SIZE));
-    SET_PROPERTY_VAL(thd, ClearChildTID, regs->clear_tid);
-    SET_PROPERTY_VAL(thd, SetChildTID, regs->set_tid);
-    SET_PROPERTY_VAL(thd, SetParentTID, regs->p_tid);
     SET_PROPERTY_VAL(thd, Errno, 0);
 
     SET_PROPERTY_VAL(thd, UserStackBase, user_stack_bottom);
@@ -542,21 +535,6 @@ GetNextThread(ThreadInfo *prevThread) {
             LockSpinlock(next_thread->lock);
             List_AddEntry(exiting_thds, next_thread);
 
-            CachingMode cMode = 0;
-            MemoryAllocationFlags cFlags = 0;
-            GetAddressPermissions(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                  (uint64_t)next_thread->SetChildTID,
-                                  &cMode,
-                                  &cFlags,
-                                  NULL);
-
-            if(cMode != 0 && cFlags != 0) {
-                if(cFlags & (MemoryAllocationFlags_User | MemoryAllocationFlags_Present))
-                    WriteValueAtAddress32(GET_PROPERTY_PROC_VAL(next_thread, PageTable),
-                                          (uint32_t*)next_thread->ClearChildTID,
-                                          0);
-            }
-
             UnlockSpinlock(next_thread->lock);
             break;
         case ThreadState_Paused:
@@ -598,9 +576,10 @@ TaskSwitch(uint32_t int_no,
         PerformArchSpecificTaskSave(all_states[*core_id].cur_thread);
         SavePreviousThread(all_states[*core_id].cur_thread);
 
-//        debug_gfx_writeLine("Thread From: %x", GetCurrentProcessUID());
+//        debug_gfx_writeLine("Core %d ", *core_id);
+//        debug_gfx_writeLine("Thread From: %x ", GetCurrentProcessUID());
         if(BTree_GetCount(thds) > 0)all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
-//        debug_gfx_writeLine("To: %x\r\n", List_Length(thds));
+//        debug_gfx_writeLine("To: %x\r\n", all_states[*core_id].cur_thread->ID);
 
 
         RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
