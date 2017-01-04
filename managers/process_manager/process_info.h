@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "list.h"
 #include "memory.h"
 #include "synchronization.h"
+#include "common/ref_count.h"
 
 /**
  * \addtogroup proc_man
@@ -65,6 +66,7 @@ typedef enum {
  * Process information/state.
  */
 typedef struct ProcessInformation {
+    Ref                         ref;
     UID                         ID;                         //!< The Process ID.
     UID                         UserID;                     //!< The User ID of the owner.
     UID                         GroupID;                    //!< GroupIDs are used to control permission levels
@@ -84,7 +86,6 @@ typedef struct ProcessInformation {
 
     struct ProcessInformation   *Parent;                    //!< Pointer to the parent of the process.
     uint32_t                    InterruptsUsed;             //!< Tracks if the process has requested interrupt notifications.
-    uint32_t                    reference_count;            //!< Reference count
     Spinlock                    lock;                       //!< Read/Write synchronization.
 } ProcessInformation;
 

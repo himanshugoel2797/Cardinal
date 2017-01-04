@@ -17,6 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "list.h"
 #include "libs/libCardinal/include/memory.h"
 
+#include "common/ref_count.h"
+
 /**
  * \defgroup memory_hal Memory Management
  * @{
@@ -67,6 +69,9 @@ typedef struct MemoryAllocationsMap {
  * Describes a hardware independent page table
  */
 typedef struct ManagedPageTable {
+    Ref                   ref;
+    Spinlock              lock;
+
     UID                   PageTable;      //!< The hardware dependent page table
     MemoryAllocationsMap  *UserMap;       //!< The allocation data of the page table
 
@@ -74,9 +79,6 @@ typedef struct ManagedPageTable {
       uint64_t SmallActivityBitmap;       //!<Used when the core count is less than 64.
       uint64_t *LargeActivityBitmap;      //!<Used when the core count is greater than or equal to 64.
     };
-
-    uint32_t              reference_count;
-    Spinlock              lock;
 } ManagedPageTable;
 
 /**

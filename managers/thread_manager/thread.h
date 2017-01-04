@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "managers/process_manager/process_info.h"
 #include "libs/libCardinal/include/thread.h"
 #include "synchronization.h"
+#include "common/ref_count.h"
 
 #include "arch_defs.h"
 
@@ -95,6 +96,8 @@ typedef void (*ThreadEntryPoint)(void*);
  * Thread Information/State.
  */
 typedef struct ThreadInfo {
+    Ref                 ref;                    //!< Reference count.
+    Spinlock            lock;                   //!< Read/Write lock.
 
     UID                 ID; //!< Thread ID.
 
@@ -125,8 +128,6 @@ typedef struct ThreadInfo {
     void                *FPUState;              //!< FPU state storage region.
     void                *ArchSpecificData;      //!< Architecture specific data storage region.
 
-    uint32_t            reference_count;        //!< Reference count.
-    Spinlock            lock;                   //!< Read/Write lock.
 } ThreadInfo;
 
 /**

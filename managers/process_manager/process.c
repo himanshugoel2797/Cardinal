@@ -19,7 +19,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 static BTree *processes;
 static ProcessInformation *root = NULL;
-static volatile _Atomic UID baseID = ROOT_PID;
 
 
 static UID
@@ -40,6 +39,7 @@ ProcessSys_Initialize(void) {
     }
 
     root = kmalloc(sizeof(ProcessInformation));
+    RefInit(&root->ref, (ReferenceFreeHandler)TerminateProcess, offsetof(ProcessInformation, ref));
     root->ID = pid;  //Root process ID is ROOT_PID
     root->Status = ProcessStatus_Executing;
     root->PageTable = GetActiveVirtualMemoryInstance();
@@ -51,7 +51,6 @@ ProcessSys_Initialize(void) {
     root->ThreadInfos = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
-    root->reference_count = 0;
     root->lock = CreateSpinlock();
 
     BTree_Insert(processes, root->ID, root);
@@ -97,10 +96,8 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
     List_AddEntry(src->Children, (void*)dst);
 
     dst->Parent = src;
-    dst->reference_count = 1;
+    RefInit(&dst->ref, (ReferenceFreeHandler)TerminateProcess, offsetof(ProcessInformation, ref));
     dst->lock = CreateSpinlock();
-
-    AtomicIncrement32(&src->reference_count);
 
     debug_gfx_writeLine("Create Process: %x\r\n", *pid);
 
@@ -126,17 +123,10 @@ StartProcess(UID pid) {
 }
 
 ProcessErrors
-TerminateProcess(UID pid) {
-
-    while(GetCurrentProcessUID() == pid)
-        YieldThread();
-
-    ProcessInformation *pinfo = NULL;
-    ProcessErrors err = GetProcessReference(pid, &pinfo);
-    if(err != ProcessErrors_None)
-        return err;
-
+TerminateProcess(ProcessInformation *pinfo) {
     LockSpinlock(pinfo->lock);
+
+    UID pid = pinfo->ID;
 
     //Stop this process
     pinfo->Status = ProcessStatus_Terminating;
@@ -164,7 +154,7 @@ TerminateProcess(UID pid) {
         }
 
         //This process no longer holds a reference to its parent, reduce reference count
-        AtomicDecrement32(&pinfo->Parent->reference_count);
+        RefDec(&pinfo->Parent->ref);
 
         //Post a message to the parent process with the exit code
         struct SigChild *exit_msg = kmalloc(MESSAGE_SIZE);
@@ -183,6 +173,7 @@ TerminateProcess(UID pid) {
     //Move children to root process
     ProcessInformation *root_p = NULL;
     GetProcessReference(ROOT_PID, &root_p);
+    LockSpinlock(root_p->lock);
     for(uint64_t i = 0; i < List_Length(pinfo->Children); i++) {
         List_AddEntry(root_p->Children, List_EntryAt(pinfo->Children, i));
 
@@ -190,6 +181,8 @@ TerminateProcess(UID pid) {
         ProcessInformation *child = (ProcessInformation*)List_EntryAt(pinfo->Children, i);
         child->Parent = root_p;
     }
+    UnlockSpinlock(root_p->lock);
+    RefDec(&root_p->ref);
 
     List_Free(pinfo->Children);
 
@@ -210,8 +203,7 @@ TerminateProcess(UID pid) {
     if(pinfo->InterruptsUsed)
         InterruptMan_UnregisterProcess(pid);
 
-    FreeVirtualMemoryInstance(pinfo->PageTable);
-
+    RefDec(&pinfo->PageTable->ref);
 
     //TODO Inspect this to make sure the entire process information data is being freed
     UnlockSpinlock(pinfo->lock);
@@ -246,6 +238,7 @@ GetProcessReference(UID           pid,
         return ProcessErrors_UIDNotFound;
     }
 
+    RefInc(&pInf->ref);
     *procInfo = pInf;
     return ProcessErrors_None;
 }
@@ -264,9 +257,6 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
     if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
         return -3;
 
-    ProcessInformation *cur_procInfo = NULL;
-    GetProcessReference(GetCurrentProcessUID(), &cur_procInfo);
-
     for(uint64_t i = 0; i < cnt; i++) {
 
         Message *m = NULL;
@@ -276,6 +266,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
         {
             if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT) {
                 UnlockSpinlock(pInfo->MessageLock);
+                RefDec(pInfo);
                 return i;
             }
 
@@ -283,6 +274,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
             if(m == NULL) {
                 UnlockSpinlock(pInfo->MessageLock);
+                RefDec(pInfo);
                 return i;
             }
 
@@ -297,6 +289,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
     ProcessCheckWakeThreads(dstPID);
 
+    RefDec(pInfo);
     return TRUE;
 }
 
@@ -313,8 +306,10 @@ GetMessageFrom(Message *msg,
     if(List_Length(pInfo->PendingMessages) == 0) {
         YieldThread();
 
-        if(List_Length(pInfo->PendingMessages) == 0)
+        if(List_Length(pInfo->PendingMessages) == 0){
+            RefDec(pInfo);
             return FALSE;
+        }
     }
 
     LockSpinlock(pInfo->MessageLock);
@@ -336,11 +331,14 @@ GetMessageFrom(Message *msg,
 
                 UnlockSpinlock(pInfo->MessageLock);
             }
+
+            RefDec(pInfo);
             return TRUE;
         }
     }
 
     UnlockSpinlock(pInfo->MessageLock);
+    RefDec(pInfo);
     return FALSE;
 }
 
@@ -365,11 +363,13 @@ GetMessageFromType(Message *msg,
             kfree(tmp);
 
             UnlockSpinlock(pInfo->MessageLock);
+            RefDec(pInfo);
             return TRUE;
         }
     }
 
     UnlockSpinlock(pInfo->MessageLock);
+    RefDec(pInfo);
     return FALSE;
 }
 

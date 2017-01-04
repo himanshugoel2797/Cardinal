@@ -68,6 +68,8 @@ MemoryAllocationErrors
 CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         LockSpinlock(vmem_lock);
+        RefInit(&inst->ref, (ReferenceFreeHandler)FreeVirtualMemoryInstance, offsetof(ManagedPageTable, ref));
+
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
 
         if(GetCoreCount() < 64)
@@ -78,8 +80,6 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
         }
 
         inst->lock = CreateSpinlock();
-        inst->reference_count = 1;
-
         inst->UserMap = NULL;
 
         UnlockSpinlock(vmem_lock);
@@ -122,7 +122,8 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
 
 
     LockSpinlock(inst->lock);
-    inst->reference_count++;
+    RefInc(&inst->ref);
+
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     //Mark this memory instance as inactive on this core
     if(GetCoreCount() < 64)
@@ -139,7 +140,7 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
             tmp->LargeActivityBitmap[GetCoreIndex() / 64] &= ~(1 << (GetCoreIndex() % 64));
         UnlockSpinlock(tmp->lock);
 
-        AtomicDecrement32(&tmp->reference_count);
+        RefDec(&tmp->ref);
     }
 
     UnlockSpinlock(vmem_lock);

@@ -101,7 +101,6 @@ new_thd_uid(void) {
 
 PROPERTY_PROC_GET(UID, ID, 0)
 PROPERTY_PROC_GET(ManagedPageTable*, PageTable, 0)
-PROPERTY_PROC_GET_SET(uint32_t, reference_count, 0)
 PROPERTY_PROC_GET(ProcessInformation*, Parent, NULL)
 PROPERTY_PROC_GET(List*, PendingMessages, NULL)
 PROPERTY_PROC_GET(List*, ThreadInfos, NULL)
@@ -301,7 +300,7 @@ CreateThreadADV(UID parentProcess,
         goto error_exit;
 
     SET_PROPERTY_VAL(thd, ParentProcess, pInfo);
-    AtomicIncrement32(&thd->ParentProcess->reference_count);
+    RefInc(&thd->ParentProcess->ref);
 
     SetupArchSpecificData(thd, regs, tls);
 
@@ -337,6 +336,7 @@ GetThreadReference(UID id, ThreadInfo **thd) {
         return ThreadError_UIDNotFound;
 
     *thd = tmp_thd;
+    RefInc(&tmp_thd->ref);
     return ThreadError_None;
 }
 
@@ -699,17 +699,10 @@ WakeThread(UID id) {
 }
 
 void
-DeleteThread(void) {
+DeleteThread(ThreadInfo *thd) {
 
     LockSpinlock(sync_lock);
-
-    ThreadInfo* thd = List_RotNext(exiting_thds);
-    List_Remove(exiting_thds, List_GetLastIndex(exiting_thds));
-    if(thd == NULL) {
-        UnlockSpinlock(sync_lock);
-        return;
-    }
-
+    
     FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
 
@@ -730,12 +723,7 @@ DeleteThread(void) {
 
     //LockSpinlock(next_thread->ParentProcess->lock);
 
-    AtomicDecrement32(&thd->ParentProcess->reference_count);
-    if(List_Length(GET_PROPERTY_PROC_VAL(thd, ThreadInfos)) == 0) {
-        TerminateProcess(GET_PROPERTY_PROC_VAL(thd, ID));
-    }
-
-
+    RefDec(&thd->ParentProcess->ref);
     UnlockSpinlock(sync_lock);
 }
 
@@ -761,6 +749,4 @@ WakeReadyThreads(void) {
 
         UnlockSpinlock(thd->lock);
     }
-
-    //DeleteThread();
 }

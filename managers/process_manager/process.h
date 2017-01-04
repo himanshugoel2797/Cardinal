@@ -56,7 +56,7 @@ StartProcess(UID pid);
  * @return     Error code on failure, ProcessErrors_None on success.
  */
 ProcessErrors
-TerminateProcess(UID pid);
+TerminateProcess(ProcessInformation *pInfo);
 
 /**
  * @brief      Gets the process information.
