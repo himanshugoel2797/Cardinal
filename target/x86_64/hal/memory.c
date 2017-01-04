@@ -69,6 +69,14 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if(inst != NULL) {
         LockSpinlock(vmem_lock);
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
+
+        if(GetCoreCount() < 64)
+            inst->SmallActivityBitmap = 0;
+        else{
+            inst->LargeActivityBitmap = kmalloc(GetCoreCount() / 8 + 1);
+            memset(inst->LargeActivityBitmap, 0, GetCoreCount() / 8 + 1);
+        }
+
         inst->lock = CreateSpinlock();
         inst->reference_count = 1;
 
@@ -94,6 +102,11 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
 
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
 
+        if(GetCoreCount() < 64)
+            inst->SmallActivityBitmap = 0;
+        else
+            kfree(inst->LargeActivityBitmap);
+
         UnlockSpinlock(inst->lock);
         UnlockSpinlock(vmem_lock);
     }
@@ -106,12 +119,26 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     ManagedPageTable *tmp = (ManagedPageTable*)*curPageTable;
     *curPageTable = inst;
     LockSpinlock(vmem_lock);
+
+
     LockSpinlock(inst->lock);
     inst->reference_count++;
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
+    //Mark this memory instance as inactive on this core
+    if(GetCoreCount() < 64)
+        inst->SmallActivityBitmap |= (1 << GetCoreIndex());
+    else
+        inst->LargeActivityBitmap[GetCoreIndex() / 64] |= (1 << (GetCoreIndex() % 64));
     UnlockSpinlock(inst->lock);
 
     if(tmp != NULL) {
+        LockSpinlock(tmp->lock);
+        if(GetCoreCount() < 64)
+            tmp->SmallActivityBitmap &= ~(1 << GetCoreIndex());
+        else
+            tmp->LargeActivityBitmap[GetCoreIndex() / 64] &= ~(1 << (GetCoreIndex() % 64));
+        UnlockSpinlock(tmp->lock);
+
         AtomicDecrement32(&tmp->reference_count);
     }
 
@@ -263,7 +290,7 @@ MapPage(ManagedPageTable *pageTable,
                    cache,
                    access,
                    perms);
-    PerformTLBShootdown();
+    //PerformTLBShootdown();
 
     UnlockSpinlock(pageTable->lock);
 
@@ -426,7 +453,9 @@ UnmapPage(ManagedPageTable 	*pageTable,
                      virtualAddress,
                      (uint64_t)size);
 
-    PerformTLBShootdown();
+    if(ProcessSys_IsInitialized()){
+        PerformTLBShootdown(virtualAddress, size);
+    }
 
     UnlockSpinlock(pageTable->lock);
     return MemoryAllocationErrors_None;
@@ -610,13 +639,11 @@ GetCoreCount(void) {
     return SMP_GetCoreCount();
 }
 
-static bool tlb_shootdown = FALSE;
-static volatile int tlb_core_count = 0;
 
 void
 HandlePageFault(uint64_t virtualAddress,
                 uint64_t instruction_pointer,
-                MemoryAllocationFlags UNUSED(error)) {
+                MemoryAllocationFlags error) {
 
     if(!ProcessSys_IsInitialized()) {
         __asm__("cli\n\thlt" :: "a"(instruction_pointer));
@@ -655,9 +682,9 @@ HandlePageFault(uint64_t virtualAddress,
                 break;
             }
 
-//            if(map->AllocationType & MemoryAllocationType_Application) {
-//            }
-
+            if((map->Flags & error) == error){
+                break;  //If the allocation flags match, then all is fine, just needed a cache update
+            }
 
             break;
         }
@@ -720,6 +747,9 @@ HaltProcessor(void) {
     __asm__ volatile("cli\n\thlt");
 }
 
+static bool tlb_shootdown = FALSE;
+static volatile int tlb_core_count = 0;
+
 void
 HandleTLBShootdown(uint32_t UNUSED(int_no),
                    uint32_t UNUSED(err_code)) {
@@ -727,12 +757,17 @@ HandleTLBShootdown(uint32_t UNUSED(int_no),
     AtomicIncrement32((uint32_t*)&tlb_core_count);
 }
 
+
 void
-PerformTLBShootdown(void) {
+PerformTLBShootdown(uint64_t addr, uint64_t sz) {
     //Reload the current virtual memory instance
     tlb_shootdown = TRUE;
     __asm__ volatile("mfence");
-    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 32, APIC_DELIVERY_MODE_FIXED);
+
+    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 34, APIC_DELIVERY_MODE_FIXED);
+
+    addr = 0;
+    sz = 0;
 
     tlb_core_count = 1;
     while(tlb_core_count < GetCoreCount());

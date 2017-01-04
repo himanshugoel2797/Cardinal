@@ -435,6 +435,13 @@ void
 AddThreadTimeSlice(UID tid,
                    int64_t slice);
 
+/**
+ * @brief      Gets the core index.
+ *
+ * @return     The core index.
+ */
+uint64_t
+GetCoreIndex(void);
 
 /**@}*/
 

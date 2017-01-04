@@ -150,6 +150,12 @@ bootstrap_kernel(void *param,
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
     pageTable->reference_count = 0;
+
+    if(GetCoreCount() < 64)
+        pageTable->SmallActivityBitmap = 0;
+    else
+        pageTable->LargeActivityBitmap = bootstrap_malloc(GetCoreCount() / 8 + 1);
+
     pageTable->lock = CreateBootstrapSpinlock();
     SetActiveVirtualMemoryInstance(pageTable);
 
@@ -214,6 +220,12 @@ smp_bootstrap_stage2(void) {
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
+
+    if(GetCoreCount() < 64)
+        pageTable->SmallActivityBitmap = 0;
+    else
+        pageTable->LargeActivityBitmap = bootstrap_malloc(GetCoreCount() / 8 + 1);
+
     pageTable->reference_count = 0;
     pageTable->lock = CreateBootstrapSpinlock();
 

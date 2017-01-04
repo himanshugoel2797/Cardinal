@@ -425,6 +425,14 @@ YieldThread(void) {
     RaiseInterrupt(preempt_vector);
 }
 
+uint64_t
+GetCoreIndex(void) {
+    if(core_id != NULL)
+        return *core_id;
+
+    return 0;
+}
+
 void
 TryAddThreads(void){
     for(int i = 0; i < 0x1; i++){     
@@ -506,7 +514,7 @@ GetNextThread(ThreadInfo *prevThread) {
 
         next_thread = Heap_Pop(all_states[*core_id].cur_heap, NULL);
 
-        debug_gfx_writeLine(" Trying: %x, TimeSlice: %x \r\n", next_thread->ParentProcess->ID, next_thread->TimeSlice);
+        //debug_gfx_writeLine(" Trying: %x, TimeSlice: %x \r\n", next_thread->ParentProcess->ID, next_thread->TimeSlice);
 
         //If the process is terminating, terminate the thread
         if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Terminating && GetCurrentProcessUID() != GET_PROPERTY_PROC_VAL(next_thread, ID)) {
@@ -754,5 +762,5 @@ WakeReadyThreads(void) {
         UnlockSpinlock(thd->lock);
     }
 
-    DeleteThread();
+    //DeleteThread();
 }

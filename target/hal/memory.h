@@ -68,7 +68,12 @@ typedef struct MemoryAllocationsMap {
  */
 typedef struct ManagedPageTable {
     UID                   PageTable;      //!< The hardware dependent page table
-    MemoryAllocationsMap  *UserMap; //!< The allocation data of the page table
+    MemoryAllocationsMap  *UserMap;       //!< The allocation data of the page table
+
+    union{
+      uint64_t SmallActivityBitmap;       //!<Used when the core count is less than 64.
+      uint64_t *LargeActivityBitmap;      //!<Used when the core count is greater than or equal to 64.
+    };
 
     uint32_t              reference_count;
     Spinlock              lock;
@@ -268,9 +273,13 @@ HandlePageFault(uint64_t virtualAddress,
 
 /**
  * @brief      Perform a TLB shootdown.
+ *
+ * @param[in]  addr  The address
+ * @param[in]  sz    The size
  */
 void
-PerformTLBShootdown(void);
+PerformTLBShootdown(uint64_t addr, 
+                    uint64_t sz);
 
 /**
  * @brief      Setup a temporary writeable mapping of the virtual address in the
