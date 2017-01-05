@@ -452,6 +452,14 @@ GetCoreIndex(void);
 uint64_t
 GetActiveCoreCount(void);
 
+/**
+ * @brief      Perform a single cycle of the scheduler.
+ *
+ * @param      regs  The regs
+ */
+void
+SchedulerCycle(Registers *regs);
+
 /**@}*/
 
 #endif

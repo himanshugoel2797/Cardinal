@@ -553,17 +553,12 @@ GetNextThread(ThreadInfo *prevThread) {
     return next_thread;
 }
 
-
 void
-TaskSwitch(uint32_t int_no,
-           uint32_t err_code) {
-
-    {
-        err_code = 0;
+SchedulerCycle(Registers *regs) {
 
         if(all_states[*core_id].cur_thread != NULL) {
             SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-            PerformArchSpecificTaskSave(all_states[*core_id].cur_thread, GetSavedInterruptState());
+            SaveTask(all_states[*core_id].cur_thread, regs);
         
             all_states[*core_id].cur_thread = RefDec(&all_states[*core_id].cur_thread->ref);
         }
@@ -584,9 +579,17 @@ TaskSwitch(uint32_t int_no,
         if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
             all_states[*core_id].cur_thread->State = ThreadState_Running;
         }
+}
 
+void
+TaskSwitch(uint32_t int_no,
+           uint32_t err_code) {
+
+    {
+        err_code = 0;
+        SchedulerCycle(GetSavedInterruptState());
         HandleInterruptNoReturn(int_no);
-        PerformArchSpecificTaskSwitch(all_states[*core_id].cur_thread);
+        SwitchToTask(all_states[*core_id].cur_thread);
     }
 }
 

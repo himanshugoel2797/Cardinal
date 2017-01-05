@@ -122,10 +122,12 @@ void
 SetupPreemption(void);
 
 /**
- * @brief      Reset the preemption timer.
+ * @brief      Configure preemption.
+ *
+ * @param[in]  timeSlice  The time slice
  */
 void
-ResetPreemption(void);
+ConfigurePreemption(uint32_t timeSlice);
 
 /**
  * @brief      Setup arch specific data.
@@ -139,21 +141,21 @@ SetupArchSpecificData(ThreadInfo *tInfo,
                       void *tls);
 
 /**
- * @brief      Save arch specific data.
+ * @brief      Save the current task to the specified ThreadInfo struct from the given Registers struct.
  *
- * @param      tInfo  The t information
+ * @param      tInfo  The thread information
  */
 void
-PerformArchSpecificTaskSave(ThreadInfo *tInfo,
-							Registers *regs);
+SaveTask(ThreadInfo *tInfo,
+		 Registers *regs);
 
 /**
- * @brief      Switch arch specific data.
+ * @brief      Switch tasks.
  *
- * @param      tInfo  The t information
+ * @param      tInfo  The thread information
  */
 void
-PerformArchSpecificTaskSwitch(ThreadInfo *tInfo);
+SwitchToTask(ThreadInfo *tInfo);
 
 /**@}*/
 

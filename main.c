@@ -45,7 +45,7 @@ kernel_main_init(void) {
     
     SyscallMan_Initialize();
     Syscall_Initialize(); 
-    smp_unlock_cores();
+    //smp_unlock_cores();
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)

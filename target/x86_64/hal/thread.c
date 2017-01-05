@@ -84,7 +84,7 @@ GetBG_GSBase(void) {
 }
 
 void
-PerformArchSpecificTaskSave(ThreadInfo *tInfo, Registers *regs) {
+SaveTask(ThreadInfo *tInfo, Registers *regs) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     data[ARCH_DATA_FS_OFFSET] = (uint64_t)GetFSBase();
@@ -143,7 +143,7 @@ SetupArchSpecificData(ThreadInfo *tInfo, Registers *regs, void *tls) {
 }
 
 void
-PerformArchSpecificTaskSwitch(ThreadInfo *tInfo) {
+SwitchToTask(ThreadInfo *tInfo) {
     uint64_t *data = (uint64_t*)tInfo->ArchSpecificData;
 
     SetFSBase((void*)data[ARCH_DATA_FS_OFFSET]);
@@ -213,8 +213,18 @@ SetupPreemption(void) {
 }
 
 void
-ResetPreemption(void) {
-    APIC_SetEnableInterrupt(APIC_TIMER, DISABLE);
-    APIC_SetTimerValue(APIC_GetTimerFrequency()/(1000 * 50) * 1000);
-    APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
+ConfigurePreemption(uint32_t timeSlice) {
+    //Configure the timer to interrupt in a time proportional to the timeSlice
+}
+
+void
+YieldThread(void) {
+    //ResetPreemption();
+    //RaiseInterrupt(preempt_vector);
+
+    Registers regs;
+    //save the task state such that the YieldThread function returns
+    
+    SchedulerCycle(&regs);
+    SwitchToTask(); //TODO get the next task info without polluting the functions.
 }
