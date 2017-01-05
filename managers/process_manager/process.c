@@ -208,6 +208,7 @@ TerminateProcess(ProcessInformation *pinfo) {
     //TODO Inspect this to make sure the entire process information data is being freed
     UnlockSpinlock(pinfo->lock);
     FreeSpinlock(pinfo->lock);
+    memset(pinfo, 0, sizeof(ProcessInformation));
     kfree(pinfo);
 
 

@@ -108,6 +108,10 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
             kfree(inst->LargeActivityBitmap);
 
         UnlockSpinlock(inst->lock);
+        FreeSpinlock(inst->lock);
+
+        memset(inst, 0, sizeof(ManagedPageTable));
+
         UnlockSpinlock(vmem_lock);
     }
 }
@@ -654,7 +658,7 @@ HandlePageFault(uint64_t virtualAddress,
     ProcessInformation *procInfo = NULL;
     GetProcessReference(GetCurrentProcessUID(), &procInfo);
     if(procInfo == NULL) {
-        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(procInfo->ID));
+        __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(1), "c"(0));
         //while(1)debug_gfx_writeLine("Error: Page Fault");
     }
 

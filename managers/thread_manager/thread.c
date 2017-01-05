@@ -581,7 +581,6 @@ TaskSwitch(uint32_t int_no,
         SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
         SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable));
 
-
         if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
             all_states[*core_id].cur_thread->State = ThreadState_Running;
         }
@@ -732,6 +731,7 @@ DeleteThread(ThreadInfo *thd) {
 
     FreeSpinlock(thd->lock);
 
+    memset(thd, 0, sizeof(ThreadInfo));
     kfree(thd);
 
     //LockSpinlock(next_thread->ParentProcess->lock);
