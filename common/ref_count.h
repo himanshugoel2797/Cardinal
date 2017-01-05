@@ -27,11 +27,15 @@ void RefInc(const Ref *obj){
 }
 
 static __inline
-void RefDec(const void *obj){
+void* RefDec(const void *obj){
 	Ref* ref = (Ref*)obj;
 	ref->ref_count--;
-	if(ref->ref_count == 0)
+	if(ref->ref_count == 0){
 		ref->free((const void*)((uintptr_t)obj - ref->top_offset));
+		return NULL;
+	}
+
+	return (void*)((uintptr_t)obj - ref->top_offset);
 }
 
 #endif

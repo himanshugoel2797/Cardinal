@@ -280,6 +280,8 @@ CreateThreadADV(UID parentProcess,
     SET_PROPERTY_VAL(thd, Errno, 0);
     thd->TimeSlice = THREAD_TOTAL_TIMESLICE;
 
+    RefInit(&thd->ref, (ReferenceFreeHandler)FreeThread, offsetof(ThreadInfo, ref));
+
     SET_PROPERTY_VAL(thd, UserStackBase, user_stack_bottom);
 
     //Setup kernel stack
@@ -421,8 +423,8 @@ SetThreadIsPaused(UID tid, bool paused) {
 
 void
 YieldThread(void) {
-    ResetPreemption();
-    RaiseInterrupt(preempt_vector);
+    //ResetPreemption();
+    //RaiseInterrupt(preempt_vector);
 }
 
 uint64_t
@@ -431,6 +433,11 @@ GetCoreIndex(void) {
         return *core_id;
 
     return 0;
+}
+
+uint64_t
+GetActiveCoreCount(void) {
+    return core_id_counter;
 }
 
 void
@@ -497,7 +504,9 @@ GetNextThread(ThreadInfo *prevThread) {
 
             //Wait for more threads to be made pending
             while(Heap_GetItemCount(all_states[*core_id].back_heap) == 0){
-                
+                //TODO report that this core is waiting for threads, so other cores shouldn't bother pulling in more load.
+                __asm__ volatile("sti");
+                HALT(0);    //Halt for another core to wake us up for threads.
                 LockSpinlock(starving_lock);
                 while(List_Length(pending_thds) == 0)
                     __asm__("pause");
@@ -555,6 +564,8 @@ TaskSwitch(uint32_t int_no,
         if(all_states[*core_id].cur_thread != NULL) {
             SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
             PerformArchSpecificTaskSave(all_states[*core_id].cur_thread, GetSavedInterruptState());
+        
+            all_states[*core_id].cur_thread = RefDec(&all_states[*core_id].cur_thread->ref);
         }
 
         UID prevId = GetCurrentProcessUID();
@@ -564,6 +575,7 @@ TaskSwitch(uint32_t int_no,
             all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
         debug_gfx_writeLine("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1, Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId, prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
 
+        RefInc(&all_states[*core_id].cur_thread->ref);
 
         RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
         SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
@@ -591,8 +603,8 @@ void
 RegisterCore(int (*getCoreData)(void)) {
 
     LockSpinlock(sync_lock);
+    *core_id = core_id_counter;
 
-    *core_id = core_id_counter++;
 
     cores[*core_id].ID = *core_id;
     cores[*core_id].getCoreData = getCoreData;
@@ -604,6 +616,7 @@ RegisterCore(int (*getCoreData)(void)) {
 
     debug_gfx_writeLine("Register Core: %x\r\n", *core_id);
 
+    core_id_counter++;
     UnlockSpinlock(sync_lock);
 
     //Threads are placed into the associated heaps when they are scheduled.
@@ -702,7 +715,7 @@ void
 DeleteThread(ThreadInfo *thd) {
 
     LockSpinlock(sync_lock);
-    
+
     FreeMapping((void*)thd->KernelStackBase, GetStackSize(ThreadPermissionLevel_Kernel));
     FreeMapping((void*)thd->UserStackBase, GetStackSize(thd->PermissionLevel));
 

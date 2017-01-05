@@ -43,7 +43,7 @@ InterruptMan_InterruptHandler(uint32_t int_no,
 void
 InterruptMan_Initialize(void) {
 
-    for(int i = 0x10; i < IRQ_COUNT; i++) {
+    for(int i = 34; i < IRQ_COUNT; i++) {
         memset(irq_subscriber_pids[i], 0, MAX_SUBSCRIBERS * sizeof(UID));
         RegisterInterruptHandler(i, InterruptMan_InterruptHandler);
         irq_sub_slot_count[i] = MAX_SUBSCRIBERS;

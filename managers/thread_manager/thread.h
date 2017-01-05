@@ -444,6 +444,14 @@ AddThreadTimeSlice(UID tid,
 uint64_t
 GetCoreIndex(void);
 
+/**
+ * @brief      Gets the active core count.
+ *
+ * @return     The active core count.
+ */
+uint64_t
+GetActiveCoreCount(void);
+
 /**@}*/
 
 #endif

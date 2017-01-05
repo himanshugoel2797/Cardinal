@@ -35,7 +35,7 @@ MemoryHAL_Initialize(void) {
         vmem_lock = CreateBootstrapSpinlock();
 
     RegisterInterruptHandler(0xE, VirtMemMan_HandlePageFault);
-    RegisterInterruptHandler(34, HandleTLBShootdown);
+    RegisterInterruptHandler(33, HandleTLBShootdown);
 
     if(curPageTable == NULL)
         curPageTable = (ManagedPageTable volatile **)AllocateAPLSMemory(sizeof(ManagedPageTable**));
@@ -72,11 +72,11 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
 
-        if(GetCoreCount() < 64)
+        if(GetActiveCoreCount() < 64)
             inst->SmallActivityBitmap = 0;
         else{
-            inst->LargeActivityBitmap = kmalloc(GetCoreCount() / 8 + 1);
-            memset(inst->LargeActivityBitmap, 0, GetCoreCount() / 8 + 1);
+            inst->LargeActivityBitmap = kmalloc(GetActiveCoreCount() / 8 + 1);
+            memset(inst->LargeActivityBitmap, 0, GetActiveCoreCount() / 8 + 1);
         }
 
         inst->lock = CreateSpinlock();
@@ -102,7 +102,7 @@ FreeVirtualMemoryInstance(ManagedPageTable *inst) {
 
         VirtMemMan_FreePageTable((PML_Instance)inst->PageTable);
 
-        if(GetCoreCount() < 64)
+        if(GetActiveCoreCount() < 64)
             inst->SmallActivityBitmap = 0;
         else
             kfree(inst->LargeActivityBitmap);
@@ -126,7 +126,7 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
 
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     //Mark this memory instance as inactive on this core
-    if(GetCoreCount() < 64)
+    if(GetActiveCoreCount() < 64)
         inst->SmallActivityBitmap |= (1 << GetCoreIndex());
     else
         inst->LargeActivityBitmap[GetCoreIndex() / 64] |= (1 << (GetCoreIndex() % 64));
@@ -134,7 +134,7 @@ SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
 
     if(tmp != NULL) {
         LockSpinlock(tmp->lock);
-        if(GetCoreCount() < 64)
+        if(GetActiveCoreCount() < 64)
             tmp->SmallActivityBitmap &= ~(1 << GetCoreIndex());
         else
             tmp->LargeActivityBitmap[GetCoreIndex() / 64] &= ~(1 << (GetCoreIndex() % 64));
@@ -454,11 +454,12 @@ UnmapPage(ManagedPageTable 	*pageTable,
                      virtualAddress,
                      (uint64_t)size);
 
+    UnlockSpinlock(pageTable->lock);
+
     if(ProcessSys_IsInitialized()){
         PerformTLBShootdown(virtualAddress, size);
     }
 
-    UnlockSpinlock(pageTable->lock);
     return MemoryAllocationErrors_None;
 }
 
@@ -749,12 +750,15 @@ HaltProcessor(void) {
 }
 
 static bool tlb_shootdown = FALSE;
-static volatile int tlb_core_count = 0;
+static volatile uint64_t tlb_core_count = 0;
 
 void
 HandleTLBShootdown(uint32_t UNUSED(int_no),
                    uint32_t UNUSED(err_code)) {
-    VirtMemMan_SetCurrent((PML_Instance)((*curPageTable)->PageTable));
+    debug_gfx_writeLine("TLB Shootdown Core: %x\r\n", GetCoreIndex());
+    if(curPageTable != NULL && (*curPageTable) != NULL && (*curPageTable)->PageTable != 0)
+        VirtMemMan_SetCurrent((PML_Instance)((*curPageTable)->PageTable));
+    
     AtomicIncrement32((uint32_t*)&tlb_core_count);
 }
 
@@ -765,13 +769,31 @@ PerformTLBShootdown(uint64_t addr, uint64_t sz) {
     tlb_shootdown = TRUE;
     __asm__ volatile("mfence");
 
-    APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 34, APIC_DELIVERY_MODE_FIXED);
+    bool perform_shootdown = FALSE;
+    if(GetActiveCoreCount() < 64){
+        if(((*curPageTable)->SmallActivityBitmap & ~(1 << GetCoreIndex())) != 0)
+            perform_shootdown = TRUE;
+    }else{
+        //TODO handle large bitmap check
+    }
+
+    //Definitely shootdown if in kernel memory
+    if((int64_t)addr < 0)
+        perform_shootdown = TRUE;
+
+    if(!perform_shootdown)
+        return;
+
+    debug_gfx_writeLine("TLB Shootdown Start %x\r\n\r\n", GetActiveCoreCount());
+    
+    if(GetActiveCoreCount() > 1)
+        APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 33, APIC_DELIVERY_MODE_FIXED);
 
     addr = 0;
     sz = 0;
 
     tlb_core_count = 1;
-    while(tlb_core_count < GetCoreCount());
+    while(tlb_core_count < GetActiveCoreCount());
     tlb_core_count = 1;
     tlb_shootdown = FALSE;
 }

@@ -148,6 +148,9 @@ bootstrap_kernel(void *param,
     smp_sync_base = 1;
     APIC_Initialize();
 
+    //Reinstall the TLB shootdown handler
+    MemoryHAL_Initialize();
+
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
     RefInit(&pageTable->ref, (ReferenceFreeHandler)FreeVirtualMemoryInstance, offsetof(ManagedPageTable, ref));
@@ -218,6 +221,8 @@ smp_bootstrap_stage2(void) {
     __asm__ volatile("sti");
     APIC_CallibrateTimer();
     __asm__ volatile("cli");
+
+    MemoryHAL_Initialize();
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
