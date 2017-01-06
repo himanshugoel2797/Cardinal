@@ -30,7 +30,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 /**
  * The default stack size for kernel threads.
  */
-#define KERNEL_STACK_SIZE KiB(32)
+#define KERNEL_STACK_SIZE KiB(16)
 
 /**
  * The default stack size for user threads.
@@ -39,18 +39,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define THREAD_TOTAL_TIMESLICE 0xFFFF
 
-/**
- * Thread Priority levels.
- */
-typedef enum {
-    ThreadPriority_VeryLow = 0, //!< Very Low.
-    ThreadPriority_Low = 1,     //!< Low.
-    ThreadPriority_Medium = 2,  //!< Medium.
-    ThreadPriority_Neutral = 3, //!< Neutral.
-    ThreadPriority_High = 4,    //!< High.
-    ThreadPriority_VeryHigh = 5,//!< Very High.
-    ThreadPriority_Maximum = 6  //!< Maximum.
-} ThreadPriority;
+#define THREAD_PREEMPTION_COST 0x0FFF
+
+#define THREAD_IPC_COST 0x000F
+
+#define THREAD_INIT_TIMESLICE THREAD_PREEMPTION_COST
+
+#define MAX_THREADS_PER_SWAP 0x10
 
 /**
  * Thread States.
@@ -105,8 +100,8 @@ typedef struct ThreadInfo {
 
     ThreadState           State;          //!< Thread state.
     ThreadWakeCondition   WakeCondition;  //!< Thread wake condition.
-    ThreadPriority        Priority;       //!< Thread priority.
     ThreadPermissionLevel PermissionLevel;
+    int32_t               CoreAffinity;           //!< Core affinity.
 
     uint64_t              KernelStackBase;        //!< Base of kernel stack.
     uint64_t              KernelStackAligned;     //!< Aligned address of kernel stack.
@@ -123,7 +118,6 @@ typedef struct ThreadInfo {
     uint64_t            Errno;                  //!< Errno of last syscall.
 
     int64_t             TimeSlice;              //!< The time slice available to this thread.
-    int32_t             CoreAffinity;           //!< Core affinity.
 
     void                *FPUState;              //!< FPU state storage region.
     void                *ArchSpecificData;      //!< Architecture specific data storage region.
@@ -239,26 +233,6 @@ void*
 GetThreadCurrentStack(UID id);
 
 /**
- * @brief      Sets the thread base priority.
- *
- * @param[in]  id        The thread ID
- * @param[in]  priority  The priority
- */
-void
-SetThreadBasePriority(UID id,
-                      ThreadPriority priority);
-
-/**
- * @brief      Gets the thread priority.
- *
- * @param[in]  id    The thread ID
- *
- * @return     The thread priority.
- */
-ThreadPriority
-GetThreadPriority(UID id);
-
-/**
  * @brief      Sets the thread core affinity.
  *
  * @param[in]  id      The thread ID
@@ -299,8 +273,7 @@ YieldThread(void);
  * @param[in]  period  The period
  */
 void
-SetPeriodicPreemptVector(uint32_t irq,
-                         uint64_t period);
+SetPeriodicPreemptVector(uint32_t irq);
 
 /**
  * @brief      Switch to another thread.
@@ -431,8 +404,15 @@ WakeThread(UID id);
 void
 WakeReadyThreads(void);
 
-
-void
+/**
+ * @brief      Adds to a thread's time slice.
+ *
+ * @param[in]  tid    The tid
+ * @param[in]  slice  The amount to add to the slice
+ *
+ * @return     The new value of the time slice.
+ */
+int64_t
 AddThreadTimeSlice(UID tid,
                    int64_t slice);
 
@@ -459,6 +439,17 @@ GetActiveCoreCount(void);
  */
 void
 SchedulerCycle(Registers *regs);
+
+/**
+ * @brief      Gets the thread reference.
+ *
+ * @param[in]  id    The identifier
+ * @param      thd   The ThreadInfo structure
+ *
+ * @return     ThreadError_None on success, Error code on failure.
+ */
+ThreadError
+GetThreadReference(UID id, ThreadInfo **thd);
 
 /**@}*/
 

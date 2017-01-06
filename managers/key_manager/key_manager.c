@@ -14,7 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE MiB(64)
+#define KEY_TABLE_SIZE MiB(16)
 
 typedef struct {
     uint32_t key;

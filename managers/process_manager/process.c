@@ -48,7 +48,7 @@ ProcessSys_Initialize(void) {
     root->Parent = NULL;
 
     root->PendingMessages = List_Create(CreateSpinlock());
-    root->ThreadInfos = List_Create(CreateSpinlock());
+    root->Threads = List_Create(CreateSpinlock());
     root->MessageLock = CreateSpinlock();
 
     root->lock = CreateSpinlock();
@@ -83,7 +83,7 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
 
     dst->HeapBreak = 0;
 
-    dst->ThreadInfos = List_Create(CreateSpinlock());
+    dst->Threads = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
 
     dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(uint64_t));
@@ -195,7 +195,7 @@ TerminateProcess(ProcessInformation *pinfo) {
         kfree(message);
     }
     List_Free(pinfo->PendingMessages);
-    List_Free(pinfo->ThreadInfos);
+    List_Free(pinfo->Threads);
 
     UnlockSpinlock(pinfo->MessageLock);
     FreeSpinlock(pinfo->MessageLock);
@@ -280,6 +280,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
             }
 
             memcpy(m, msg[i], MESSAGE_SIZE);
+            AddThreadTimeSlice(GetCurrentThreadUID(), -THREAD_IPC_COST);
         }
 
         UnlockSpinlock(pInfo->MessageLock);
@@ -537,9 +538,11 @@ ProcessCheckWakeThreads(UID pid) {
 
     LockSpinlock(pInfo->lock);
 
-    List_RotPrev(pInfo->ThreadInfos);
-    for(uint64_t i = 0; i < List_Length(pInfo->ThreadInfos); i++) {
-        ThreadInfo* tInfo = (ThreadInfo*)List_RotNext(pInfo->ThreadInfos);
+    List_RotPrev(pInfo->Threads);
+    for(uint64_t i = 0; i < List_Length(pInfo->Threads); i++) {
+        ThreadInfo* tInfo = NULL;
+        if(GetThreadReference((UID)List_RotNext(pInfo->Threads), &tInfo) != ThreadError_None)
+            continue;
 
         LockSpinlock(tInfo->lock);
 
@@ -604,6 +607,7 @@ ProcessCheckWakeThreads(UID pid) {
         }
 
         UnlockSpinlock(tInfo->lock);
+        RefDec(&tInfo->ref);
     }
 
     UnlockSpinlock(pInfo->lock);

@@ -200,21 +200,19 @@ SwitchToTask(ThreadInfo *tInfo) {
 #include "debug_gfx.h"
 void
 SetupPreemption(void) {
-    uint64_t timer_freq = APIC_GetTimerFrequency()/(1000 * 50) * 1000;
-
-    //uint64_t timer_freq = 1000000000;
-    SetPeriodicPreemptVector(IRQ(0), timer_freq);
+    SetPeriodicPreemptVector(IRQ(0));
     APIC_SetVector(APIC_TIMER, IRQ(0));
-    APIC_SetTimerValue(timer_freq);
     APIC_SetTimerMode(APIC_TIMER_PERIODIC);
     __asm__("sti");
     APIC_SetEnableInterrupt(APIC_TIMER, ENABLE);
-
+    ConfigurePreemption(THREAD_INIT_TIMESLICE);
 }
 
 void
-ConfigurePreemption(uint32_t timeSlice) {
+ConfigurePreemption(int64_t timeSlice) {
     //Configure the timer to interrupt in a time proportional to the timeSlice
+    APIC_SetTimerMode(APIC_TIMER_ONESHOT);
+    APIC_SetTimerValue(timeSlice * 2500);
 }
 
 void
@@ -222,9 +220,10 @@ YieldThread(void) {
     //ResetPreemption();
     //RaiseInterrupt(preempt_vector);
 
+    return;
     Registers regs;
     //save the task state such that the YieldThread function returns
     
     SchedulerCycle(&regs);
-    SwitchToTask(); //TODO get the next task info without polluting the functions.
+    //SwitchToTask(); //TODO get the next task info without polluting the functions.
 }

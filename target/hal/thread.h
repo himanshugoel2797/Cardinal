@@ -127,7 +127,15 @@ SetupPreemption(void);
  * @param[in]  timeSlice  The time slice
  */
 void
-ConfigurePreemption(uint32_t timeSlice);
+ConfigurePreemption(int64_t timeSlice);
+
+/**
+ * @brief      Adds some preemtion time to the currently executing thread.
+ *
+ * @param[in]  amnt  The amnt
+ */
+void
+AddPreemtionTime(int64_t amnt);
 
 /**
  * @brief      Setup arch specific data.

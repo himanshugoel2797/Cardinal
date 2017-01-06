@@ -76,7 +76,7 @@ typedef struct ProcessInformation {
     uint64_t                    HeapBreak;                  //!< The heap break.
     ManagedPageTable            *PageTable;                 //!< The page table.
     List                        *Children;                  //!< The process's children processes.
-    List                        *ThreadInfos;                 //!< The threads that belong to this process.
+    List                        *Threads;                   //!< The threads that belong to this process.
     List                        *PendingMessages;           //!< The pending messages.
     uint64_t                    *Keys;                      //!< The keys provided to or owned by this process.
     uint32_t                    LowestFreeKeyIndex;

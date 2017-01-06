@@ -76,7 +76,7 @@ MemMan_Initialize(void) {
 
     MemMan_MarkUsed(0, MiB(2));
 
-    dma_store = MiB(256) / block_size;
+    dma_store = MiB(64) / block_size;
 
     return 0;
 }
