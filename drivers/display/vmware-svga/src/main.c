@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
     ctxt.fifo.bounceBuffer = (uint8_t*)bounce_buffer;
     ctxt.fifo.bounceBufferPhys = bounce_phys_addr;
 
+
     SVGA_Init(&ctxt);
     SVGA_SetMode(&ctxt, 1280, 720, 32);
     SVGA3D_Init(&ctxt);

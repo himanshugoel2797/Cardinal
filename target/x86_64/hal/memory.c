@@ -692,6 +692,8 @@ HandlePageFault(uint64_t virtualAddress,
                 break;  //If the allocation flags match, then all is fine, just needed a cache update
             }
 
+            __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
+                
             break;
         }
 

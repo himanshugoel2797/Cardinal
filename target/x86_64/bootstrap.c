@@ -163,6 +163,8 @@ bootstrap_kernel(void *param,
     pageTable->lock = CreateBootstrapSpinlock();
     SetActiveVirtualMemoryInstance(pageTable);
 
+    bootstrap_render(0xFFFFFFFF);
+
     //Now that all the processors are booted up and ready to do their job
     kernel_main_init();
     __asm__ volatile("cli\n\thlt\n\t");

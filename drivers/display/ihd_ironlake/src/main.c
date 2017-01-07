@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     sscanf(argv[2], "B0:%llx B1:%llx B2:%llx", &bar0_key, &bar1_key, &bar2_key);
 
     UserSharedMemoryData data;
-    ApplySharedMemoryKey(bar1_key, &data);
+    ApplySharedMemoryKey(bar0_key, &data);
     ctxt.iobase = data.VirtualAddress;
 
     PCI_EnableBusMaster(&ctxt.device);

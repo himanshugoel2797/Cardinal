@@ -15,9 +15,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 static IHD_Context ctxt;
 
+uint32_t
+IHD_Read32(uint32_t off) {
+    return ctxt.iobase[off];
+}
+
+void
+IHD_Write32(uint32_t off, uint32_t val) {
+    ctxt.iobase[off] = val;
+}
+
 void
 IHD_Init(IHD_Context *ctxt_p) {
     memcpy(&ctxt, ctxt_p, sizeof(IHD_Context));
 
+    uint32_t val = IHD_Read32(0x48254);
+    val &= 0xFFFF0000;
+    IHD_Write32(0x48254, val | (val >> 16));
 
+    __asm__("hlt");
 }

@@ -212,7 +212,7 @@ void
 ConfigurePreemption(int64_t timeSlice) {
     //Configure the timer to interrupt in a time proportional to the timeSlice
     APIC_SetTimerMode(APIC_TIMER_ONESHOT);
-    APIC_SetTimerValue(timeSlice * 1000);
+    APIC_SetTimerValue(timeSlice * 500);//APIC_GetTimerFrequency() / 100000);
 }
 
 uint64_t
