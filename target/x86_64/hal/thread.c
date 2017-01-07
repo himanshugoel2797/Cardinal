@@ -215,15 +215,42 @@ ConfigurePreemption(int64_t timeSlice) {
     APIC_SetTimerValue(timeSlice * 1000);
 }
 
-void
+uint64_t
 YieldThread(void) {
-    //ResetPreemption();
-    //RaiseInterrupt(preempt_vector);
 
-    return;
     Registers regs;
+
+    __asm__ volatile ("movq %%rbx, %%rax" : "=a"(regs.rbx) :: "memory");
+    __asm__ volatile ("movq %%rcx, %%rax" : "=a"(regs.rcx) :: "memory");
+    __asm__ volatile ("movq %%rdx, %%rax" : "=a"(regs.rdx) :: "memory");
+    __asm__ volatile ("movq %%rsi, %%rax" : "=a"(regs.rsi) :: "memory");
+    __asm__ volatile ("movq %%rdi, %%rax" : "=a"(regs.rdi) :: "memory");
+    __asm__ volatile ("movq %%r8, %%rax" : "=a"(regs.r8) :: "memory");
+    __asm__ volatile ("movq %%r9, %%rax" : "=a"(regs.r9) :: "memory");
+    __asm__ volatile ("movq %%r10, %%rax" : "=a"(regs.r10) :: "memory");
+    __asm__ volatile ("movq %%r11, %%rax" : "=a"(regs.r11) :: "memory");
+    __asm__ volatile ("movq %%r12, %%rax" : "=a"(regs.r12) :: "memory");
+    __asm__ volatile ("movq %%r13, %%rax" : "=a"(regs.r13) :: "memory");
+    __asm__ volatile ("movq %%r14, %%rax" : "=a"(regs.r14) :: "memory");
+    __asm__ volatile ("movq %%r15, %%rax" : "=a"(regs.r15) :: "memory");
+    __asm__ volatile ("pushf\n\tpopq %%rax" : "=a"(regs.rflags) :: "memory");
+    __asm__ volatile ("movw %%ss, %%ax" : "=a"(regs.ss) :: "memory");
+    __asm__ volatile ("movw %%cs, %%ax" : "=a"(regs.cs) :: "memory");
+
+    regs.rip = (uint64_t)__builtin_return_address(0);
+    regs.rbp = *(uint64_t*)__builtin_frame_address(0);
+    regs.useresp = (uint64_t)__builtin_frame_address(0);
+    regs.useresp += 16;
+    regs.rax = 0;
     //save the task state such that the YieldThread function returns
 
     SchedulerCycle(&regs);
-    //SwitchToTask(); //TODO get the next task info without polluting the functions.
+
+    ThreadInfo *next_thread = NULL;
+    GetThreadReference(GetCurrentThreadUID(), &next_thread);
+    
+    ConfigurePreemption(MIN(THREAD_PREEMPTION_COST, next_thread->TimeSlice));
+    SwitchToTask(next_thread); //TODO get the next task info without polluting the functions.
+
+    return 0;
 }

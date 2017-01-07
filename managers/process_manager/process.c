@@ -267,7 +267,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
         {
             if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT) {
                 UnlockSpinlock(pInfo->MessageLock);
-                RefDec(pInfo);
+                RefDec(&pInfo->ref);
                 return i;
             }
 
@@ -275,7 +275,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
             if(m == NULL) {
                 UnlockSpinlock(pInfo->MessageLock);
-                RefDec(pInfo);
+                RefDec(&pInfo->ref);
                 return i;
             }
 
@@ -291,7 +291,7 @@ PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
 
     ProcessCheckWakeThreads(dstPID);
 
-    RefDec(pInfo);
+    RefDec(&pInfo->ref);
     return TRUE;
 }
 
@@ -310,7 +310,7 @@ GetMessageFrom(Message *msg,
         YieldThread();
 
         if(List_Length(pInfo->PendingMessages) == 0) {
-            RefDec(pInfo);
+            RefDec(&pInfo->ref);
             return FALSE;
         }
     }
@@ -328,7 +328,7 @@ GetMessageFrom(Message *msg,
                 if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
                 kfree(tmp);
                 UnlockSpinlock(pInfo->MessageLock);
-                RefDec(pInfo);
+                RefDec(&pInfo->ref);
                 return TRUE;
             }
 
@@ -336,7 +336,7 @@ GetMessageFrom(Message *msg,
     }
 
     UnlockSpinlock(pInfo->MessageLock);
-    RefDec(pInfo);
+    RefDec(&pInfo->ref);
     return FALSE;
 }
 
@@ -347,7 +347,10 @@ GetMessageFromType(Message *msg,
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
-    if(List_Length(pInfo->PendingMessages) == 0)return FALSE;
+    if(List_Length(pInfo->PendingMessages) == 0){
+        RefDec(&pInfo->ref);
+        return FALSE;
+    }
 
     LockSpinlock(pInfo->MessageLock);
     Message *tmp = NULL;
@@ -361,13 +364,13 @@ GetMessageFromType(Message *msg,
             kfree(tmp);
 
             UnlockSpinlock(pInfo->MessageLock);
-            RefDec(pInfo);
+            RefDec(&pInfo->ref);
             return TRUE;
         }
     }
 
     UnlockSpinlock(pInfo->MessageLock);
-    RefDec(pInfo);
+    RefDec(&pInfo->ref);
     return FALSE;
 }
 
@@ -544,6 +547,7 @@ ProcessCheckWakeThreads(UID pid) {
 
         if(tInfo->State != ThreadState_Sleep) {
             UnlockSpinlock(tInfo->lock);
+            RefDec(&tInfo->ref);
             continue;
         }
 
@@ -605,6 +609,6 @@ ProcessCheckWakeThreads(UID pid) {
         UnlockSpinlock(tInfo->lock);
         RefDec(&tInfo->ref);
     }
-
     UnlockSpinlock(pInfo->lock);
+    RefDec(&pInfo->ref);
 }

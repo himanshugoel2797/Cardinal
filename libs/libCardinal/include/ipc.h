@@ -85,15 +85,15 @@ struct CardinalFullMessage {
 #define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
 
 #ifndef _KERNEL_
-//#define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
-//#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) WaitForMessage(MessageWaitType_SourcePID, PID); GetIPCMessageFrom(XXX, PID, MSGID)
-//#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
-//#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) WaitForMessage(MessageWaitType_MsgType, MSGTYPE); GetIPCMessageOfType(XXX, MSGTYPE)
-
-#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
-#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) while(!GetIPCMessageFrom(XXX, PID, MSGID))
+#define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
+#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) WaitForMessage(MessageWaitType_SourcePID, PID); GetIPCMessageFrom(XXX, PID, MSGID)
 #define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
-#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) while(!GetIPCMessageOfType(XXX, MSGTYPE))
+#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) WaitForMessage(MessageWaitType_MsgType, MSGTYPE); GetIPCMessageOfType(XXX, MSGTYPE)
+
+//#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
+//#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) while(!GetIPCMessageFrom(XXX, PID, MSGID))
+//#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
+//#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) while(!GetIPCMessageOfType(XXX, MSGTYPE))
 
 
 /**

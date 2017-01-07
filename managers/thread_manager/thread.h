@@ -263,7 +263,7 @@ FreeThread(UID id);
 /**
  * @brief      Yield the current thread.
  */
-void
+uint64_t
 YieldThread(void);
 
 /**

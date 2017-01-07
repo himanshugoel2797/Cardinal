@@ -27,7 +27,7 @@ void RefInc(const Ref *obj) {
 }
 
 static __inline
-void* RefDec(const void *obj) {
+void* RefDec(const Ref *obj) {
     Ref* ref = (Ref*)obj;
     ref->ref_count--;
     if(ref->ref_count == 0) {

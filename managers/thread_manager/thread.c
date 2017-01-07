@@ -366,8 +366,14 @@ SleepThread(UID id,
         SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
         SET_PROPERTY_VAL(thd, SleepDurationNS, duration_ns);
 
-        //The scheduler will detect the state and move it into the appropriate queue
         //A kernel thread will loop through the threads and wake them up as necessary.
+        List_AddEntry(sleeping_thds, thd);
+
+        RefDec(&thd->ref);
+
+        if(id == GetCurrentThreadUID())
+            YieldThread();
+
         return;
     }
 }
@@ -483,6 +489,22 @@ GetNextThread(ThreadInfo *prevThread) {
         }
     }
 
+    //Determine how much load this thread ought to have
+    int cur_load = 0, desired_load = 0;
+
+    do{
+        cur_load = (Heap_GetItemCount(all_states[*core_id].cur_heap) * 100) / BTree_GetCount(thds);
+        desired_load = (100 / GetActiveCoreCount());
+
+        ThreadInfo *thd_ad = (ThreadInfo*)List_EntryAt(pending_thds, 0);
+        List_Remove(pending_thds, 0);
+
+        if(thd_ad != NULL) {
+            debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
+            Heap_Insert(all_states[*core_id].cur_heap, thd_ad->TimeSlice, thd_ad);
+        }
+    }while(desired_load >= cur_load && List_Length(pending_thds) > 0);
+
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
@@ -533,7 +555,6 @@ GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Paused:
             break;
         case ThreadState_Sleep:
-            List_AddEntry(sleeping_thds, next_thread);
             break;
         default: {
             if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
@@ -676,6 +697,8 @@ SleepThreadForMessage(UID id,
         SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
         SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
 
+        debug_gfx_writeLine("Sleeping thread %x\r\n", id);
+
         //Remove the thread from the neutral list and put it into the sleeping list
         List_AddEntry(sleeping_thds, thd);
         //A kernel thread will loop through the threads and wake them up as necessary.
@@ -683,6 +706,8 @@ SleepThreadForMessage(UID id,
         ProcessCheckWakeThreads(GET_PROPERTY_PROC_VAL(thd, ID));
 
     }
+
+    RefDec(&thd->ref);
     UnlockSpinlock(sync_lock);
 
     if(id == GetCurrentThreadUID())
@@ -703,6 +728,7 @@ WakeThread(UID id) {
 
             List_Remove(sleeping_thds, List_GetLastIndex(sleeping_thds));
             List_AddEntry(pending_thds, thd);
+
             break;
         }
     }
