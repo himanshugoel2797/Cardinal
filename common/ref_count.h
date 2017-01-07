@@ -31,7 +31,7 @@ void* RefDec(const void *obj) {
     Ref* ref = (Ref*)obj;
     ref->ref_count--;
     if(ref->ref_count == 0) {
-        ref->free((const void*)((uintptr_t)obj - ref->top_offset));
+        //ref->free((const void*)((uintptr_t)obj - ref->top_offset));
         return NULL;
     }
 

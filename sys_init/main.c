@@ -41,7 +41,7 @@ int main() {
     int res_len = 0;
 
     void *result = DecodePNGtoRGBA(file_loc, file_size, &img_w, &img_h, &img_p, &res_len);
-
+    
     uint64_t buf_len = disp_info.pitch * disp_info.height;
     uint64_t vAddr = 0;
     uint64_t read_key = 0, write_key = 0;
@@ -52,7 +52,6 @@ int main() {
 
     uint8_t *display_addr = (uint8_t*)vAddr;
     uint8_t *src_img = (uint8_t*)result;
-    __asm__("hlt");
 
     for(int y = 0; y < disp_info.height; y++) {
         for(int x = 0; x < disp_info.width; x++) {

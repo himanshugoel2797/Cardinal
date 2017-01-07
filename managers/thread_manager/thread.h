@@ -30,7 +30,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 /**
  * The default stack size for kernel threads.
  */
-#define KERNEL_STACK_SIZE KiB(16)
+#define KERNEL_STACK_SIZE KiB(32)
 
 /**
  * The default stack size for user threads.
