@@ -12,12 +12,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/driver_utils.h>
 #include <cardinal/shared_memory.h>
 #include <cardinal/mem/server.h>
+#include <cardinal/namespace/server.h>
 #include <pci/pci.h>
 
 #include <stdio.h>
 
 #include "svga.h"
 #include "svga3d.h"
+#include "fileserver.h"
 
 int main(int argc, char *argv[]) {
     R01_GetIOPrivileges();
@@ -65,6 +67,14 @@ int main(int argc, char *argv[]) {
     SVGA_Init(&ctxt);
     SVGA_SetMode(&ctxt, 1280, 720, 32);
     SVGA3D_Init(&ctxt);
+
+
+    uint32_t op_key = 0;
+    uint64_t op_error = 0;
+    RegisterNamespace("display", &op_key);
+    while(!IsNamespaceRequestReady(op_key, &op_error));
+
+    start_server(&ctxt);
 
     while(1) {
 

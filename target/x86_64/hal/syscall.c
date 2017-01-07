@@ -91,7 +91,6 @@ void*
 GetKernelStack(void) {
     return k_stack_info->k_stack;
 }
-
 uint64_t
 GetRFLAGS(void) {
     return k_stack_info->rflags;

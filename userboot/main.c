@@ -72,14 +72,17 @@ int _start() {
     err = LoadProgram("initrd_srv.elf", &pid);
     if(err != 0)
         __asm__("hlt");
-
-    err = LoadProgram("framebuffer.elf", &pid);
-    if(err != 0)
-        __asm__("hlt");
+    while(!GetIPCMessage(msg));
 
     err = LoadProgram("pci_loader.elf", &pid);
     if(err != 0)
         __asm__("hlt");
+    while(!GetIPCMessage(msg));
+
+    err = LoadProgram("framebuffer.elf", &pid);
+    if(err != 0)
+        __asm__("hlt");
+    while(!GetIPCMessage(msg));
 
     //Begin system initialization
     err = LoadProgram("sys_init.elf", &pid);

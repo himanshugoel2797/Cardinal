@@ -72,6 +72,16 @@ int main() {
     RegisterNamespace("display", &op_key);
     while(!IsNamespaceRequestReady(op_key, &op_error));
 
+    CREATE_NEW_MESSAGE_PTR(msg);
+    msg->MsgType = CardinalMsgType_Notification;
+    msg->MsgID = 0;
+    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+
+    //A display driver has already been loaded, we don't need the save.
+    if(op_error != 0){
+        __asm__("hlt" :: "a"(op_error));
+        return 0;
+    }
 
     start_server();
     //Obtain boot information

@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/cardinal_types.h>
 #include <cardinal/file_server.h>
 #include <cardinal/namespace/server.h>
+#include <cardinal/ipc.h>
 
 #include <fileserver/fileserver.h>
 #include <list/list.h>
@@ -149,6 +150,14 @@ start_server(void) {
     handlers.rename = NULL;
     handlers.sync = NULL;
     handlers.get_file_properties = get_file_properties;
+
+
+
+    CREATE_NEW_MESSAGE_PTR(msg);
+    msg->MsgType = CardinalMsgType_Notification;
+    msg->MsgID = 0;
+    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+
     Server_Start(&handlers, NULL);
 }
 

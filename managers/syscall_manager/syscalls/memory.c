@@ -154,7 +154,6 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 
     uint64_t virt_addr = mmap_params->VirtualAddress;
 
-
     if(mmap_params->VirtualAddress == 0) {
         if(FindFreeVirtualAddress(p_info->PageTable,
                                   &virt_addr,
@@ -279,8 +278,9 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t retVal = AllocatePhysicalPageCont(data->params[0], data->params[1]);
-    if(retVal == 0)
+    if(retVal == 0){
         SyscallSetErrno(-ENOMEM);
+    }
     else
         SyscallSetErrno(0);
 

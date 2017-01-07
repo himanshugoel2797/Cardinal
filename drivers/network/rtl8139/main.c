@@ -159,14 +159,14 @@ int main(int argc, char *argv[]) {
     //Transmit buffer
     uint64_t trn_dma_buffer = 0;
     uint64_t trn_dma_phys_addr = 0;
-    MMap(&trn_dma_buffer,
-         5 * 1024,
+    MemoryAllocationErrors err = 0;
+    err = MMap(&trn_dma_buffer,
+         4 * 1024,
          MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
          MMapFlags_DMA,
          CachingModeWriteBack
         );
-
-
+    
     R01_GetPhysicalAddress(0, trn_dma_buffer, &trn_dma_phys_addr);
     Write32(0x20, (uint32_t)trn_dma_phys_addr);
 

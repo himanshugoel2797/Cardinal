@@ -118,7 +118,7 @@ MemDB_AllocateMemory(UID pid,
                 return -2;
 
             if(R0_AllocatePages(len / PAGE_SIZE, flags, address) != 0)
-                return -2;
+                return -3;
 
             ProcessMemoryAllocation *alloc = malloc(sizeof(ProcessMemoryAllocation));
             alloc->address = *address;
@@ -130,7 +130,7 @@ MemDB_AllocateMemory(UID pid,
             return 0;
         }
     }
-    return -3;
+    return -4;
 }
 
 void

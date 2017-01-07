@@ -85,7 +85,11 @@ mmap_handler(Message *m) {
     error = MemDB_AllocateMemory(m->SourcePID, sz, memdb_alloc_flags, &address);
 
     if(error != 0) {
-        SendErrorMessage(0, MemoryAllocationErrors_Unknown, m->SourcePID, m->MsgID);
+        err = MemoryAllocationErrors_Unknown;
+        if(error == -3)
+            err = MemoryAllocationErrors_OutOfMemory;
+
+        SendErrorMessage(0, err, m->SourcePID, m->MsgID);
     }
 
 
@@ -98,8 +102,5 @@ mmap_handler(Message *m) {
                    flags
                   );
 
-    if(error != 0)
-        SendErrorMessage(0, TranslateError(error), m->SourcePID, m->MsgID);
-    else
-        SendErrorMessage(addr, MemoryAllocationErrors_None, m->SourcePID, m->MsgID);
+    SendErrorMessage(addr, TranslateError(error), m->SourcePID, m->MsgID);
 }

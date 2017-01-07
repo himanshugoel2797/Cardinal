@@ -173,8 +173,8 @@ MemMan_Alloc2MiBPageCont(int pageCount,
 uint64_t
 MemMan_Alloc4KiBPageCont(int pageCount,
                          PhysicalMemoryAllocationFlags flags) {
-    if(freePageCount == 0)return 0;
-    if(pageCount == 0)return 0;
+    if(freePageCount == 0)__asm__("cli\n\thlt");
+    if(pageCount == 0)__asm__("cli\n\thlt");
 
     int score = 0;
     uint64_t addr = 0;
@@ -197,8 +197,10 @@ MemMan_Alloc4KiBPageCont(int pageCount,
             break;
 
         uint64_t block = ~KB4_Blocks_Bitmap[j];
-        if(block == 0)
+        if(block == 0){
             score = 0;
+            continue;
+        }
 
         if((pageCount - score) >= 64) {
             if(block != (uint64_t)-1) {
@@ -228,16 +230,23 @@ MemMan_Alloc4KiBPageCont(int pageCount,
         }
     }
 
-    if(score != pageCount)return 0;
+    if(score != pageCount)__asm__("cli\n\thlt" :: "a"(pageCount), "b"(score));
     else {
         MemMan_MarkUsed(addr, pageCount * PAGE_SIZE);
         memset(VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)addr), 0, pageCount * PAGE_SIZE);
         return addr;
     }
+
+    return 0;
 }
 
 void
 MemMan_Free(uint64_t ptr) {
+    
+    //Don't free a null address
+    if(ptr == 0)
+        return;
+
     ptr = ptr/PAGE_SIZE * PAGE_SIZE;
 
     MemMan_SetPageFree(ptr);
@@ -247,5 +256,9 @@ MemMan_Free(uint64_t ptr) {
 void
 MemMan_FreeCont(uint64_t ptr,
                 int pageCount) {
+    
+    //Don'tfree a null address
+    if(ptr == 0)
+        return;
     MemMan_MarkFree(ptr, pageCount * KiB(4));
 }

@@ -16,6 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/shared_memory.h>
 #include <cardinal/namespace/server.h>
 #include <cardinal/proc/server.h>
+#include <cardinal/ipc.h>
+
 
 #include <string.h>
 #include <stdio.h>
@@ -90,7 +92,7 @@ int main() {
 
                 //Check the device information file for this device
                 char *cur_loc = file_ptr;
-                while(cur_loc < file_end) {
+                while(cur_loc != NULL && cur_loc < file_end) {
 
                     uint32_t vendor_id = 0;
                     uint32_t device_id = 0;
@@ -171,8 +173,8 @@ int main() {
                         char *argv[] = { driver_file + 1, devStr, bars };
 
                         int devStr_i = 0;
-                        while(bars[devStr_i]) {
-                            outb(0x3f8, bars[devStr_i++]);
+                        while(driver_file[devStr_i]) {
+                            outb(0x3f8, driver_file[devStr_i++]);
                         }
 
                         UID pid = 0;
@@ -201,6 +203,11 @@ int main() {
 
         device++;
     }
+
+    CREATE_NEW_MESSAGE_PTR(msg);
+    msg->MsgType = CardinalMsgType_Notification;
+    msg->MsgID = 0;
+    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
 
     //while(1);
 }

@@ -303,7 +303,8 @@ GetMessageFrom(Message *msg,
     int index = (int)SourcePID;
 
     ProcessInformation *pInfo;
-    GetProcessReference(GetCurrentProcessUID(), &pInfo);
+    if(GetProcessReference(GetCurrentProcessUID(), &pInfo) != ProcessErrors_None)
+        return FALSE;
 
     if(List_Length(pInfo->PendingMessages) == 0) {
         YieldThread();
@@ -326,16 +327,11 @@ GetMessageFrom(Message *msg,
                 List_Remove(pInfo->PendingMessages, i);
                 if(msg != NULL)memcpy(msg, tmp, MESSAGE_SIZE);
                 kfree(tmp);
-
-                //Copy the mapping over to the other process.
-                //Add the sharing info to the source's data.
-
-
                 UnlockSpinlock(pInfo->MessageLock);
+                RefDec(pInfo);
+                return TRUE;
             }
 
-            RefDec(pInfo);
-            return TRUE;
         }
     }
 

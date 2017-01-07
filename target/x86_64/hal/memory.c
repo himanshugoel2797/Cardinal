@@ -168,7 +168,7 @@ MapPage(ManagedPageTable *pageTable,
 
     if(virtualAddress == 0)return MemoryAllocationErrors_Unknown;
 
-    if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress));
+    if(virtualAddress % 4096)__asm__ ("cli\n\thlt" :: "a"(virtualAddress), "b"(physicalAddress), "c"(__builtin_return_address(0)));
     if(physicalAddress % 4096) __asm__("cli\n\thlt" :: "a"(virtualAddress), "b"(physicalAddress), "c"(__builtin_return_address(0)));
 
     //If this allocation is just reserved vmem, mark the page as not present
@@ -432,7 +432,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
                         }
                     } else if(map->Flags & MemoryAllocationFlags_User) {
 
-                        if(!(map->AllocationType & MemoryAllocationType_Phys))
+                        if(!(map->AllocationType & MemoryAllocationType_Phys) && map->PhysicalAddress != 0)
                             FreePhysicalPageCont(map->PhysicalAddress, size / PAGE_SIZE);
                     }
 
