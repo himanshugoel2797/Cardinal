@@ -155,7 +155,7 @@ SetupArchSpecificData(ThreadInfo *tInfo,
  */
 void
 SaveTask(ThreadInfo *tInfo,
-		 Registers *regs);
+         Registers *regs);
 
 /**
  * @brief      Switch tasks.

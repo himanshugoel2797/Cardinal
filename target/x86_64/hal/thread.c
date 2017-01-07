@@ -223,7 +223,7 @@ YieldThread(void) {
     return;
     Registers regs;
     //save the task state such that the YieldThread function returns
-    
+
     SchedulerCycle(&regs);
     //SwitchToTask(); //TODO get the next task info without polluting the functions.
 }

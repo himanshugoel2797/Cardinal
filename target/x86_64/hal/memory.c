@@ -74,7 +74,7 @@ CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 
         if(GetActiveCoreCount() < 64)
             inst->SmallActivityBitmap = 0;
-        else{
+        else {
             inst->LargeActivityBitmap = kmalloc(GetActiveCoreCount() / 8 + 1);
             memset(inst->LargeActivityBitmap, 0, GetActiveCoreCount() / 8 + 1);
         }
@@ -460,7 +460,7 @@ UnmapPage(ManagedPageTable 	*pageTable,
 
     UnlockSpinlock(pageTable->lock);
 
-    if(ProcessSys_IsInitialized()){
+    if(ProcessSys_IsInitialized()) {
         PerformTLBShootdown(virtualAddress, size);
     }
 
@@ -688,7 +688,7 @@ HandlePageFault(uint64_t virtualAddress,
                 break;
             }
 
-            if((map->Flags & error) == error){
+            if((map->Flags & error) == error) {
                 break;  //If the allocation flags match, then all is fine, just needed a cache update
             }
 
@@ -762,7 +762,7 @@ HandleTLBShootdown(uint32_t UNUSED(int_no),
     debug_gfx_writeLine("TLB Shootdown Core: %x\r\n", GetCoreIndex());
     if(curPageTable != NULL && (*curPageTable) != NULL && (*curPageTable)->PageTable != 0)
         VirtMemMan_SetCurrent((PML_Instance)((*curPageTable)->PageTable));
-    
+
     AtomicIncrement32((uint32_t*)&tlb_core_count);
 }
 
@@ -774,10 +774,10 @@ PerformTLBShootdown(uint64_t addr, uint64_t sz) {
     __asm__ volatile("mfence");
 
     bool perform_shootdown = FALSE;
-    if(GetActiveCoreCount() < 64){
+    if(GetActiveCoreCount() < 64) {
         if(((*curPageTable)->SmallActivityBitmap & ~(1 << GetCoreIndex())) != 0)
             perform_shootdown = TRUE;
-    }else{
+    } else {
         //TODO handle large bitmap check
     }
 
@@ -789,7 +789,7 @@ PerformTLBShootdown(uint64_t addr, uint64_t sz) {
         return;
 
     debug_gfx_writeLine("TLB Shootdown Start %x\r\n\r\n", GetActiveCoreCount());
-    
+
     if(GetActiveCoreCount() > 1)
         APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 33, APIC_DELIVERY_MODE_FIXED);
 

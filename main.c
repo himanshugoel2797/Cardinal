@@ -41,10 +41,10 @@ kernel_main_init(void) {
     CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
 
     seed(GetTimerValue());
-    InterruptMan_Initialize();       
-    
+    InterruptMan_Initialize();
+
     SyscallMan_Initialize();
-    Syscall_Initialize(); 
+    Syscall_Initialize();
     //smp_unlock_cores();
 
     UID cpid = 0;
@@ -116,7 +116,7 @@ kernel_main(void) {
 }
 
 void
-idle_main2(void){
+idle_main2(void) {
     while(1);
 }
 
@@ -142,25 +142,25 @@ idle_main(void) {
 
 void
 smp_core_main(int (*getCoreData)(void)) {
-    
+
     Syscall_Initialize();
 
     RegisterCore(getCoreData);
     smp_core_count++;
-/*
-    UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
+    /*
+        UID cpid = 0;
+        if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+            HaltProcessor();
 
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    StartProcess(cpid);
+        CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+        StartProcess(cpid);
 
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
+        if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+            HaltProcessor();
 
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    StartProcess(cpid);
-*/
+        CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+        StartProcess(cpid);
+    */
     SetupPreemption();
     while(1);
 }

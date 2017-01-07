@@ -346,7 +346,7 @@ SetThreadState(UID id,
     ThreadInfo *thd = NULL;
     GetThreadReference(id, &thd);
 
-    if(thd != NULL){
+    if(thd != NULL) {
         SET_PROPERTY_VAL(thd, State, state);
         RefDec(&thd->ref);
     }
@@ -399,7 +399,7 @@ GetThreadKernelStack(UID id) {
 int64_t
 AddThreadTimeSlice(UID tid,
                    int64_t slice) {
-    
+
     ThreadInfo *thd = NULL;
     GetThreadReference(tid, &thd);
     if(thd != NULL) {
@@ -440,12 +440,12 @@ GetActiveCoreCount(void) {
 }
 
 void
-TryAddThreads(void){
-    for(int i = 0; i < MAX_THREADS_PER_SWAP; i++){     
+TryAddThreads(void) {
+    for(int i = 0; i < MAX_THREADS_PER_SWAP; i++) {
         ThreadInfo *thd_ad = (ThreadInfo*)List_EntryAt(pending_thds, 0);
         List_Remove(pending_thds, 0);
 
-        if(thd_ad != NULL){
+        if(thd_ad != NULL) {
             debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
             Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
         }
@@ -464,22 +464,21 @@ GetNextThread(ThreadInfo *prevThread) {
 
     if(prevThread != NULL) {
         prevThread->TimeSlice -= THREAD_PREEMPTION_COST;
-        
-        switch(GET_PROPERTY_VAL(prevThread, State)){
 
-            case ThreadState_Exiting:
-                RefDec(&prevThread->ref);
+        switch(GET_PROPERTY_VAL(prevThread, State)) {
+
+        case ThreadState_Exiting:
+            RefDec(&prevThread->ref);
             break;
-            case ThreadState_Sleep:
+        case ThreadState_Sleep:
             break;
-            default:
-                if(prevThread->TimeSlice <= 0){
-                    prevThread->TimeSlice = THREAD_TOTAL_TIMESLICE;
-                    Heap_Insert(all_states[*core_id].back_heap, prevThread->TimeSlice, prevThread);
-                }
-                else{
-                    Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice, prevThread);
-                }
+        default:
+            if(prevThread->TimeSlice <= 0) {
+                prevThread->TimeSlice = THREAD_TOTAL_TIMESLICE;
+                Heap_Insert(all_states[*core_id].back_heap, prevThread->TimeSlice, prevThread);
+            } else {
+                Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice, prevThread);
+            }
             break;
         }
     }
@@ -488,21 +487,19 @@ GetNextThread(ThreadInfo *prevThread) {
 
     bool exit_loop = FALSE;
     while(!exit_loop) {
-        
+
         //Exhausted all the items in the current set, switch to the back heap while picking up any new threads if available
-        if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0)
-        {
+        if(Heap_GetItemCount(all_states[*core_id].cur_heap) == 0) {
             debug_gfx_writeLine("Swap %x\r\n", Heap_GetItemCount(all_states[*core_id].back_heap));
 
             //Pick up 10 threads from the pending queue if any are available
-            if(TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0)
-            {
+            if(TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0) {
                 TryAddThreads();
                 UnlockSpinlock(starving_lock);
             }
 
             //Wait for more threads to be made pending
-            while(Heap_GetItemCount(all_states[*core_id].back_heap) == 0){
+            while(Heap_GetItemCount(all_states[*core_id].back_heap) == 0) {
                 //TODO report that this core is waiting for threads, so other cores shouldn't bother pulling in more load.
                 __asm__ volatile("sti");
                 HALT(0);    //Halt for another core to wake us up for threads.
@@ -530,22 +527,22 @@ GetNextThread(ThreadInfo *prevThread) {
         }
 
         switch(GET_PROPERTY_VAL(next_thread, State)) {
-            case ThreadState_Exiting:
-                RefDec(&next_thread->ref);
-                break;
-            case ThreadState_Paused:
-                break;
-            case ThreadState_Sleep:
+        case ThreadState_Exiting:
+            RefDec(&next_thread->ref);
+            break;
+        case ThreadState_Paused:
+            break;
+        case ThreadState_Sleep:
+            List_AddEntry(sleeping_thds, next_thread);
+            break;
+        default: {
+            if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
+                exit_loop = TRUE;
+            else {
                 List_AddEntry(sleeping_thds, next_thread);
-                break;
-            default: {
-                    if(GET_PROPERTY_PROC_VAL(next_thread, Status) == ProcessStatus_Executing)
-                        exit_loop = TRUE;
-                    else {  
-                        List_AddEntry(sleeping_thds, next_thread);
-                    }
-                }
-                break;
+            }
+        }
+        break;
         }
     }
 
@@ -555,29 +552,29 @@ GetNextThread(ThreadInfo *prevThread) {
 void
 SchedulerCycle(Registers *regs) {
 
-        if(all_states[*core_id].cur_thread != NULL) {
-            SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-            SaveTask(all_states[*core_id].cur_thread, regs);
-        
-            all_states[*core_id].cur_thread = RefDec(&all_states[*core_id].cur_thread->ref);
-        }
+    if(all_states[*core_id].cur_thread != NULL) {
+        SaveFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
+        SaveTask(all_states[*core_id].cur_thread, regs);
 
-        UID prevId = GetCurrentProcessUID();
-        UID prevTID = GetCurrentThreadUID();
+        all_states[*core_id].cur_thread = RefDec(&all_states[*core_id].cur_thread->ref);
+    }
 
-        if(BTree_GetCount(thds) > 0)
-            all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
-        //debug_gfx_writeLine("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1, Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId, prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
+    UID prevId = GetCurrentProcessUID();
+    UID prevTID = GetCurrentThreadUID();
 
-        RefInc(&all_states[*core_id].cur_thread->ref);
+    if(BTree_GetCount(thds) > 0)
+        all_states[*core_id].cur_thread = GetNextThread(all_states[*core_id].cur_thread);
+    //debug_gfx_writeLine("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1, Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId, prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
 
-        RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
-        SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
-        SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable));
+    RefInc(&all_states[*core_id].cur_thread->ref);
 
-        if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
-            all_states[*core_id].cur_thread->State = ThreadState_Running;
-        }
+    RestoreFPUState(GET_PROPERTY_VAL(all_states[*core_id].cur_thread, FPUState));
+    SetKernelStack((void*)all_states[*core_id].cur_thread->KernelStackAligned);
+    SetActiveVirtualMemoryInstance(GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PageTable));
+
+    if(all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
+        all_states[*core_id].cur_thread->State = ThreadState_Running;
+    }
 }
 
 

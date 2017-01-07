@@ -75,9 +75,9 @@ typedef struct ManagedPageTable {
     UID                   PageTable;      //!< The hardware dependent page table
     MemoryAllocationsMap  *UserMap;       //!< The allocation data of the page table
 
-    union{
-      uint64_t SmallActivityBitmap;       //!<Used when the core count is less than 64.
-      uint64_t *LargeActivityBitmap;      //!<Used when the core count is greater than or equal to 64.
+    union {
+        uint64_t SmallActivityBitmap;       //!<Used when the core count is less than 64.
+        uint64_t *LargeActivityBitmap;      //!<Used when the core count is greater than or equal to 64.
     };
 } ManagedPageTable;
 
@@ -280,7 +280,7 @@ HandlePageFault(uint64_t virtualAddress,
  * @param[in]  sz    The size
  */
 void
-PerformTLBShootdown(uint64_t addr, 
+PerformTLBShootdown(uint64_t addr,
                     uint64_t sz);
 
 /**

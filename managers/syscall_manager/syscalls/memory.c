@@ -278,10 +278,9 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     uint64_t retVal = AllocatePhysicalPageCont(data->params[0], data->params[1]);
-    if(retVal == 0){
+    if(retVal == 0) {
         SyscallSetErrno(-ENOMEM);
-    }
-    else
+    } else
         SyscallSetErrno(0);
 
     return retVal;

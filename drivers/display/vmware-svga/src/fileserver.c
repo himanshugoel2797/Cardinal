@@ -227,7 +227,7 @@ fbuf_get_file_properties(const char *file,
 void
 start_server(SVGA_Context *c) {
 
-	ctxt = c;
+    ctxt = c;
 
     dir_data_len = sizeof(FileSystemDirectoryData) + sizeof(FileSystemDirectoryEntry) * 1;
     dir_data = malloc(dir_data_len);
@@ -241,31 +241,31 @@ start_server(SVGA_Context *c) {
     memset(dir_data->Entries[0].WriteKID, 0, KID_SIZE_BYTES);
     memset(dir_data->Entries[0].ExecuteKID, 0, KID_SIZE_BYTES);
 
-    display0000_info_len = snprintf(NULL, 0, DISPLAY_INFO_STRING, "VESA", c->width, 
-    																	  c->height, 
-    																	  c->pitch, 
-    																	  c->bpp, 
-    																	  /*r_off*/ 16, 
-    																	  /*r_len*/ 8, 
-    																	  /*g_off*/ 8, 
-    																	  /*g_len*/ 8, 
-    																	  /*b_off*/ 0, 
-    																	  /*b_len*/ 8, 
-    																	  /*a_off*/ 24, 
-    																	  /*a_len*/ 8);
+    display0000_info_len = snprintf(NULL, 0, DISPLAY_INFO_STRING, "VESA", c->width,
+                                    c->height,
+                                    c->pitch,
+                                    c->bpp,
+                                    /*r_off*/ 16,
+                                    /*r_len*/ 8,
+                                    /*g_off*/ 8,
+                                    /*g_len*/ 8,
+                                    /*b_off*/ 0,
+                                    /*b_len*/ 8,
+                                    /*a_off*/ 24,
+                                    /*a_len*/ 8);
     display0000_info = malloc(display0000_info_len + 1);
-    sprintf(display0000_info, DISPLAY_INFO_STRING, "SVGA", c->width, 
-    													   c->height, 
-    													   c->pitch, 
-    													   c->bpp, 
-    													   /*r_off*/ 16, 
-    													   /*r_len*/ 8, 
-    													   /*g_off*/ 8, 
-    													   /*g_len*/ 8, 
-    													   /*b_off*/ 0, 
-    													   /*b_len*/ 8, 
-    													   /*a_off*/ 24, 
-    													   /*a_len*/ 8);
+    sprintf(display0000_info, DISPLAY_INFO_STRING, "SVGA", c->width,
+            c->height,
+            c->pitch,
+            c->bpp,
+            /*r_off*/ 16,
+            /*r_len*/ 8,
+            /*g_off*/ 8,
+            /*g_len*/ 8,
+            /*b_off*/ 0,
+            /*b_len*/ 8,
+            /*a_off*/ 24,
+            /*a_len*/ 8);
     FileServerHandlers handlers;
     handlers.open = fbuf_open;
     handlers.read = fbuf_read;

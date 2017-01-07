@@ -235,7 +235,7 @@ GetProcessReference(UID           pid,
                     ProcessInformation    **procInfo) {
     ProcessInformation *pInf = BTree_GetValue(processes, pid);
 
-    if(pInf == NULL){
+    if(pInf == NULL) {
         return ProcessErrors_UIDNotFound;
     }
 
@@ -309,7 +309,7 @@ GetMessageFrom(Message *msg,
     if(List_Length(pInfo->PendingMessages) == 0) {
         YieldThread();
 
-        if(List_Length(pInfo->PendingMessages) == 0){
+        if(List_Length(pInfo->PendingMessages) == 0) {
             RefDec(pInfo);
             return FALSE;
         }

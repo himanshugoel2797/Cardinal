@@ -197,7 +197,7 @@ MemMan_Alloc4KiBPageCont(int pageCount,
             break;
 
         uint64_t block = ~KB4_Blocks_Bitmap[j];
-        if(block == 0){
+        if(block == 0) {
             score = 0;
             continue;
         }
@@ -242,7 +242,7 @@ MemMan_Alloc4KiBPageCont(int pageCount,
 
 void
 MemMan_Free(uint64_t ptr) {
-    
+
     //Don't free a null address
     if(ptr == 0)
         return;
@@ -256,7 +256,7 @@ MemMan_Free(uint64_t ptr) {
 void
 MemMan_FreeCont(uint64_t ptr,
                 int pageCount) {
-    
+
     //Don'tfree a null address
     if(ptr == 0)
         return;

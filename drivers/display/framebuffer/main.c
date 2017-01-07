@@ -78,7 +78,7 @@ int main() {
     PostIPCMessages(2 /*userboot PID*/, &msg, 1);
 
     //A display driver has already been loaded, we don't need the save.
-    if(op_error != 0){
+    if(op_error != 0) {
         __asm__("hlt" :: "a"(op_error));
         return 0;
     }

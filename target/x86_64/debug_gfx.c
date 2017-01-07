@@ -20,13 +20,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 static Spinlock lock = NULL;
 
 void
-debug_gfx_init(void){
-	lock = CreateBootstrapSpinlock();
+debug_gfx_init(void) {
+    lock = CreateBootstrapSpinlock();
 }
 
 void
 debug_gfx_writeLine(const char *fmt, ...) {
-	LockSpinlock(lock);
+    LockSpinlock(lock);
 
     char str[256];
     memset(str, 0, 256);

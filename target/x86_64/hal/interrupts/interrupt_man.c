@@ -49,7 +49,7 @@ ShadowInterruptHandler(Registers *regs) {
     if(intHandlers[regs->int_no] != NULL) {
         if(regs->int_no > 32)debug_gfx_writeLine("Interrupt %x, Handler %x\r\n", regs->int_no, (uint32_t)intHandlers[regs->int_no]);
         intHandlers[regs->int_no](regs->int_no, regs->err_code);
-    }else{
+    } else {
         debug_gfx_writeLine("Warning: No handler for interrupt %x\r\n", regs->int_no);
     }
 
