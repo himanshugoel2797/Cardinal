@@ -32,6 +32,4 @@ IHD_Init(IHD_Context *ctxt_p) {
     uint32_t val = IHD_Read32(0x48254);
     val &= 0xFFFF0000;
     IHD_Write32(0x48254, val | (val >> 16));
-
-    __asm__("hlt");
 }

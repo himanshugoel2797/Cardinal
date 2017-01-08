@@ -1,18 +1,11 @@
 
 INITRD_FILES=
 
-export DEFINES
-export INCLUDES
-
-all: $(SUBDIRS)
-	tar cvf initrd *.*
-
-$(SUBDIRS):
-	cd $@ && $(MAKE) all INCLUDES="$(INCLUDES)"
-	cp $@/*.elf .
+all:
+	tar cvf initrd $(INITRD_FILES) *.*
 
 clean:
 	find . -name "*.*" -type f -delete
 	rm -f initrd
 
-.PHONY: all $(SUBDIRS)
+.PHONY: all

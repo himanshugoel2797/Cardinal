@@ -15,6 +15,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/cardinal_types.h>
 #include "ihd_context.h"
 
+
+uint32_t
+IHD_Read32(uint32_t off);
+
+void
+IHD_Write32(uint32_t off, uint32_t val);
+
 void
 IHD_Init(IHD_Context *ctxt);
 
