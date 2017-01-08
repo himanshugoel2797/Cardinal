@@ -10,16 +10,46 @@ GMBUS_DisableWriteProtect(void){
 	IHD_Write32(GMBUS_1, val);
 }
 
+void
+GMBUS_EnableWriteProtect(void){
+	uint32_t val = IHD_Read32(GMBUS_1);
+	val |= (1 << 31);
+	IHD_Write32(GMBUS_1, val);
+}
+
+void
+GMBUS_Reset(void) {
+	IHD_Write32(GMBUS_1, 0);
+	GMBUS_EnableWriteProtect();
+	GMBUS_DisableWriteProtect();
+}
+
+void
+GMBUS_StopTransaction(void) {
+	IHD_Write32(GMBUS_1, (1 << 30) /*Ready*/ | (1 << 27) /*Stop*/);
+}
+
+void
+GMBUS_Wait(void) {
+		while(!(IHD_Read32(GMBUS_2) & (1 << 11)));
+}
+
+
 int
 GMBUS_I2C_Read(GMBUS_DEVICE device, int offset, int len, uint8_t *buf){
 
 	GMBUS_RATE rate = GMBUS_RATE_100KHZ;
 	int hold_time = 0;
 
-	uint32_t gmbus_0_val = (rate << 8) | (hold_time << 7) | device;
-	uint32_t gmbus_1_val = (1 << 25) /*WAIT*/ | (1 << 26) /*INDEX*/ | (len & 511) << 16 | (offset & 255) << 8 | 1 /*READ*/ | (1 << 30) /*SW ready*/;
+	uint32_t gmbus_0_base_val = IHD_Read32(GMBUS_0);
+	uint32_t gmbus_1_base_val = IHD_Read32(GMBUS_1);
 
-	GMBUS_DisableWriteProtect();
+	gmbus_0_base_val &= (0xFFFFF800);
+
+	uint32_t gmbus_0_val = (rate << 8) | (hold_time << 7) | device;
+	uint32_t gmbus_1_val = (1 << 25) /*WAIT*/ | (1 << 26) /*INDEX*/ | (len & 511) << 16 | ((offset & 127) << 1) | 1 /*READ*/ | (1 << 30) /*SW ready*/;
+
+	GMBUS_Reset();
 
 	IHD_Write32(GMBUS_0, gmbus_0_val);
 	IHD_Write32(GMBUS_1, gmbus_1_val);
@@ -27,7 +57,7 @@ GMBUS_I2C_Read(GMBUS_DEVICE device, int offset, int len, uint8_t *buf){
 	//Start reading the bytes
 	for(int i = 0; i < len; i += 4){
 
-		while(!(IHD_Read32(GMBUS_2) & (1 << 11)));
+		GMBUS_Wait();
 
 		uint32_t read_bytes = IHD_Read32(GMBUS_3);
 
@@ -42,9 +72,9 @@ GMBUS_I2C_Read(GMBUS_DEVICE device, int offset, int len, uint8_t *buf){
 			buf[i + 3] = (read_bytes >> 24) & 0xff;
 
 		//Start the next round
-		uint32_t sw_ready_val = IHD_Read32(GMBUS_1);
-		IHD_Write32(GMBUS_1, sw_ready_val | (1 << 30));
 	}
+
+	GMBUS_StopTransaction();
 
 	return len;
 }

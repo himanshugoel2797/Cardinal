@@ -17,12 +17,12 @@ static IHD_Context ctxt;
 
 uint32_t
 IHD_Read32(uint32_t off) {
-    return ctxt.iobase[off];
+    return ctxt.iobase[off / sizeof(uint32_t)];
 }
 
 void
 IHD_Write32(uint32_t off, uint32_t val) {
-    ctxt.iobase[off] = val;
+    ctxt.iobase[off / sizeof(uint32_t)] = val;
 }
 
 void

@@ -18,12 +18,12 @@ static IHD_Context ctxt;
 
 uint32_t
 IHD_Read32(uint32_t off) {
-    return ctxt.iobase[off];
+    return ctxt.iobase[off / sizeof(uint32_t)];
 }
 
 void
 IHD_Write32(uint32_t off, uint32_t val) {
-    ctxt.iobase[off] = val;
+    ctxt.iobase[off / sizeof(uint32_t)] = val;
 }
 
 void
@@ -33,11 +33,11 @@ IHD_Init(IHD_Context *ctxt_p) {
     uint8_t edid[128];
     GMBUS_I2C_Read(GMBUS_DEVICE_LVDS, 0x50, 128, edid);
 
-    if(edid[0] == 0 && edid[1] == 0xff)
+    if(edid[0] != 0 && edid[1] != 0xff)
     	__asm__("hlt");
 
     //Backlight ctrl
-    //uint32_t val = IHD_Read32(0x48254);
-    //val &= 0xFFFF0000;
-    //IHD_Write32(0x48254, val | (val >> 16));
+    uint32_t val = IHD_Read32(0x48254);
+    val &= 0xFFFF0000;
+    IHD_Write32(0x48254, val | 0x10);
 }

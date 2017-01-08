@@ -19,6 +19,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 typedef struct {
     PCI_Device device;
     uint32_t *iobase;
+    uint8_t *stolen_mem;
 } IHD_Context;
 
 #endif
