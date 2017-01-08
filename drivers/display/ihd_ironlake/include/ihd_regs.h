@@ -37,7 +37,48 @@
 //	configure pwm unit
 
 //Steps to disable display
-//TODO
+//Disable backlight
+//	power off pwm unit
+//disable panel power
+//disable cpu planes
+//disable cpu panel fitter
+//disable cpu pipe
+//wait for cpu pipe off
+//disable fdi transmitter and receiver
+//disable port
+//disable transcoder
+//wait for transcoder off
+//disable pch dpll
+//switch fdi receiver to rawclk
+//disable fdi receiver pll
+//disable ssc modulator
+//disable pch clock reference source
+
+
+//display initialization sequence from bios handoff - temporary
+//disable backlight
+//	power off pwm unit
+//disable panel power
+//disable vga plane
+//configure and enable hires and cursor planes
+//enable panel power
+//	wait for steady state
+//enable panel backlight
+//	configure pwm unit
+
+
+//Panel power sequencing register
+#define PP_STAT 0xC7200
+#define PP_CTRL 0xC7204
+#define PP_ON_DELAYS 0xC7208
+#define PP_OFF_DELAYS 0xC720C
+
+#define PWM_PCH_ENABLE 0xC8250
+#define PWM_MOD_FREQ 0xC8254
+
+#define BLC_PWM_CTL2 0x48250
+#define BLC_PWM_CTL1 0x48254
+
 
 //GMBUS registers - read EDID
 #define GMBUS_0 0xC5100
