@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <stdio.h>
 
+#include "ihd.h"
 #include "ihd_context.h"
 
 int main(int argc, char *argv[]) {

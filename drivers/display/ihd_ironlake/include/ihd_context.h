@@ -20,6 +20,11 @@ typedef struct {
     PCI_Device device;
     uint32_t *iobase;
     uint8_t *stolen_mem;
+
+    int max_displays;
+    int max_pipes;
+    int max_fdis;
+    int max_pfs;
 } IHD_Context;
 
 #endif

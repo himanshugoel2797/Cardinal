@@ -78,3 +78,8 @@ GMBUS_I2C_Read(GMBUS_DEVICE device, int offset, int len, uint8_t *buf){
 
 	return len;
 }
+
+int
+EDID_Read(int display){
+	
+}

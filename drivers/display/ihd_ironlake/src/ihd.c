@@ -14,7 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include <string.h>
 
-static IHD_Context ctxt;
+IHD_Context ctxt;
 
 uint32_t
 IHD_Read32(uint32_t off) {

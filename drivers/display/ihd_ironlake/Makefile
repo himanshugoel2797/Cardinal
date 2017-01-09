@@ -1,6 +1,6 @@
 TARGET=ihd_ironlake.elf
 
-OBJS=src/main.o src/fileserver.o src/display.o src/ihd.o src/gmbus.o
+OBJS=src/main.o src/fileserver.o src/ihd.o src/display.o src/gmbus.o src/backlight.o
 
 LIBS=-lfileserver -lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 
