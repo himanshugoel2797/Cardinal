@@ -248,7 +248,7 @@ YieldThread(void) {
 
     ThreadInfo *next_thread = NULL;
     GetThreadReference(GetCurrentThreadUID(), &next_thread);
-    
+
     ConfigurePreemption(MIN(THREAD_PREEMPTION_COST, next_thread->TimeSlice));
     SwitchToTask(next_thread); //TODO get the next task info without polluting the functions.
 

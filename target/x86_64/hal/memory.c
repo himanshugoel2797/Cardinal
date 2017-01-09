@@ -693,7 +693,7 @@ HandlePageFault(uint64_t virtualAddress,
             }
 
             __asm__("cli\n\thlt" :: "a"(instruction_pointer), "b"(virtualAddress), "c"(GetCurrentProcessUID()));
-                
+
             break;
         }
 

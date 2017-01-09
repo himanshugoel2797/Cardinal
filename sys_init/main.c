@@ -41,7 +41,7 @@ int main() {
     int res_len = 0;
 
     void *result = DecodePNGtoRGBA(file_loc, file_size, &img_w, &img_h, &img_p, &res_len);
-    
+
     uint64_t buf_len = disp_info.pitch * disp_info.height;
     uint64_t vAddr = 0;
     uint64_t read_key = 0, write_key = 0;

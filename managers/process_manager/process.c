@@ -347,7 +347,7 @@ GetMessageFromType(Message *msg,
     ProcessInformation *pInfo;
     GetProcessReference(GetCurrentProcessUID(), &pInfo);
 
-    if(List_Length(pInfo->PendingMessages) == 0){
+    if(List_Length(pInfo->PendingMessages) == 0) {
         RefDec(&pInfo->ref);
         return FALSE;
     }

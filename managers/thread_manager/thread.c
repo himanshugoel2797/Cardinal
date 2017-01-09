@@ -492,7 +492,7 @@ GetNextThread(ThreadInfo *prevThread) {
     //Determine how much load this thread ought to have
     int cur_load = 0, desired_load = 0;
 
-    do{
+    do {
         cur_load = (Heap_GetItemCount(all_states[*core_id].cur_heap) * 100) / BTree_GetCount(thds);
         desired_load = (100 / GetActiveCoreCount());
 
@@ -503,7 +503,7 @@ GetNextThread(ThreadInfo *prevThread) {
             debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
             Heap_Insert(all_states[*core_id].cur_heap, thd_ad->TimeSlice, thd_ad);
         }
-    }while(desired_load >= cur_load && List_Length(pending_thds) > 0);
+    } while(desired_load >= cur_load && List_Length(pending_thds) > 0);
 
     ThreadInfo *next_thread = NULL;
 

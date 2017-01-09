@@ -41,17 +41,17 @@ int main(int argc, char *argv[]) {
 
     PCI_EnableBusMaster(&ctxt.device);
 
-/*
-    uint64_t bounce_buffer = 0;
-    uint64_t bounce_phys_addr = 0;
-    MMap(&bounce_buffer,
-         1024 * 1024,
-         MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
-         MMapFlags_DMA,
-         CachingModeWriteBack
-        );
-    R01_GetPhysicalAddress(0, bounce_buffer, &bounce_phys_addr);
-*/
+    /*
+        uint64_t bounce_buffer = 0;
+        uint64_t bounce_phys_addr = 0;
+        MMap(&bounce_buffer,
+             1024 * 1024,
+             MemoryAllocationFlags_Write | MemoryAllocationFlags_Read,
+             MMapFlags_DMA,
+             CachingModeWriteBack
+            );
+        R01_GetPhysicalAddress(0, bounce_buffer, &bounce_phys_addr);
+    */
 
     IHD_Init(&ctxt);
 
