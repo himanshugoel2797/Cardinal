@@ -30,11 +30,6 @@ void
 IHD_Init(IHD_Context *ctxt_p) {
     memcpy(&ctxt, ctxt_p, sizeof(IHD_Context));
 
-    uint8_t edid[128];
-    GMBUS_I2C_Read(GMBUS_DEVICE_LVDS, 0x50, 128, edid);
+    Display_Initialize();
 
-    //Backlight ctrl
-    uint32_t val = IHD_Read32(0x48254);
-    val &= 0xFFFF0000;
-    IHD_Write32(0x48254, val | 0x10);
 }

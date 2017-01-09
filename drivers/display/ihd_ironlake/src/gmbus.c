@@ -3,6 +3,10 @@
 #include "ihd.h"
 #include "ihd_regs.h"
 
+#include "gmbus.h"
+#include "ironlake.h"
+#include "display.h"
+
 int
 GMBUS_DisableWriteProtect(void){
 	uint32_t val = IHD_Read32(GMBUS_1);
@@ -80,6 +84,17 @@ GMBUS_I2C_Read(GMBUS_DEVICE device, int offset, int len, uint8_t *buf){
 }
 
 int
-EDID_Read(int display){
-	
+EDID_Read(int index){
+
+	IHD_DisplayInfo *disp = Display_GetDisplay(index);
+	if(disp == NULL)
+		return 0;
+
+	if(disp->type == DisplayType_HDMI || disp->type == DisplayType_LVDS){
+		GMBUS_I2C_Read(disp->gmbus_index, EDID_OFFSET, EDID_LEN, disp->edid);
+	}else if(disp->type == DisplayType_DisplayPort) {
+		//TODO implement DisplayPort EDID.
+	}
+
+	return 0;
 }

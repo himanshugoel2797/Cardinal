@@ -18,6 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "ihd_regs.h"
 #include "ironlake.h"
 #include "display.h"
+#include "backlight.h"
 
 extern IHD_Context ctxt;
 
@@ -53,6 +54,13 @@ Display_Initialize(void){
 		if(Display_IsPresent(i)){
 			displays[i].isPresent = true;
 			EDID_Read(i);
+
+			if(displays[i].type == DisplayType_LVDS){
+				Backlight_SetActiveState(i, true);
+				Backlight_SetPWMActiveState(i, true);
+				displays[i].backlight.max_val = Backlight_GetMaxBacklightBrightness(i);
+				Backlight_SetBacklightBrightness(i, displays[i].backlight.max_val / 2);
+			}
 		}
 	}
 }
@@ -113,16 +121,10 @@ DisplayType
 Display_GetDisplayType(int display) {
 	switch(display){
 		case HDMI_C_INDEX:
-			if(PORT_CTRL_PORT_IS_PRESENT(IHD_Read32(HDMIC_PORT_CTRL)))
-				return DisplayType_HDMI;
-			else
-				return DisplayType_DisplayPort;
+			return DisplayType_HDMI;
 		break;
 		case HDMI_D_INDEX:
-			if(PORT_CTRL_PORT_IS_PRESENT(IHD_Read32(HDMID_PORT_CTRL)))
-				return DisplayType_HDMI;
-			else
-				return DisplayType_DisplayPort;
+			return DisplayType_HDMI;
 		break;
 		case LVDS_INDEX:
 			return DisplayType_LVDS;

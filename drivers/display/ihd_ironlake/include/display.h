@@ -66,6 +66,7 @@ typedef struct {
 	int pipe_index;
 	int fdi_trans_index;
 	int fdi_recv_index;
+	int gmbus_index;
 	bool isPresent;
 	IHD_Backlight backlight;
 	uint8_t edid[EDID_LEN];
