@@ -34,6 +34,27 @@ typedef struct {
     uint32_t link_n1;
     uint32_t link_m2;
     uint32_t link_n2;
+
+    uint32_t htotal;
+    uint32_t hactive;
+    uint32_t hblank_start;
+    uint32_t hblank_end;
+    uint32_t hsync_start;
+    uint32_t hsync_end;
+
+    uint32_t vtotal;
+    uint32_t vactive;
+    uint32_t vblank_start;
+    uint32_t vblank_end;
+    uint32_t vsync_start;
+    uint32_t vsync_end;
+
+    uint32_t w;
+    uint32_t h;
+
+    uint8_t bpp;
+    uint8_t gamma_palette_mode;
+    bool enabled;
 } IHD_Pipe;
 
 typedef struct {

@@ -63,6 +63,12 @@ Display_Initialize(void) {
             }
         }
     }
+
+    //Disable the vga display
+    IHD_Write8(VGA_CLOCKING_MODE_CTRL, VGA_CLOCKING_MODE_SCREEN_OFF);
+
+    //
+
 }
 
 int
@@ -150,5 +156,161 @@ Display_CreateDisplay(int display) {
 
 void
 Display_SetPanelFitterActiveState(int pf_index, bool state) {
+	if(pf_index >= ctxt.max_pfs)
+		return;
 
+	panel_fitters[pf_index].enabled = state;
+
+	uint32_t pf_ctrl = IHD_Read32(PF_CTRL_1(pf_index));
+	pf_ctrl &= ~(1 << PF_CTRL_ENABLE_SCALER);
+	pf_ctrl |= (!!state << PF_CTRL_ENABLE_SCALER);
+	IHD_Write32(PF_CTRL_1(pf_index), pf_ctrl);
+
+}
+
+void
+Display_SetPanelFitterWindowRectangle(int pf_index, int x, int y, int w, int h, int vscale, int hscale) {
+
+	if(pf_index >= ctxt.max_pfs)
+		return;
+
+	panel_fitters[pf_index].x = x;
+	panel_fitters[pf_index].y = y;
+	panel_fitters[pf_index].w = w;
+	panel_fitters[pf_index].h = h;
+	panel_fitters[pf_index].vscale = vscale;
+	panel_fitters[pf_index].hscale = hscale;
+
+	uint32_t pf_win_sz = IHD_Read32(PF_WIN_SZ(pf_index));
+	uint32_t pf_win_pos = IHD_Read32(PF_WIN_POS(pf_index));
+
+	pf_win_sz &= ~(PF_WIN_SZ_MASK << PF_WIN_WIDTH_OFF);
+	pf_win_sz |= (w & PF_WIN_SZ_MASK) << PF_WIN_WIDTH_OFF;
+
+	pf_win_sz &= ~(PF_WIN_SZ_MASK << PF_WIN_HEIGHT_OFF);
+	pf_win_sz |= (h & PF_WIN_SZ_MASK) << PF_WIN_HEIGHT_OFF;
+
+	pf_win_pos &= ~(PF_WIN_POS_MASK << PF_WIN_X_OFF);
+	pf_win_pos |= (x & PF_WIN_POS_MASK) << PF_WIN_X_OFF;
+
+	pf_win_pos &= ~(PF_WIN_POS_MASK << PF_WIN_Y_OFF);
+	pf_win_pos |= (y & PF_WIN_POS_MASK) << PF_WIN_Y_OFF;
+
+	//TODO Implement HSCALE and VSCALE
+
+	IHD_Write32(PF_WIN_SZ(pf_index), pf_win_sz);		
+	IHD_Write32(PF_WIN_POS(pf_index), pf_win_pos);
+
+}
+
+void
+Display_SetPipeActiveState(int pipe_index, 
+						   bool state) 
+{
+
+	if(pipe_index >= ctxt.max_pipes)
+		return;
+
+	state = !!state;
+
+	//Setup the input bit as desired.
+	uint32_t conf = IHD_Read32(PIPE_CONF(pipe_index));
+
+	conf &= ~(1 << PIPE_CONF_ENABLE);
+	conf |= (state << PIPE_CONF_ENABLE);
+
+	IHD_Write32(PIPE_CONF(pipe_index), conf);
+
+	//Wait for the pipe to power down
+	while( (IHD_Read32(PIPE_CONF(pipe_index)) & (1 << PIPE_CONF_STATE)) != state)
+		;
+
+	pipes[pipe_index].enabled = state;
+}
+
+int
+Display_SetPipeTimings(int pipe_index, 
+					   uint32_t htotal,
+					   uint32_t hactive,
+					   uint32_t hblank_start, 
+					   uint32_t hblank_end, 
+					   uint32_t hsync_start,
+					   uint32_t hsync_end, 
+					   uint32_t vtotal,
+					   uint32_t vactive, 
+					   uint32_t vblank_start,
+					   uint32_t vblank_end, 
+					   uint32_t vsync_start,
+					   uint32_T vsync_end) 
+{
+	if(pipe_index >= ctxt.max_pipes)
+		return -1;
+	if(!(htotal & ~PIPE_TOTAL_TOTAL_MASK))
+		return -2;
+	//TODO add checks for the remaining arguments
+
+	htotal = (htotal) & PIPE_TOTAL_TOTAL_MASK;
+	hactive = (hactive) & PIPE_TOTAL_TOTAL_MASK;
+	hblank_start = (hblank_start) & PIPE_BLANK_START_MASK;
+	hblank_end = (hblank_end) & PIPE_BLANK_END_MASK;
+	hsync_start = (hsync_start) & PIPE_SYNC_START_MASK;
+	hsync_end = (hsync_end) & PIPE_SYNC_END_MASK;
+
+	vtotal = (vtotal) & PIPE_TOTAL_TOTAL_MASK;
+	vactive = (vactive) & PIPE_TOTAL_TOTAL_MASK;
+	vblank_start = (vblank_start) & PIPE_BLANK_START_MASK;
+	vblank_end = (vblank_end) & PIPE_BLANK_END_MASK;
+	vsync_start = (vsync_start) & PIPE_SYNC_START_MASK;
+	vsync_end = (vsync_end) & PIPE_SYNC_END_MASK;
+
+	//Setup the input bit as desired.
+	pipes[pipe_index].htotal = htotal;
+	pipes[pipe_index].hactive = hactive;
+	pipes[pipe_index].hblank_start = hblank_start;
+	pipes[pipe_index].hblank_end = hblank_end;
+	pipes[pipe_index].hsync_start = hsync_start;
+	pipes[pipe_index].hsync_end = hsync_end;
+
+	pipes[pipe_index].vtotal = vtotal;
+	pipes[pipe_index].vactive = vactive;
+	pipes[pipe_index].vblank_start = vblank_start;
+	pipes[pipe_index].vblank_end = vblank_end;
+	pipes[pipe_index].vsync_start = vsync_start;
+	pipes[pipe_index].vsync_end = vsync_end;	
+
+
+	IHD_Write32(HTOTAL(pipe_index), (htotal << PIPE_TOTAL_TOTAL_OFF) | (hactive << PIPE_TOTAL_ACTIVE_OFF));
+	IHD_Write32(HBLANK(pipe_index), (hblank_end << PIPE_BLANK_END_OFF) | (hblank_start << PIPE_BLANK_START_OFF));
+	IHD_Write32(HSYNC(pipe_index), (hsync_end << PIPE_SYNC_END_OFF) | (hsync_start << PIPE_SYNC_START_OFF));
+
+	IHD_Write32(VTOTAL(pipe_index), (vtotal << PIPE_TOTAL_TOTAL_OFF) | (vactive << PIPE_TOTAL_ACTIVE_OFF));
+	IHD_Write32(VBLANK(pipe_index), (vblank_end << PIPE_BLANK_END_OFF) | (vblank_start << PIPE_BLANK_START_OFF));
+	IHD_Write32(VSYNC(pipe_index), (vsync_end << PIPE_SYNC_END_OFF) | (vsync_start << PIPE_SYNC_START_OFF));
+
+	return 0;
+}
+
+int
+Display_SetPipeSize(int pipe_index, 
+					uint32_t w, 
+					uint32_t h)
+{
+	if(pipe_index >= ctxt.max_pipes)
+		return -1;
+
+	if(w & ~PIPE_SZ_WIDTH_MASK)
+		return -2;
+
+	if(h & ~PIPE_SZ_HEIGHT_MASK)
+		return -3;
+
+	w = w & PIPE_SZ_WIDTH_MASK;
+	h = h & PIPE_SZ_HEIGHT_MASK;
+
+	pipes[pipe_index].w = w;
+	pipes[pipe_index].h = h;
+
+	IHD_Write32(PIPE_SZ(pipe_index), (w << PIPE_SZ_WIDTH_OFF) | (h << PIPE_SZ_HEIGHT_OFF));
+
+	return 0;
 }

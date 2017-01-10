@@ -22,6 +22,12 @@ IHD_Read32(uint32_t off);
 void
 IHD_Write32(uint32_t off, uint32_t val);
 
+uint8_t
+IHD_Read8(uint32_t off);
+
+void
+IHD_Write8(uint32_t off, uint8_t val);
+
 void
 IHD_Init(IHD_Context *ctxt);
 

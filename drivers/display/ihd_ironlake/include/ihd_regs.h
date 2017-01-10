@@ -142,6 +142,85 @@ typedef enum {
 
 #define PORT_CTRL_PORT_IS_PRESENT(val) (val & (1 << 2))
 
+//Panel fitter registers
+#define PF_CTRL_1(i) (0x68080 + (0x800 * i))
+#define PF_WIN_SZ(i) (0x68074 + (0x800 * i))
+#define PF_WIN_POS(i) (0x68070 + (0x800 * i))
 
+typedef enum {
+    PF_CTRL_ENABLE_SCALER = 31,
+} PF_CTRL_BITS;
+
+typedef enum {
+    PF_WIN_WIDTH_OFF = 16,
+    PF_WIN_HEIGHT_OFF = 0,
+} PF_WIN_SZ_OFFSETS;
+
+typedef enum {
+    PF_WIN_X_OFF = 16,
+    PF_WIN_Y_OFF = 0,
+} PF_WIN_POS_OFFSETS;
+
+#define PF_WIN_SZ_MASK 0x7FF
+#define PF_WIN_POS_MASK 0x7FF
+
+//Pipe registers
+#define HTOTAL(x) (0x60000)
+#define HBLANK(x) (0x60004)
+#define HSYNC(x) (0x60008)
+
+#define VTOTAL(x) (0x6000C)
+#define VBLANK(x) (0x60010)
+#define VSYNC(x) (0x60014)
+
+#define PIPE_SZ(x) (0x6001C)
+#define VSYNCSHIFT(x) (0x60028)
+
+typedef enum {
+    PIPE_TOTAL_ACTIVE_OFF = 0,
+    PIPE_TOTAL_TOTAL_OFF = 16,
+} PIPE_TOTAL_BITS;
+
+typedef enum {
+    PIPE_BLANK_START_OFF = 0,
+    PIPE_BLANK_END_OFF = 16
+} PIPE_BLANK_BITS;
+
+typedef enum {
+    PIPE_SYNC_START_OFF = 0,
+    PIPE_SYNC_END_OFF = 16
+} PIPE_SYNC_BITS;
+
+typedef enum {
+    PIPE_SZ_WIDTH_OFF = 16,
+    PIPE_SZ_HEIGHT_OFF = 0,
+} PIPE_SZ_BITS;
+
+#define PIPE_TOTAL_TOTAL_MASK 0x1FFF
+#define PIPE_TOTAL_ACTIVE_MASK 0xFFF
+
+#define PIPE_BLANK_START_MASK 0x1FFF
+#define PIPE_BLANK_END_MASK 0x1FFF
+
+#define PIPE_SYNC_START_MASK 0x1FFF
+#define PIPE_SYNC_END_MASK 0x1FFF
+
+#define PIPE_SZ_WIDTH_MASK 0xFFF
+#define PIPE_SZ_HEIGHT_MASK 0xFFF
+
+
+#define PIPE_DATA_M1(x) (0x60030)
+
+#define PIPE_CONF(x) (0x70008 + (x * 0x1000))
+
+typedef enum {
+    PIPE_CONF_ENABLE = 31,
+    PIPE_CONF_STATE = 30,
+} PIPE_CONF_BITS;
+
+//VGA registers
+#define VGA_CLOCKING_MODE_CTRL 0x3C5
+
+#define VGA_CLOCKING_MODE_SCREEN_OFF (1 << 5)
 
 #endif

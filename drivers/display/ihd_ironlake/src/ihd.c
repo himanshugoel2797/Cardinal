@@ -26,6 +26,16 @@ IHD_Write32(uint32_t off, uint32_t val) {
     ctxt.iobase[off / sizeof(uint32_t)] = val;
 }
 
+uint8_t
+IHD_Read8(uint32_t off) {
+    return ((uint8_t*)ctxt.iobase)[off / sizeof(uint8_t)];
+}
+
+void
+IHD_Write8(uint32_t off, uint8_t val) {
+    ((uint8_t*)ctxt.iobase)[off / sizeof(uint8_t)] = val;
+}
+
 void
 IHD_Init(IHD_Context *ctxt_p) {
     memcpy(&ctxt, ctxt_p, sizeof(IHD_Context));
