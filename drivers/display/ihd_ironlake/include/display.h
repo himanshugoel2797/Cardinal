@@ -128,6 +128,59 @@ void
 Display_RestoreDisplayTimings(int display, IHD_DisplayInfo *dInfo);
 
 int
-Display_CreateDisplay(int display);
+Display_AllocatePipe(int display);
+
+bool
+Display_CheckDisplaySupportsPipe(int display, int pipe);
+
+void
+Display_SetPanelActiveState(int display, bool enable);
+
+void
+Display_SetDisplayPlaneActiveState(int pipe_index, bool enable);
+
+void
+Display_SetCursorPlaneActiveState(int pipe_index, bool enable);
+
+void
+Display_SetVideoPlaneActiveState(int pipe_index, bool enable);
+
+int
+Display_SavePipeTimings(int pipe_index_src, int pipe_index_dst);
+
+int
+Display_RestorePipeTimings(int pipe_index_src, int pipe_index_dst);
+
+int
+Display_SetPipeSize(int pipe_index, 
+                    uint32_t w, 
+                    uint32_t h);
+
+int
+Display_SetPipeTimings(int pipe_index, 
+                       uint32_t htotal,
+                       uint32_t hactive,
+                       uint32_t hblank_start, 
+                       uint32_t hblank_end, 
+                       uint32_t hsync_start,
+                       uint32_t hsync_end, 
+                       uint32_t vtotal,
+                       uint32_t vactive, 
+                       uint32_t vblank_start,
+                       uint32_t vblank_end, 
+                       uint32_t vsync_start,
+                       uint32_t vsync_end);
+
+
+void
+Display_SetPipeActiveState(int pipe_index, 
+                           bool state);
+
+void
+Display_SetPanelFitterWindowRectangle(int pf_index, int x, int y, int w, int h, int vscale, int hscale);
+
+void
+Display_SetPanelFitterActiveState(int pf_index, bool state);
+
 
 #endif

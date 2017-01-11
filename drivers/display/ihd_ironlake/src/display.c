@@ -67,12 +67,94 @@ Display_Initialize(void) {
     //Disable the vga display
     IHD_Write8(VGA_CLOCKING_MODE_CTRL, VGA_CLOCKING_MODE_SCREEN_OFF);
 
-    //
+    //For now just set the display size to the pipe timings
+    //The system will be responsible for selecting the final resolution
+    //(reduces duplication of code like EDID parsing)
+
+
+    //Disable the backlight
+    Backlight_SetActiveState(LVDS_INDEX, false);
+
+    //Power off the backlight pwm
+    Backlight_SetPWMActiveState(LVDS_INDEX, false);
+
+    //Disable panel power
+    Display_SetPanelActiveState(LVDS_INDEX, false);
+
+    //Disable the vga plane
+    //Determine which pipe has been configured with the display and disable the vga plane
+    uint32_t vga_plane_ctrl = IHD_Read32(VGA_PLANE_CTRL);
+    vga_plane_ctrl |= (1 << VGA_PLANE_CTRL_DISABLE_BIT);
+    IHD_Write32(VGA_PLANE_CTRL, vga_plane_ctrl);
+
+    uint32_t vga_pipe_index = (vga_plane_ctrl >> VGA_PLANE_PIPE_SELECT_BIT) & 1;
+
+    for(int i = 0; i < ctxt.max_pipes; i++){
+
+		//Save all pipe timings    	
+    	Display_SavePipeTimings(i, i);
+
+    	//Disable all planes on each pipe
+    	Display_SetDisplayPlaneActiveState(i, false);
+    	Display_SetCursorPlaneActiveState(i, false);
+    	Display_SetVideoPlaneActiveState(i, false);
+
+    	//Disable all pipes
+    	Display_SetPipeActiveState(i, false);
+    }
+
+    //Disable all panel fitters
+    for(int i = 0; i < ctxt.max_pfs; i++)
+    	Display_SetPanelFitterActiveState(i, false);
+
+	//Allocate a pipe for the built-in display
+    int alloc_pipe_index = Display_AllocatePipe(LVDS_INDEX);
+
+    //Configure and enable the pipe based on the timings of the VGA pipe
+    Display_RestorePipeTimings(vga_pipe_index, alloc_pipe_index);
+    Display_SetPipeSize(alloc_pipe_index, pipes[alloc_pipe_index].hactive + 1, pipes[alloc_pipe_index].vactive + 1);
+
+    //Enable the hires plane
+    Display_SetDisplayPlaneActiveState(alloc_pipe_index, true);
+
+    //Enable panel power
+    Display_SetPanelActiveState(LVDS_INDEX, true);
+    //TODO Wait for steady state
+
+    //Enable backlight
+    Backlight_SetActiveState(LVDS_INDEX, true);
+    
+    //Configure PWM unit
+    Backlight_SetPWMActiveState(LVDS_INDEX, true);
+
+    //Set the display brightness to half the maximum
+    Backlight_SetBacklightBrightness(LVDS_INDEX, displays[LVDS_INDEX].backlight.max_val / 2);
+
+
+	//TODO from here, start setting up GTTs, and devise context switching setup
+	//Setup command ring buffers for all graphics engines
+
+	
 
 }
 
-int
-Display_GetAssignedPipe(int display) {
+void
+Display_SetPanelActiveState(int display, bool enable) {
+
+}
+
+void
+Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
+
+}
+
+void
+Display_SetCursorPlaneActiveState(int pipe_index, bool enable) {
+
+}
+
+void
+Display_SetVideoPlaneActiveState(int pipe_index, bool enable) {
 
 }
 
@@ -149,9 +231,17 @@ Display_GetDisplay(int display) {
     return &displays[display];
 }
 
-int
-Display_CreateDisplay(int display) {
+bool
+Display_CheckDisplaySupportsPipe(int display, int pipe){
+	return true;
+}
 
+int
+Display_AllocatePipe(int display) {
+	for(int i = 0; i < ctxt.max_pipes; i++){
+		if(pipes[i].enabled == false && Display_CheckDisplaySupportsPipe(display, i))
+			return i;
+	}
 }
 
 void
@@ -241,7 +331,7 @@ Display_SetPipeTimings(int pipe_index,
 					   uint32_t vblank_start,
 					   uint32_t vblank_end, 
 					   uint32_t vsync_start,
-					   uint32_T vsync_end) 
+					   uint32_t vsync_end) 
 {
 	if(pipe_index >= ctxt.max_pipes)
 		return -1;
@@ -250,7 +340,7 @@ Display_SetPipeTimings(int pipe_index,
 	//TODO add checks for the remaining arguments
 
 	htotal = (htotal) & PIPE_TOTAL_TOTAL_MASK;
-	hactive = (hactive) & PIPE_TOTAL_TOTAL_MASK;
+	hactive = (hactive) & PIPE_TOTAL_ACTIVE_MASK;
 	hblank_start = (hblank_start) & PIPE_BLANK_START_MASK;
 	hblank_end = (hblank_end) & PIPE_BLANK_END_MASK;
 	hsync_start = (hsync_start) & PIPE_SYNC_START_MASK;
@@ -288,6 +378,71 @@ Display_SetPipeTimings(int pipe_index,
 	IHD_Write32(VSYNC(pipe_index), (vsync_end << PIPE_SYNC_END_OFF) | (vsync_start << PIPE_SYNC_START_OFF));
 
 	return 0;
+}
+
+int
+Display_SavePipeTimings(int pipe_index_src, int pipe_index_dst) 
+{
+	if((pipe_index_src >= ctxt.max_pipes) | (pipe_index_dst >= ctxt.max_pipes))
+		return -1;
+
+	uint32_t htotal_reg = IHD_Read32(HTOTAL(pipe_index_src));
+	uint32_t hblank_reg = IHD_Read32(HBLANK(pipe_index_src));
+	uint32_t hsync_reg = IHD_Read32(HSYNC(pipe_index_src));
+	uint32_t vtotal_reg = IHD_Read32(VTOTAL(pipe_index_src));
+	uint32_t vblank_reg = IHD_Read32(VBLANK(pipe_index_src));
+	uint32_t vsync_reg = IHD_Read32(VSYNC(pipe_index_src));
+
+	uint32_t htotal = (htotal_reg >> PIPE_TOTAL_TOTAL_OFF) & PIPE_TOTAL_TOTAL_MASK;
+	uint32_t hactive = (htotal_reg >> PIPE_TOTAL_ACTIVE_OFF) & PIPE_TOTAL_ACTIVE_MASK;
+	uint32_t hblank_start = (hblank_reg >> PIPE_BLANK_START_OFF) & PIPE_BLANK_START_MASK; 
+	uint32_t hblank_end = (hblank_reg >> PIPE_BLANK_END_OFF) & PIPE_BLANK_END_MASK;
+	uint32_t hsync_start = (hsync_reg >> PIPE_SYNC_START_OFF) & PIPE_SYNC_START_MASK;
+	uint32_t hsync_end = (hsync_reg >> PIPE_SYNC_END_OFF) & PIPE_SYNC_END_MASK;
+	uint32_t vtotal = (vtotal_reg >> PIPE_TOTAL_TOTAL_OFF) & PIPE_TOTAL_TOTAL_MASK;
+	uint32_t vactive = (vtotal_reg >> PIPE_TOTAL_ACTIVE_OFF) & PIPE_TOTAL_ACTIVE_MASK;
+	uint32_t vblank_start = (vblank_reg >> PIPE_BLANK_START_OFF) & PIPE_BLANK_START_MASK; 
+	uint32_t vblank_end = (vblank_reg >> PIPE_BLANK_END_OFF) & PIPE_BLANK_END_MASK;
+	uint32_t vsync_start = (vsync_reg >> PIPE_SYNC_START_OFF) & PIPE_SYNC_START_MASK;
+	uint32_t vsync_end = (vsync_reg >> PIPE_SYNC_END_OFF) & PIPE_SYNC_END_MASK;
+		
+	//Setup the input bit as desired.
+	pipes[pipe_index_dst].htotal = htotal;
+	pipes[pipe_index_dst].hactive = hactive;
+	pipes[pipe_index_dst].hblank_start = hblank_start;
+	pipes[pipe_index_dst].hblank_end = hblank_end;
+	pipes[pipe_index_dst].hsync_start = hsync_start;
+	pipes[pipe_index_dst].hsync_end = hsync_end;
+
+	pipes[pipe_index_dst].vtotal = vtotal;
+	pipes[pipe_index_dst].vactive = vactive;
+	pipes[pipe_index_dst].vblank_start = vblank_start;
+	pipes[pipe_index_dst].vblank_end = vblank_end;
+	pipes[pipe_index_dst].vsync_start = vsync_start;
+	pipes[pipe_index_dst].vsync_end = vsync_end;	
+
+	return 0;
+}
+
+int
+Display_RestorePipeTimings(int pipe_index_src, int pipe_index_dst)
+{
+	if((pipe_index_src >= ctxt.max_pipes) | (pipe_index_dst >= ctxt.max_pipes))
+		return -1;
+
+	return Display_SetPipeTimings(pipe_index_src,
+								  pipes[pipe_index_dst].htotal,
+								  pipes[pipe_index_dst].hactive,
+								  pipes[pipe_index_dst].hblank_start,
+								  pipes[pipe_index_dst].hblank_end,
+								  pipes[pipe_index_dst].hsync_start,
+								  pipes[pipe_index_dst].hsync_end,
+								  pipes[pipe_index_dst].vtotal,
+								  pipes[pipe_index_dst].vactive,
+								  pipes[pipe_index_dst].vblank_start,
+								  pipes[pipe_index_dst].vblank_end,
+								  pipes[pipe_index_dst].vsync_start,
+								  pipes[pipe_index_dst].vsync_end);
 }
 
 int

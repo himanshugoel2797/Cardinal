@@ -161,8 +161,8 @@ typedef enum {
     PF_WIN_Y_OFF = 0,
 } PF_WIN_POS_OFFSETS;
 
-#define PF_WIN_SZ_MASK 0x7FF
-#define PF_WIN_POS_MASK 0x7FF
+#define PF_WIN_SZ_MASK 0xFFF
+#define PF_WIN_POS_MASK 0xFFF
 
 //Pipe registers
 #define HTOTAL(x) (0x60000)
@@ -218,9 +218,27 @@ typedef enum {
     PIPE_CONF_STATE = 30,
 } PIPE_CONF_BITS;
 
+//Plane Control registers
+//VGA Plane Control
+#define VGA_PLANE_CTRL 0x41000
+
+typedef enum {
+    VGA_PLANE_CTRL_DISABLE_BIT = 31,
+    VGA_PLANE_PIPE_SELECT_BIT = 29,
+} VGA_PLANE_CTRL_BITS;
+
 //VGA registers
 #define VGA_CLOCKING_MODE_CTRL 0x3C5
 
 #define VGA_CLOCKING_MODE_SCREEN_OFF (1 << 5)
+
+#define CURSOR_PLANE_CTRL(x) (0x70080 + (x * ))
+
+typedef enum {
+    CURSOR_PLANE_CTRL_ENABLE_BIT = 27,
+    CURSOR_PLANE_CTRL_GAMME_ENABLE_BIT = 26,
+    CURSOR_PLANE_CTRL_MODE_SELECT_UPPER_BIT = 5,
+
+} CURSOR_PLANE_CTRL_BITS;
 
 #endif
