@@ -15,7 +15,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "ihd.h"
 #include "ihd_context.h"
-#include "ihd_regs.h"
 #include "ironlake.h"
 #include "display.h"
 #include "backlight.h"
@@ -96,7 +95,7 @@ Display_Initialize(void) {
 
     	//Disable all planes on each pipe
     	Display_SetDisplayPlaneActiveState(i, false);
-    	Display_SetCursorPlaneActiveState(i, false);
+    	CursorPlane_SetMode(i, CURSOR_PLANE_DISABLED);
     	Display_SetVideoPlaneActiveState(i, false);
 
     	//Disable all pipes
@@ -149,8 +148,17 @@ Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
 }
 
 void
-Display_SetCursorPlaneActiveState(int pipe_index, bool enable) {
+CursorPlane_SetMode(int pipe_index, CURSOR_PLANE_MODES mode){
+	if(pipe_index >= ctxt.max_pipes)
+		return;
 
+	pipes[pipe_index].cursor.mode = mode;
+
+	uint32_t cursor_ctrl = IHD_Read32(CURSOR_PLANE_CTRL(pipe_index));
+	cursor_ctrl &= CURSOR_PLANE_CTRL_MODE_SELECT_CLEAR_MASK;
+	cursor_ctrl |= CURSOR_PLANE_CTRL_MODE_SELECT_CONV(mode);
+
+	IHD_Write32(CURSOR_PLANE_CTRL(pipe_index), cursor_ctrl);
 }
 
 void

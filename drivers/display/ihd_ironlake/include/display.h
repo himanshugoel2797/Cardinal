@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "gmbus.h"
+#include "ihd_regs.h"
 
 typedef enum {
     DisplayType_Unknown,
@@ -23,6 +24,13 @@ typedef struct {
     uint32_t vsync;
     uint32_t vsyncshift;
 } IHD_DisplayTimings;
+
+typedef struct {
+    int mode;
+    bool enabled;
+    int x;
+    int y;
+} IHD_CursorPlane;
 
 typedef struct {
     uint32_t src;
@@ -55,6 +63,8 @@ typedef struct {
     uint8_t bpp;
     uint8_t gamma_palette_mode;
     bool enabled;
+
+    IHD_CursorPlane cursor;
 } IHD_Pipe;
 
 typedef struct {
@@ -182,5 +192,7 @@ Display_SetPanelFitterWindowRectangle(int pf_index, int x, int y, int w, int h, 
 void
 Display_SetPanelFitterActiveState(int pf_index, bool state);
 
+void
+CursorPlane_SetMode(int pipe_index, CURSOR_PLANE_MODES mode);
 
 #endif
