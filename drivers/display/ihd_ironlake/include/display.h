@@ -34,8 +34,13 @@ typedef struct {
 
 typedef struct {
     int pitch;
+    DISPLAY_PLANE_PIXEL_MODES mode;
     bool enabled;
 } IHD_DisplayPlane;
+
+typedef struct {
+    bool enabled;
+} IHD_VideoPlane;
 
 typedef struct {
     uint32_t src;
@@ -71,6 +76,7 @@ typedef struct {
 
     IHD_CursorPlane cursor;
     IHD_DisplayPlane display;
+    IHD_VideoPlane video;
 } IHD_Pipe;
 
 typedef struct {
@@ -153,13 +159,10 @@ void
 Display_SetPanelActiveState(int display, bool enable);
 
 void
-Display_SetDisplayPlaneActiveState(int pipe_index, bool enable);
+DisplayPlane_SetActiveState(int pipe_index, bool enable);
 
 void
-Display_SetCursorPlaneActiveState(int pipe_index, bool enable);
-
-void
-Display_SetVideoPlaneActiveState(int pipe_index, bool enable);
+VideoPlane_SetActiveState(int pipe_index, bool enable);
 
 int
 Display_SavePipeTimings(int pipe_index_src, int pipe_index_dst);
@@ -200,5 +203,12 @@ Display_SetPanelFitterActiveState(int pf_index, bool state);
 
 void
 CursorPlane_SetMode(int pipe_index, CURSOR_PLANE_MODES mode);
+
+void
+DisplayPlane_SetPixelMode(int pipe_index, DISPLAY_PLANE_PIXEL_MODES mode);
+
+void
+DisplayPlane_SetPitch(int pipe_index, int pitch);
+
 
 #endif

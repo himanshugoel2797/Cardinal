@@ -94,9 +94,9 @@ Display_Initialize(void) {
     	Display_SavePipeTimings(i, i);
 
     	//Disable all planes on each pipe
-    	Display_SetDisplayPlaneActiveState(i, false);
+    	DisplayPlane_SetActiveState(i, false);
+    	VideoPlane_SetActiveState(i, false);
     	CursorPlane_SetMode(i, CURSOR_PLANE_DISABLED);
-    	Display_SetVideoPlaneActiveState(i, false);
 
     	//Disable all pipes
     	Display_SetPipeActiveState(i, false);
@@ -114,7 +114,14 @@ Display_Initialize(void) {
     Display_SetPipeSize(alloc_pipe_index, pipes[alloc_pipe_index].hactive + 1, pipes[alloc_pipe_index].vactive + 1);
 
     //Enable the hires plane
-    Display_SetDisplayPlaneActiveState(alloc_pipe_index, true);
+    int pitch = (pipes[alloc_pipe_index].vactive + 1) * sizeof(uint32_t);
+    if(pitch % 64)
+    	pitch += 64 - pitch % 64;
+
+    DisplayPlane_SetPitch(alloc_pipe_index, pitch);
+    DisplayPlane_SetPixelMode(alloc_pipe_index, DISPLAY_PLANE_PIXEL_MODE_XRGB_2_10_10_10);
+    DisplayPlane_SetActiveState(alloc_pipe_index, true);
+
 
     //Enable panel power
     Display_SetPanelActiveState(LVDS_INDEX, true);
@@ -143,7 +150,7 @@ Display_SetPanelActiveState(int display, bool enable) {
 }
 
 void
-Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
+DisplayPlane_SetActiveState(int pipe_index, bool enable) {
 	if(pipe_index >= ctxt.max_pipes)
 		return;
 
@@ -154,6 +161,30 @@ Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
 	uint32_t ctrl = IHD_Read32(DISPLAY_PLANE_CTRL(pipe_index));
 	ctrl &= ~(1 << DISPLAY_PLANE_CTRL_ENABLE_BIT);
 	ctrl |= (enable << DISPLAY_PLANE_CTRL_ENABLE_BIT);
+
+	IHD_Write32(DISPLAY_PLANE_CTRL(pipe_index), ctrl);
+}
+
+void
+DisplayPlane_SetPitch(int pipe_index, int pitch) {
+	if(pipe_index >= ctxt.max_pipes)
+		return;
+
+	pipes[pipe_index].display.pitch = pitch;
+
+	IHD_Write32(DISPLAY_PLANE_STRIDE(pipe_index), pitch);
+}
+
+void
+DisplayPlane_SetPixelMode(int pipe_index, DISPLAY_PLANE_PIXEL_MODES mode) {
+	if(pipe_index >= ctxt.max_pipes)
+		return;
+
+	pipes[pipe_index].display.mode = mode;
+
+	uint32_t ctrl = IHD_Read32(DISPLAY_PLANE_CTRL(pipe_index));
+	ctrl &= ~(DISPLAY_PLANE_CTRL_PIXEL_MODE_MASK << DISPLAY_PLANE_CTRL_PIXEL_MODE_OFF);
+	ctrl |= (mode << DISPLAY_PLANE_CTRL_PIXEL_MODE_OFF);
 
 	IHD_Write32(DISPLAY_PLANE_CTRL(pipe_index), ctrl);
 }
@@ -173,7 +204,7 @@ CursorPlane_SetMode(int pipe_index, CURSOR_PLANE_MODES mode){
 }
 
 void
-Display_SetVideoPlaneActiveState(int pipe_index, bool enable) {
+VideoPlane_SetActiveState(int pipe_index, bool enable) {
 	
 	if(pipe_index >= ctxt.max_pipes)
 		return;

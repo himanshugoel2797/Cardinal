@@ -127,3 +127,93 @@ PCI_GetBARSize(PCI_Device *device,
 
     return ~val + 1;
 }
+
+int
+PCI_AllocateMSI(PCI_Device *device) {
+
+  //Traverse the capabilities list
+  uint32_t status = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x04);
+  status &= ~(1 << 10); //Disable legacy interrupts
+  PCI_WriteDWord(device->Bus, device->Device, device->Function, 0x04, status);
+
+  //Check the Status register, bit 4 to see if the capabilities list is present
+  if((status >> 4) & 1) {
+    uint8_t cap_list_offset = PCI_ReadDWord(device->Bus, device->Device, device->Function, 0x34) & 0xFC;  
+
+    uint32_t msi_ctrl_off = cap_list_offset << 8;
+    uint32_t msi_ctrl_off_nx = msi_ctrl_off & 0xFFFF;
+
+    while( (msi_ctrl_off_nx & 0xFF) != 0x05)
+        {
+            msi_ctrl_off = msi_ctrl_off_nx;
+            if(msi_ctrl_off == 0)return -1;
+
+            msi_ctrl_off_nx = PCI_ReadDWord(
+                                  device->Bus,
+                                  device->Device,
+                                  device->Function,
+                                  msi_ctrl_off >> 8) & 0xFFFF;
+        }
+
+    msi_ctrl_off = msi_ctrl_off >> 8;
+
+    uint32_t reg = PCI_ReadDWord(
+              device->Bus,
+              device->Device,
+              device->Function,
+              msi_ctrl_off);
+
+    uint32_t msi_64b_cap = (reg >> 16) >> 7;
+    reg |= (1 << 16);        //Enable MSI
+
+
+    PCI_WriteDWord(
+        device->Bus,
+        device->Device,
+        device->Function,
+        msi_ctrl_off,
+        reg);
+
+    uint32_t data_reg = msi_ctrl_off + 8;
+    if(msi_64b_cap)
+      data_reg += 4;
+
+    reg = PCI_ReadDWord(
+              device->Bus,
+              device->Device,
+              device->Function,
+              msi_ctrl_off + 4);
+    reg = 0xFEE00000;   //Set the MSI Address as per x86 specs
+    //TODO get the destination ID by adding a new arch specific property syscall.
+    //reg |= APIC_GetID() << 12;  //Set the APIC address
+
+    PCI_WriteDWord(
+        device->Bus,
+        device->Device,
+        device->Function,
+        msi_ctrl_off + 4,
+        reg);
+
+
+    reg = PCI_ReadDWord(
+              device->Bus,
+              device->Device,
+              device->Function,
+              data_reg);
+    reg &= ~0xFF;
+    //TODO allocate irqs
+    //reg |= 
+
+    PCI_WriteDWord(
+        device->Bus,
+        device->Device,
+        device->Function,
+        data_reg,
+        reg);
+
+    return reg & 0xFF;
+
+  }
+
+  return -1;
+}
