@@ -139,7 +139,7 @@ Display_Initialize(void) {
 
 void
 Display_SetPanelActiveState(int display, bool enable) {
-
+	//TODO determine how to disable and enable the panel
 }
 
 void
@@ -149,7 +149,7 @@ Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
 
 	enable = !!enable;
 
-	pipes[pipe_index].cursor.mode = mode;
+	pipes[pipe_index].display.enabled = enable;
 
 	uint32_t ctrl = IHD_Read32(DISPLAY_PLANE_CTRL(pipe_index));
 	ctrl &= ~(1 << DISPLAY_PLANE_CTRL_ENABLE_BIT);
@@ -174,7 +174,19 @@ CursorPlane_SetMode(int pipe_index, CURSOR_PLANE_MODES mode){
 
 void
 Display_SetVideoPlaneActiveState(int pipe_index, bool enable) {
+	
+	if(pipe_index >= ctxt.max_pipes)
+		return;
 
+	enable = !!enable;
+
+	pipes[pipe_index].video.enabled = enable;
+
+	uint32_t ctrl = IHD_Read32(VIDEO_PLANE_CTRL(pipe_index));
+	ctrl &= ~(1 << VIDEO_PLANE_CTRL_ENABLE_BIT);
+	ctrl |= (enable << VIDEO_PLANE_CTRL_ENABLE_BIT);
+
+	IHD_Write32(VIDEO_PLANE_CTRL(pipe_index), ctrl);
 }
 
 int

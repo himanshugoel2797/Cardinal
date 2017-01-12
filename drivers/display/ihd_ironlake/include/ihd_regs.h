@@ -291,6 +291,16 @@ typedef enum {
     DISPLAY_PLANE_PIXEL_MODE_XBGR_8_8_8_8 = 0xE,
 } DISPLAY_PLANE_PIXEL_MODES;
 
+//Video plane registers
+#define VIDEO_PLANE_CTRL(x) (0x72180 + (x * 0x1000))
+#define VIDEO_PLANE_LINOFF(x) (0x72184 + (x * 0x1000))
+#define VIDEO_PLANE_STRIDE(x) (0x72188 + (x * 0x1000))
+#define VIDEO_PLANE_POS(x) (0x7218C + (x * 0x1000))
+#define VIDEO_PLANE_LOC(x) (0x72190 + (x * 0x1000))
+#define VIDEO_PLANE_SURFACE_ADDR(x) (0x7219C + (x * 0x1000))
 
+typedef enum {
+    VIDEO_PLANE_CTRL_ENABLE_BIT = 31,
+} VIDEO_PLANE_CTRL_BITS;
 
 #endif
