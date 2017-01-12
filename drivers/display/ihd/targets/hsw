@@ -12,7 +12,7 @@ CC=x86_64-elf-cardinal-gcc
 LD=x86_64-elf-cardinal-gcc
 OBJCOPY=x86_64-elf-cardinal-objcopy
 
-CFLAGS=-I$(TARGET_SRC_DIR)/include -std=c11 -Icommon/include
+CFLAGS=-I$(TARGET_SRC_DIR)/include -std=c11 -Icommon/include -DHASWELL
 LDFLAGS=
 
 .PHONY:all
