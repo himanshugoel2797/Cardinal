@@ -63,8 +63,6 @@ Display_Initialize(void) {
         }
     }
 
-    //Disable the vga display
-    IHD_Write8(VGA_CLOCKING_MODE_CTRL, VGA_CLOCKING_MODE_SCREEN_OFF);
 
     //For now just set the display size to the pipe timings
     //The system will be responsible for selecting the final resolution
@@ -79,6 +77,20 @@ Display_Initialize(void) {
 
     //Disable panel power
     Display_SetPanelActiveState(LVDS_INDEX, false);
+    
+    //Enable backlight
+    Backlight_SetActiveState(LVDS_INDEX, true);
+    
+    //Configure PWM unit
+    Backlight_SetPWMActiveState(LVDS_INDEX, true);
+
+    //Set the display brightness to half the maximum
+    Backlight_SetBacklightBrightness(LVDS_INDEX, displays[LVDS_INDEX].backlight.max_val / 2);
+
+    while(1);
+
+    //Disable the vga display
+    IHD_Write8(VGA_CLOCKING_MODE_CTRL, VGA_CLOCKING_MODE_SCREEN_OFF);
 
     //Disable the vga plane
     //Determine which pipe has been configured with the display and disable the vga plane
@@ -112,9 +124,10 @@ Display_Initialize(void) {
     //Configure and enable the pipe based on the timings of the VGA pipe
     Display_RestorePipeTimings(vga_pipe_index, alloc_pipe_index);
     Display_SetPipeSize(alloc_pipe_index, pipes[alloc_pipe_index].hactive + 1, pipes[alloc_pipe_index].vactive + 1);
+    Display_SetPipeActiveState(alloc_pipe_index, true);
 
     //Enable the hires plane
-    int pitch = (pipes[alloc_pipe_index].vactive + 1) * sizeof(uint32_t);
+    int pitch = (pipes[alloc_pipe_index].hactive + 1) * sizeof(uint32_t);
     if(pitch % 64)
     	pitch += 64 - pitch % 64;
 
@@ -127,14 +140,6 @@ Display_Initialize(void) {
     Display_SetPanelActiveState(LVDS_INDEX, true);
     //TODO Wait for steady state
 
-    //Enable backlight
-    Backlight_SetActiveState(LVDS_INDEX, true);
-    
-    //Configure PWM unit
-    Backlight_SetPWMActiveState(LVDS_INDEX, true);
-
-    //Set the display brightness to half the maximum
-    Backlight_SetBacklightBrightness(LVDS_INDEX, displays[LVDS_INDEX].backlight.max_val / 2);
 
 
 	//TODO from here, start setting up GTTs, and devise context switching setup
