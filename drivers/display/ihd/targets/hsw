@@ -1,0 +1,27 @@
+TARGET=ihd_hsw.elf
+
+TARGET_SRC_DIR=hsw
+
+TARGET_SRCS=main.o fileserver.o ihd.o 
+COMMON_SRCS=fileserver.o display.o gmbus.o backlight.o
+
+OBJS=$(common/src + $(COMMON_SRCS)) $($(TARGET_SRC_DIR) + /src/ + ($TARGET_SRCS))
+LIBS=-lfileserver -lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
+
+CC=x86_64-elf-cardinal-gcc
+LD=x86_64-elf-cardinal-gcc
+OBJCOPY=x86_64-elf-cardinal-objcopy
+
+CFLAGS=-I$(TARGET_SRC_DIR)/include -std=c11 -Icommon/include
+LDFLAGS=
+
+.PHONY:all
+
+all:$(TARGET)
+
+$(TARGET): $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
+
+clean:
+	rm -rf $(OBJS)
+	rm $(TARGET)

@@ -1,0 +1,23 @@
+TARGET=ihd_ilk.elf
+
+OBJS=ilk/src/main.o common/src/fileserver.o ilk/src/ihd.o common/src/display.o common/src/gmbus.o common/src/backlight.o
+
+LIBS=-lfileserver -lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
+
+CC=x86_64-elf-cardinal-gcc
+LD=x86_64-elf-cardinal-gcc
+OBJCOPY=x86_64-elf-cardinal-objcopy
+
+CFLAGS=-Iilk/include -std=c11 -Icommon/include
+LDFLAGS=
+
+.PHONY:all
+
+all:$(TARGET)
+
+$(TARGET): $(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) $(LIBS) -o $(TARGET)
+
+clean:
+	rm -rf $(OBJS)
+	rm $(TARGET)
