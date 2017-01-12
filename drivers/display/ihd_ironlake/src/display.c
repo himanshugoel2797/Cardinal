@@ -144,7 +144,18 @@ Display_SetPanelActiveState(int display, bool enable) {
 
 void
 Display_SetDisplayPlaneActiveState(int pipe_index, bool enable) {
+	if(pipe_index >= ctxt.max_pipes)
+		return;
 
+	enable = !!enable;
+
+	pipes[pipe_index].cursor.mode = mode;
+
+	uint32_t ctrl = IHD_Read32(DISPLAY_PLANE_CTRL(pipe_index));
+	ctrl &= ~(1 << DISPLAY_PLANE_CTRL_ENABLE_BIT);
+	ctrl |= (enable << DISPLAY_PLANE_CTRL_ENABLE_BIT);
+
+	IHD_Write32(DISPLAY_PLANE_CTRL(pipe_index), ctrl);
 }
 
 void

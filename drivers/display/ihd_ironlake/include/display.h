@@ -27,10 +27,15 @@ typedef struct {
 
 typedef struct {
     int mode;
-    bool enabled;
     int x;
     int y;
+    bool enabled;
 } IHD_CursorPlane;
+
+typedef struct {
+    int pitch;
+    bool enabled;
+} IHD_DisplayPlane;
 
 typedef struct {
     uint32_t src;
@@ -65,6 +70,7 @@ typedef struct {
     bool enabled;
 
     IHD_CursorPlane cursor;
+    IHD_DisplayPlane display;
 } IHD_Pipe;
 
 typedef struct {
