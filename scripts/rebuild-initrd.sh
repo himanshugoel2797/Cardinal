@@ -66,15 +66,12 @@ cd $SRC_DIR/drivers/display/vmware-svga
 	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
-cd $SRC_DIR/drivers/display/ihd_ironlake
-	make clean
-	make all
-	cp *.elf $INITRD_INST_DIR
-cd $SRC_DIR
+cd $SRC_DIR/drivers/display/ihd
+	make -f targets/ilk clean
+	make -f targets/hsw clean
+	make -f targets/ilk all
+	make -f targets/hsw all
 
-cd $SRC_DIR/drivers/display/ihd_hsw
-	make clean
-	make all
 	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 

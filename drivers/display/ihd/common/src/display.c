@@ -118,10 +118,12 @@ Display_Initialize(void) {
     if(pitch % 64)
     	pitch += 64 - pitch % 64;
 
+    DisplayPlane_SetSurfaceAddress(alloc_pipe_index, 0);
     DisplayPlane_SetPitch(alloc_pipe_index, pitch);
-    DisplayPlane_SetPixelMode(alloc_pipe_index, DISPLAY_PLANE_PIXEL_MODE_XRGB_2_10_10_10);
+    DisplayPlane_SetPixelMode(alloc_pipe_index, DISPLAY_PLANE_PIXEL_MODE_XRGB_8_8_8_8);
     DisplayPlane_SetActiveState(alloc_pipe_index, true);
 
+    //TODO figure out why the display plane updates are not being applied.
 
     //Enable panel power
     Display_SetPanelActiveState(LVDS_INDEX, true);
@@ -134,8 +136,8 @@ Display_Initialize(void) {
     Backlight_SetPWMActiveState(LVDS_INDEX, true);
 
     //Set the display brightness to half the maximum
-    Backlight_SetBacklightBrightness(LVDS_INDEX, displays[LVDS_INDEX].backlight.max_val / 2);
-
+    //Backlight_SetBacklightBrightness(LVDS_INDEX, displays[LVDS_INDEX].backlight.max_val / 2);
+    Backlight_SetBacklightBrightness(LVDS_INDEX, 0x10);
 
 	//TODO from here, start setting up GTTs, and devise context switching setup
 	//Setup command ring buffers for all graphics engines
@@ -147,6 +149,15 @@ Display_Initialize(void) {
 void
 Display_SetPanelActiveState(int display, bool enable) {
 	//TODO determine how to disable and enable the panel
+}
+
+void
+DisplayPlane_SetSurfaceAddress(int pipe_index, uint32_t addr) {
+	if(pipe_index >= ctxt.max_pipes)
+		return;
+
+	pipes[pipe_index].display.surface_addr = addr;
+	IHD_Write32(DISPLAY_PLANE_SURFACE_ADDR(pipe_index), addr);
 }
 
 void
@@ -304,6 +315,8 @@ Display_AllocatePipe(int display) {
 		if(pipes[i].enabled == false && Display_CheckDisplaySupportsPipe(display, i))
 			return i;
 	}
+
+	return -1;
 }
 
 void
@@ -374,7 +387,7 @@ Display_SetPipeActiveState(int pipe_index,
 	IHD_Write32(PIPE_CONF(pipe_index), conf);
 
 	//Wait for the pipe to power down
-	while( (IHD_Read32(PIPE_CONF(pipe_index)) & (1 << PIPE_CONF_STATE)) != state)
+	while(!state && IHD_Read32(PIPE_CONF(pipe_index)) & (1 << PIPE_CONF_STATE))
 		;
 
 	pipes[pipe_index].enabled = state;

@@ -34,6 +34,7 @@ typedef struct {
 
 typedef struct {
     int pitch;
+    uint32_t surface_addr;
     DISPLAY_PLANE_PIXEL_MODES mode;
     bool enabled;
 } IHD_DisplayPlane;
@@ -210,5 +211,7 @@ DisplayPlane_SetPixelMode(int pipe_index, DISPLAY_PLANE_PIXEL_MODES mode);
 void
 DisplayPlane_SetPitch(int pipe_index, int pitch);
 
+void
+DisplayPlane_SetSurfaceAddress(int pipe_index, uint32_t addr);
 
 #endif
