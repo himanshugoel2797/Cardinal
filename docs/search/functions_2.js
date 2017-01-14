@@ -1,4 +1,0 @@
-var searchData=
-[
-  ['deletedescriptor',['DeleteDescriptor',['../d3/d12/group__proc__man.html#gad1eafd287e34b1870e9f54dd518491d1',1,'DeleteDescriptor(UID pid, uint32_t index):&#160;process.c'],['../d3/d12/group__proc__man.html#gad1eafd287e34b1870e9f54dd518491d1',1,'DeleteDescriptor(UID pid, uint32_t index):&#160;process.c']]]
-];

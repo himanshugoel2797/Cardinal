@@ -124,6 +124,7 @@ Display_Initialize(void) {
     DisplayPlane_SetActiveState(alloc_pipe_index, true);
 
     //TODO figure out why the display plane updates are not being applied.
+    //TODO consider trying to force the pipe to be chosen as the vga pipe
 
     //Enable panel power
     Display_SetPanelActiveState(LVDS_INDEX, true);
