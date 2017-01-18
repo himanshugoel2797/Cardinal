@@ -14,18 +14,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "libs/libCardinal/include/syscall.h"
 
 uint64_t
-Nanosleep_Syscall(uint64_t UNUSED(instruction_pointer),
-                  uint64_t syscall_num,
-                  uint64_t *syscall_params) {
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(syscall_num != Syscall_Nanosleep)
-        return SyscallSetErrno(-ENOSYS);
-
-    if(data->param_num != 1)
-        return SyscallSetErrno(-EINVAL);
-
-    SleepThread(GetCurrentThreadUID(), data->params[0]);
-
+Nanosleep_Syscall(uint64_t time_ns) {
+    
+    SleepThread(GetCurrentThreadUID(), time_ns);
     return SyscallSetErrno(0);
 }

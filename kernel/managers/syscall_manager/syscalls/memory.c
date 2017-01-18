@@ -24,24 +24,7 @@ MemoryInitLocks(void) {
 }
 
 uint64_t
-Brk_Syscall(uint64_t UNUSED(instruction_pointer),
-            uint64_t syscall_num,
-            uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_Brk) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-
-    if(data->param_num != 1) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    void* targ_brk_address = (void*)data->params[0];
+Brk_Syscall(void *targ_brk_address) {
 
     LockSpinlock(brk_lock);
 

@@ -13,20 +13,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "priv_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
 
+#define REGISTER(x) RegisterSyscall(Syscall_##x, (SyscallHandler)##x_Syscall)
+
 void
 RegisterAllSyscalls(void) {
 
     MemoryInitLocks();
     PropertyInitLocks();
 
-    RegisterSyscall(Syscall_Nanosleep, Nanosleep_Syscall);
-    RegisterSyscall(Syscall_Brk, Brk_Syscall);
+    REGISTER(Nanosleep);
+    REGISTER(Brk);
 
-    RegisterSyscall(Syscall_GetIPCMessageFrom, GetIPCMessageFrom_Syscall);
-    RegisterSyscall(Syscall_PostIPCMessage, PostIPCMessage_Syscall);
+    REGISTER(GetIPCMessageFrom);
+    REGISTER(PostIPCMessage);
 
-    RegisterSyscall(Syscall_SetProperty, SetProperty_Syscall);
-    RegisterSyscall(Syscall_GetProperty, GetProperty_Syscall);
+    REGISTER(SetProperty);
+    REGISTER(GetProperty);
 
     RegisterSyscall(Syscall_GetErrno, GetErrno_Syscall);
 

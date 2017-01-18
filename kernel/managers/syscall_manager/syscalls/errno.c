@@ -21,12 +21,6 @@ SyscallSetErrno(uint64_t errno) {
 }
 
 uint64_t
-GetErrno_Syscall(uint64_t UNUSED(instruction_pointer),
-                 uint64_t syscall_num,
-                 uint64_t* UNUSED(syscall_params)) {
-
-    if(syscall_num != Syscall_GetErrno)
-        return -ENOSYS;
-
+GetErrno_Syscall(void) {
     return GetThreadErrno(GetCurrentThreadUID());
 }

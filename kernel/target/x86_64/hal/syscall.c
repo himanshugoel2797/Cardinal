@@ -20,6 +20,8 @@ typedef struct CoreKernelStackInfo {
 } CoreKernelStackInfo;
 
 static volatile CoreKernelStackInfo* k_stack_info;
+static SyscallHandler Syscalls[SYSCALL_COUNT];
+
 
 __attribute__((naked, noreturn))
 void
@@ -28,6 +30,11 @@ Syscall_Handler(void) {
     __asm__ volatile
     (
         "swapgs\n\t"
+
+        //Check if the syscall number in arg 0 is greater than the syscall count
+        //If it is, return ENOSYS immediately
+        
+        //Otherwise, save necessary state and jump to the handler
         "pushq %%rax\n\t"
         "movq %%rsp, %%rax\n\t"
         "movq (k_stack_info), %%rsp\n\t"
@@ -41,10 +48,10 @@ Syscall_Handler(void) {
         "pushq %%r9\n\t"
         "pushq %%r10\n\t"
         "pushq %%r11\n\t"
+
+
         "xchg %%rcx, %%rdi\n\t"
-        //"sti\n\t"
         "callq (SyscallReceived)\n\t"
-        //"cli\n\t"
         "movq %%rax, %%rsi\n\t"
         "popq %%r11\n\t"
         "popq %%r10\n\t"
@@ -107,8 +114,24 @@ Syscall_Initialize(void) {
     uint64_t lstar = (uint64_t)Syscall_Handler;
     uint64_t sfmask = (uint64_t)-1;
 
+    for(int i = 0; i < SYSCALL_COUNT; i++)
+        Syscalls[i] = NULL;
+
     wrmsr(0xC0000080, rdmsr(0xC0000080) | 1);   //Enable the syscall instruction
     wrmsr(0xC0000081, star_val);
     wrmsr(0xC0000082, lstar);
     wrmsr(0xC0000084, sfmask);
+}
+
+void
+RegisterSyscall(int syscall_num,
+                SyscallHandler handler) {
+
+    if(syscall_num >= SYSCALL_COUNT)
+        return;
+
+    if(handler == NULL)
+        return;
+
+    Syscalls[syscall_num] = handler;
 }

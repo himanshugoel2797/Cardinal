@@ -19,6 +19,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
  * @{
  */
 
+#define SYSCALL_COUNT 128
+
+
+typedef uint64_t (*SyscallHandler)();
+
 /**
  * @brief      Initialize the syscall HAL.
  */
@@ -51,10 +56,14 @@ void*
 GetKernelStack(void);
 
 /**
- * @brief      Setup the security monitor.
+ * @brief      Register a syscall.
+ *
+ * @param[in]  syscall_num  The syscall number
+ * @param[in]  handler      The syscall handler
  */
 void
-SetupSecurityMonitor(void);
+RegisterSyscall(int syscall_num,
+				SyscallHandler handler);
 
 /**@}*/
 

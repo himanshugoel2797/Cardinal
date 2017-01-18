@@ -24,19 +24,13 @@ uint64_t
 SyscallSetErrno(uint64_t errno);
 
 uint64_t
-GetErrno_Syscall(uint64_t instruction_pointer,
-                 uint64_t syscall_num,
-                 uint64_t *syscall_params);
+GetErrno_Syscall(void);
 
 uint64_t
-Nanosleep_Syscall(uint64_t instruction_pointer,
-                  uint64_t syscall_num,
-                  uint64_t *syscall_params);
+Nanosleep_Syscall(uint64_t time_ns);
 
 uint64_t
-Brk_Syscall(uint64_t instruction_pointer,
-            uint64_t syscall_num,
-            uint64_t *syscall_params);
+Brk_Syscall(void *targ_brk_address);
 
 uint64_t
 GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -100,9 +94,8 @@ R0CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t *syscall_params);
 
 uint64_t
-R0GetBootInfo_Syscall(uint64_t UNUSED(instruction_pointer),
-                      uint64_t syscall_num,
-                      uint64_t *syscall_params);
+R0GetBootInfo_Syscall(int syscall_num,
+                      void *copy_dst);
 
 uint64_t
 R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),

@@ -42,7 +42,7 @@ debug_handle_trap(void){
     outb(0x3f8, '\r');
     outb(0x3f8, '\n');
 
-    __asm__ volatile("cli\n\thlt");
+    __asm__ volatile("cli\n\thlt" :: "a"(__builtin_return_address(0)));
 }
 
 void
