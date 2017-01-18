@@ -30,7 +30,7 @@ extern "C" {
  */
 
 //! The maximum size of a message.
-#define MESSAGE_SIZE (128)
+#define MESSAGE_SIZE (32)
 
 //! The process ID of the memory server.
 #define MEMORY_SRV_PID 4
@@ -44,21 +44,44 @@ extern "C" {
 typedef enum {
     CardinalMsgType_Request,
     CardinalMsgType_Error,
-    CardinalMsgType_IORequest,
-    CardinalMsgType_IOResponse,
-    CardinalMsgType_AuthenticationRequest,
-    CardinalMsgType_Signal,
     CardinalMsgType_Response,
     CardinalMsgType_Notification,
     CardinalMsgType_Interrupt,
 } CardinalMsgType;
 
+typedef enum {
+    CardinalMsgFormat_Inline,
+    CardinalMsgFormat_ReliablePacketStream,
+    CardinalMsgFormat_UnreliablePacketStream,
+    CardinalMsgFormat_SharedMemory,
+    CardinalMsgFormat_Pipe,
+} CardinalMsgFormat;
+
 //! IPC Message.
 typedef struct Message {
     UID SourcePID;                      //!< The sender PID
-    uint32_t MsgID;                     //!< The message ID, uniquely identifies a conversation.
-    CardinalMsgType MsgType;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
+    uint32_t MsgID : 16;                     //!< The message ID, uniquely identifies a conversation.
+    CardinalMsgType MsgType : 4;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
+    uint32_t MessageFormat : 4;
+    uint32_t Size : 8;
 } Message;
+
+typedef struct MessageInlined {
+    Message m;
+    uint8_t v[MESSAGE_SIZE - sizeof(Message)];
+} MessageInlined;
+
+typedef struct MessagePacketStream {
+
+} MessagePacketStream;
+
+typedef struct MessageSharedMemory {
+
+} MessageSharedMemory;
+
+typedef struct MessagePipe {
+
+} MessagePipe;
 
 typedef struct InterruptMessage {
     Message m;
