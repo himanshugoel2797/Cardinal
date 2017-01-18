@@ -33,20 +33,21 @@ uint64_t
 Brk_Syscall(void *targ_brk_address);
 
 uint64_t
+PostToProcess_Syscall(uint64_t dst_pid,
+                      uint64_t message_p0,
+                      uint64_t message_p1,
+                      uint64_t message_p2,
+                      uint64_t message_p3);
+
+uint64_t
 GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
                           uint64_t syscall_num,
                           uint64_t *syscall_params);
-
 
 uint64_t
 GetIPCMessageMsgType_Syscall(uint64_t UNUSED(instruction_pointer),
                              uint64_t syscall_num,
                              uint64_t *syscall_params);
-
-uint64_t
-PostIPCMessage_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params);
 
 uint64_t
 SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -59,46 +60,46 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t *syscall_params);
 
 uint64_t
-R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_Map_Syscall(uint64_t UNUSED(instruction_pointer),
               uint64_t syscall_num,
               uint64_t *syscall_params);
 
 uint64_t
-R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
                 uint64_t syscall_num,
                 uint64_t *syscall_params);
 
 uint64_t
-R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
                         uint64_t syscall_num,
                         uint64_t *syscall_params);
 
 uint64_t
-R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params);
 
 uint64_t
-R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                         uint64_t syscall_num,
                         uint64_t *syscall_params);
 
 uint64_t
-R0StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params);
 
 uint64_t
-R0CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t syscall_num,
                        uint64_t *syscall_params);
 
 uint64_t
-R0GetBootInfo_Syscall(int syscall_num,
+R0_GetBootInfo_Syscall(int syscall_num,
                       void *copy_dst);
 
 uint64_t
-R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
+R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t syscall_num,
                               uint64_t *syscall_params);
 
@@ -128,7 +129,7 @@ FreeSharedMemoryKey_Syscall(uint64_t UNUSED(instruction_pointer),
                             uint64_t *syscall_params);
 
 uint64_t
-R0AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
                                uint64_t syscall_num,
                                uint64_t *syscall_params);
 
@@ -143,17 +144,17 @@ WaitForMessage_Syscall(uint64_t UNUSED(instruction_pointer),
                        uint64_t *syscall_params);
 
 uint64_t
-R01RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
+R01_RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
                                  uint64_t syscall_num,
                                  uint64_t *syscall_params);
 
 uint64_t
-R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
+R01_AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t syscall_num,
                               uint64_t *syscall_params);
 
 uint64_t
-R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
                       uint64_t syscall_num,
                       uint64_t *syscall_params);
 

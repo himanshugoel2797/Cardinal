@@ -30,35 +30,35 @@ RegisterAllSyscalls(void) {
     REGISTER(SetProperty);
     REGISTER(GetProperty);
 
-    RegisterSyscall(Syscall_GetErrno, GetErrno_Syscall);
+    REGISTER(GetErrno);
 
-    RegisterSyscall(Syscall_R0_Map, R0Map_Syscall);
-    RegisterSyscall(Syscall_R0_Unmap, R0Unmap_Syscall);
+    REGISTER(R0_Map);
+    REGISTER(R0_Unmap);
 
-    RegisterSyscall(Syscall_Unmap, Unmap_Syscall);
+    REGISTER(Unmap);
 
-    RegisterSyscall(Syscall_R0_AllocatePages, R0AllocatePages_Syscall);
-    RegisterSyscall(Syscall_R0_FreePages, R0FreePages_Syscall);
+    REGISTER(R0_AllocatePages);
+    REGISTER(R0_FreePages);
 
-    RegisterSyscall(Syscall_R0_CreateProcess, R0CreateProcess_Syscall);
-    RegisterSyscall(Syscall_R0_StartProcess, R0StartProcess_Syscall);
-    RegisterSyscall(Syscall_R0_CreateThread, R0CreateThread_Syscall);
-    RegisterSyscall(Syscall_R0_KillProcess, R0KillProcess_Syscall);
-    RegisterSyscall(Syscall_R0_GetBootInfo, R0GetBootInfo_Syscall);
+    REGISTER(R0_CreateProcess);
+    REGISTER(R0_StartProcess);
+    REGISTER(R0_CreateThread);
+    REGISTER(R0_KillProcess);
+    REGISTER(R0_GetBootInfo);
 
-    RegisterSyscall(Syscall_R01_GetPhysicalAddress, R01GetPhysicalAddress_Syscall);
+    REGISTER(R01_GetPhysicalAddress);
 
-    RegisterSyscall(Syscall_R0_AllocateSharedMemory, R0AllocateSharedMemory_Syscall);
+    REGISTER(R0_AllocateSharedMemory);
 
-    RegisterSyscall(Syscall_AllocateSharedMemory, AllocateSharedMemory_Syscall);
-    RegisterSyscall(Syscall_GetSharedMemoryKey, GetSharedMemoryKey_Syscall);
-    RegisterSyscall(Syscall_ApplySharedMemoryKey, ApplySharedMemoryKey_Syscall);
-    RegisterSyscall(Syscall_FreeSharedMemoryKey, FreeSharedMemoryKey_Syscall);
-    RegisterSyscall(Syscall_GetSharedMemoryKeyUsageCount, GetSharedMemoryKeyUsageCount_Syscall);
+    REGISTER(AllocateSharedMemory);
+    REGISTER(GetSharedMemoryKey);
+    REGISTER(ApplySharedMemoryKey);
+    REGISTER(FreeSharedMemoryKey);
+    REGISTER(GetSharedMemoryKeyUsageCount);
 
-    RegisterSyscall(Syscall_WaitForMessage, WaitForMessage_Syscall);
-    RegisterSyscall(Syscall_GetIPCMessageMsgType, GetIPCMessageMsgType_Syscall);
+    REGISTER(WaitForMessage);
+    REGISTER(GetIPCMessageMsgType);
 
-    RegisterSyscall(Syscall_R01_RegisterForInterrupts, R01RegisterForInterrupts_Syscall);
-    RegisterSyscall(Syscall_R01_AllocateInterrupts, R01AllocateInterrupts_Syscall);
+    REGISTER(R01_RegisterForInterrupts);
+    REGISTER(R01_AllocateInterrupts);
 }
