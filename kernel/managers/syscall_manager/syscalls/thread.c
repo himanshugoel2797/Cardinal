@@ -17,29 +17,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "managers.h"
 
 uint64_t
-R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
-                        uint64_t syscall_num,
-                        uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_R0_CreateProcess) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
+R0_CreateProcess_Syscall(UID parent,
+                         uint64_t gid) {
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
     UID pid = 0;
-    switch(CreateProcess(data->params[0], data->params[1], &pid)) {
+    switch(CreateProcess(parent, gid, &pid)) {
     case ProcessErrors_None:
         SyscallSetErrno(0);
         return pid;
@@ -60,27 +47,16 @@ R0CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R0CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_CreateThread) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
+R0_CreateThread_Syscall(UID parent,
+                        ThreadEntryPoint entry_point,
+                        void* arg) {
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 3) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    UID pid = CreateThread(data->params[0], ThreadPermissionLevel_User, (ThreadEntryPoint)data->params[1], (void*)data->params[2]);
+    UID pid = CreateThread(parent, ThreadPermissionLevel_User, entry_point, arg);
     switch(ProcessErrors_None) {
     case ProcessErrors_None:
         SyscallSetErrno(0);
@@ -101,27 +77,14 @@ R0CreateThread_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R0StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_StartProcess) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
+R0_StartProcess_Syscall(UID pid) {
+    
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return -1;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 1) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    switch(StartProcess(data->params[0])) {
+    switch(StartProcess(pid)) {
     case ProcessErrors_None:
         SyscallSetErrno(0);
         return 0;
@@ -142,47 +105,8 @@ R0StartProcess_Syscall(uint64_t UNUSED(instruction_pointer),
     return -1;
 }
 
-
 uint64_t
-WaitForMessage_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_WaitForMessage) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    SleepThreadForMessage(GetCurrentThreadUID(), data->params[0], data->params[1]);
-
-    SyscallSetErrno(0);
-    return 0;
-}
-
-
-uint64_t
-R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
-                      uint64_t syscall_num,
-                      uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_R0_KillProcess) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
+R0_KillProcess_Syscall(UID pid, uint32_t exit_code) {
 
     uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
     if(rVal != 0) {
@@ -190,7 +114,7 @@ R0KillProcess_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
-    ScheduleProcessForTermination(data->params[0], data->params[1]);
+    ScheduleProcessForTermination(pid, exit_code);
 
     SyscallSetErrno(0);
     return 0;

@@ -33,28 +33,15 @@ PropertyInitLocks(void) {
 }
 
 uint64_t
-SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params) {
-    if(syscall_num != Syscall_SetProperty) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-
-
-    if(data->param_num != 3) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+SetProperty_Syscall(uint64_t property,
+                    uint64_t sub_property,
+                    uint64_t value) {
+        
     LockSpinlock(set_prop_lock);
 
-    switch(data->params[0]) {
+    switch(property) {
     case CardinalProperty_GroupID: {
-        uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), data->params[2]);
+        uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), value);
         UnlockSpinlock(set_prop_lock);
         switch(retVal) {
         case -1:
@@ -66,7 +53,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
             return 0;
             break;
         default:
-            __asm__("cli\n\thlt");
+            PANIC("Unexpected return value.");
             SyscallSetErrno(-ENOSYS);
             return retVal;
         }
@@ -74,7 +61,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
     break;
 #ifdef x86_64
     case CardinalProperty_ArchPrctl: {
-        uint64_t retVal = ArchPrctl_Syscall(data->params[1], data->params[2]);
+        uint64_t retVal = ArchPrctl_Syscall(sub_property, value);
         UnlockSpinlock(set_prop_lock);
         return retVal;
     }
@@ -86,7 +73,7 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
             return 0;
         }
 
-        SecurityMonitor_IOPL(data->params[2]);
+        SecurityMonitor_IOPL(value);
         UnlockSpinlock(set_prop_lock);
         return SyscallSetErrno(0);
     }
@@ -101,24 +88,11 @@ SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params) {
-    if(syscall_num != Syscall_GetProperty) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+GetProperty_Syscall(uint64_t property,
+                    uint64_t sub_property) {
     LockSpinlock(get_prop_lock);
 
-    switch(data->params[0]) {
+    switch(property) {
     case CardinalProperty_PID: {
         SyscallSetErrno(0);
         uint64_t retVal = GetCurrentProcessUID();
@@ -154,7 +128,7 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
         }
 
         SyscallSetErrno(0);
-        uint64_t rVal = GetProcessGroupID(data->params[1]);
+        uint64_t rVal = GetProcessGroupID(sub_property);
         UnlockSpinlock(get_prop_lock);
         return rVal;
     }
