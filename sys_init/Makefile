@@ -19,7 +19,6 @@ $(TARGET): $(OBJS)
 
 install:
 	cp *.elf $(INSTALL_DIR)
-	cp *.data $(INSTALL_DIR)
 
 clean:
 	rm -rf $(OBJS)

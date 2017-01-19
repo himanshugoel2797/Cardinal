@@ -121,7 +121,7 @@ create_process_handler(Message *m) {
 
     if(msg->argc != 0 && msg->args_key == 0) {
         //TODO respond with error.
-        __asm__("hlt");
+        __asm__("hlt" :: "a"(m->SourcePID));
     }
 
     char *argv = NULL;

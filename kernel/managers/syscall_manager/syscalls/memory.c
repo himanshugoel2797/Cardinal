@@ -221,47 +221,20 @@ R0_AllocatePages_Syscall(uint64_t page_cnt,
 }
 
 uint64_t
-R0_FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_FreePages) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
+R0_FreePages_Syscall(uint64_t addr,
+                     uint64_t size) {
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return -1;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    FreePhysicalPageCont(data->params[0], data->params[1]);
+    FreePhysicalPageCont(addr, size);
     return SyscallSetErrno(0);
 }
 
 uint64_t
-R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_R01_GetPhysicalAddress) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+R01_GetPhysicalAddress_Syscall(UID pid,
+                               void* addr) {
     uint32_t gid = GetProcessGroupID(GetCurrentProcessUID());
     if(gid > 1) {
         SyscallSetErrno(-EPERM);
@@ -269,10 +242,10 @@ R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
     }
 
     if(gid == 1)
-        data->params[0] = GetCurrentProcessUID();
+        pid = GetCurrentProcessUID();
 
     ProcessInformation *p_info = NULL;
-    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None) {
+    if(GetProcessReference(pid, &p_info) != ProcessErrors_None) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
@@ -280,7 +253,7 @@ R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
     LockSpinlock(p_info->lock);
 
     SyscallSetErrno(0);
-    uint64_t retVal = (uint64_t)GetPhysicalAddressPageTable(p_info->PageTable, (void*)(uint64_t*)data->params[1]);
+    uint64_t retVal = (uint64_t)GetPhysicalAddressPageTable(p_info->PageTable, addr);
 
     UnlockSpinlock(p_info->lock);
     return retVal;

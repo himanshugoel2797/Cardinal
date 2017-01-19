@@ -47,7 +47,7 @@ uint64_t
 SleepOnLocation(void *addr, 
                 int op, 
                 uint64_t val, 
-                uint64_t timeout);
+                uint64_t timeout_ns);
 
 uint64_t
 SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -72,9 +72,8 @@ R0_AllocatePages_Syscall(uint64_t page_cnt,
                         PhysicalMemoryAllocationFlags flags);
 
 uint64_t
-R0_FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                    uint64_t syscall_num,
-                    uint64_t *syscall_params);
+R0_FreePages_Syscall(uint64_t addr,
+                     uint64_t size);
 
 uint64_t
 R0_CreateProcess_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -96,9 +95,8 @@ R0_GetBootInfo_Syscall(int syscall_num,
                       void *copy_dst);
 
 uint64_t
-R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params);
+R01_GetPhysicalAddress_Syscall(UID pid,
+                               void* addr);
 
 uint64_t
 Unmap_Syscall(uint64_t addr,
