@@ -93,29 +93,12 @@ Brk_Syscall(void *targ_brk_address) {
 
 
 uint64_t
-R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_Map) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+R0Map_Syscall(struct MemoryMapParams *mmap_params) {
+    
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 1) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-
-
-    struct MemoryMapParams *mmap_params = (struct MemoryMapParams*)data->params[0];
 
     ProcessInformation *p_info;
     if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None) {
@@ -123,11 +106,17 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
         return 0;
     }
 
+#ifdef DEBUG
+    ASSERT((mmap_params->PhysicalAddress % PAGE_SIZE != 0), "Physical address needs to be PAGE_SIZE aligned.")
+#else
+    if(mmap_params->PhysicalAddress % PAGE_SIZE){
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
+#endif
+
     LockSpinlock(map_lock);
-
-    if(mmap_params->PhysicalAddress % PAGE_SIZE)
-        __asm__("cli\n\thlt");
-
+        
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
 
@@ -168,59 +157,34 @@ R0Map_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R0Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
-                uint64_t syscall_num,
-                uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_R0_Unmap) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
+R0_Unmap_Syscall(UID pid,
+                uint64_t addr,
+                uint64_t size) {
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return -1;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 3) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
     ProcessInformation *p_info;
-    if(GetProcessReference(data->params[0], &p_info) != ProcessErrors_None) {
+    if(GetProcessReference(pid, &p_info) != ProcessErrors_None) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }
 
-    if(data->params[2] % PAGE_SIZE)
-        data->params[2] += PAGE_SIZE - data->params[2] % PAGE_SIZE;
+    if(size % PAGE_SIZE)
+        size += PAGE_SIZE - size % PAGE_SIZE;
 
     UnmapPage(p_info->PageTable,
-              data->params[1],
-              data->params[2]);
+              addr,
+              size);
 
     return SyscallSetErrno(0);
 }
 
 uint64_t
-Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params) {
-
-    if(syscall_num != Syscall_Unmap) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
+Unmap_Syscall(uint64_t addr,
+              uint64_t size) {
 
     ProcessInformation *p_info;
     if(GetProcessReference(GetCurrentProcessUID(), &p_info) != ProcessErrors_None) {
@@ -228,38 +192,26 @@ Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
         return -1;
     }
 
-    if(data->params[1] % PAGE_SIZE)
-        data->params[1] += PAGE_SIZE - data->params[1] % PAGE_SIZE;
+    if(size % PAGE_SIZE)
+        size += PAGE_SIZE - size % PAGE_SIZE;
 
     UnmapPage(p_info->PageTable,
-              data->params[0],
-              data->params[1]);
+              addr,
+              size);
 
     return SyscallSetErrno(0);
 }
 
 uint64_t
-R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                        uint64_t syscall_num,
-                        uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R0_AllocatePages) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+R0_AllocatePages_Syscall(uint64_t page_cnt,
+                        PhysicalMemoryAllocationFlags flags) {
+    
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-
-    if(data->param_num != 2) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
-    uint64_t retVal = AllocatePhysicalPageCont(data->params[0], data->params[1]);
+    uint64_t retVal = AllocatePhysicalPageCont(page_cnt, flags);
     if(retVal == 0) {
         SyscallSetErrno(-ENOMEM);
     } else
@@ -269,7 +221,7 @@ R0AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
+R0_FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t syscall_num,
                     uint64_t *syscall_params) {
     if(syscall_num != Syscall_R0_FreePages) {
@@ -294,7 +246,7 @@ R0FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R01GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
+R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t syscall_num,
                               uint64_t *syscall_params) {
 

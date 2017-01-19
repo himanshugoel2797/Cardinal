@@ -108,8 +108,7 @@ void kfree(void *addr) {
 void* AllocateMapping(MemoryAllocationType t, MemoryAllocationFlags flags, size_t size) {
     uint64_t user_stack_base = 0;
 
-    if(size % PAGE_SIZE != 0)
-        return NULL;
+    ASSERT((size % PAGE_SIZE == 0), "Allocation is not page aligned.");
 
     FindFreeVirtualAddress(
         GetActiveVirtualMemoryInstance(),

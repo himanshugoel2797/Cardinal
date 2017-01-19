@@ -40,14 +40,14 @@ PostToProcess_Syscall(uint64_t dst_pid,
                       uint64_t message_p3);
 
 uint64_t
-GetIPCMessageFrom_Syscall(uint64_t UNUSED(instruction_pointer),
-                          uint64_t syscall_num,
-                          uint64_t *syscall_params);
+GetMainRingBuffer(void** addr, 
+                  size_t *sz);
 
 uint64_t
-GetIPCMessageMsgType_Syscall(uint64_t UNUSED(instruction_pointer),
-                             uint64_t syscall_num,
-                             uint64_t *syscall_params);
+SleepOnLocation(void *addr, 
+                int op, 
+                uint64_t val, 
+                uint64_t timeout);
 
 uint64_t
 SetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -60,19 +60,16 @@ GetProperty_Syscall(uint64_t UNUSED(instruction_pointer),
                     uint64_t *syscall_params);
 
 uint64_t
-R0_Map_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+R0_Map_Syscall(struct MemoryMapParams *mmap_params);
 
 uint64_t
-R0_Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
-                uint64_t syscall_num,
-                uint64_t *syscall_params);
+R0_Unmap_Syscall(UID pid,
+                uint64_t addr,
+                uint64_t size);
 
 uint64_t
-R0_AllocatePages_Syscall(uint64_t UNUSED(instruction_pointer),
-                        uint64_t syscall_num,
-                        uint64_t *syscall_params);
+R0_AllocatePages_Syscall(uint64_t page_cnt,
+                        PhysicalMemoryAllocationFlags flags);
 
 uint64_t
 R0_FreePages_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -104,9 +101,8 @@ R01_GetPhysicalAddress_Syscall(uint64_t UNUSED(instruction_pointer),
                               uint64_t *syscall_params);
 
 uint64_t
-Unmap_Syscall(uint64_t UNUSED(instruction_pointer),
-              uint64_t syscall_num,
-              uint64_t *syscall_params);
+Unmap_Syscall(uint64_t addr,
+              uint64_t size);
 
 uint64_t
 AllocateSharedMemory_Syscall(uint64_t UNUSED(instruction_pointer),
@@ -137,11 +133,6 @@ uint64_t
 GetSharedMemoryKeyUsageCount_Syscall(uint64_t UNUSED(instruction_pointer),
                                      uint64_t syscall_num,
                                      uint64_t *syscall_params);
-
-uint64_t
-WaitForMessage_Syscall(uint64_t UNUSED(instruction_pointer),
-                       uint64_t syscall_num,
-                       uint64_t *syscall_params);
 
 uint64_t
 R01_RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
