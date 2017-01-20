@@ -24,9 +24,9 @@ tmp.S
 *.dylib
 *.iso
 disk.img
-build/*
+kernel/build/*
 root/*
-ISO/*
+kernel/ISO/*
 # Executables
 *.exe
 *.out
@@ -34,6 +34,7 @@ ISO/*
 *.i*86
 *.x86_64
 *.hex
+*.vscode/*
 setup_env.sh
 
 # Debug files

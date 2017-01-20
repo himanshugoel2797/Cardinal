@@ -38,7 +38,8 @@ uint64_t R0_CreateProcess_Syscall(UID parent, uint64_t gid) {
   return 0;
 }
 
-uint64_t R0_CreateThread_Syscall(UID parent, ThreadEntryPoint entry_point,
+uint64_t R0_CreateThread_Syscall(UID parent,
+                                 ThreadEntryPoint entry_point,
                                  void* arg) {
   if (GetProcessGroupID(GetCurrentProcessUID()) != 0) {
     SyscallSetErrno(-EPERM);

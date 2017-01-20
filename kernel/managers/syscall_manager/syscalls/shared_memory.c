@@ -1,25 +1,10 @@
-/*
-The MIT License (MIT)
+/**
+ * Copyright (c) 2017 Himanshu Goel
+ *
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #include "libs/libCardinal/include/shared_memory.h"
 #include "libs/libCardinal/include/syscall.h"
 #include "memory.h"
@@ -28,8 +13,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "managers.h"
 
-uint64_t AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
-                                      void *unused,
+uint64_t AllocateSharedMemory_Syscall(uint64_t length,
+                                      CachingMode cacheMode,
+                                      void* unused,
                                       MemoryAllocationFlags flags) {
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
@@ -53,7 +39,8 @@ uint64_t AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
   return vAddress;
 }
 
-uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
+uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
+                                         CachingMode cacheMode,
                                          MemoryAllocationType allocType,
                                          MemoryAllocationFlags flags,
                                          uint64_t phys_addr) {
@@ -85,10 +72,10 @@ uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
   return vAddress;
 }
 
-uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress, uint64_t length,
+uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
+                                    uint64_t length,
                                     CachingMode cacheMode,
                                     MemoryAllocationFlags flags) {
-
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
 
@@ -122,7 +109,7 @@ uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint64_t key) {
   return cnt;
 }
 
-uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void *shmem_data_p) {
+uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void* shmem_data_p) {
   uint64_t vAddress = 0;
   uint64_t length = 0;
   MemoryAllocationFlags flags = 0;
@@ -137,8 +124,8 @@ uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void *shmem_data_p) {
   }
 
   // TODO check the address to make sure it's safe!
-  UserSharedMemoryData *shmem_data = (UserSharedMemoryData *)shmem_data_p;
-  shmem_data->VirtualAddress = (void *)vAddress;
+  UserSharedMemoryData* shmem_data = (UserSharedMemoryData*)shmem_data_p;
+  shmem_data->VirtualAddress = (void*)vAddress;
   shmem_data->Length = length;
   shmem_data->Flags = flags;
   shmem_data->CacheMode = cacheMode;
