@@ -21,6 +21,8 @@ typedef uint64_t UID;
 //! System Identifier
 typedef uint64_t SysID;
 
+typedef __uint128_t uint128_t;
+
 #define KiB(x) (x * 1024ull)
 #define MiB(x) (KiB(1) * 1024ull * x)
 #define GiB(x) (uint64_t)(MiB(1) * 1024ull * x)

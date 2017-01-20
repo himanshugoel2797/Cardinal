@@ -16,7 +16,7 @@ void* bootstrap_malloc(size_t size) {
   // Make sure size is 32bit aligned
   if (size % 4 != 0)
     size = (size / 4 + 1) * 4;
-  ASSERT((pos + size) <= BOOTSTRAP_MEM_POOL, "Bootstrap memory pool exhaused.");
+  ASSERT((pos + size) <= BOOTSTRAP_MEM_POOL, "Bootstrap memory pool exhausted.");
 
   void* ptr = &mem_pool[pos];
   pos += size;

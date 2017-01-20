@@ -17,6 +17,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "cardinal_types.h"
 #include "memory.h"
 
+#define KEY_LEN (512 / 128)
+
 typedef struct {
     void *VirtualAddress;
     uint64_t Length;
@@ -58,7 +60,7 @@ GetSharedMemoryKey(uint64_t virtualAddress,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint64_t *key) {
+                   uint128_t key[KEY_LEN]) {
     if(key == NULL)
         return -EINVAL;
 
@@ -67,7 +69,7 @@ GetSharedMemoryKey(uint64_t virtualAddress,
 }
 
 static __inline uint64_t
-GetSharedMemoryKeyUsageCount(uint64_t key,
+GetSharedMemoryKeyUsageCount(uint128_t key[KEY_LEN],
                              uint64_t *cnt) {
     if(cnt == NULL)
         return -EINVAL;
@@ -77,7 +79,7 @@ GetSharedMemoryKeyUsageCount(uint64_t key,
 }
 
 static __inline uint64_t
-ApplySharedMemoryKey(uint64_t key,
+ApplySharedMemoryKey(uint128_t key[KEY_LEN],
                      UserSharedMemoryData *data) {
     if(data == NULL)
         return -EINVAL;
@@ -87,7 +89,7 @@ ApplySharedMemoryKey(uint64_t key,
 }
 
 static __inline uint64_t
-FreeSharedMemoryKey(uint64_t key) {
+FreeSharedMemoryKey(uint128_t key[KEY_LEN]) {
     Syscall1(Syscall_FreeSharedMemoryKey, key);
     return GetErrno();
 }

@@ -56,7 +56,7 @@ typedef struct Message {
 } Message;
 
 //! A request message.
-typedef struct RequestMessage {
+/*typedef struct RequestMessage {
     Message m;                      //!< Standard required message header.
     uint64_t request_write_key;     //!< Server to client transfer key.
     uint64_t request_read_key;      //!< Client to server transfer key.
@@ -79,6 +79,7 @@ typedef struct InterruptMessage {
     Message m;
     uint32_t vector;
 } InterruptMessage;
+*/
 
 typedef enum {
     MessageStreamFlags_FlushRequired = (1 << 0),
@@ -134,45 +135,6 @@ struct CardinalFullMessage {
 
 
 /**
- * @brief      Gets the ipc message from the source.
- *
- * @param      m          A preallocated message buffer of size MESSAGE_SIZE
- * @param[in]  sourcePID  The source pid (0 for any)
- * @param[in]  msg_id     The message identifier (0 for any)
- *
- * @return     0 if no message to return, 1 if a message has been returned.
- */
-static __inline int
-GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
-    return (int)Syscall3(Syscall_GetIPCMessageFrom, (uint64_t)m, (uint64_t)sourcePID, msg_id);
-}
-
-/**
- * @brief      Gets the ipc message of the specified type.
- *
- * @param      m        A preallocated message bufer of size MESSAGE_SIZE
- * @param[in]  msgType  The message type
- *
- * @return     The ipc message of type.
- */
-static __inline int
-GetIPCMessageOfType(Message *m, CardinalMsgType msgType) {
-    return (int)Syscall2(Syscall_GetIPCMessageMsgType, (uint64_t)m, msgType);
-}
-
-/**
- * @brief      Gets the ipc message.
- *
- * @param      m     A preallocated message buffer of size MESSAGE_SIZE
- *
- * @return     0 if no message to return, 1 if a message has been returned.
- */
-static __inline int
-GetIPCMessage(Message *m) {
-    return GetIPCMessageFrom(m, 0, 0);
-}
-
-/**
  * @brief      Posts ipc messages.
  *
  * @param[in]  dstPID  The destination pid
@@ -183,8 +145,8 @@ GetIPCMessage(Message *m) {
  *             on success.
  */
 static __inline int
-PostIPCMessages(UID dstPID, Message **m, uint64_t cnt) {
-    return (int)Syscall3(Syscall_PostIPCMessage, dstPID, (uint64_t)m, cnt);
+PostToProcess(UID dstPID, uint64_t m_hdr, uint128_t msg[8]) {
+    return (int)Syscall3(Syscall_PostIPCMessage, dstPID, m_hdr, (uint64_t)msg);
 }
 
 /**
