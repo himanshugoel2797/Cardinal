@@ -1,14 +1,8 @@
-/*
-The MIT License (MIT)
+// Copyright (c) 2017 Himanshu Goel
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #ifndef _CARDINAL_SHMEM_H_
 #define _CARDINAL_SHMEM_H_
 
@@ -17,7 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "cardinal_types.h"
 #include "memory.h"
 
-#define KEY_LEN (512 / 128)
+#define KEY_LEN (512 / 8)
 
 typedef struct {
     void *VirtualAddress;
@@ -60,11 +54,11 @@ GetSharedMemoryKey(uint64_t virtualAddress,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint128_t key[KEY_LEN]) {
+                   uint8_t key[KEY_LEN]) {
     if(key == NULL)
         return -EINVAL;
 
-    *key = Syscall4(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags);
+    Syscall5(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags, key);
     return GetErrno();
 }
 
@@ -79,7 +73,7 @@ GetSharedMemoryKeyUsageCount(uint128_t key[KEY_LEN],
 }
 
 static __inline uint64_t
-ApplySharedMemoryKey(uint128_t key[KEY_LEN],
+ApplySharedMemoryKey(uint8_t key[KEY_LEN],
                      UserSharedMemoryData *data) {
     if(data == NULL)
         return -EINVAL;
@@ -89,7 +83,7 @@ ApplySharedMemoryKey(uint128_t key[KEY_LEN],
 }
 
 static __inline uint64_t
-FreeSharedMemoryKey(uint128_t key[KEY_LEN]) {
+FreeSharedMemoryKey(uint8_t key[KEY_LEN]) {
     Syscall1(Syscall_FreeSharedMemoryKey, key);
     return GetErrno();
 }

@@ -13,6 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define _CARDINAL_KEY_MANAGER_H_
 
 #include "types.h"
+#include "libs/libCardinal/include/shared_memory.h"
 
 #define IDENTIFIER_COUNT 5
 
@@ -48,7 +49,7 @@ KeyMan_Initialize(void);
  */
 KeyManagerErrors
 KeyMan_AllocateKey(uint64_t *identifier,
-                   uint64_t *key);
+                   uint8_t *key);
 
 /**
  * @brief      Free an existing key.
@@ -58,7 +59,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_FreeKey(uint64_t key);
+KeyMan_FreeKey(uint8_t *key);
 
 /**
  * @brief      Check if the key exists.
@@ -68,7 +69,7 @@ KeyMan_FreeKey(uint64_t key);
  * @return     0 if the key does not exist, 1 if the key exists.
  */
 bool
-KeyMan_KeyExists(uint64_t key);
+KeyMan_KeyExists(uint8_t *key);
 
 /**
  * @brief      Read a key.
@@ -81,7 +82,7 @@ KeyMan_KeyExists(uint64_t key);
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_ReadKey(uint64_t key,
+KeyMan_ReadKey(uint8_t *key,
                uint64_t *identifier);
 
 /**
@@ -93,7 +94,7 @@ KeyMan_ReadKey(uint64_t key,
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_WriteKey(uint64_t key,
+KeyMan_WriteKey(uint8_t *key,
                 uint64_t *identifier);
 
 /**
@@ -104,7 +105,7 @@ KeyMan_WriteKey(uint64_t key,
  * @return     { description_of_the_return_value }
  */
 KeyManagerErrors
-KeyMan_IncrementRefCount(uint64_t key);
+KeyMan_IncrementRefCount(uint8_t *key);
 
 /**
  * @brief      Decrement the key reference count.
@@ -114,6 +115,6 @@ KeyMan_IncrementRefCount(uint64_t key);
  * @return     { description_of_the_return_value }
  */
 KeyManagerErrors
-KeyMan_DecrementRefCount(uint64_t key);
+KeyMan_DecrementRefCount(uint8_t *key);
 
 #endif

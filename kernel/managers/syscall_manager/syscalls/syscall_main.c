@@ -10,10 +10,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "syscalls_all.h"
+#include "syscall.h"
 #include "priv_syscalls.h"
 #include "libs/libCardinal/include/syscall.h"
 
-#define REGISTER(x) RegisterSyscall(Syscall_##x, (SyscallHandler)##x_Syscall)
+#define REGISTER(x) RegisterSyscall(Syscall_##x, (SyscallHandler) x##_Syscall)
 
 void
 RegisterAllSyscalls(void) {
@@ -23,9 +24,6 @@ RegisterAllSyscalls(void) {
 
     REGISTER(Nanosleep);
     REGISTER(Brk);
-
-    REGISTER(GetIPCMessageFrom);
-    REGISTER(PostIPCMessage);
 
     REGISTER(SetProperty);
     REGISTER(GetProperty);
@@ -55,9 +53,6 @@ RegisterAllSyscalls(void) {
     REGISTER(ApplySharedMemoryKey);
     REGISTER(FreeSharedMemoryKey);
     REGISTER(GetSharedMemoryKeyUsageCount);
-
-    REGISTER(WaitForMessage);
-    REGISTER(GetIPCMessageMsgType);
 
     REGISTER(R01_RegisterForInterrupts);
     REGISTER(R01_AllocateInterrupts);

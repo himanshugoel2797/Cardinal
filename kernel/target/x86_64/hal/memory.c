@@ -1069,7 +1069,7 @@ GetSharedMemoryKey(UID pid,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint64_t *key) {
+                   uint8_t *key) {
 
     if(key == NULL)
         return MemoryAllocationErrors_InvalidParameters;
@@ -1110,8 +1110,8 @@ GetSharedMemoryKey(UID pid,
                 UnlockSpinlock(procInfo->lock);
                 return MemoryAllocationErrors_Unknown;
             }
-            if(AllocateDescriptor(pid, *key, NULL) != ProcessErrors_None) {
-                KeyMan_FreeKey(*key);
+            if(AllocateDescriptor(pid, key, NULL) != ProcessErrors_None) {
+                KeyMan_FreeKey(key);
                 UnlockSpinlock(procInfo->PageTable->lock);
                 UnlockSpinlock(procInfo->lock);
                 return MemoryAllocationErrors_OutOfMemory;
@@ -1132,7 +1132,7 @@ GetSharedMemoryKey(UID pid,
 
 MemoryAllocationErrors
 ApplySharedMemoryKey(UID pid,
-                     uint64_t key,
+                     uint8_t *key,
                      uint64_t *virtualAddress,
                      MemoryAllocationFlags *flags,
                      CachingMode *cacheMode,
@@ -1220,7 +1220,7 @@ ApplySharedMemoryKey(UID pid,
 }
 
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint64_t key,
+GetSharedMemoryKeyUsageCount(uint8_t *key,
                              uint64_t *cnt) {
 
     if(cnt == NULL)
@@ -1239,7 +1239,7 @@ GetSharedMemoryKeyUsageCount(uint64_t key,
 
 MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID,
-                    uint64_t key) {
+                    uint8_t *key) {
 
     uint32_t index = 0;
 

@@ -17,14 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "common.h"
 #include "syscalls/syscalls_all.h"
 
-static uint64_t free_syscall_index = 0;
-static Spinlock syscall_lock;
-SyscallHandler Syscalls[MAX_SYSCALL_COUNT];
-
-
 void
 SyscallMan_Initialize(void) {
-    syscall_lock = CreateSpinlock();
-    for(int i = 0; i < MAX_SYSCALL_COUNT; i++)Syscalls[i] = NULL;
     RegisterAllSyscalls();
 }

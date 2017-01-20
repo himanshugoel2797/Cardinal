@@ -16,8 +16,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define KEY_TABLE_SIZE MiB(16)
 
+#define INTERNAL_KEY_SIZE (128/8)
+
 typedef struct {
-    uint32_t key;
+    uint8_t key[INTERNAL_KEY_SIZE];
     uint32_t ref_count;
     _Atomic uint64_t identifier[IDENTIFIER_COUNT];
 } KeyEntry;
@@ -38,6 +40,7 @@ KeyMan_Initialize(void) {
                               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel
                              ) != MemoryAllocationErrors_None) {
         //TODO go back and make the kernel panic on any initialization failures.
+        PANIC("Failed to initialize Key Manager. Out of Virtual Memory.");
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
@@ -49,6 +52,7 @@ KeyMan_Initialize(void) {
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
+        PANIC("Failed to initialize Key Manager. Out of Physical Memory.");
     }
 
     //The key table has now been allocated.
@@ -67,11 +71,11 @@ KeyMan_AllocateKey(uint64_t *identifier,
     LockSpinlock(keyman_lock);
 
     //Generate the full key
-    uint32_t rng_key = rand();
-    *key = (uint64_t)rng_key;
-    *key = *key << 32 | lastFreeKeyIndex;
+    for(int i = 0; i < INTERNAL_KEY_SIZE; i++)
+        keyTable[lastFreeKeyIndex].key = key[i] = (uint8_t)(rand() >> i);
 
-    keyTable[lastFreeKeyIndex].key = rng_key;
+    uint32_t *key_index_off = (uint32_t*)&key[INTERNAL_KEY_SIZE];
+    *key_index_off = lastFreeKeyIndex;
 
     for(int i = 0; i < IDENTIFIER_COUNT; i++)
         keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
@@ -82,14 +86,13 @@ KeyMan_AllocateKey(uint64_t *identifier,
         lastFreeKeyIndex++;
     }
 
-
     UnlockSpinlock(keyman_lock);
 
     return KeyManagerErrors_None;
 }
 
 KeyManagerErrors
-KeyMan_FreeKey(uint64_t key) {
+KeyMan_FreeKey(uint8_t *key) {
     uint32_t index = (uint32_t)key;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;

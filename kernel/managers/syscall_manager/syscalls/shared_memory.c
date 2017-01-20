@@ -15,7 +15,7 @@
 
 uint64_t AllocateSharedMemory_Syscall(uint64_t length,
                                       CachingMode cacheMode,
-                                      void* unused,
+                                      void* UNUSED(unused),
                                       MemoryAllocationFlags flags) {
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
@@ -52,7 +52,7 @@ uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
 
-  MemoryAllocationType allocType |=
+  allocType |=
       MemoryAllocationType_Shared | MemoryAllocationType_Phys;
 
   flags &= ~MemoryAllocationFlags_Kernel;
@@ -75,16 +75,16 @@ uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
 uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
                                     uint64_t length,
                                     CachingMode cacheMode,
-                                    MemoryAllocationFlags flags) {
+                                    MemoryAllocationFlags flags,
+                                    uint8_t *key) {
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
 
   flags &= ~MemoryAllocationFlags_Kernel;
   flags |= MemoryAllocationFlags_User;
 
-  uint64_t key = 0;
   MemoryAllocationErrors err = GetSharedMemoryKey(
-      GetCurrentProcessUID(), vAddress, length, cacheMode, flags, &key);
+      GetCurrentProcessUID(), vAddress, length, cacheMode, flags, key);
 
   if (err != MemoryAllocationErrors_None) {
     SyscallSetErrno(-EINVAL);
@@ -95,7 +95,7 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
   return key;
 }
 
-uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint64_t key) {
+uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint8_t *key) {
   uint64_t cnt = 0;
 
   MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
@@ -109,7 +109,7 @@ uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint64_t key) {
   return cnt;
 }
 
-uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void* shmem_data_p) {
+uint64_t ApplySharedMemoryKey_Syscall(uint8_t *key, void* shmem_data_p) {
   uint64_t vAddress = 0;
   uint64_t length = 0;
   MemoryAllocationFlags flags = 0;
@@ -133,7 +133,7 @@ uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void* shmem_data_p) {
   return SyscallSetErrno(0);
 }
 
-uint64_t FreeSharedMemoryKey_Syscall(uint64_t key) {
+uint64_t FreeSharedMemoryKey_Syscall(uint8_t *key) {
   MemoryAllocationErrors err = FreeSharedMemoryKey(GetCurrentProcessUID(), key);
 
   if (err != MemoryAllocationErrors_None) {
