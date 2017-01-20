@@ -3,171 +3,156 @@ The MIT License (MIT)
 
 Copyright (c) 2016-2017 Himanshu Goel
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#include "memory.h"
-#include "syscalls_all.h"
-#include "priv_syscalls.h"
-#include "libs/libCardinal/include/syscall.h"
 #include "libs/libCardinal/include/shared_memory.h"
+#include "libs/libCardinal/include/syscall.h"
+#include "memory.h"
+#include "priv_syscalls.h"
+#include "syscalls_all.h"
 
 #include "managers.h"
 
+uint64_t AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
+                                      void *unused,
+                                      MemoryAllocationFlags flags) {
+  if (length % PAGE_SIZE)
+    length += PAGE_SIZE - length % PAGE_SIZE;
 
-uint64_t
-AllocateSharedMemory_Syscall(uint64_t length,
-                             CachingMode cacheMode,
-                             void* unused,
-                             MemoryAllocationFlags flags) {
-    if(length % PAGE_SIZE)
-        length += PAGE_SIZE - length % PAGE_SIZE;
+  MemoryAllocationType allocType =
+      MemoryAllocationType_MMap | MemoryAllocationType_Shared;
 
-    MemoryAllocationType allocType = MemoryAllocationType_MMap | MemoryAllocationType_Shared;
+  flags &= ~MemoryAllocationFlags_Kernel;
+  flags |= MemoryAllocationFlags_User;
 
-    flags &= ~MemoryAllocationFlags_Kernel;
-    flags |= MemoryAllocationFlags_User;
+  uint64_t vAddress = 0;
+  MemoryAllocationErrors err = AllocateSharedMemory(
+      GetCurrentProcessUID(), length, cacheMode, allocType, flags, &vAddress);
 
-    uint64_t vAddress = 0;
-    MemoryAllocationErrors err = AllocateSharedMemory(GetCurrentProcessUID(),
-                                 length,
-                                 cacheMode,
-                                 allocType,
-                                 flags,
-                                 &vAddress);
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
-
-    SyscallSetErrno(0);
-    return vAddress;
+  SyscallSetErrno(0);
+  return vAddress;
 }
 
-uint64_t
-R0_AllocateSharedMemory_Syscall(uint64_t length,
-                                CachingMode cacheMode,
-                                MemoryAllocationType allocType,
-                                MemoryAllocationFlags flags,
-                                uint64_t phys_addr) {
-    if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
+uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
+                                         MemoryAllocationType allocType,
+                                         MemoryAllocationFlags flags,
+                                         uint64_t phys_addr) {
+  if (GetProcessGroupID(GetCurrentProcessUID()) != 0) {
+    SyscallSetErrno(-ENOSYS);
+    return -1;
+  }
 
-    if(length % PAGE_SIZE)
-        length += PAGE_SIZE - length % PAGE_SIZE;
+  if (length % PAGE_SIZE)
+    length += PAGE_SIZE - length % PAGE_SIZE;
 
-    MemoryAllocationType allocType |= MemoryAllocationType_Shared | MemoryAllocationType_Phys;
+  MemoryAllocationType allocType |=
+      MemoryAllocationType_Shared | MemoryAllocationType_Phys;
 
-    flags &= ~MemoryAllocationFlags_Kernel;
-    flags |= MemoryAllocationFlags_User;
+  flags &= ~MemoryAllocationFlags_Kernel;
+  flags |= MemoryAllocationFlags_User;
 
-    uint64_t vAddress = 0;
-    MemoryAllocationErrors err = AllocateSharedMemoryPhys(GetCurrentProcessUID(),
-                                 length,
-                                 cacheMode,
-                                 allocType,
-                                 flags,
-                                 phys_addr,
-                                 &vAddress);
+  uint64_t vAddress = 0;
+  MemoryAllocationErrors err =
+      AllocateSharedMemoryPhys(GetCurrentProcessUID(), length, cacheMode,
+                               allocType, flags, phys_addr, &vAddress);
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
 
-    SyscallSetErrno(0);
-    return vAddress;
+  SyscallSetErrno(0);
+  return vAddress;
 }
 
-uint64_t
-GetSharedMemoryKey_Syscall(uint64_t vAddress,
-                           uint64_t length,
-                           CachingMode cacheMode,
-                           MemoryAllocationFlags flags) {
-    
-    if(length % PAGE_SIZE)
-        length += PAGE_SIZE - length % PAGE_SIZE;
+uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress, uint64_t length,
+                                    CachingMode cacheMode,
+                                    MemoryAllocationFlags flags) {
 
-    flags &= ~MemoryAllocationFlags_Kernel;
-    flags |= MemoryAllocationFlags_User;
+  if (length % PAGE_SIZE)
+    length += PAGE_SIZE - length % PAGE_SIZE;
 
-    uint64_t key = 0;
-    MemoryAllocationErrors err = GetSharedMemoryKey(GetCurrentProcessUID(),
-                                 vAddress,
-                                 length,
-                                 cacheMode,
-                                 flags,
-                                 &key);
+  flags &= ~MemoryAllocationFlags_Kernel;
+  flags |= MemoryAllocationFlags_User;
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+  uint64_t key = 0;
+  MemoryAllocationErrors err = GetSharedMemoryKey(
+      GetCurrentProcessUID(), vAddress, length, cacheMode, flags, &key);
 
-    SyscallSetErrno(0);
-    return key;
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
+
+  SyscallSetErrno(0);
+  return key;
 }
 
-uint64_t
-GetSharedMemoryKeyUsageCount_Syscall(uint64_t key) {
-    uint64_t cnt = 0;
+uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint64_t key) {
+  uint64_t cnt = 0;
 
-    MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
+  MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
 
-    SyscallSetErrno(0);
-    return cnt;
+  SyscallSetErrno(0);
+  return cnt;
 }
 
-uint64_t
-ApplySharedMemoryKey_Syscall(uint64_t key,
-                             void* shmem_data_p) {
-    uint64_t vAddress = 0;
-    uint64_t length = 0;
-    MemoryAllocationFlags flags = 0;
-    CachingMode cacheMode = 0;
+uint64_t ApplySharedMemoryKey_Syscall(uint64_t key, void *shmem_data_p) {
+  uint64_t vAddress = 0;
+  uint64_t length = 0;
+  MemoryAllocationFlags flags = 0;
+  CachingMode cacheMode = 0;
 
-    MemoryAllocationErrors err = ApplySharedMemoryKey(GetCurrentProcessUID(),
-                                 key,
-                                 &vAddress,
-                                 &flags,
-                                 &cacheMode,
-                                 &length);
+  MemoryAllocationErrors err = ApplySharedMemoryKey(
+      GetCurrentProcessUID(), key, &vAddress, &flags, &cacheMode, &length);
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
 
-    //TODO check the address to make sure it's safe!
-    UserSharedMemoryData *shmem_data = (UserSharedMemoryData*)shmem_data_p;
-    shmem_data->VirtualAddress = (void*)vAddress;
-    shmem_data->Length = length;
-    shmem_data->Flags = flags;
-    shmem_data->CacheMode = cacheMode;
+  // TODO check the address to make sure it's safe!
+  UserSharedMemoryData *shmem_data = (UserSharedMemoryData *)shmem_data_p;
+  shmem_data->VirtualAddress = (void *)vAddress;
+  shmem_data->Length = length;
+  shmem_data->Flags = flags;
+  shmem_data->CacheMode = cacheMode;
 
-    return SyscallSetErrno(0);
+  return SyscallSetErrno(0);
 }
 
-uint64_t
-FreeSharedMemoryKey_Syscall(uint64_t key) {
-    MemoryAllocationErrors err = FreeSharedMemoryKey(GetCurrentProcessUID(),
-                                 key);
+uint64_t FreeSharedMemoryKey_Syscall(uint64_t key) {
+  MemoryAllocationErrors err = FreeSharedMemoryKey(GetCurrentProcessUID(), key);
 
-    if(err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
+  if (err != MemoryAllocationErrors_None) {
+    SyscallSetErrno(-EINVAL);
+    return -1;
+  }
 
-    return SyscallSetErrno(0);
+  return SyscallSetErrno(0);
 }

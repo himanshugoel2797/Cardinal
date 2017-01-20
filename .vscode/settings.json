@@ -2,5 +2,17 @@
 {
     "files.exclude": {
         "**/root": true
-    }
+    },
+    "editor.formatOnSave": true,
+    "clang.cflags": [
+        "-I/home/hgoel/Documents/Cardinal/kernel/common",
+        "-I/home/hgoel/Documents/Cardinal/libs"
+    ],
+    "C_Cpp.clang_format_formatOnSave": true,
+    "C_Cpp.clang_format_style": "Google",
+    "C_Cpp.clang_format_path": "/usr/bin/clang-format",
+    "licenser.license": "MIT",
+    "licenser.author": "Himanshu Goel",
+    "licenser.projectName": "Cardinal Operating System",
+    "licenser.useSingleLineStyle": true
 }
