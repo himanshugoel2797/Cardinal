@@ -1,14 +1,7 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// Copyright (c) 2017 Himanshu Goel
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 #ifndef _CARDINAL_HAL_MEMORY_OPS_H_
 #define _CARDINAL_HAL_MEMORY_OPS_H_
 
@@ -30,13 +23,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 /**
  * The default page size.
  */
-#define PAGE_SIZE KiB(4)
-#define PAGE_ALIGN_MASK ~(PAGE_SIZE - 1)
+#define PAGE_SIZE (KiB(4))
+#define PAGE_ALIGN_MASK (~(PAGE_SIZE - 1))
 
 /**
  * The size of the TLS.
  */
-#define THREAD_LOCAL_STORAGE_SIZE KiB(64)
+#define THREAD_LOCAL_STORAGE_SIZE (KiB(64))
 
 #ifdef __x86_64__
 #define CORE_LOCAL __attribute__((address_space(256)))
@@ -496,7 +489,7 @@ GetSharedMemoryKey(UID pid,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint64_t *key);
+                   uint8_t *key);
 
 /**
  * @brief      Apply a shared memory key.
@@ -512,7 +505,7 @@ GetSharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 ApplySharedMemoryKey(UID pid,
-                     uint64_t key,
+                     uint8_t *key,
                      uint64_t *virtualAddress,
                      MemoryAllocationFlags *flags,
                      CachingMode *cacheMode,
@@ -528,7 +521,7 @@ ApplySharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID,
-                    uint64_t key);
+                    uint8_t *key);
 
 /**
  * @brief      Gets the shared memory key usage count.
@@ -539,7 +532,7 @@ FreeSharedMemoryKey(UID parentPID,
  * @return     Error code on failure, MemoryAllocationErrors_None on success.
  */
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint64_t key,
+GetSharedMemoryKeyUsageCount(uint8_t *key,
                              uint64_t *cnt);
 
 /**@}*/

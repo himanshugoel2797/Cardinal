@@ -91,8 +91,7 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
     return -1;
   }
 
-  SyscallSetErrno(0);
-  return key;
+  return SyscallSetErrno(0);
 }
 
 uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint8_t *key) {
