@@ -1,14 +1,9 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+/**
+ * Copyright (c) 2017 Himanshu Goel
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 #include "key_manager.h"
 #include "memory.h"
 #include "synchronization.h"
@@ -63,7 +58,7 @@ KeyMan_Initialize(void) {
 
 KeyManagerErrors
 KeyMan_AllocateKey(uint64_t *identifier,
-                   uint64_t *key) {
+                   uint8_t *key) {
 
     if(key == NULL)
         return KeyManagerErrors_InvalidParams;
@@ -72,7 +67,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
     //Generate the full key
     for(int i = 0; i < INTERNAL_KEY_SIZE; i++)
-        keyTable[lastFreeKeyIndex].key = key[i] = (uint8_t)(rand() >> i);
+        keyTable[lastFreeKeyIndex].key[i] = key[i] = (uint8_t)(rand() >> i);
 
     uint32_t *key_index_off = (uint32_t*)&key[INTERNAL_KEY_SIZE];
     *key_index_off = lastFreeKeyIndex;
@@ -82,7 +77,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
     keyTable[lastFreeKeyIndex].ref_count = 0;
 
-    while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
+    while(keyTable[lastFreeKeyIndex].identifier[0] != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
     }
 
@@ -93,12 +88,13 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
 KeyManagerErrors
 KeyMan_FreeKey(uint8_t *key) {
-    uint32_t index = (uint32_t)key;
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
+/*
     if(keyTable[index].key != (uint32_t)(key >> 32)) {
         UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
@@ -117,18 +113,18 @@ KeyMan_FreeKey(uint8_t *key) {
 
     if(index < lastFreeKeyIndex)
         lastFreeKeyIndex = index;
-
+*/
     UnlockSpinlock(keyman_lock);
     return KeyManagerErrors_None;
 }
 
 bool
-KeyMan_KeyExists(uint64_t key) {
+KeyMan_KeyExists(uint8_t *key) {
 
-    uint32_t index = (uint32_t)key;
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return 0;
-
+/*
     LockSpinlock(keyman_lock);
     uint32_t k = keyTable[index].key;
     UnlockSpinlock(keyman_lock);
@@ -136,14 +132,15 @@ KeyMan_KeyExists(uint64_t key) {
     if(k == 0)
         return 0;
 
-    return (k == (uint32_t)(key >> 32));
+    return (k == (uint32_t)(key >> 32));*/
+    return 0;
 }
 
 KeyManagerErrors
-KeyMan_ReadKey(uint64_t key,
+KeyMan_ReadKey(uint8_t *key,
                uint64_t *identifier) {
 
-    uint32_t index = (uint32_t)key;
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -165,10 +162,10 @@ KeyMan_ReadKey(uint64_t key,
 
 
 KeyManagerErrors
-KeyMan_WriteKey(uint64_t key,
+KeyMan_WriteKey(uint8_t *key,
                 uint64_t *identifier) {
 
-    uint32_t index = (uint32_t)key;
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -189,9 +186,9 @@ KeyMan_WriteKey(uint64_t key,
 }
 
 KeyManagerErrors
-KeyMan_IncrementRefCount(uint64_t key) {
+KeyMan_IncrementRefCount(uint8_t *key) {
 
-    uint32_t index = (uint32_t)key;
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -213,8 +210,9 @@ KeyMan_IncrementRefCount(uint64_t key) {
 }
 
 KeyManagerErrors
-KeyMan_DecrementRefCount(uint64_t key) {
-    uint32_t index = (uint32_t)key;
+KeyMan_DecrementRefCount(uint8_t *key) {
+    
+    uint32_t index = *(uint32_t*)&key[INTERNAL_KEY_SIZE];
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
