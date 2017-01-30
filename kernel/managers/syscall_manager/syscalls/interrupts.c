@@ -18,26 +18,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "synchronization.h"
 
 uint64_t
-R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
-                              uint64_t syscall_num,
-                              uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R01_AllocateInterrupts) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
+R01_AllocateInterrupts_Syscall(int cnt) {
 
     if(GetProcessGroupID(GetCurrentProcessUID()) > 1) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-    if(data->param_num != 1) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
-
-    int retVal = InterruptMan_AllocateBlock((int)data->params[0]);
+    int retVal = InterruptMan_AllocateBlock(cnt);
     if(retVal == -1) {
         SyscallSetErrno(-ENOMEM);
         return (uint64_t)retVal;
@@ -48,28 +36,16 @@ R01AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
 }
 
 uint64_t
-R01RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
-                                 uint64_t syscall_num,
-                                 uint64_t *syscall_params) {
-    if(syscall_num != Syscall_R01_RegisterForInterrupts) {
-        SyscallSetErrno(-ENOSYS);
-        return -1;
-    }
-
+R01_RegisterForInterrupts_Syscall(uint64_t p0,
+                                  uint64_t p1) {
     if(GetProcessGroupID(GetCurrentProcessUID()) > 1) {
         SyscallSetErrno(-ENOSYS);
         return -1;
     }
 
-    SyscallData *data = (SyscallData*)syscall_params;
-    if(data->param_num != 2) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
-
     int result = InterruptMan_RegisterProcess(GetCurrentProcessUID(),
-                 data->params[0],
-                 data->params[1]);
+                 p0,
+                 p1);
 
     if(result != 0) {
         SyscallSetErrno(-EUNKNWN);

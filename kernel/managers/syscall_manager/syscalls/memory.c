@@ -89,7 +89,7 @@ Brk_Syscall(void *targ_brk_address) {
 
 
 uint64_t
-R0Map_Syscall(struct MemoryMapParams *mmap_params) {
+R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
     
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);

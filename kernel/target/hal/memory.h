@@ -2,6 +2,7 @@
 // 
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
+
 #ifndef _CARDINAL_HAL_MEMORY_OPS_H_
 #define _CARDINAL_HAL_MEMORY_OPS_H_
 
@@ -489,7 +490,7 @@ GetSharedMemoryKey(UID pid,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint8_t *key);
+                   uint64_t *key);
 
 /**
  * @brief      Apply a shared memory key.
@@ -505,7 +506,7 @@ GetSharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 ApplySharedMemoryKey(UID pid,
-                     uint8_t *key,
+                     uint64_t key,
                      uint64_t *virtualAddress,
                      MemoryAllocationFlags *flags,
                      CachingMode *cacheMode,
@@ -521,7 +522,7 @@ ApplySharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID,
-                    uint8_t *key);
+                    uint64_t key);
 
 /**
  * @brief      Gets the shared memory key usage count.
@@ -532,7 +533,7 @@ FreeSharedMemoryKey(UID parentPID,
  * @return     Error code on failure, MemoryAllocationErrors_None on success.
  */
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint8_t *key,
+GetSharedMemoryKeyUsageCount(uint64_t key,
                              uint64_t *cnt);
 
 /**@}*/

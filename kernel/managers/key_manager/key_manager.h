@@ -1,19 +1,12 @@
-/*
-The MIT License (MIT)
+// Copyright (c) 2017 Himanshu Goel
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #ifndef _CARDINAL_KEY_MANAGER_H_
 #define _CARDINAL_KEY_MANAGER_H_
 
 #include "types.h"
-#include "libs/libCardinal/include/shared_memory.h"
 
 #define IDENTIFIER_COUNT 5
 
@@ -49,7 +42,7 @@ KeyMan_Initialize(void);
  */
 KeyManagerErrors
 KeyMan_AllocateKey(uint64_t *identifier,
-                   uint8_t *key);
+                   uint64_t *key);
 
 /**
  * @brief      Free an existing key.
@@ -59,7 +52,7 @@ KeyMan_AllocateKey(uint64_t *identifier,
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_FreeKey(uint8_t *key);
+KeyMan_FreeKey(uint64_t key);
 
 /**
  * @brief      Check if the key exists.
@@ -69,7 +62,7 @@ KeyMan_FreeKey(uint8_t *key);
  * @return     0 if the key does not exist, 1 if the key exists.
  */
 bool
-KeyMan_KeyExists(uint8_t *key);
+KeyMan_KeyExists(uint64_t key);
 
 /**
  * @brief      Read a key.
@@ -82,7 +75,7 @@ KeyMan_KeyExists(uint8_t *key);
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_ReadKey(uint8_t *key,
+KeyMan_ReadKey(uint64_t key,
                uint64_t *identifier);
 
 /**
@@ -94,7 +87,7 @@ KeyMan_ReadKey(uint8_t *key,
  * @return     Error code on failure, KeyManagerErrors_None on success.
  */
 KeyManagerErrors
-KeyMan_WriteKey(uint8_t *key,
+KeyMan_WriteKey(uint64_t key,
                 uint64_t *identifier);
 
 /**
@@ -105,7 +98,7 @@ KeyMan_WriteKey(uint8_t *key,
  * @return     { description_of_the_return_value }
  */
 KeyManagerErrors
-KeyMan_IncrementRefCount(uint8_t *key);
+KeyMan_IncrementRefCount(uint64_t key);
 
 /**
  * @brief      Decrement the key reference count.
@@ -115,6 +108,6 @@ KeyMan_IncrementRefCount(uint8_t *key);
  * @return     { description_of_the_return_value }
  */
 KeyManagerErrors
-KeyMan_DecrementRefCount(uint8_t *key);
+KeyMan_DecrementRefCount(uint64_t key);
 
 #endif

@@ -80,13 +80,10 @@ uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
 
 uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint8_t *key);
 
-uint64_t R01_RegisterForInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
-                                           uint64_t syscall_num,
-                                           uint64_t* syscall_params);
+uint64_t R01_RegisterForInterrupts_Syscall(uint64_t p0,
+                                           uint64_t p1);
 
-uint64_t R01_AllocateInterrupts_Syscall(uint64_t UNUSED(instruction_pointer),
-                                        uint64_t syscall_num,
-                                        uint64_t* syscall_params);
+uint64_t R01_AllocateInterrupts_Syscall(int cnt);
 
 uint64_t R0_KillProcess_Syscall(UID pid, uint32_t exit_code);
 
