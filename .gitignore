@@ -16,6 +16,7 @@ tmp.S
 *.a
 *.la
 *.lo
+*.pcap
 
 # Shared objects (inc. Windows DLLs)
 *.dll
