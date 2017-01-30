@@ -1,25 +1,10 @@
-/*
-The MIT License (MIT)
+/**
+ * Copyright (c) 2017 Himanshu Goel
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #include "syscall.h"
 #include "utils/native.h"
 #include "managers.h"
@@ -33,9 +18,6 @@ typedef struct CoreKernelStackInfo {
 static volatile CoreKernelStackInfo* k_stack_info;
 static SyscallHandler Syscalls[SYSCALL_COUNT];
 
-#define STR(x) #x
-#define XSTR(x) STR(x)
-
 __attribute__((naked, noreturn)) void Syscall_Handler(void) {
   // Setup the environment to move into the OS syscall handler
   __asm__ volatile(
@@ -44,7 +26,7 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
       // Check if the syscall number in arg 0 is greater than the syscall count
       // If it is, return immediately, return value is unchanged.
 
-      "cmp "XSTR(SYSCALL_COUNT)", %%rdi\n\t"
+      "cmp "S_(SYSCALL_COUNT)", %%rdi\n\t"
       "jge exit_syscall_handler\n\t"
 
       // Otherwise, save necessary state and jump to the handler
