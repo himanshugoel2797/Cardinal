@@ -229,49 +229,38 @@ GetProcessReference(UID           pid,
 }
 
 uint64_t
-PostMessages(UID dstPID, Message **msg, uint64_t cnt) {
+PostMessage(UID dstPID, Message *msg) {
 
     if(msg == NULL)
         return -2;
 
-    UID DestinationPID = dstPID;
-
-    int index = (int)DestinationPID;
-
     ProcessInformation *pInfo = NULL;
-    if(GetProcessReference(DestinationPID, &pInfo) != ProcessErrors_None)
+    if(GetProcessReference(dstPID, &pInfo) != ProcessErrors_None)
         return -3;
 
-    for(uint64_t i = 0; i < cnt; i++) {
+    LockSpinlock(pInfo->MessageLock);
 
-        Message *m = NULL;
-
-        LockSpinlock(pInfo->MessageLock);
-
-        {
-            if(msg[i] == NULL | List_Length(pInfo->PendingMessages) > MAX_PENDING_MESSAGE_CNT) {
-                UnlockSpinlock(pInfo->MessageLock);
-                RefDec(&pInfo->ref);
-                return i;
-            }
-
-            m = kmalloc(MESSAGE_SIZE);
-
-            if(m == NULL) {
-                UnlockSpinlock(pInfo->MessageLock);
-                RefDec(&pInfo->ref);
-                return i;
-            }
-
-            memcpy(m, msg[i], MESSAGE_SIZE);
-            AddThreadTimeSlice(GetCurrentThreadUID(), -THREAD_IPC_COST);
-        }
-
+    if(List_Length(pInfo->PendingMessages) >= MAX_PENDING_MESSAGE_CNT) {
         UnlockSpinlock(pInfo->MessageLock);
-
-        m->SourcePID = GetCurrentProcessUID();
-        List_AddEntry(pInfo->PendingMessages, m);
+        RefDec(&pInfo->ref);
+        return -1;
     }
+
+    Message *m = kmalloc(MESSAGE_SIZE);
+
+    if(m == NULL) {
+        UnlockSpinlock(pInfo->MessageLock);
+        RefDec(&pInfo->ref);
+        return -1;
+    }
+
+    memcpy(m, msg, MESSAGE_SIZE);
+    AddThreadTimeSlice(GetCurrentThreadUID(), -THREAD_IPC_COST);
+
+    UnlockSpinlock(pInfo->MessageLock);
+
+    m->SourcePID = GetCurrentProcessUID();
+    List_AddEntry(pInfo->PendingMessages, m);
 
     ProcessCheckWakeThreads(dstPID);
 

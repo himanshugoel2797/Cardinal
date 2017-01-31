@@ -96,9 +96,8 @@ GetIPCMessageMsgType_Syscall(Message *p0,
 }
 
 uint64_t
-PostIPCMessage_Syscall(uint64_t p0,
-                       Message **p1,
-                       uint64_t p2) {
+PostIPCMessage_Syscall(UID p0,
+                       Message *p1) {
 
     //Check bottom end of buffer
     MemoryAllocationFlags cFlags = 0;
@@ -116,7 +115,7 @@ PostIPCMessage_Syscall(uint64_t p0,
     //Check top end of buffer
     cFlags = 0;
     GetAddressPermissions(GetActiveVirtualMemoryInstance(),
-                          (uint64_t)p1 + MESSAGE_SIZE * p2,
+                          (uint64_t)p1 + MESSAGE_SIZE,
                           NULL,
                           &cFlags,
                           NULL);
@@ -126,7 +125,7 @@ PostIPCMessage_Syscall(uint64_t p0,
         return -1;
     }
 
-    uint64_t retVal = PostMessages(p0, p1, p2);
+    uint64_t retVal = PostMessage(p0, p1);
     switch(retVal) {
     case -1:
         SyscallSetErrno(-EPERM);

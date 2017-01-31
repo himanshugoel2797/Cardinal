@@ -28,7 +28,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "managers.h"
 #include "apic/apic.h"
 #include "acpi/acpi_tables.h"
-#include "pci/pci.h"
 #include "thread.h"
 #include "debug_gfx.h"
 

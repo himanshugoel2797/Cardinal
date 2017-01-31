@@ -56,4 +56,8 @@ RegisterAllSyscalls(void) {
 
     REGISTER(R01_RegisterForInterrupts);
     REGISTER(R01_AllocateInterrupts);
+
+    REGISTER(PostIPCMessage);
+    REGISTER(GetIPCMessageMsgType);
+    REGISTER(GetIPCMessageFrom);
 }

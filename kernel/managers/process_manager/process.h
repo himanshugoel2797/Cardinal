@@ -87,13 +87,11 @@ GetProcessReference(UID           pid,
  *
  * @param[in]  dstPID   The destination pid
  * @param      msg      The message
- * @param[in]  msg_cnt  The message count
  *
- * @return     If 'i' is the number of messages sent, -(i + 1) on error, i on
- *             success.
+ * @return     < 0 on error, TRUE on success.
  */
 uint64_t
-PostMessages(UID dstPID, Message **msg, uint64_t msg_cnt);
+PostMessage(UID dstPID, Message *msg);
 
 /**
  * @brief      Gets the ipc message from the source.
@@ -166,62 +164,6 @@ SetProcessGroupID(UID pid, uint64_t id);
  */
 uint64_t
 ScheduleProcessForTermination(UID pid, uint32_t exit_code);
-
-/**
- * @brief      Creates a key.
- *
- * @param[in]  pid    The pid
- * @param      key    The key
- * @param      index  The index
- *
- * @return     { description_of_the_return_value }
- */
-ProcessErrors
-AllocateDescriptor(UID pid,
-                   uint64_t key,
-                   uint32_t *index);
-
-/**
- * @brief      Copies a descriptor from src_pid to dst_pid
- *
- * @param[in]  src_pid    The source pid
- * @param[in]  dst_pid    The destination pid
- * @param[in]  index      The descriptor index
- * @param      new_index  The new descriptor index
- *
- * @return     { description_of_the_return_value }
- */
-ProcessErrors
-CopyDescriptor(UID src_pid,
-               UID dst_pid,
-               uint32_t index,
-               uint32_t *new_index);
-
-/**
- * @brief      Get the descriptor index of the key.
- *
- * @param[in]  pid    The pid
- * @param[in]  key    The key
- * @param      index  The key index
- *
- * @return     The index of key.
- */
-ProcessErrors
-GetIndexOfKey(UID pid,
-              uint64_t key,
-              uint32_t *index);
-
-/**
- * @brief      Delete a descriptor from a process.
- *
- * @param[in]  pid    The pid
- * @param[in]  index  The index
- *
- * @return     { description_of_the_return_value }
- */
-ProcessErrors
-DeleteDescriptor(UID pid,
-                 uint32_t index);
 
 /**
  * @brief      Check if any of the process's threads can be woken.

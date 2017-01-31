@@ -22,11 +22,6 @@ uint64_t Nanosleep_Syscall(uint64_t time_ns);
 
 uint64_t Brk_Syscall(void* targ_brk_address);
 
-uint64_t PostToProcess_Syscall(uint64_t dst_pid,
-                               uint128_t *msg);
-
-uint64_t GetMainRingBuffer(void** addr, size_t* sz);
-
 uint64_t SleepOnLocation(void* addr, int op, uint64_t val, uint64_t timeout_ns);
 
 uint64_t SetProperty_Syscall(uint64_t property,
@@ -87,5 +82,19 @@ uint64_t R01_RegisterForInterrupts_Syscall(uint64_t p0,
 uint64_t R01_AllocateInterrupts_Syscall(int cnt);
 
 uint64_t R0_KillProcess_Syscall(UID pid, uint32_t exit_code);
+
+uint64_t
+GetIPCMessageFrom_Syscall(Message *p0,
+                          UID p1,
+                          uint64_t p2);
+
+uint64_t
+PostIPCMessage_Syscall(UID p0,
+                       Message *p1);
+
+uint64_t
+GetIPCMessageMsgType_Syscall(Message *p0,
+                             UID p1);
+
 
 #endif

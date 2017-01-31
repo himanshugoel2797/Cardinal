@@ -35,7 +35,7 @@ InterruptMan_InterruptHandler(uint32_t int_no,
 
         if(irq_subscriber_pids[int_no][i] != 0) {
 
-            PostMessages(irq_subscriber_pids[int_no][i], (Message**)&m, 1);
+            PostMessage(irq_subscriber_pids[int_no][i], (Message*)m);
         }
     }
 }
