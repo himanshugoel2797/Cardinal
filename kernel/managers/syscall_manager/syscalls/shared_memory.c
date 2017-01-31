@@ -6,6 +6,7 @@
  */
 
 #include "libs/libCardinal/include/shared_memory.h"
+#include "libs/libCardinal/include/keyman.h"
 #include "libs/libCardinal/include/syscall.h"
 #include "memory.h"
 #include "priv_syscalls.h"
@@ -76,7 +77,7 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
                                     uint64_t length,
                                     CachingMode cacheMode,
                                     MemoryAllocationFlags flags,
-                                    uint8_t *key) {
+                                    Key_t *key) {
   if (length % PAGE_SIZE)
     length += PAGE_SIZE - length % PAGE_SIZE;
 
@@ -94,7 +95,7 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
   return SyscallSetErrno(0);
 }
 
-uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint8_t *key) {
+uint64_t GetSharedMemoryKeyUsageCount_Syscall(Key_t *key) {
   uint64_t cnt = 0;
 
   MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
@@ -108,7 +109,7 @@ uint64_t GetSharedMemoryKeyUsageCount_Syscall(uint8_t *key) {
   return cnt;
 }
 
-uint64_t ApplySharedMemoryKey_Syscall(uint8_t *key, void* shmem_data_p) {
+uint64_t ApplySharedMemoryKey_Syscall(Key_t *key, void* shmem_data_p) {
   uint64_t vAddress = 0;
   uint64_t length = 0;
   MemoryAllocationFlags flags = 0;
@@ -132,7 +133,7 @@ uint64_t ApplySharedMemoryKey_Syscall(uint8_t *key, void* shmem_data_p) {
   return SyscallSetErrno(0);
 }
 
-uint64_t FreeSharedMemoryKey_Syscall(uint8_t *key) {
+uint64_t FreeSharedMemoryKey_Syscall(Key_t *key) {
   MemoryAllocationErrors err = FreeSharedMemoryKey(GetCurrentProcessUID(), key);
 
   if (err != MemoryAllocationErrors_None) {

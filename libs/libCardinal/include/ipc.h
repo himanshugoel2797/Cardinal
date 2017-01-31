@@ -13,6 +13,7 @@
 #include "cardinal_types.h"
 #include "syscall_list.h"
 #include "memory.h"
+#include "keyman.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +25,7 @@ extern "C" {
  */
 
 //! The maximum size of a message.
-#define MESSAGE_SIZE (32)
+#define MESSAGE_SIZE (256)
 
 //! The process ID of the memory server.
 #define MEMORY_SRV_PID 4
@@ -44,16 +45,17 @@ typedef enum {
 
 //! IPC Message header.
 typedef struct Message {
+    UID SourcePID;
     uint32_t MsgID : 16;                     //!< The message ID, uniquely identifies a conversation.
     uint32_t Rsv0 : 8;
     CardinalMsgType MsgType : 8;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
 //! A request message.
-/*typedef struct RequestMessage {
+typedef struct RequestMessage {
     Message m;                      //!< Standard required message header.
-    uint64_t request_write_key;     //!< Server to client transfer key.
-    uint64_t request_read_key;      //!< Client to server transfer key.
+    Key_t request_write_key;     //!< Server to client transfer key.
+    Key_t request_read_key;      //!< Client to server transfer key.
 } RequestMessage;
 
 //! An error message.
@@ -66,14 +68,13 @@ typedef struct ErrorMessage {
 typedef struct NotificationMessage {
     Message m;
     uint64_t notification_identifier;
-} 
+} NotificationMessage;
 
 //! An interrupt message.
 typedef struct InterruptMessage {
     Message m;
     uint32_t vector;
 } InterruptMessage;
-*/
 
 typedef enum {
     MessageStreamFlags_FlushRequired = (1 << 0),

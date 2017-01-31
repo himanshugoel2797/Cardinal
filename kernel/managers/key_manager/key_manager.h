@@ -109,6 +109,6 @@ KeyMan_IncrementRefCount(const Key_t *key);
  * @return     { description_of_the_return_value }
  */
 KeyManagerErrors
-KeyMan_DecrementRefCount(const Key_t *key);
+KeyMan_DecrementRefCount(Key_t *key);
 
 #endif

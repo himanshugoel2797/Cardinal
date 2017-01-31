@@ -1112,6 +1112,7 @@ MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID, 
                     Key_t *key) {
   uint32_t index = 0;
+  parentPID = 0;
 
   uint64_t identifiers[IDENTIFIER_COUNT];
   if (KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)

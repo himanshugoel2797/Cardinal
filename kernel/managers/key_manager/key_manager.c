@@ -92,12 +92,12 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
     //Generate the full key
     KeyMan_GenerateKey(lastFreeKeyIndex, key);
-    keyTable[lastFreeKeyIndex].key = key;
+    memcpy(&keyTable[lastFreeKeyIndex].key, key, sizeof(Key_t));
 
     for(int i = 0; i < IDENTIFIER_COUNT; i++)
         keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
 
-    keyTable[lastFreeKeyIndex].ref_count = ;
+    keyTable[lastFreeKeyIndex].ref_count = 1;
 
     while(keyTable[lastFreeKeyIndex].ref_count != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
@@ -152,7 +152,7 @@ KeyMan_KeyExists(const Key_t *key) {
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
-    uint64_t k = keyTable[index].key_index;
+    uint64_t k = keyTable[index].key.key_index;
     UnlockSpinlock(keyman_lock);
 
     if(k == 0)
@@ -235,7 +235,7 @@ KeyMan_IncrementRefCount(const Key_t *key) {
 }
 
 KeyManagerErrors
-KeyMan_DecrementRefCount(const Key_t *key) {
+KeyMan_DecrementRefCount(Key_t *key) {
     uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;

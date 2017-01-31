@@ -1,14 +1,10 @@
-/*
-The MIT License (MIT)
+/**
+ * Copyright (c) 2017 Himanshu Goel
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #include "process.h"
 #include "kmalloc.h"
 #include "memory.h"
@@ -85,11 +81,6 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
 
     dst->Threads = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
-
-    dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(Key_t));
-    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++)
-        dst->Keys[i].key_index = 0;
-
     dst->MessageLock = CreateSpinlock();
 
     dst->Children = List_Create(CreateSpinlock());
@@ -130,13 +121,6 @@ TerminateProcess(ProcessInformation *pinfo) {
 
     //Stop this process
     pinfo->Status = ProcessStatus_Terminating;
-
-    //Free keys
-    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
-        if(pinfo->Keys[i].key_index != 0)
-            KeyMan_DecrementRefCount(&pinfo->Keys[i]);
-    }
-    kfree(pinfo->Keys);
 
     //Remove this process from the list of processes
     BTree_RemoveEntry(processes, pid);
@@ -417,113 +401,6 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
     LockSpinlock(info->lock);
     info->Status = ProcessStatus_Terminating;
     info->ExitStatus = exit_code;
-    UnlockSpinlock(info->lock);
-    return ProcessErrors_None;
-}
-
-ProcessErrors
-AllocateDescriptor(UID pid,
-                   Key_t *key,
-                   uint32_t *index) {
-
-    ProcessInformation *info;
-    if(GetProcessReference(pid, &info) != ProcessErrors_None)
-        return ProcessErrors_UIDNotFound;
-
-    LockSpinlock(info->lock);
-
-    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS) {
-        UnlockSpinlock(info->lock);
-        return ProcessErrors_OutOfMemory;
-    }
-
-    memcpy(&info->Keys[info->LowestFreeKeyIndex], key, sizeof(Key_t));
-    KeyMan_IncrementRefCount(key);
-
-    if(index != NULL)
-        *index = info->LowestFreeKeyIndex;
-
-    while(info->Keys[info->LowestFreeKeyIndex].key_index != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS) {
-        info->LowestFreeKeyIndex++;
-    }
-
-    UnlockSpinlock(info->lock);
-    return ProcessErrors_None;
-}
-
-ProcessErrors
-CopyDescriptor(UID src_pid,
-               UID dst_pid,
-               uint32_t index,
-               uint32_t *new_index) {
-
-    ProcessInformation *info;
-    if(GetProcessReference(src_pid, &info) != ProcessErrors_None)
-        return ProcessErrors_UIDNotFound;
-
-    if(index >= MAX_KEYS_PER_PROCESS)
-        return ProcessErrors_InvalidParameters;
-
-    LockSpinlock(info->lock);
-
-    if(info->LowestFreeKeyIndex >= MAX_KEYS_PER_PROCESS) {
-        UnlockSpinlock(info->lock);
-        return ProcessErrors_OutOfMemory;
-    }
-
-    Key_t *key = &info->Keys[index];
-    UnlockSpinlock(info->lock);
-
-    return AllocateDescriptor(dst_pid, key, new_index);
-}
-
-ProcessErrors
-GetIndexOfKey(UID pid,
-              Key_t *key,
-              uint32_t *index) {
-
-    ProcessInformation *info;
-    if(GetProcessReference(pid, &info) != ProcessErrors_None)
-        return ProcessErrors_UIDNotFound;
-
-    if(index == NULL)
-        return ProcessErrors_InvalidParameters;
-
-    LockSpinlock(info->lock);
-
-    *index = (uint32_t)-1;
-
-    for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
-        if(info->Keys[i].key_index == key->key_index && info->Keys[i].key_index != 0) {
-            *index = i;
-            break;
-        }
-    }
-
-    UnlockSpinlock(info->lock);
-
-    if(*index == (uint32_t)-1)
-        return ProcessErrors_InvalidParameters;
-
-    return ProcessErrors_None;
-}
-
-ProcessErrors
-DeleteDescriptor(UID pid,
-                 uint32_t index) {
-
-    ProcessInformation *info;
-    if(GetProcessReference(pid, &info) != ProcessErrors_None)
-        return ProcessErrors_UIDNotFound;
-
-    LockSpinlock(info->lock);
-
-    info->Keys[index].key_index = 0;
-    KeyMan_DecrementRefCount(&info->Keys[index]);
-
-    if(index < info->LowestFreeKeyIndex)
-        info->LowestFreeKeyIndex = index;
-
     UnlockSpinlock(info->lock);
     return ProcessErrors_None;
 }
