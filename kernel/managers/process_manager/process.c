@@ -86,9 +86,9 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
     dst->Threads = List_Create(CreateSpinlock());
     dst->PendingMessages = List_Create(CreateSpinlock());
 
-    dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(uint64_t));
+    dst->Keys = kmalloc(MAX_KEYS_PER_PROCESS * sizeof(Key_t));
     for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++)
-        dst->Keys[i] = 0;
+        dst->Keys[i].key_index = 0;
 
     dst->MessageLock = CreateSpinlock();
 
@@ -133,8 +133,8 @@ TerminateProcess(ProcessInformation *pinfo) {
 
     //Free keys
     for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
-        if(pinfo->Keys[i] != 0)
-            KeyMan_DecrementRefCount(pinfo->Keys[i]);
+        if(pinfo->Keys[i].key_index != 0)
+            KeyMan_DecrementRefCount(&pinfo->Keys[i]);
     }
     kfree(pinfo->Keys);
 
@@ -423,7 +423,7 @@ ScheduleProcessForTermination(UID pid, uint32_t exit_code) {
 
 ProcessErrors
 AllocateDescriptor(UID pid,
-                   uint64_t key,
+                   Key_t *key,
                    uint32_t *index) {
 
     ProcessInformation *info;
@@ -437,13 +437,13 @@ AllocateDescriptor(UID pid,
         return ProcessErrors_OutOfMemory;
     }
 
-    info->Keys[info->LowestFreeKeyIndex] = key;
+    memcpy(&info->Keys[info->LowestFreeKeyIndex], key, sizeof(Key_t));
     KeyMan_IncrementRefCount(key);
 
     if(index != NULL)
         *index = info->LowestFreeKeyIndex;
 
-    while(info->Keys[info->LowestFreeKeyIndex] != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS) {
+    while(info->Keys[info->LowestFreeKeyIndex].key_index != 0 && info->LowestFreeKeyIndex < MAX_KEYS_PER_PROCESS) {
         info->LowestFreeKeyIndex++;
     }
 
@@ -471,7 +471,7 @@ CopyDescriptor(UID src_pid,
         return ProcessErrors_OutOfMemory;
     }
 
-    uint64_t key = info->Keys[index];
+    Key_t *key = &info->Keys[index];
     UnlockSpinlock(info->lock);
 
     return AllocateDescriptor(dst_pid, key, new_index);
@@ -479,7 +479,7 @@ CopyDescriptor(UID src_pid,
 
 ProcessErrors
 GetIndexOfKey(UID pid,
-              uint64_t key,
+              Key_t *key,
               uint32_t *index) {
 
     ProcessInformation *info;
@@ -494,7 +494,7 @@ GetIndexOfKey(UID pid,
     *index = (uint32_t)-1;
 
     for(int i = 0; i < MAX_KEYS_PER_PROCESS; i++) {
-        if(info->Keys[i] == key && info->Keys[i] != 0) {
+        if(info->Keys[i].key_index == key->key_index && info->Keys[i].key_index != 0) {
             *index = i;
             break;
         }
@@ -518,8 +518,8 @@ DeleteDescriptor(UID pid,
 
     LockSpinlock(info->lock);
 
-    info->Keys[index] = 0;
-    KeyMan_DecrementRefCount(info->Keys[index]);
+    info->Keys[index].key_index = 0;
+    KeyMan_DecrementRefCount(&info->Keys[index]);
 
     if(index < info->LowestFreeKeyIndex)
         info->LowestFreeKeyIndex = index;

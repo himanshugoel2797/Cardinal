@@ -970,7 +970,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
                                           uint64_t length,
                                           CachingMode cacheMode,
                                           MemoryAllocationFlags flags,
-                                          uint64_t *key) {
+                                          Key_t *key) {
   if (key == NULL) return MemoryAllocationErrors_InvalidParameters;
 
   ProcessInformation *procInfo = NULL;
@@ -1007,13 +1007,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
         UnlockSpinlock(procInfo->lock);
         return MemoryAllocationErrors_Unknown;
       }
-      if (AllocateDescriptor(pid, *key, NULL) != ProcessErrors_None) {
-        KeyMan_FreeKey(*key);
-        UnlockSpinlock(procInfo->PageTable->lock);
-        UnlockSpinlock(procInfo->lock);
-        return MemoryAllocationErrors_OutOfMemory;
-      }
-
+      
       break;
     }
     map = map->next;
@@ -1026,7 +1020,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
   return MemoryAllocationErrors_None;
 }
 
-MemoryAllocationErrors ApplySharedMemoryKey(UID pid, uint64_t key,
+MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
                                             uint64_t *virtualAddress,
                                             MemoryAllocationFlags *flags,
                                             CachingMode *cacheMode,
@@ -1098,8 +1092,9 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, uint64_t key,
   return MemoryAllocationErrors_None;
 }
 
-MemoryAllocationErrors GetSharedMemoryKeyUsageCount(uint64_t key,
-                                                    uint64_t *cnt) {
+MemoryAllocationErrors 
+GetSharedMemoryKeyUsageCount(Key_t *key,
+                             uint64_t *cnt) {
   if (cnt == NULL) return MemoryAllocationErrors_InvalidParameters;
 
   uint64_t identifiers[IDENTIFIER_COUNT];
@@ -1113,20 +1108,16 @@ MemoryAllocationErrors GetSharedMemoryKeyUsageCount(uint64_t key,
   return MemoryAllocationErrors_None;
 }
 
-MemoryAllocationErrors FreeSharedMemoryKey(UID parentPID, uint64_t key) {
+MemoryAllocationErrors 
+FreeSharedMemoryKey(UID parentPID, 
+                    Key_t *key) {
   uint32_t index = 0;
-
-  if (GetIndexOfKey(parentPID, key, &index) != ProcessErrors_None)
-    return MemoryAllocationErrors_InvalidParameters;
 
   uint64_t identifiers[IDENTIFIER_COUNT];
   if (KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)
     return MemoryAllocationErrors_InvalidParameters;
 
   if (identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
-    return MemoryAllocationErrors_InvalidParameters;
-
-  if (DeleteDescriptor(parentPID, index) != ProcessErrors_None)
     return MemoryAllocationErrors_InvalidParameters;
 
   return MemoryAllocationErrors_None;

@@ -14,17 +14,41 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE MiB(16)
+#define KEY_TABLE_SIZE GiB(16)
 
 typedef struct {
-    uint32_t key;
+    Key_t key;
     uint32_t ref_count;
     _Atomic uint64_t identifier[IDENTIFIER_COUNT];
 } KeyEntry;
 
 static KeyEntry* keyTable = NULL;
-static uint32_t lastFreeKeyIndex = 0;
+static uint64_t lastFreeKeyIndex = 0;
 static Spinlock keyman_lock;
+
+void
+KeyMan_GenerateKey(uint64_t idx, Key_t *key) {
+
+    for(int i = 0; i < KEY_LENGTH; i++) {
+        key->key[i] = (uint8_t)rand();
+    }
+
+    key->key_index = idx;
+}
+
+bool
+KeyMan_VerifyKey(const Key_t *key) {
+
+    if(key->key_index >= KEY_TABLE_SIZE / sizeof(KeyEntry))
+        return false;
+
+    for(int i = 0; i < KEY_LENGTH; i++) {
+        if(key->key[i] != keyTable[key->key_index].key.key[i])
+            return false;
+    }
+
+    return true;
+}
 
 void
 KeyMan_Initialize(void) {
@@ -59,7 +83,7 @@ KeyMan_Initialize(void) {
 
 KeyManagerErrors
 KeyMan_AllocateKey(uint64_t *identifier,
-                   uint64_t *key) {
+                   Key_t *key) {
 
     if(key == NULL)
         return KeyManagerErrors_InvalidParams;
@@ -67,21 +91,17 @@ KeyMan_AllocateKey(uint64_t *identifier,
     LockSpinlock(keyman_lock);
 
     //Generate the full key
-    uint32_t rng_key = rand();
-    *key = (uint64_t)rng_key;
-    *key = *key << 32 | lastFreeKeyIndex;
-
-    keyTable[lastFreeKeyIndex].key = rng_key;
+    KeyMan_GenerateKey(lastFreeKeyIndex, key);
+    keyTable[lastFreeKeyIndex].key = key;
 
     for(int i = 0; i < IDENTIFIER_COUNT; i++)
         keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
 
-    keyTable[lastFreeKeyIndex].ref_count = 0;
+    keyTable[lastFreeKeyIndex].ref_count = ;
 
-    while(keyTable[lastFreeKeyIndex].key != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
+    while(keyTable[lastFreeKeyIndex].ref_count != 0 && lastFreeKeyIndex < KEY_TABLE_SIZE/sizeof(KeyEntry)) {
         lastFreeKeyIndex++;
     }
-
 
     UnlockSpinlock(keyman_lock);
 
@@ -89,15 +109,15 @@ KeyMan_AllocateKey(uint64_t *identifier,
 }
 
 KeyManagerErrors
-KeyMan_FreeKey(uint64_t key) {
-    uint32_t index = (uint32_t)key;
+KeyMan_FreeKey(Key_t *key) {
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key != (uint32_t)(key >> 32)) {
-        UnlockSpinlock(keyman_lock);
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -106,7 +126,7 @@ KeyMan_FreeKey(uint64_t key) {
         return KeyManagerErrors_NonZeroReferenceCount;
     }
 
-    keyTable[index].key = 0;
+    keyTable[index].key.key_index = 0;
     keyTable[index].ref_count = 0;
 
     for(int i = 0; i < IDENTIFIER_COUNT; i++)
@@ -120,34 +140,39 @@ KeyMan_FreeKey(uint64_t key) {
 }
 
 bool
-KeyMan_KeyExists(uint64_t key) {
-
-    uint32_t index = (uint32_t)key;
+KeyMan_KeyExists(const Key_t *key) {
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return 0;
 
     LockSpinlock(keyman_lock);
-    uint32_t k = keyTable[index].key;
+
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
+        return KeyManagerErrors_KeyDoesNotExist;
+    }
+
+    uint64_t k = keyTable[index].key_index;
     UnlockSpinlock(keyman_lock);
 
     if(k == 0)
         return 0;
 
-    return (k == (uint32_t)(key >> 32));
+    return (k == key->key_index);
 }
 
 KeyManagerErrors
-KeyMan_ReadKey(uint64_t key,
+KeyMan_ReadKey(const Key_t *key,
                uint64_t *identifier) {
 
-    uint32_t index = (uint32_t)key;
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key != (uint32_t)(key >> 32)) {
-        UnlockSpinlock(keyman_lock);
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -162,17 +187,17 @@ KeyMan_ReadKey(uint64_t key,
 
 
 KeyManagerErrors
-KeyMan_WriteKey(uint64_t key,
+KeyMan_WriteKey(const Key_t *key,
                 uint64_t *identifier) {
 
-    uint32_t index = (uint32_t)key;
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key != (uint32_t)(key >> 32)) {
-        UnlockSpinlock(keyman_lock);
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -186,16 +211,16 @@ KeyMan_WriteKey(uint64_t key,
 }
 
 KeyManagerErrors
-KeyMan_IncrementRefCount(uint64_t key) {
+KeyMan_IncrementRefCount(const Key_t *key) {
 
-    uint32_t index = (uint32_t)key;
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key != (uint32_t)(key >> 32)) {
-        UnlockSpinlock(keyman_lock);
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -210,15 +235,15 @@ KeyMan_IncrementRefCount(uint64_t key) {
 }
 
 KeyManagerErrors
-KeyMan_DecrementRefCount(uint64_t key) {
-    uint32_t index = (uint32_t)key;
+KeyMan_DecrementRefCount(const Key_t *key) {
+    uint64_t index = key->key_index;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
     LockSpinlock(keyman_lock);
 
-    if(keyTable[index].key != (uint32_t)(key >> 32)) {
-        UnlockSpinlock(keyman_lock);
+    if(!KeyMan_VerifyKey(key)){
+        UnlockSpinlock(keyman_lock);        
         return KeyManagerErrors_KeyDoesNotExist;
     }
 

@@ -10,6 +10,8 @@
 #include "synchronization.h"
 #include "list.h"
 #include "libs/libCardinal/include/memory.h"
+#include "libs/libCardinal/include/keyman.h"
+
 
 #include "common/ref_count.h"
 
@@ -490,7 +492,7 @@ GetSharedMemoryKey(UID pid,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint64_t *key);
+                   Key_t *key);
 
 /**
  * @brief      Apply a shared memory key.
@@ -506,7 +508,7 @@ GetSharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 ApplySharedMemoryKey(UID pid,
-                     uint64_t key,
+                     Key_t *key,
                      uint64_t *virtualAddress,
                      MemoryAllocationFlags *flags,
                      CachingMode *cacheMode,
@@ -522,7 +524,7 @@ ApplySharedMemoryKey(UID pid,
  */
 MemoryAllocationErrors
 FreeSharedMemoryKey(UID parentPID,
-                    uint64_t key);
+                    Key_t *key);
 
 /**
  * @brief      Gets the shared memory key usage count.
@@ -533,7 +535,7 @@ FreeSharedMemoryKey(UID parentPID,
  * @return     Error code on failure, MemoryAllocationErrors_None on success.
  */
 MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(uint64_t key,
+GetSharedMemoryKeyUsageCount(Key_t *key,
                              uint64_t *cnt);
 
 /**@}*/
