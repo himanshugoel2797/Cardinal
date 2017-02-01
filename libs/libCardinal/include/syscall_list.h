@@ -64,7 +64,6 @@ typedef enum {
     Syscall_R01_AllocateInterrupts,     //!< Allocate a block of interrupts
     Syscall_R01_RegisterForInterrupts,  //!< Register for a block of interrupts
 
-
     Syscall_NumEnd = Syscall_R01_RegisterForInterrupts,
 } SyscallFunctions;
 

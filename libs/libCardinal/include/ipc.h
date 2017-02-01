@@ -38,9 +38,11 @@ extern "C" {
 
 typedef enum {
     CardinalMsgType_Request,
+    CardinalMsgType_Response,
     CardinalMsgType_Error,
     CardinalMsgType_Notification,
     CardinalMsgType_Interrupt,
+    CardinalMsgType_MessageStreamRequest,
 } CardinalMsgType;
 
 //! IPC Message header.
@@ -51,12 +53,12 @@ typedef struct Message {
     CardinalMsgType MsgType : 8;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
-//! A request message.
-typedef struct RequestMessage {
+//! A message stream request message.
+typedef struct MessageStreamRequestMessage {
     Message m;                      //!< Standard required message header.
     Key_t request_write_key;     //!< Server to client transfer key.
     Key_t request_read_key;      //!< Client to server transfer key.
-} RequestMessage;
+} MessageStreamRequestMessage;
 
 //! An error message.
 typedef struct ErrorMessage {
@@ -171,15 +173,14 @@ GetIPCMessage(Message *m) {
  * @brief      Posts ipc messages.
  *
  * @param[in]  dstPID  The destination pid
- * @param      m       A list of messages to post
- * @param[in]  cnt     The number of messages in the list
+ * @param      msg     The message to post
  *
  * @return     -1 on failure to post any messages, the number of messages posted
  *             on success.
  */
 static __inline int
-PostToProcess(UID dstPID, Message *msg) {
-    return (int)Syscall2(Syscall_PostIPCMessage, dstPID, msg);
+PostIPCMessage(UID dstPID, Message *msg) {
+    return (int)Syscall2(Syscall_PostIPCMessage, dstPID, (uint64_t)msg);
 }
 
 /**
@@ -216,6 +217,11 @@ R01RegisterInterrupts(int irq, int cnt) {
 
 uint32_t
 RequestMessageID(void);
+
+bool
+OpenConnection(UID targetPID);
+
+
 
 #endif
 

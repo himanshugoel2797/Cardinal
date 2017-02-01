@@ -30,7 +30,7 @@ RegisterNamespace(char *name,
 
     Message *msg_p = (Message*)request;
 
-    int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
+    int err = PostIPCMessage(NAMESPACE_SRV_PID, msg_p);
 
     if(err != 1)
         return err;
@@ -53,7 +53,7 @@ UnregisterNamespace(char *name,
 
     Message *msg_p = (Message*)request;
 
-    int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
+    int err = PostIPCMessage(NAMESPACE_SRV_PID, msg_p);
 
     if(err != 1)
         return err;
@@ -77,7 +77,7 @@ RetrieveNamespace(char *name,
 
     Message *msg_p = (Message*)request;
 
-    int err = PostIPCMessages(NAMESPACE_SRV_PID, &msg_p, 1);
+    int err = PostIPCMessage(NAMESPACE_SRV_PID, msg_p);
 
     if(err != 1)
         return err;

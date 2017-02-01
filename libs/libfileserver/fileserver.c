@@ -30,7 +30,7 @@ Server_HandleGetOpMask(Message *m) {
     resp->OpMask = op_mask;
 
     Message *m2 = (Message*)&resp;
-    PostIPCMessages(m->SourcePID, &m2, 1);
+    PostIPCMessage(m->SourcePID, m2);
 }
 
 static void
@@ -48,13 +48,13 @@ Server_HandleOpRequest(Message *m) {
         case FileSystemOpType_Open: {
             FileSystemOpOpen *op = (FileSystemOpOpen*)m;
 
-            if(op->path_key == 0) {
+            if(op->path_key.key_index == 0) {
                 retVal = -EINVAL;
                 break;
             }
 
             UserSharedMemoryData shmem_data;
-            if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
+            if(ApplySharedMemoryKey(&op->path_key, &shmem_data) != 0) {
                 retVal = -EINVAL;
                 break;
             }
@@ -86,13 +86,13 @@ Server_HandleOpRequest(Message *m) {
             FileSystemOpRead *op = (FileSystemOpRead*)m;
 
             //Map the destination key and ensure it has the desired permissions
-            if(op->key == 0) {
+            if(op->key.key_index == 0) {
                 retVal = -EINVAL;
                 break;
             }
 
             UserSharedMemoryData shmem_data;
-            if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+            if(ApplySharedMemoryKey(&op->key, &shmem_data) != 0) {
                 retVal = -EINVAL;
                 break;
             }
@@ -118,13 +118,13 @@ Server_HandleOpRequest(Message *m) {
             FileSystemOpWrite *op = (FileSystemOpWrite*)m;
 
             //Map the destination key and ensure it has the desired permissions
-            if(op->key == 0) {
+            if(op->key.key_index == 0) {
                 retVal = -EINVAL;
                 break;
             }
 
             UserSharedMemoryData shmem_data;
-            if(ApplySharedMemoryKey(op->key, &shmem_data) != 0) {
+            if(ApplySharedMemoryKey(&op->key, &shmem_data) != 0) {
                 retVal = -EINVAL;
                 break;
             }
@@ -143,13 +143,13 @@ Server_HandleOpRequest(Message *m) {
         case FileSystemOpType_GetFileProperties: {
             FileSystemOpGetProperties *op = (FileSystemOpGetProperties*)m;
 
-            if(op->path_key == 0) {
+            if(op->path_key.key_index == 0) {
                 retVal = -EINVAL;
                 break;
             }
 
             UserSharedMemoryData shmem_data;
-            if(ApplySharedMemoryKey(op->path_key, &shmem_data) != 0) {
+            if(ApplySharedMemoryKey(&op->path_key, &shmem_data) != 0) {
                 retVal = -EINVAL;
                 break;
             }
@@ -181,13 +181,13 @@ Server_HandleOpRequest(Message *m) {
         case FileSystemOpType_Rename: {
             FileSystemOpRename *op = (FileSystemOpRename*)m;
 
-            if(op->name_key == 0) {
+            if(op->name_key.key_index == 0) {
                 retVal = -EINVAL;
                 break;
             }
 
             UserSharedMemoryData shmem_data;
-            if(ApplySharedMemoryKey(op->name_key, &shmem_data) != 0) {
+            if(ApplySharedMemoryKey(&op->name_key, &shmem_data) != 0) {
                 retVal = -EINVAL;
                 break;
             }
@@ -226,11 +226,11 @@ Server_HandleOpRequest(Message *m) {
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, op_response);
     op_response->m.MsgID = m->MsgID;
-    op_response->m.MsgType = CardinalMsgType_IOResponse;
+    op_response->m.MsgType = CardinalMsgType_Response;
     op_response->error_code = retVal;
     op_response->fd = fd;
 
-    PostIPCMessages(m->SourcePID, (Message**)&op_response, 1);
+    PostIPCMessage(m->SourcePID, (Message*)op_response);
 }
 
 static void
@@ -284,7 +284,7 @@ Server_Start(FileServerHandlers *handlers,
         CREATE_NEW_MESSAGE_PTR(msg);
         POLL_MESSAGE(msg);
 
-        if(msg->MsgType == CardinalMsgType_IORequest) {
+        if(msg->MsgType == CardinalMsgType_Request) {
 
             FileSystemOpHeader *op_hdr = (FileSystemOpHeader*)msg;
 

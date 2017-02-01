@@ -38,7 +38,10 @@ Display_GetDisplayCount(void) {
     //Read the root directory and count the number of files that match displayXXX
     uint64_t buf_len = sizeof(FileSystemDirectoryData) + 128 * sizeof(FileSystemDirectoryEntry);
     uint64_t vAddr = 0;
-    uint64_t read_key = 0, write_key = 0;
+    Key_t read_key, write_key;
+    memset(&read_key, 0, sizeof(Key_t));
+    memset(&write_key, 0, sizeof(Key_t));
+
     IO_AllocateBuffer(&buf_len,
                       &vAddr,
                       &read_key,
@@ -60,7 +63,7 @@ Display_GetDisplayCount(void) {
     }
 
 
-    IO_FreeBuffer(vAddr, buf_len, read_key, write_key);
+    IO_FreeBuffer(vAddr, buf_len, &read_key, &write_key);
     return display_cnt;
 }
 
@@ -73,7 +76,10 @@ Display_GetInfo(int display_index,
 
     uint64_t buf_len = 1024;
     uint64_t vAddr = 0;
-    uint64_t read_key = 0, write_key = 0;
+    Key_t read_key, write_key;
+    memset(&read_key, 0, sizeof(Key_t));
+    memset(&write_key, 0, sizeof(Key_t));
+
     IO_AllocateBuffer(&buf_len,
                       &vAddr,
                       &read_key,
@@ -103,13 +109,13 @@ Display_GetInfo(int display_index,
            &disp_info->A_offset,
            &disp_info->A_length);
 
-    IO_FreeBuffer(vAddr, buf_len, read_key, write_key);
+    IO_FreeBuffer(vAddr, buf_len, &read_key, &write_key);
     return 0;
 }
 
 int
 Display_GetDisplayImage(int display_index,
-                        uint64_t key,
+                        Key_t key,
                         uint64_t len) {
     //Read the display
     uint8_t sec_key[KEY_BYTES];
@@ -147,7 +153,7 @@ Display_UnlockDisplay(uint64_t display_fd) {
 
 void
 Display_Update(uint64_t display_fd,
-               uint64_t buffer_key,
+               Key_t buffer_key,
                uint64_t buffer_len) {
     //Write to the display
 

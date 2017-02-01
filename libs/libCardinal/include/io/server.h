@@ -14,18 +14,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "../cardinal_types.h"
 #include "../file_server.h"
+#include "../keyman.h"
 
 int
 IO_AllocateBuffer(uint64_t* len,
                   uint64_t* address,
-                  uint64_t* read_key,
-                  uint64_t* write_key);
+                  Key_t* read_key,
+                  Key_t* write_key);
 
 int
 IO_FreeBuffer(uint64_t address,
               uint64_t len,
-              uint64_t read_key,
-              uint64_t write_key);
+              Key_t *read_key,
+              Key_t *write_key);
 
 int
 IO_Open(const char* path,
@@ -38,14 +39,14 @@ IO_Open(const char* path,
 int
 IO_Read(uint64_t fd,
         uint64_t offset,
-        uint64_t key,
+        Key_t key,
         uint64_t len,
         UID pid);
 
 int
 IO_Write(uint64_t fd,
          uint64_t offset,
-         uint64_t key,
+         Key_t key,
          uint64_t len,
          UID pid);
 

@@ -47,7 +47,7 @@ Display_GetInfo(int display_index,
 
 int
 Display_GetDisplayImage(int display_index,
-                        uint64_t key,
+                        Key_t key,
                         uint64_t len);
 
 uint64_t
@@ -58,7 +58,7 @@ Display_UnlockDisplay(uint64_t display_fd);
 
 void
 Display_Update(uint64_t display_fd,
-               uint64_t buffer_key,
+               Key_t buffer_key,
                uint64_t buffer_len);
 
 #endif

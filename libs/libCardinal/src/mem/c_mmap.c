@@ -61,7 +61,7 @@ RequestMMap(uint64_t address,
 
     Message *msg_p = (Message*)request;
 
-    int err = PostIPCMessages(MEMORY_SRV_PID, &msg_p, 1);
+    int err = PostIPCMessage(MEMORY_SRV_PID, msg_p);
 
     if(err != 1)
         return err;

@@ -38,9 +38,9 @@ typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
     uint32_t argc;
-    uint64_t exec_key;
+    Key_t exec_key;
     uint64_t exec_size;
-    uint64_t args_key;
+    Key_t args_key;
     uint64_t group_id;
 } ProcessServer_CreateRequest;
 
@@ -54,7 +54,7 @@ typedef struct {
     Message m;
     ProcessServerMessageType MsgType;
     UID pid;
-    uint64_t process_name_key;
+    Key_t process_name_key;
 } ProcessServer_R0NotifyProcessExistence;
 
 typedef struct {

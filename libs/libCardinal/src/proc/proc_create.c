@@ -28,7 +28,7 @@ R0NotifyProcessExistence(UID pid,
     data->m.MsgType = CardinalMsgType_Notification;
     data->MsgType = ProcessServerMessageType_R0_ProcessExistenceNotification;
     data->pid = pid;
-    data->process_name_key = 0;
+    memset(&data->process_name_key, 0, sizeof(Key_t));
 
     if(name_len != 0 && name != NULL) {
         uint64_t vAddress = 0;
@@ -43,7 +43,7 @@ R0NotifyProcessExistence(UID pid,
         for(int i = 0; i < name_len; i++)
             dst[i] = name[i];
 
-        uint64_t key = 0;
+        Key_t key;
         if(GetSharedMemoryKey(vAddress,
                               name_len,
                               CachingModeWriteBack,
@@ -58,16 +58,16 @@ R0NotifyProcessExistence(UID pid,
 
     Message *msg = (Message*)data;
 
-    PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
+    PostIPCMessage(PROCESS_SRV_PID, msg);
 
-    if(data->process_name_key != 0) {
+    if(data->process_name_key.key_index != 0) {
         uint64_t cnt = 0;
         while(1) {
-            GetSharedMemoryKeyUsageCount(data->process_name_key, &cnt);
+            GetSharedMemoryKeyUsageCount(&data->process_name_key, &cnt);
             if(cnt)
                 break;
         }
-        FreeSharedMemoryKey(data->process_name_key);
+        FreeSharedMemoryKey(&data->process_name_key);
     }
     return 0;
 }
@@ -95,7 +95,7 @@ RequestCreateProcess(void *exec,
     create_req->m.MsgID = RequestMessageID();
     create_req->m.MsgType = CardinalMsgType_Request;
     create_req->MsgType = ProcessServerMessageType_CreateProcessRequest;
-    create_req->args_key = 0;
+    memset(&create_req->args_key, 0, sizeof(Key_t));
     create_req->argc = argc;
     create_req->exec_size = exec_len;
     create_req->group_id = group_id;
@@ -113,7 +113,8 @@ RequestCreateProcess(void *exec,
 
     memcpy((void*)vAddress, exec, create_req->exec_size);
 
-    uint64_t key = 0;
+    Key_t key;
+    memset(&key, 0, sizeof(Key_t));
     if(GetSharedMemoryKey(vAddress,
                           exec_len,
                           CachingModeWriteBack,
@@ -161,7 +162,7 @@ RequestCreateProcess(void *exec,
 
     Message *msg = (Message*)create_req;
 
-    PostIPCMessages(PROCESS_SRV_PID, &msg, 1);
+    PostIPCMessage(PROCESS_SRV_PID, msg);
 
     CREATE_NEW_MESSAGE_PTR(m2);
     while(!GetIPCMessageFrom(m2, PROCESS_SRV_PID, create_req->m.MsgID));
@@ -170,12 +171,12 @@ RequestCreateProcess(void *exec,
     if(pid != NULL)
         *pid = resp->pid;
 
-    if(create_req->args_key != 0) {
-        FreeSharedMemoryKey(create_req->args_key);
+    if(create_req->args_key.key_index != 0) {
+        FreeSharedMemoryKey(&create_req->args_key);
     }
 
-    if(create_req->exec_key != 0) {
-        FreeSharedMemoryKey(create_req->exec_key);
+    if(create_req->exec_key.key_index != 0) {
+        FreeSharedMemoryKey(&create_req->exec_key);
     }
 
 
@@ -194,7 +195,9 @@ StartProcess(const char *str,
 
     uint64_t len = 0;
     uint64_t addr = 0;
-    uint64_t read_key = 0, write_key = 0;
+    Key_t read_key, write_key;
+    memset(&read_key, 0, sizeof(Key_t));
+    memset(&write_key, 0, sizeof(Key_t));
 
     uint64_t fd = 0;
 
@@ -217,7 +220,7 @@ StartProcess(const char *str,
 
     int retVal = RequestCreateProcess((void*)addr, file_dat.Length, argv, argc, group_id, pid);
 
-    IO_FreeBuffer(addr, len, read_key, write_key);
+    IO_FreeBuffer(addr, len, &read_key, &write_key);
 
     return retVal;
 }
@@ -230,7 +233,7 @@ SubscribeToProcessExitNotification(void) {
     create_req->m.MsgType = CardinalMsgType_Request;
     create_req->MsgType = ProcessServerMessageType_SubscribeToExitNotification;
 
-    PostIPCMessages(PROCESS_SRV_PID, (Message**)&create_req, 1);
+    PostIPCMessage(PROCESS_SRV_PID, (Message*)create_req);
     return 0;
 }
 
@@ -242,7 +245,7 @@ SubscribeToProcessCreateNotification(void) {
     create_req->m.MsgType = CardinalMsgType_Request;
     create_req->MsgType = ProcessServerMessageType_SubscribeToCreateNotification;
 
-    PostIPCMessages(PROCESS_SRV_PID, (Message**)&create_req, 1);
+    PostIPCMessage(PROCESS_SRV_PID, (Message*)create_req);
     return 0;
 }
 
@@ -254,6 +257,6 @@ ExitProcess(uint64_t exit_code) {
     exit_req->m.MsgType = CardinalMsgType_Request;
     exit_req->MsgType = ProcessServerMessageType_ExitProcess;
 
-    PostIPCMessages(PROCESS_SRV_PID, (Message**)&exit_req, 1);
+    PostIPCMessage(PROCESS_SRV_PID, (Message*)exit_req);
     while(1);
 }

@@ -23,7 +23,7 @@ fill_struct(FileSystemOpRequestHeader *op,
             FileSystemOpType op_type) {
 
     op->h.m.MsgID = RequestMessageID();
-    op->h.m.MsgType = CardinalMsgType_IORequest;
+    op->h.m.MsgType = CardinalMsgType_Request;
     op->h.MsgType = FileSystemRequestType_Op;
     op->OpType = op_type;
 
@@ -33,8 +33,8 @@ fill_struct(FileSystemOpRequestHeader *op,
 int
 IO_AllocateBuffer(uint64_t* len,
                   uint64_t* vAddress,
-                  uint64_t* read_key,
-                  uint64_t* write_key) {
+                  Key_t* read_key,
+                  Key_t* write_key) {
 
     if(*len % PAGE_SIZE)
         *len += PAGE_SIZE - *len % PAGE_SIZE;
@@ -71,8 +71,8 @@ IO_AllocateBuffer(uint64_t* len,
 int
 IO_FreeBuffer(uint64_t address,
               uint64_t len,
-              uint64_t read_key,
-              uint64_t write_key) {
+              Key_t *read_key,
+              Key_t *write_key) {
 
     if(Unmap(address, len) != 0)
         return -1;
@@ -113,13 +113,13 @@ IO_Open(const char * path,
     for(int i = 0; i < KEY_BYTES; i++)
         op->access_pass[i] = access_key[i];
 
-    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+    if(PostIPCMessage(pid, (Message*)op) != 1)
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
-    FreeSharedMemoryKey(op->path_key);
+    FreeSharedMemoryKey(&op->path_key);
     Unmap((uint64_t)vAddr, shmem_len);
 
     *fd = resp->fd;
@@ -129,7 +129,7 @@ IO_Open(const char * path,
 int
 IO_Read(uint64_t fd,
         uint64_t offset,
-        uint64_t key,
+        Key_t key,
         uint64_t len,
         UID pid) {
 
@@ -141,7 +141,7 @@ IO_Read(uint64_t fd,
     op->key = key;
     op->len = len;
 
-    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+    if(PostIPCMessage(pid, (Message*)op) != 1)
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
@@ -153,7 +153,7 @@ IO_Read(uint64_t fd,
 int
 IO_Write(uint64_t fd,
          uint64_t offset,
-         uint64_t key,
+         Key_t key,
          uint64_t len,
          UID pid) {
 
@@ -165,7 +165,7 @@ IO_Write(uint64_t fd,
     op->key = key;
     op->len = len;
 
-    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+    if(PostIPCMessage(pid, (Message*)op) != 1)
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
@@ -193,7 +193,7 @@ IO_GetFileProperties(const char *path,
 
     op->result_offset = path_len + 1;
 
-    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+    if(PostIPCMessage(pid, (Message*)op) != 1)
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
@@ -201,7 +201,7 @@ IO_GetFileProperties(const char *path,
 
     memcpy(info, vAddr + op->result_offset, sizeof(FileSystemDirectoryEntry));
 
-    FreeSharedMemoryKey(op->path_key);
+    FreeSharedMemoryKey(&op->path_key);
     Unmap((uint64_t)vAddr, shmem_len);
 
     return resp->error_code;
@@ -213,7 +213,7 @@ IO_Close(uint64_t fd,
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpClose, op);
     fill_struct(&op->op_h, FileSystemOpType_Close);
     op->fd = fd;
-    PostIPCMessages(pid, (Message**)&op, 1);
+    PostIPCMessage(pid, (Message*)op);
 }
 
 void
@@ -223,7 +223,7 @@ IO_Remove(uint64_t fd,
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpClose, op);
     fill_struct(&op->op_h, FileSystemOpType_Close);
     op->fd = fd;
-    PostIPCMessages(pid, (Message**)&op, 1);
+    PostIPCMessage(pid, (Message*)op);
 }
 
 int
@@ -246,13 +246,13 @@ IO_Rename(uint64_t fd,
     op->name_offset = 0;
     op->fd = fd;
 
-    if(PostIPCMessages(pid, (Message**)&op, 1) != 1)
+    if(PostIPCMessage(pid, (Message*)op) != 1)
         return -1;
 
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpResponse, resp);
     POLL_MESSAGE_FROM_PID_MSGID((Message*)resp, pid, msgID);
 
-    FreeSharedMemoryKey(op->name_key);
+    FreeSharedMemoryKey(&op->name_key);
     Unmap((uint64_t)vAddr, shmem_len);
 
     return resp->error_code;
@@ -265,5 +265,5 @@ IO_Sync(uint64_t fd,
     CREATE_NEW_MESSAGE_PTR_TYPE(FileSystemOpClose, op);
     fill_struct(&op->op_h, FileSystemOpType_Close);
     op->fd = fd;
-    PostIPCMessages(pid, (Message**)&op, 1);
+    PostIPCMessage(pid, (Message*)op);
 }

@@ -81,7 +81,7 @@ typedef struct {
 
 typedef struct {
     FileSystemOpRequestHeader op_h;
-    uint64_t path_key;
+    Key_t path_key;
     uint64_t path_offset;
     int flags;
     uint64_t mode;
@@ -90,7 +90,7 @@ typedef struct {
 
 typedef struct {
     FileSystemOpRequestHeader op_h;
-    uint64_t path_key;
+    Key_t path_key;
     uint64_t result_offset;
 } FileSystemOpGetProperties;
 
@@ -113,7 +113,7 @@ typedef struct {
     FileSystemOpRequestHeader op_h;
     uint64_t fd;
     uint64_t offset;
-    uint64_t key;
+    Key_t key;
     uint64_t len;
 } FileSystemOpRead;
 
@@ -121,14 +121,14 @@ typedef struct {
     FileSystemOpRequestHeader op_h;
     uint64_t fd;
     uint64_t offset;
-    uint64_t key;
+    Key_t key;
     uint64_t len;
 } FileSystemOpWrite;
 
 typedef struct {
     FileSystemOpRequestHeader op_h;
     uint64_t fd;
-    uint64_t name_key;
+    Key_t name_key;
     uint64_t name_offset;
 } FileSystemOpRename;
 
