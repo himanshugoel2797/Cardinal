@@ -110,12 +110,14 @@ int main(int argc, char *argv[]) {
 
     if(!isPCI_BAR_IO) {
         //Parse BAR0's key from the args
-        uint64_t bar0_key = 0;
+        Key_t bar0_key;
+        char bar0_key_buf[KEY_STR_LEN];
 
-        sscanf(argv[2], "B0:%llx", &bar0_key);
+        sscanf(argv[2], "B0:%s", bar0_key_buf);
+        StringToKey(bar0_key_buf, &bar0_key);
 
         UserSharedMemoryData data;
-        ApplySharedMemoryKey(bar0_key, &data);
+        ApplySharedMemoryKey(&bar0_key, &data);
 
         PCI_BAR = (uint64_t)data.VirtualAddress;
     }

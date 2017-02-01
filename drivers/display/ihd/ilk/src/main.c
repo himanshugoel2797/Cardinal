@@ -27,17 +27,25 @@ int main(int argc, char *argv[]) {
     PCI_GetPCIDevice(argv[1], &ctxt.device);
 
     //Parse BAR0's key from the args
-    uint64_t bar0_key = 0;
-    uint64_t bar1_key = 0;
-    uint64_t bar2_key = 0;
+    Key_t bar0_key;
+    Key_t bar1_key;
+    Key_t bar2_key;
 
-    sscanf(argv[2], "B0:%llx B1:%llx B2:%llx", &bar0_key, &bar1_key, &bar2_key);
+    char bar0_key_buf[KEY_STR_LEN];
+    char bar1_key_buf[KEY_STR_LEN];
+    char bar2_key_buf[KEY_STR_LEN];
+
+    sscanf(argv[2], "B0:%s B1:%s B2:%s", bar0_key_buf, bar1_key_buf, bar2_key_buf);
+
+    StringToKey(bar0_key_buf, &bar0_key);
+    StringToKey(bar1_key_buf, &bar1_key);
+    StringToKey(bar2_key_buf, &bar2_key);
 
     UserSharedMemoryData data;
-    ApplySharedMemoryKey(bar0_key, &data);
+    ApplySharedMemoryKey(&bar0_key, &data);
     ctxt.iobase = data.VirtualAddress;
 
-    ApplySharedMemoryKey(bar2_key, &data);
+    ApplySharedMemoryKey(&bar2_key, &data);
     ctxt.stolen_mem = data.VirtualAddress;
 
     PCI_EnableBusMaster(&ctxt.device);

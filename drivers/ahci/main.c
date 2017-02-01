@@ -263,11 +263,14 @@ int main(int argc, char *argv[]) {
     PCI_GetPCIDevice(argv[1], &device);
 
     //Parse BAR0's key from the args
-    uint64_t bar5_key = 0;
-    sscanf(argv[2], "B0:%*llx B1:%*llx B2:%*llx B3:%*llx B4:%*llx B5:%llx", &bar5_key);
+    Key_t bar5_key;
+    char bar5_key_buf[KEY_STR_LEN];
+
+    sscanf(argv[2], "B0:%*s B1:%*s B2:%*s B3:%*s B4:%*s B5:%s", bar5_key_buf);
+    StringToKey(bar5_key_buf, &bar5_key);
 
     UserSharedMemoryData data;
-    ApplySharedMemoryKey(bar5_key, &data);
+    ApplySharedMemoryKey(&bar5_key, &data);
     PCI_BAR = (uint64_t)data.VirtualAddress;
 
     //Not actually an AHCI device, exit

@@ -31,7 +31,7 @@ SendErrorMessage(uint64_t addr, MemoryAllocationErrors err, UID pid, uint32_t ms
     resp->error = err;
     resp->address = addr;
 
-    PostIPCMessages(pid, &msg, 1);
+    PostIPCMessage(pid, msg);
 }
 
 void

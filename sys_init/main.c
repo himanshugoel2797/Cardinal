@@ -44,7 +44,10 @@ int main() {
 
     uint64_t buf_len = disp_info.pitch * disp_info.height;
     uint64_t vAddr = 0;
-    uint64_t read_key = 0, write_key = 0;
+    Key_t read_key, write_key;
+    memset(&read_key, 0, sizeof(Key_t));
+    memset(&write_key, 0, sizeof(Key_t));
+
     IO_AllocateBuffer(&buf_len,
                       &vAddr,
                       &read_key,

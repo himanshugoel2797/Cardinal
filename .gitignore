@@ -24,6 +24,7 @@ tmp.S
 *.so.*
 *.dylib
 *.iso
+*.bin
 disk.img
 kernel/build/*
 root/*

@@ -26,7 +26,7 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
       // Check if the syscall number in arg 0 is greater than the syscall count
       // If it is, return immediately, return value is unchanged.
 
-      "cmp "S_(SYSCALL_COUNT)", %%rdi\n\t"
+      "cmp $"S_(SYSCALL_COUNT)", %%rdi\n\t"
       "jge exit_syscall_handler\n\t"
 
       // Otherwise, save necessary state and jump to the handler
@@ -45,7 +45,7 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
       "pushq %%r11\n\t"
 
       "movq $Syscalls, %%rax\n\t"
-      "lea (%%rax, %%r12, 8), %%rax\n\t"  //Call Syscalls[%r12]
+      "movq (%%rax, %%r12, 8), %%rax\n\t"  //Call Syscalls[%r12]
       "callq *%%rax\n\t"
 
       "movq %%rax, %%r13\n\t"       //Store the return value in r13
@@ -100,8 +100,6 @@ void Syscall_Initialize(void) {
   uint64_t star_val = (0x08ull << 32) | (0x18ull << 48);
   uint64_t lstar = (uint64_t)Syscall_Handler;
   uint64_t sfmask = (uint64_t)-1;
-
-  for (int i = 0; i < SYSCALL_COUNT; i++) Syscalls[i] = NULL;
 
   wrmsr(0xC0000080, rdmsr(0xC0000080) | 1);  // Enable the syscall instruction
   wrmsr(0xC0000081, star_val);

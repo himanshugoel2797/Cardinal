@@ -47,7 +47,9 @@ int main() {
                             &fb_addr);
 
 
-    uint64_t key = 0;
+    Key_t key;
+    memset(&key, 0, sizeof(Key_t));
+
     GetSharedMemoryKey(fb_addr,
                        fb_len,
                        CachingModeWriteThrough,
@@ -75,7 +77,7 @@ int main() {
     CREATE_NEW_MESSAGE_PTR(msg);
     msg->MsgType = CardinalMsgType_Notification;
     msg->MsgID = 0;
-    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+    PostIPCMessage(2 /*userboot PID*/, msg);
 
     //A display driver has already been loaded, we don't need the save.
     if(op_error != 0) {

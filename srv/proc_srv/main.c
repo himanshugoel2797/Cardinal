@@ -39,7 +39,7 @@ checkGroup(uint64_t expectedGroup, UID dst, uint64_t msgID) {
         err_msg->m.MsgType = CardinalMsgType_Error;
         err_msg->code = -EPERM;
 
-        PostIPCMessages(dst, &msg, 1);
+        PostIPCMessage(dst, msg);
         return 0;
     }
     return 1;
@@ -52,7 +52,7 @@ int main() {
     CREATE_NEW_MESSAGE_PTR(msg);
     msg->MsgType = CardinalMsgType_Notification;
     msg->MsgID = 0;
-    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+    PostIPCMessage(2 /*userboot PID*/, msg);
 
     while(1) {
 

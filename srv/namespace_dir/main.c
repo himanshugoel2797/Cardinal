@@ -35,7 +35,7 @@ send_err_response(UID val, int result, uint32_t msgID, UID dst) {
     else if(result == -2 || result == -3)
         resp->result = -ENAVAIL;
 
-    PostIPCMessages(dst, (Message**)&resp, 1);
+    PostIPCMessage(dst, (Message*)resp);
 }
 
 void
@@ -88,7 +88,7 @@ int main() {
     CREATE_NEW_MESSAGE_PTR(msg);
     msg->MsgType = CardinalMsgType_Notification;
     msg->MsgID = 0;
-    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+    PostIPCMessage(2 /*userboot PID*/, msg);
 
     uint32_t op_key = 0;
     uint64_t op_error = 0;

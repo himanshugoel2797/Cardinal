@@ -144,13 +144,17 @@ int main(int argc, char *argv[]) {
     PCI_GetPCIDevice(argv[1], &device);
 
     //Parse BAR keys from the args
-    uint64_t bar_keys[6] = {0};
-    sscanf(argv[2], "B0:%llx B1:%llx B2:%llx B3:%llx B4:%llx B5:%llx", &bar_keys[0],
-           &bar_keys[1],
-           &bar_keys[2],
-           &bar_keys[3],
-           &bar_keys[4],
-           &bar_keys[5]);
+    Key_t bar_keys[6];
+    char bar_keys_buf[6][KEY_STR_LEN];
+    sscanf(argv[2], "B0:%s B1:%s B2:%s B3:%s B4:%s B5:%s", bar_keys_buf[0],
+           bar_keys_buf[1],
+           bar_keys_buf[2],
+           bar_keys_buf[3],
+           bar_keys_buf[4],
+           bar_keys_buf[5]);
+
+    for(int i = 0; i < 6; i++)
+        StringToKey(bar_keys_buf[i], &bar_keys[i]);
 
     //Attempt to determine which BAR is the one with the hda registers.
     for(int i = 0; i < device.BarCount; i++) {
@@ -162,10 +166,8 @@ int main(int argc, char *argv[]) {
             continue;
 
         if(!isPCI_BAR_IO) {
-            uint64_t bar_key = bar_keys[i];
-
             UserSharedMemoryData data;
-            ApplySharedMemoryKey(bar_key, &data);
+            ApplySharedMemoryKey(&bar_keys[i], &data);
 
             PCI_BAR = (uint64_t)data.VirtualAddress;
         }

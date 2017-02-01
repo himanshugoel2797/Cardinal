@@ -46,7 +46,7 @@ send_exit_notification(UID pid) {
 
     //Post this message to the various servers that need this info.
     for(uint64_t i = 0; i < List_Length(exit_subs); i++) {
-        PostIPCMessages((UID)List_EntryAt(exit_subs, i), (Message**)&note, 1);
+        PostIPCMessage((UID)List_EntryAt(exit_subs, i), (Message*)note);
     }
 }
 
@@ -60,7 +60,7 @@ send_existence_notification(UID pid) {
 
     //Post this message to the various servers that need this info.
     for(uint64_t i = 0; i < List_Length(create_subs); i++) {
-        PostIPCMessages((UID)List_EntryAt(create_subs, i), (Message**)&note, 1);
+        PostIPCMessage((UID)List_EntryAt(create_subs, i), (Message*)note);
     }
 }
 
@@ -114,12 +114,12 @@ void
 create_process_handler(Message *m) {
     ProcessServer_CreateRequest *msg = (ProcessServer_CreateRequest*)m;
 
-    if(msg->exec_key == 0) {
+    if(msg->exec_key.key_index == 0) {
         //TODO Respond with error.
         __asm__("hlt");
     }
 
-    if(msg->argc != 0 && msg->args_key == 0) {
+    if(msg->argc != 0 && msg->args_key.key_index == 0) {
         //TODO respond with error.
         __asm__("hlt" :: "a"(m->SourcePID));
     }
@@ -129,8 +129,8 @@ create_process_handler(Message *m) {
     uint64_t maxLen = 0;
 
     UserSharedMemoryData arg_data;
-    if(msg->args_key != 0) {
-        if(ApplySharedMemoryKey(msg->args_key, &arg_data) != 0) {
+    if(msg->args_key.key_index != 0) {
+        if(ApplySharedMemoryKey(&msg->args_key, &arg_data) != 0) {
             //TODO send error response
             __asm__("hlt");
         }
@@ -158,7 +158,7 @@ create_process_handler(Message *m) {
         argv = arg_data.VirtualAddress;
 
     UserSharedMemoryData exec_data;
-    if(ApplySharedMemoryKey(msg->exec_key, &exec_data) != 0) {
+    if(ApplySharedMemoryKey(&msg->exec_key, &exec_data) != 0) {
         //TODO send error response
         __asm__("hlt");
     }
@@ -192,7 +192,7 @@ create_process_handler(Message *m) {
     resp->err_code = 0;
 
     Message *m2 = (Message*)resp;
-    PostIPCMessages(m->SourcePID, &m2, 1);
+    PostIPCMessage(m->SourcePID, m2);
 
 }
 
@@ -203,8 +203,8 @@ existence_notification_handler(Message *m) {
     char *prog_name = NULL;
     UserSharedMemoryData data;
 
-    if(msg->process_name_key != 0) {
-        if(ApplySharedMemoryKey(msg->process_name_key, &data) != 0) {
+    if(msg->process_name_key.key_index != 0) {
+        if(ApplySharedMemoryKey(&msg->process_name_key, &data) != 0) {
             //TODO send error response
         }
 

@@ -67,7 +67,7 @@ int main() {
     CREATE_NEW_MESSAGE_PTR(msg);
     msg->MsgType = CardinalMsgType_Notification;
     msg->MsgID = 0;
-    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+    PostIPCMessage(2 /*userboot PID*/, msg);
 
     while(1) {
         CREATE_NEW_MESSAGE_PTR(msg);

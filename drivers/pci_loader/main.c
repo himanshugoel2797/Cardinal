@@ -49,8 +49,8 @@ int main() {
 
     uint64_t len = file_info.Length;
     uint64_t addr = 0;
-    uint64_t read_key = 0;
-    uint64_t write_key = 0;
+    Key_t read_key;
+    Key_t write_key;
 
     IO_AllocateBuffer(&len, &addr, &read_key, &write_key);
     IO_Read(fd, 0, read_key, file_info.Length, dst_pid);
@@ -127,6 +127,9 @@ int main() {
 
                         uint64_t bar_vals[6];
                         uint64_t bar_sz[6];
+                        Key_t bar_keys[6];
+
+                        char bar_keys_buf[6][KEY_STR_LEN];
 
                         for(int i = 0; i < devInfo.BarCount; i++) {
                             bar_vals[i] = PCI_GetBAR(&devInfo, i);
@@ -155,20 +158,22 @@ int main() {
                                                    MemoryAllocationFlags_Read |
                                                    MemoryAllocationFlags_User |
                                                    MemoryAllocationFlags_Present,
-                                                   &bar_vals[i]);
+                                                   &bar_keys[i]);
+
+                                KeyToString(bar_keys[i], bar_keys_buf[i]);
                             } else {
                                 bar_vals[i] = 0;
                             }
                         }
 
                         char bars[512];
-                        sprintf(bars, "B0:%lx B1:%lx B2:%lx B3:%lx B4:%lx B5:%lx",
-                                bar_vals[0],
-                                bar_vals[1],
-                                bar_vals[2],
-                                bar_vals[3],
-                                bar_vals[4],
-                                bar_vals[5]);
+                        sprintf(bars, "B0:%s B1:%s B2:%s B3:%s B4:%s B5:%s",
+                                bar_keys_buf[0],
+                                bar_keys_buf[1],
+                                bar_keys_buf[2],
+                                bar_keys_buf[3],
+                                bar_keys_buf[4],
+                                bar_keys_buf[5]);
 
                         char *argv[] = { driver_file + 1, devStr, bars };
 
@@ -207,7 +212,7 @@ int main() {
     CREATE_NEW_MESSAGE_PTR(msg);
     msg->MsgType = CardinalMsgType_Notification;
     msg->MsgID = 0;
-    PostIPCMessages(2 /*userboot PID*/, &msg, 1);
+    PostIPCMessage(2 /*userboot PID*/, msg);
 
     //while(1);
 }
