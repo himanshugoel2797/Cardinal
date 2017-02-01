@@ -128,6 +128,44 @@ struct CardinalFullMessage {
 //#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
 //#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) while(!GetIPCMessageOfType(XXX, MSGTYPE))
 
+/**
+ * @brief      Gets the ipc message from the source.
+ *
+ * @param      m          A preallocated message buffer of size MESSAGE_SIZE
+ * @param[in]  sourcePID  The source pid (0 for any)
+ * @param[in]  msg_id     The message identifier (0 for any)
+ *
+ * @return     0 if no message to return, 1 if a message has been returned.
+ */
+static __inline int
+GetIPCMessageFrom(Message *m, UID sourcePID, uint32_t msg_id) {
+    return (int)Syscall3(Syscall_GetIPCMessageFrom, (uint64_t)m, (uint64_t)sourcePID, msg_id);
+}
+
+/**
+ * @brief      Gets the ipc message of the specified type.
+ *
+ * @param      m        A preallocated message bufer of size MESSAGE_SIZE
+ * @param[in]  msgType  The message type
+ *
+ * @return     The ipc message of type.
+ */
+static __inline int
+GetIPCMessageOfType(Message *m, CardinalMsgType msgType) {
+    return (int)Syscall2(Syscall_GetIPCMessageMsgType, (uint64_t)m, msgType);
+}
+
+/**
+ * @brief      Gets the ipc message.
+ *
+ * @param      m     A preallocated message buffer of size MESSAGE_SIZE
+ *
+ * @return     0 if no message to return, 1 if a message has been returned.
+ */
+static __inline int
+GetIPCMessage(Message *m) {
+    return GetIPCMessageFrom(m, 0, 0);
+}
 
 /**
  * @brief      Posts ipc messages.
@@ -140,8 +178,8 @@ struct CardinalFullMessage {
  *             on success.
  */
 static __inline int
-PostToProcess(UID dstPID, uint64_t m_hdr, uint128_t msg[8]) {
-    return (int)Syscall3(Syscall_PostIPCMessage, dstPID, m_hdr, (uint64_t)msg);
+PostToProcess(UID dstPID, Message *msg) {
+    return (int)Syscall2(Syscall_PostIPCMessage, dstPID, msg);
 }
 
 /**

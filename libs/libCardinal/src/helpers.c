@@ -15,7 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 int
 __card_setup_shmem(uint64_t *len,
                    MemoryAllocationFlags target,
-                   uint64_t *key,
+                   Key_t *key,
                    uint64_t *vAddress) {
 
     if(*len % PAGE_SIZE)

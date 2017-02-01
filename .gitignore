@@ -38,6 +38,8 @@ kernel/ISO/*
 *.vscode/*
 setup_env.sh
 
+initrd/initrd
+
 # Debug files
 *.dSYM/
 

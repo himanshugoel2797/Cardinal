@@ -54,37 +54,37 @@ GetSharedMemoryKey(uint64_t virtualAddress,
                    uint64_t length,
                    CachingMode cacheMode,
                    MemoryAllocationFlags flags,
-                   uint8_t key[KEY_LEN]) {
+                   Key_t *key) {
     if(key == NULL)
         return -EINVAL;
 
-    Syscall5(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags, key);
+    Syscall5(Syscall_GetSharedMemoryKey, virtualAddress, length, cacheMode, flags, (uint64_t)key);
     return GetErrno();
 }
 
 static __inline uint64_t
-GetSharedMemoryKeyUsageCount(uint128_t key[KEY_LEN],
+GetSharedMemoryKeyUsageCount(Key_t *key,
                              uint64_t *cnt) {
     if(cnt == NULL)
         return -EINVAL;
 
-    *cnt = Syscall1(Syscall_GetSharedMemoryKeyUsageCount, key);
+    *cnt = Syscall1(Syscall_GetSharedMemoryKeyUsageCount, (uint64_t)key);
     return GetErrno();
 }
 
 static __inline uint64_t
-ApplySharedMemoryKey(uint8_t key[KEY_LEN],
+ApplySharedMemoryKey(Key_t *key,
                      UserSharedMemoryData *data) {
     if(data == NULL)
         return -EINVAL;
 
-    Syscall2(Syscall_ApplySharedMemoryKey, key, (uint64_t)data);
+    Syscall2(Syscall_ApplySharedMemoryKey, (uint64_t)key, (uint64_t)data);
     return GetErrno();
 }
 
 static __inline uint64_t
-FreeSharedMemoryKey(uint8_t key[KEY_LEN]) {
-    Syscall1(Syscall_FreeSharedMemoryKey, key);
+FreeSharedMemoryKey(Key_t *key) {
+    Syscall1(Syscall_FreeSharedMemoryKey, (uint64_t)key);
     return GetErrno();
 }
 
