@@ -15,7 +15,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 uint64_t
 Nanosleep_Syscall(uint64_t time_ns) {
-    
+
     SleepThread(GetCurrentThreadUID(), time_ns);
     return SyscallSetErrno(0);
 }

@@ -1,5 +1,5 @@
 // Copyright (c) 2017 Himanshu Goel
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -87,7 +87,7 @@ typedef enum {
 } MessageProtocolType;
 
 //! Header of a message stream.
-typedef struct MessageStreamHeader{
+typedef struct MessageStreamHeader {
     uint16_t HeaderSize;
     uint16_t ProtocolVersion;
     uint16_t MsgID;
@@ -107,15 +107,15 @@ typedef struct MessageStreamHeader{
  *  If the channel request is granted, the server will open the specified shared memory block and read the StreamHeader to determine how it is to communicate.
  *  Once the server has verified that the request is valid, it will write its PID into the Server field and update the flush field if indicated by the kernel.
  *  It will then flush if required.
- *  
- *  
+ *
+ *
  *  The client meanwhile waits on the PID being written. Immediately afte which it acts on the flush flag
  */
 
 struct CardinalFullMessage {
     char data[MESSAGE_SIZE];
 };
- 
+
 #define CREATE_NEW_MESSAGE_PTR_TYPE(TYPE, XXX) struct CardinalFullMessage XXX##_0; for(int i = 0; i < MESSAGE_SIZE; i++)XXX##_0.data[i] = 0; TYPE *XXX = (TYPE*)&XXX##_0
 #define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
 

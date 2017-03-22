@@ -26,13 +26,13 @@ debug_gfx_init(void) {
     lock = CreateBootstrapSpinlock();
 }
 
-void 
-set_trap_str(const char *str){
+void
+set_trap_str(const char *str) {
     strcpy(trap_str, str);
 }
 
 void
-debug_handle_trap(void){
+debug_handle_trap(void) {
     int i = 0;
 
     //Output manually because we can't rely on the environment being very stable.

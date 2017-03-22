@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -90,13 +90,13 @@ Brk_Syscall(void *targ_brk_address) {
 
 uint64_t
 R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
-    
+
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
 
-    if(mmap_params == NULL){
+    if(mmap_params == NULL) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
@@ -110,14 +110,14 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
 #ifdef DEBUG
     ASSERT((mmap_params->PhysicalAddress % PAGE_SIZE == 0), "Physical address needs to be PAGE_SIZE aligned.");
 #else
-    if(mmap_params->PhysicalAddress % PAGE_SIZE){
+    if(mmap_params->PhysicalAddress % PAGE_SIZE) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
 #endif
 
     LockSpinlock(map_lock);
-        
+
     //Prevent any attempts to map into kernel space
     mmap_params->AllocationFlags |= MemoryAllocationFlags_User;
 
@@ -159,8 +159,8 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
 
 uint64_t
 R0_Unmap_Syscall(UID pid,
-                uint64_t addr,
-                uint64_t size) {
+                 uint64_t addr,
+                 uint64_t size) {
 
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
@@ -205,8 +205,8 @@ Unmap_Syscall(uint64_t addr,
 
 uint64_t
 R0_AllocatePages_Syscall(uint64_t page_cnt,
-                        PhysicalMemoryAllocationFlags flags) {
-    
+                         PhysicalMemoryAllocationFlags flags) {
+
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;

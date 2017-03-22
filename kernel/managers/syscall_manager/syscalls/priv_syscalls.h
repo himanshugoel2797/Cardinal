@@ -69,15 +69,15 @@ uint64_t ApplySharedMemoryKey_Syscall(Key_t *key, void* shmem_data_p);
 uint64_t FreeSharedMemoryKey_Syscall(Key_t *key);
 
 uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
-                                         CachingMode cacheMode,
-                                         MemoryAllocationType allocType,
-                                         MemoryAllocationFlags flags,
-                                         uint64_t phys_addr);
+        CachingMode cacheMode,
+        MemoryAllocationType allocType,
+        MemoryAllocationFlags flags,
+        uint64_t phys_addr);
 
 uint64_t GetSharedMemoryKeyUsageCount_Syscall(Key_t *key);
 
 uint64_t R01_RegisterForInterrupts_Syscall(uint64_t p0,
-                                           uint64_t p1);
+        uint64_t p1);
 
 uint64_t R01_AllocateInterrupts_Syscall(int cnt);
 

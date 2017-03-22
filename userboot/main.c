@@ -35,7 +35,7 @@ LoadProgram(char *name, UID *p_pid) {
 
         *p_pid = pid;
 
-        return LoadAndStartApplication(pid, elf_loc, elf_sz, (const char**)argv, 1);
+        return LoadAndStartApplication(pid, elf_loc, elf_sz, name, 1, strlen(name));
     }
     return -1;
 }

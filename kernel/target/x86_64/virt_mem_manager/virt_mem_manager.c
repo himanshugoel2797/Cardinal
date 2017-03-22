@@ -330,15 +330,14 @@ VirtMemMan_AllocCoreLocalData(uint64_t size) {
     if(size <= coreLocalSpace && coreLocalSpace > 0) {
         uint64_t addr = CORE_LOCAL_MEM_ADDR + (APLS_SIZE - coreLocalSpace);
 
-        if(size < sizeof(uint64_t)){
+        if(size < sizeof(uint64_t)) {
             size += addr % size;
             addr += addr % size;
-        }
-        else{
+        } else {
             size += addr % sizeof(uint64_t);    //Ensure that all allocations are aligned to a boundary based on the size
             addr += addr % sizeof(uint64_t);
         }
-        
+
         coreLocalSpace -= size;
         return (void*)addr;
     }

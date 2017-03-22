@@ -231,8 +231,8 @@ MemMan_Alloc4KiBPageCont(int pageCount,
     }
 
     ASSERT((score == pageCount), "Memory allocation failed.");
-    
-    if(score == pageCount){
+
+    if(score == pageCount) {
         MemMan_MarkUsed(addr, pageCount * PAGE_SIZE);
         memset(VirtMemMan_GetVirtualAddress(CachingModeWriteBack, (void*)addr), 0, pageCount * PAGE_SIZE);
         return addr;

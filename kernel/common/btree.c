@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -235,12 +235,12 @@ BTree_Delete(BTree *h) {
 uint64_t
 BTree_GetKey(BTree *h) {
     LockSpinlock(h->key_lock);
-    
+
     uint64_t key = h->key++;
-    for(int i = 0; i < h->max_levels; i++){
+    for(int i = 0; i < h->max_levels; i++) {
         int val = (key >> (i * BITS_PER_LEVEL)) & LEVEL_INDEX_MASK;
 
-        if(val > INDEX_MAX){
+        if(val > INDEX_MAX) {
             key &= ~(uint64_t)(LEVEL_INDEX_MASK << (i * BITS_PER_LEVEL));
             key += (1 << ((i + 1) * BITS_PER_LEVEL));
         }

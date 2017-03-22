@@ -116,8 +116,8 @@ KeyMan_FreeKey(Key_t *key) {
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -147,8 +147,8 @@ KeyMan_KeyExists(const Key_t *key) {
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -171,8 +171,8 @@ KeyMan_ReadKey(const Key_t *key,
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -196,8 +196,8 @@ KeyMan_WriteKey(const Key_t *key,
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -219,8 +219,8 @@ KeyMan_IncrementRefCount(const Key_t *key) {
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 
@@ -242,8 +242,8 @@ KeyMan_DecrementRefCount(Key_t *key) {
 
     LockSpinlock(keyman_lock);
 
-    if(!KeyMan_VerifyKey(key)){
-        UnlockSpinlock(keyman_lock);        
+    if(!KeyMan_VerifyKey(key)) {
+        UnlockSpinlock(keyman_lock);
         return KeyManagerErrors_KeyDoesNotExist;
     }
 

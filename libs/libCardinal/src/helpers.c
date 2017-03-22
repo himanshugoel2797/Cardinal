@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -40,28 +40,27 @@ __card_setup_shmem(uint64_t *len,
 
 
 void
-KeyToString(Key_t key, char *buf)
-{
+KeyToString(Key_t key, char *buf) {
     char *b0 = buf;
     char table[] = "0123456789abcdef";
 
-    for(int i = 0; i < KEY_LENGTH; i++){
+    for(int i = 0; i < KEY_LENGTH; i++) {
         *(b0++) = table[key.key[i]/16 % 16];
         *(b0++) = table[key.key[i] % 16];
     }
 
     uint64_t val = key.key_index;
-    for(int i = 15; i >= 0; i--){
+    for(int i = 15; i >= 0; i--) {
         *(b0++) = table[(val >> (i * 4)) & 0xF];
     }
 
     val = key.machine_id;
-    for(int i = 15; i >= 0; i--){
+    for(int i = 15; i >= 0; i--) {
         *(b0++) = table[(val >> (i * 4)) & 0xF];
     }
 
     val = key.network_id;
-    for(int i = 15; i >= 0; i--){
+    for(int i = 15; i >= 0; i--) {
         *(b0++) = table[(val >> (i * 4)) & 0xF];
     }
 
@@ -69,7 +68,7 @@ KeyToString(Key_t key, char *buf)
 }
 
 static int
-hexToint(char a){
+hexToint(char a) {
     if(a - '0' < 10)
         return a - '0';
     else
@@ -77,15 +76,14 @@ hexToint(char a){
 }
 
 void
-StringToKey(const char *buf, Key_t *key)
-{
+StringToKey(const char *buf, Key_t *key) {
     const char *b0 = buf;
-    for(int i = 0; i < KEY_LENGTH; i++){
+    for(int i = 0; i < KEY_LENGTH; i++) {
         key->key[i] = 0;
         key->key[i] += hexToint(*(b0++)) * 16;
         key->key[i] += hexToint(*(b0++));
     }
-    
+
     uint64_t val = 0;
     for(int i = 15; i >= 0; i--)
         val += hexToint(*(b0++)) * (1 << (i * 4));

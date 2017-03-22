@@ -63,7 +63,7 @@ GetKernelStack(void);
  */
 void
 RegisterSyscall(int syscall_num,
-				SyscallHandler handler);
+                SyscallHandler handler);
 
 /**@}*/
 

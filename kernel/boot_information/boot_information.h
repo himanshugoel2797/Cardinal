@@ -16,8 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "libs/libCardinal/include/bootinfo.h"
 
 void
-ParseAndSaveBootInformation(void *boot_info, 
-							uint32_t magic)  NONNULL(1);
+ParseAndSaveBootInformation(void *boot_info,
+                            uint32_t magic)  NONNULL(1);
 
 CardinalBootInfo*
 GetBootInfo(void);

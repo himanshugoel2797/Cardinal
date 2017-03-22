@@ -172,28 +172,28 @@ int
 Display_RestorePipeTimings(int pipe_index_src, int pipe_index_dst);
 
 int
-Display_SetPipeSize(int pipe_index, 
-                    uint32_t w, 
+Display_SetPipeSize(int pipe_index,
+                    uint32_t w,
                     uint32_t h);
 
 int
-Display_SetPipeTimings(int pipe_index, 
+Display_SetPipeTimings(int pipe_index,
                        uint32_t htotal,
                        uint32_t hactive,
-                       uint32_t hblank_start, 
-                       uint32_t hblank_end, 
+                       uint32_t hblank_start,
+                       uint32_t hblank_end,
                        uint32_t hsync_start,
-                       uint32_t hsync_end, 
+                       uint32_t hsync_end,
                        uint32_t vtotal,
-                       uint32_t vactive, 
+                       uint32_t vactive,
                        uint32_t vblank_start,
-                       uint32_t vblank_end, 
+                       uint32_t vblank_end,
                        uint32_t vsync_start,
                        uint32_t vsync_end);
 
 
 void
-Display_SetPipeActiveState(int pipe_index, 
+Display_SetPipeActiveState(int pipe_index,
                            bool state);
 
 void

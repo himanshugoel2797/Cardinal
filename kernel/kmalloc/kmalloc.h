@@ -24,7 +24,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 //! Requires that the physical memory manager and the virtual memory manager be initialized too
 //! \sa kmalloc(), kfree()
-void 
+void
 kmalloc_init(void);
 
 //! kernel malloc
@@ -33,33 +33,33 @@ kmalloc_init(void);
 //! \return The virtual address of the allocated space
 //! \sa kfree()
 __attribute__((malloc))
-void* 
+void*
 kmalloc(size_t size);
 
 //! kernel free
 
 //! \param addr The virtual address previously allocated by kmalloc
 //! \sa kmalloc()
-void 
+void
 kfree(void* addr);
 
-void* 
-AllocateMapping(MemoryAllocationType t, 
-				MemoryAllocationFlags flags, 
-				size_t size);
+void*
+AllocateMapping(MemoryAllocationType t,
+                MemoryAllocationFlags flags,
+                size_t size);
 
-void 
-FreeMapping(void* mem, 
-				 size_t size);
+void
+FreeMapping(void* mem,
+            size_t size);
 
-void* 
-AllocateMappingCont(MemoryAllocationType t, 
-					MemoryAllocationFlags flags, 
-					size_t size);
+void*
+AllocateMappingCont(MemoryAllocationType t,
+                    MemoryAllocationFlags flags,
+                    size_t size);
 
-void 
-FreeMappingCont(void* mem, 
-				size_t size);
+void
+FreeMappingCont(void* mem,
+                size_t size);
 
 /**@}*/
 

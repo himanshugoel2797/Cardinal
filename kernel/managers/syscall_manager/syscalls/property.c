@@ -38,104 +38,111 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static Spinlock set_prop_lock, get_prop_lock;
 
 void PropertyInitLocks(void) {
-  set_prop_lock = CreateSpinlock();
-  get_prop_lock = CreateSpinlock();
+    set_prop_lock = CreateSpinlock();
+    get_prop_lock = CreateSpinlock();
 }
 
 uint64_t SetProperty_Syscall(uint64_t property,
                              uint64_t sub_property,
                              uint64_t value) {
-  LockSpinlock(set_prop_lock);
+    LockSpinlock(set_prop_lock);
 
-  switch (property) {
+    switch (property) {
     case CardinalProperty_GroupID: {
-      uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), value);
-      UnlockSpinlock(set_prop_lock);
-      switch (retVal) {
+        uint64_t retVal = SetProcessGroupID(GetCurrentProcessUID(), value);
+        UnlockSpinlock(set_prop_lock);
+        switch (retVal) {
         case -1:
-          SyscallSetErrno(-EINVAL);
-          return 0;
-          break;
+            SyscallSetErrno(-EINVAL);
+            return 0;
+            break;
         case -2:
-          SyscallSetErrno(-EPERM);
-          return 0;
-          break;
+            SyscallSetErrno(-EPERM);
+            return 0;
+            break;
         default:
-          PANIC("Unexpected return value.");
-          SyscallSetErrno(-ENOSYS);
-          return retVal;
-      }
-    } break;
+            PANIC("Unexpected return value.");
+            SyscallSetErrno(-ENOSYS);
+            return retVal;
+        }
+    }
+    break;
 #ifdef x86_64
     case CardinalProperty_ArchPrctl: {
-      uint64_t retVal = ArchPrctl_Syscall(sub_property, value);
-      UnlockSpinlock(set_prop_lock);
-      return retVal;
-    } break;
-    case CardinalProperty_IOPL: {
-      if (GetProcessGroupID(GetCurrentProcessUID()) > 1) {
-        SyscallSetErrno(-EPERM);
+        uint64_t retVal = ArchPrctl_Syscall(sub_property, value);
         UnlockSpinlock(set_prop_lock);
-        return 0;
-      }
+        return retVal;
+    }
+    break;
+    case CardinalProperty_IOPL: {
+        if (GetProcessGroupID(GetCurrentProcessUID()) > 1) {
+            SyscallSetErrno(-EPERM);
+            UnlockSpinlock(set_prop_lock);
+            return 0;
+        }
 
-      SecurityMonitor_IOPL(value);
-      UnlockSpinlock(set_prop_lock);
-      return SyscallSetErrno(0);
-    } break;
+        SecurityMonitor_IOPL(value);
+        UnlockSpinlock(set_prop_lock);
+        return SyscallSetErrno(0);
+    }
+    break;
 #endif
     default:
-      SyscallSetErrno(-EINVAL);
-      UnlockSpinlock(set_prop_lock);
-      return 0;
-      break;
-  }
+        SyscallSetErrno(-EINVAL);
+        UnlockSpinlock(set_prop_lock);
+        return 0;
+        break;
+    }
 }
 
 uint64_t GetProperty_Syscall(uint64_t property, uint64_t sub_property) {
-  LockSpinlock(get_prop_lock);
+    LockSpinlock(get_prop_lock);
 
-  switch (property) {
+    switch (property) {
     case CardinalProperty_PID: {
-      SyscallSetErrno(0);
-      uint64_t retVal = GetCurrentProcessUID();
-      UnlockSpinlock(get_prop_lock);
-      return retVal;
-    } break;
-    case CardinalProperty_TID: {
-      SyscallSetErrno(0);
-      uint64_t retVal = GetCurrentThreadUID();
-      UnlockSpinlock(get_prop_lock);
-      return retVal;
-    } break;
-    case CardinalProperty_GroupID: {
-      uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
-      if (rVal == (uint64_t)-1) {
-        SyscallSetErrno(-EPERM);
-        UnlockSpinlock(get_prop_lock);
-        return 0;
-      } else {
         SyscallSetErrno(0);
+        uint64_t retVal = GetCurrentProcessUID();
+        UnlockSpinlock(get_prop_lock);
+        return retVal;
+    }
+    break;
+    case CardinalProperty_TID: {
+        SyscallSetErrno(0);
+        uint64_t retVal = GetCurrentThreadUID();
+        UnlockSpinlock(get_prop_lock);
+        return retVal;
+    }
+    break;
+    case CardinalProperty_GroupID: {
+        uint64_t rVal = GetProcessGroupID(GetCurrentProcessUID());
+        if (rVal == (uint64_t)-1) {
+            SyscallSetErrno(-EPERM);
+            UnlockSpinlock(get_prop_lock);
+            return 0;
+        } else {
+            SyscallSetErrno(0);
+            UnlockSpinlock(get_prop_lock);
+            return rVal;
+        }
+    }
+    break;
+    case CardinalProperty_R0_GroupID: {
+        if (GetProcessGroupID(GetCurrentProcessUID()) != 0) {
+            SyscallSetErrno(-EPERM);
+            UnlockSpinlock(get_prop_lock);
+            return 0;
+        }
+
+        SyscallSetErrno(0);
+        uint64_t rVal = GetProcessGroupID(sub_property);
         UnlockSpinlock(get_prop_lock);
         return rVal;
-      }
-    } break;
-    case CardinalProperty_R0_GroupID: {
-      if (GetProcessGroupID(GetCurrentProcessUID()) != 0) {
-        SyscallSetErrno(-EPERM);
+    }
+    break;
+    default:
+        SyscallSetErrno(-EINVAL);
         UnlockSpinlock(get_prop_lock);
         return 0;
-      }
-
-      SyscallSetErrno(0);
-      uint64_t rVal = GetProcessGroupID(sub_property);
-      UnlockSpinlock(get_prop_lock);
-      return rVal;
-    } break;
-    default:
-      SyscallSetErrno(-EINVAL);
-      UnlockSpinlock(get_prop_lock);
-      return 0;
-      break;
-  }
+        break;
+    }
 }
