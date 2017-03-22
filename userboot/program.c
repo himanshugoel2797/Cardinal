@@ -101,7 +101,6 @@ LoadAndStartApplication(UID pid,
     // We're no longer following the SysV Linux ABI, so just map in the data and
     // pass the virtual address.
 
-
     UID tid = 0;
     int (*entry_point)(void*) = (int(*)(void*))elf_info.entry_point;
     if(R0_CreateThread(pid, entry_point, (void*)target_virt_addr, &tid) != 0)

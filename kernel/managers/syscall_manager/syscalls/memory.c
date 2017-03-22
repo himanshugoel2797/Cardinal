@@ -108,7 +108,7 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
     }
 
 #ifdef DEBUG
-    ASSERT((mmap_params->PhysicalAddress % PAGE_SIZE != 0), "Physical address needs to be PAGE_SIZE aligned.");
+    ASSERT((mmap_params->PhysicalAddress % PAGE_SIZE == 0), "Physical address needs to be PAGE_SIZE aligned.");
 #else
     if(mmap_params->PhysicalAddress % PAGE_SIZE){
         SyscallSetErrno(-EINVAL);
