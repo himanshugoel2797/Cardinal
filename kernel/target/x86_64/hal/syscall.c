@@ -43,6 +43,8 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
         "pushq %%r9\n\t"
         "pushq %%r10\n\t"
         "pushq %%r11\n\t"
+        "pushq %%r14\n\t"
+        "xchgq %%r14, %%rcx\n\t"    //Swap rcx and r14 for the parameters
 
         "movq $Syscalls, %%rax\n\t"
         "movq (%%rax, %%r12, 8), %%rax\n\t"  //Call Syscalls[%r12]
@@ -50,6 +52,7 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
 
         "movq %%rax, %%r13\n\t"       //Store the return value in r13
 
+        "popq %%r14\n\t"
         "popq %%r11\n\t"              //Restore the scratch registers
         "popq %%r10\n\t"
         "popq %%r9\n\t"

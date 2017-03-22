@@ -33,6 +33,6 @@ LoadAndStartApplication(UID pid,
                         uint64_t elf_size,
                         const char *argv,
                         uint32_t argc,
-                        uint64_t arg_len)
+                        uint64_t arg_len);
 
 #endif

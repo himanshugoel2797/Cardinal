@@ -59,7 +59,7 @@ static __inline uint64_t Syscall0(uint32_t syscall_num) {
     register uint64_t err __asm__("r13") = ret_error;
     register uint64_t s_num __asm__("r12") = syscall_num;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -75,7 +75,7 @@ static __inline uint64_t Syscall1(uint32_t syscall_num, uint64_t p0) {
 
     register uint64_t rdi __asm__("rdi") = p0;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -93,7 +93,7 @@ static __inline uint64_t Syscall2(uint32_t syscall_num, uint64_t p0,
     register uint64_t rdi __asm__("rdi") = p0;
     register uint64_t rsi __asm__("rsi") = p1;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi), "r"(rsi) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -112,7 +112,7 @@ static __inline uint64_t Syscall3(uint32_t syscall_num, uint64_t p0,
     register uint64_t rsi __asm__("rsi") = p1;
     register uint64_t rdx __asm__("rdx") = p2;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi), "r"(rsi), "r"(rdx) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -130,9 +130,9 @@ static __inline uint64_t Syscall4(uint32_t syscall_num, uint64_t p0,
     register uint64_t rdi __asm__("rdi") = p0;
     register uint64_t rsi __asm__("rsi") = p1;
     register uint64_t rdx __asm__("rdx") = p2;
-    register uint64_t rcx __asm__("rcx") = p3;
+    register uint64_t rcx __asm__("r14") = p3;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi), "r"(rsi), "r"(rdx), "r"(rcx) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -151,10 +151,10 @@ static __inline uint64_t Syscall5(uint32_t syscall_num, uint64_t p0,
     register uint64_t rdi __asm__("rdi") = p0;
     register uint64_t rsi __asm__("rsi") = p1;
     register uint64_t rdx __asm__("rdx") = p2;
-    register uint64_t rcx __asm__("rcx") = p3;
+    register uint64_t rcx __asm__("r14") = p3;
     register uint64_t r8 __asm__("r8") = p4;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi), "r"(rsi), "r"(rdx), "r"(rcx), "r"(r8) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
@@ -173,11 +173,11 @@ static __inline uint64_t Syscall6(uint32_t syscall_num, uint64_t p0,
     register uint64_t rdi __asm__("rdi") = p0;
     register uint64_t rsi __asm__("rsi") = p1;
     register uint64_t rdx __asm__("rdx") = p2;
-    register uint64_t rcx __asm__("rcx") = p3;
+    register uint64_t rcx __asm__("r14") = p3;
     register uint64_t r8 __asm__("r8") = p4;
     register uint64_t r9 __asm__("r9") = p5;
 
-    __asm__ volatile("syscall" : : : "rcx", "r11", "memory");
+    __asm__ volatile("syscall" : "+r"(err) : "r"(s_num), "r"(rdi), "r"(rsi), "r"(rdx), "r"(rcx), "r"(r8), "r"(r9) : "rcx", "r11", "memory");
     ret_error = err;
 #endif
 
