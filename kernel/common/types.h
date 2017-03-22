@@ -50,7 +50,7 @@ typedef uint64_t off_t;
 #define S_(x) S(x)
 #define S__LINE__ S_(__LINE__)
 
-#define PANIC(msg) __builtin_trap(), set_trap_str( __FILE__"," S__LINE__ ":" msg)
+#define PANIC(msg) set_trap_str( __FILE__"," S__LINE__ ":" msg), __builtin_trap() 
 
 #if defined(DEBUG)
 	//First set the trap message, then raise the trap

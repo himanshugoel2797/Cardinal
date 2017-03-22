@@ -42,7 +42,9 @@ LoadProgram(char *name, UID *p_pid) {
 
 __attribute__((section(".entry_point")))
 int _start() {
-    ImportInitrd();
+    if(ImportInitrd() != 0)
+        __asm__("hlt");
+
 
     UID pid = 0;
     CREATE_NEW_MESSAGE_PTR(msg);

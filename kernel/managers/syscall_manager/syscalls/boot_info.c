@@ -23,13 +23,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "managers.h"
 
 uint64_t
-R0_GetBootInfo_Syscall(int syscall_num,
-                      void *copy_dst) {
-    if(syscall_num != Syscall_R0_GetBootInfo) {
-        SyscallSetErrno(-ENOSYS);
-        return 0;
-    }
-
+R0_GetBootInfo_Syscall(void *copy_dst) {
     if(GetProcessGroupID(GetCurrentProcessUID()) != 0) {
         SyscallSetErrno(-EPERM);
         return 0;

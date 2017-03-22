@@ -47,7 +47,7 @@ uint64_t R0_CreateThread_Syscall(UID parent,
 
 uint64_t R0_StartProcess_Syscall(UID pid);
 
-uint64_t R0_GetBootInfo_Syscall(int syscall_num, void* copy_dst);
+uint64_t R0_GetBootInfo_Syscall(void* copy_dst);
 
 uint64_t R01_GetPhysicalAddress_Syscall(UID pid, void* addr);
 

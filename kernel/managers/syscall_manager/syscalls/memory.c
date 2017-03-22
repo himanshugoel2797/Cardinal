@@ -96,6 +96,11 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
         return 0;
     }
 
+    if(mmap_params == NULL){
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
+
     ProcessInformation *p_info;
     if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None) {
         SyscallSetErrno(-EINVAL);

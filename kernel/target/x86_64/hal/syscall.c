@@ -26,7 +26,7 @@ __attribute__((naked, noreturn)) void Syscall_Handler(void) {
       // Check if the syscall number in arg 0 is greater than the syscall count
       // If it is, return immediately, return value is unchanged.
 
-      "cmp $"S_(SYSCALL_COUNT)", %%rdi\n\t"
+      "cmp $"S_(SYSCALL_COUNT)", %%r12\n\t"
       "jge exit_syscall_handler\n\t"
 
       // Otherwise, save necessary state and jump to the handler
