@@ -1,6 +1,6 @@
-TARGET=rtl8139.elf
+TARGET=rtl8168.elf
 
-OBJS=main.o
+OBJS=main.o io.o
 
 LIBS=-lpci -Wl,--start-group -lcardinalcore -lc -Wl,--end-group
 

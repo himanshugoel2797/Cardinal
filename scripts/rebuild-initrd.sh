@@ -87,6 +87,12 @@ cd $SRC_DIR/drivers/network/rtl8139
 	cp *.elf $INITRD_INST_DIR
 cd $SRC_DIR
 
+cd $SRC_DIR/drivers/network/rtl8168
+	make clean
+	make all
+	cp *.elf $INITRD_INST_DIR
+cd $SRC_DIR
+
 cd $SRC_DIR/drivers/usb/uhci
 	make clean
 	make all
