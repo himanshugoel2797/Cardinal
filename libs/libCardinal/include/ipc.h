@@ -42,7 +42,6 @@ typedef enum {
     CardinalMsgType_Error,
     CardinalMsgType_Notification,
     CardinalMsgType_Interrupt,
-    CardinalMsgType_MessageStreamRequest,
 } CardinalMsgType;
 
 //! IPC Message header.
@@ -53,64 +52,16 @@ typedef struct Message {
     CardinalMsgType MsgType : 8;            //!< The message type (CARDINAL_MSG_TYPE_XXXXX).
 } Message;
 
-//! A message stream request message.
-typedef struct MessageStreamRequestMessage {
-    Message m;                      //!< Standard required message header.
-    Key_t request_write_key;     //!< Server to client transfer key.
-    Key_t request_read_key;      //!< Client to server transfer key.
-} MessageStreamRequestMessage;
-
-//! An error message.
-typedef struct ErrorMessage {
-    Message m;     //!< Standard required message header.
-    int64_t code;  //!< The error code.
-} ErrorMessage;
-
-//! A notification message.
-typedef struct NotificationMessage {
-    Message m;
-    uint64_t notification_identifier;
-} NotificationMessage;
-
-//! An interrupt message.
 typedef struct InterruptMessage {
     Message m;
     uint32_t vector;
 } InterruptMessage;
 
-typedef enum {
-    MessageStreamFlags_FlushRequired = (1 << 0),
-} MessageStreamFlags;
-
-typedef enum {
-    MessageProtocolType_Pipe = 0
-} MessageProtocolType;
-
-//! Header of a message stream.
-typedef struct MessageStreamHeader {
-    uint16_t HeaderSize;
-    uint16_t ProtocolVersion;
-    uint16_t MsgID;
-    uint16_t flags : 12;
-    uint16_t ProtocolType : 4;
-    uint32_t max_server_time_ms; //Specifies the maximum amount of time the server will take to respond.
-    uint32_t max_client_time_ms; //Specifies the maximum amount of time the client will take to respond.
-    UID Server;
-    uint32_t S2C_WritePos;
-    uint32_t S2C_ReadPos;
-    uint32_t C2S_WritePos;
-    uint32_t C2S_ReadPos;
-} MessageStreamHeader;
-
-/*
- *  Processes attempt to open a communication channel with servers using RequestMessage.
- *  If the channel request is granted, the server will open the specified shared memory block and read the StreamHeader to determine how it is to communicate.
- *  Once the server has verified that the request is valid, it will write its PID into the Server field and update the flush field if indicated by the kernel.
- *  It will then flush if required.
- *
- *
- *  The client meanwhile waits on the PID being written. Immediately afte which it acts on the flush flag
- */
+//! An error message.
+struct ErrorMessage {
+    Message m;     //!< Standard required message header.
+    int64_t code;  //!< The error code.
+} ErrorMessage;
 
 struct CardinalFullMessage {
     char data[MESSAGE_SIZE];
@@ -120,15 +71,15 @@ struct CardinalFullMessage {
 #define CREATE_NEW_MESSAGE_PTR(XXX)  CREATE_NEW_MESSAGE_PTR_TYPE(Message, XXX)
 
 #ifndef _KERNEL_
-#define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
-#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) WaitForMessage(MessageWaitType_SourcePID, PID); GetIPCMessageFrom(XXX, PID, MSGID)
-#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
-#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) WaitForMessage(MessageWaitType_MsgType, MSGTYPE); GetIPCMessageOfType(XXX, MSGTYPE)
-
-//#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
-//#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) while(!GetIPCMessageFrom(XXX, PID, MSGID))
+//#define POLL_MESSAGE(XXX) WaitForMessage(MessageWaitType_Any, 0); GetIPCMessage(XXX)
+//#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) WaitForMessage(MessageWaitType_SourcePID, PID); GetIPCMessageFrom(XXX, PID, MSGID)
 //#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
-//#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) while(!GetIPCMessageOfType(XXX, MSGTYPE))
+//#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) WaitForMessage(MessageWaitType_MsgType, MSGTYPE); GetIPCMessageOfType(XXX, MSGTYPE)
+
+#define POLL_MESSAGE(XXX) while(!GetIPCMessage(XXX))
+#define POLL_MESSAGE_FROM_PID_MSGID(XXX, PID, MSGID) while(!GetIPCMessageFrom(XXX, PID, MSGID))
+#define POLL_MESSAGE_FROM_PID(XXX, PID) POLL_MESSAGE_FROM_PID(XXX, PID, 0)
+#define POLL_MESSAGE_MSGTYPE(XXX, MSGTYPE) while(!GetIPCMessageOfType(XXX, MSGTYPE))
 
 /**
  * @brief      Gets the ipc message from the source.

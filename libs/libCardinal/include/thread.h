@@ -146,12 +146,6 @@ SleepThread(uint64_t ns_time) {
     Syscall1(Syscall_Nanosleep, ns_time);
 }
 
-static __inline uint64_t
-WaitForMessage(MessageWaitType waitType, uint64_t wait_val) {
-    Syscall2(Syscall_WaitForMessage, waitType, wait_val);
-    return GetErrno();
-}
-
 #endif
 
 /**@}*/

@@ -52,7 +52,6 @@ int main() {
     while(1) {
 
         POLL_MESSAGE(msg);
-
         if(msg->MsgType == CardinalMsgType_Request) {
 
             MsgHeader *msg_h = (MsgHeader*)msg;

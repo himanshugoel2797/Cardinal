@@ -14,7 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "synchronization.h"
 #include "common/common.h"
 
-#define KEY_TABLE_SIZE GiB(16)
+#define KEY_TABLE_SIZE (GiB(16))
 
 typedef struct {
     Key_t key;
@@ -33,17 +33,20 @@ KeyMan_GenerateKey(uint64_t idx, Key_t *key) {
         key->key[i] = (uint8_t)rand();
     }
 
-    key->key_index = idx;
+    key->key_index = idx + 1;
 }
 
 bool
 KeyMan_VerifyKey(const Key_t *key) {
 
-    if(key->key_index >= KEY_TABLE_SIZE / sizeof(KeyEntry))
+    if(key->key_index == 0)
+        return false;
+
+    if(key->key_index - 1 >= KEY_TABLE_SIZE / sizeof(KeyEntry))
         return false;
 
     for(int i = 0; i < KEY_LENGTH; i++) {
-        if(key->key[i] != keyTable[key->key_index].key.key[i])
+        if(key->key[i] != keyTable[key->key_index - 1].key.key[i])
             return false;
     }
 
@@ -62,6 +65,7 @@ KeyMan_Initialize(void) {
                               MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel
                              ) != MemoryAllocationErrors_None) {
         //TODO go back and make the kernel panic on any initialization failures.
+        PANIC("Key Table Initialization Failed.");
     }
 
     if(MapPage(GetActiveVirtualMemoryInstance(),
@@ -73,6 +77,7 @@ KeyMan_Initialize(void) {
                MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec | MemoryAllocationFlags_Kernel | MemoryAllocationFlags_Present
               ) != MemoryAllocationErrors_None) {
         //TODO Panic
+        PANIC("Key Table Initialization Failed.");
     }
 
     //The key table has now been allocated.
@@ -110,7 +115,14 @@ KeyMan_AllocateKey(uint64_t *identifier,
 
 KeyManagerErrors
 KeyMan_FreeKey(Key_t *key) {
-    uint64_t index = key->key_index;
+
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -141,7 +153,13 @@ KeyMan_FreeKey(Key_t *key) {
 
 bool
 KeyMan_KeyExists(const Key_t *key) {
-    uint64_t index = key->key_index;
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return 0;
 
@@ -165,7 +183,13 @@ KeyManagerErrors
 KeyMan_ReadKey(const Key_t *key,
                uint64_t *identifier) {
 
-    uint64_t index = key->key_index;
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -190,7 +214,13 @@ KeyManagerErrors
 KeyMan_WriteKey(const Key_t *key,
                 uint64_t *identifier) {
 
-    uint64_t index = key->key_index;
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -213,7 +243,13 @@ KeyMan_WriteKey(const Key_t *key,
 KeyManagerErrors
 KeyMan_IncrementRefCount(const Key_t *key) {
 
-    uint64_t index = key->key_index;
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 
@@ -236,7 +272,13 @@ KeyMan_IncrementRefCount(const Key_t *key) {
 
 KeyManagerErrors
 KeyMan_DecrementRefCount(Key_t *key) {
-    uint64_t index = key->key_index;
+    if(key == NULL)
+        return KeyManagerErrors_InvalidParams;
+
+    if(key->key_index == 0)
+        return KeyManagerErrors_InvalidParams;
+
+    uint64_t index = key->key_index - 1;
     if(index >= KEY_TABLE_SIZE/sizeof(KeyEntry))
         return KeyManagerErrors_InvalidParams;
 

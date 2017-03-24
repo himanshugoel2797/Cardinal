@@ -268,6 +268,7 @@ PostMessage(UID dstPID, Message *msg) {
     return TRUE;
 }
 
+//TODO make the getmessage syscalls have an option to block if no message is available
 bool
 GetMessageFrom(Message *msg,
                UID SourcePID,
@@ -280,12 +281,9 @@ GetMessageFrom(Message *msg,
         return FALSE;
 
     if(List_Length(pInfo->PendingMessages) == 0) {
+        RefDec(&pInfo->ref);
         YieldThread();
-
-        if(List_Length(pInfo->PendingMessages) == 0) {
-            RefDec(&pInfo->ref);
-            return FALSE;
-        }
+        return FALSE;
     }
 
     LockSpinlock(pInfo->MessageLock);
@@ -322,6 +320,7 @@ GetMessageFromType(Message *msg,
 
     if(List_Length(pInfo->PendingMessages) == 0) {
         RefDec(&pInfo->ref);
+        YieldThread();
         return FALSE;
     }
 
