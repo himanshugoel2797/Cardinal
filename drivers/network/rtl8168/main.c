@@ -35,9 +35,8 @@ Reset(void) {
 }
 
 /*
-Network stack design: Runs under net_srv. Driver registers to net_srv, providing its MAC address as well as link information and feature information.
-Driver then receives a shared memory buffer on which to submit received messages and another buffer on which messages to send will be posted.
-Driver also receives a bitmask of features that the network server would like for it to enable.
+Network stack design: Runs under net_srv. Driver registers to net_srv, providing its MAC address as well as link information, feature information and send/receive buffer keys.
+Driver reads its assigned device file for a bitmask of features that the network server would like for it to enable.
 Other than that, driver responds to status requests as well as reset requests.
 */
 

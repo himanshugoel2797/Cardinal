@@ -16,6 +16,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/ipc.h>
 #include <cardinal/file_server.h>
 
+
+//Communication structures have an ID allowing each to be individually identified. Keep a list of structures.
+//Write a library to implement a file registry, with the ability to register a handler for each file.
+//Allows options to be passed to the library to configure it to work as a file server or service provider
+//As well as to configure the fd generation system.
+
 typedef struct {
     int (*open)(const char *, int, uint64_t, uint8_t*, UID, uint64_t*);
     int (*read)(uint64_t, uint64_t, void*, uint64_t, UID);
