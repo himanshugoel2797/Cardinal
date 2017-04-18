@@ -8,6 +8,10 @@
 #include "test.h"
 #include "memory.h"
 
+#define TEST_INCLUDE_HDRS_
+#include "test_defs.h"
+#undef TEST_INCLUDE_HDRS_
+
 Test tests[] = {
     #include "test_defs.h"
     {NULL, "", "", ""}
@@ -15,7 +19,7 @@ Test tests[] = {
 
 void
 RunAllTests(void) {
-
+#ifdef _TEST_
     Test *iter = tests;
     while(iter->mthd != NULL) {
         int retVal = iter->mthd();
@@ -30,5 +34,5 @@ RunAllTests(void) {
             PrintDebugMessage("SUCCESS\r\n");
         }
     }
-
+#endif
 }

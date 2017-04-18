@@ -7,7 +7,7 @@ export BUILD_DIR
 
 INCLUDES= . .. common managers kmalloc target/hal ../libs/libc/include/$(TARGET_ARCH) ../libs/libCardinal/include target/$(TARGET_ARCH)
 
-DEFINES=MULTIBOOT2 $(TARGET_ARCH)
+DEFINES=MULTIBOOT2 $(TARGET_ARCH) _TEST_
 export DEFINES
 
 
