@@ -22,6 +22,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 //Allows options to be passed to the library to configure it to work as a file server or service provider
 //As well as to configure the fd generation system.
 
+typedef enum {
+    FileServerParams_None = 0,
+
+    FileServerParams_GlobalHandlers = (0 << 0),
+    FileServerParams_HandlersPerFile = (1 << 0),
+} FileServerParams;
+
 typedef struct {
     int (*open)(const char *, int, uint64_t, uint8_t*, UID, uint64_t*);
     int (*read)(uint64_t, uint64_t, void*, uint64_t, UID);
@@ -34,7 +41,8 @@ typedef struct {
 } FileServerHandlers;
 
 int
-Server_Start(FileServerHandlers *handlers,
+Server_Start(FileServerParams p, 
+             FileServerHandlers *handlers,
              void (*UnknownMessageHandler)(Message *));
 
 int

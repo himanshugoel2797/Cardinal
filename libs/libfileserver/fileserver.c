@@ -16,8 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <cardinal/ipc.h>
 #include "fileserver.h"
 
-static FileSystemOpType op_mask = 0;
-static FileServerHandlers *fs_handlers;
+static FileSystemOpType op_mask = 0, base_op_mask = 0;
+static FileServerHandlers fs_handlers;
 static void (*unkn_msg_handler)(Message *);
 static int exit = 0;
 static int exit_code = 0;
@@ -65,7 +65,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            retVal = fs_handlers->open((const char *)shmem_data.VirtualAddress + op->path_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
+            retVal = fs_handlers.open((const char *)shmem_data.VirtualAddress + op->path_offset, op->flags, op->mode, op->access_pass, m->SourcePID, &fd);
 
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
         }
@@ -78,7 +78,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            fs_handlers->close(op->fd, m->SourcePID);
+            fs_handlers.close(op->fd, m->SourcePID);
             return;
         }
         break;
@@ -109,7 +109,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            retVal = fs_handlers->read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+            retVal = fs_handlers.read(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
 
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
         }
@@ -135,7 +135,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            retVal = fs_handlers->write(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
+            retVal = fs_handlers.write(op->fd, op->offset, (void*)shmem_data.VirtualAddress, op->len, m->SourcePID);
 
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
         }
@@ -160,7 +160,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            retVal = fs_handlers->get_file_properties((const char *)shmem_data.VirtualAddress, shmem_data.VirtualAddress + op->result_offset, m->SourcePID);
+            retVal = fs_handlers.get_file_properties((const char *)shmem_data.VirtualAddress, shmem_data.VirtualAddress + op->result_offset, m->SourcePID);
 
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
 
@@ -174,7 +174,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            fs_handlers->remove(op->fd, m->SourcePID);
+            fs_handlers.remove(op->fd, m->SourcePID);
             return;
         }
         break;
@@ -198,7 +198,7 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            retVal = fs_handlers->rename(op->fd, (const char *)shmem_data.VirtualAddress + op->name_offset, m->SourcePID);
+            retVal = fs_handlers.rename(op->fd, (const char *)shmem_data.VirtualAddress + op->name_offset, m->SourcePID);
 
             Unmap((uint64_t)shmem_data.VirtualAddress, shmem_data.Length);
         }
@@ -211,7 +211,8 @@ Server_HandleOpRequest(Message *m) {
                 break;
             }
 
-            fs_handlers->sync(op->fd, m->SourcePID);
+
+            fs_handlers.sync(op->fd, m->SourcePID);
             return;
         }
         break;
@@ -239,14 +240,21 @@ Server_HandleGetFileSystemInfoRequest(Message *m) {
 }
 
 int
-Server_Start(FileServerHandlers *handlers,
-             void (*UnknownMessageHandler)(Message *)) {
+Server_Initialize(FileServerParams p,
+                  const FileServerHandlers *handlers,
+                  UID (*FDAllocator)(const char *, UID, uint64_t),
+                  void (*UnknownMessageHandler)(Message *)) {
 
     //Build an op mask from the handlers
-    fs_handlers = handlers;
+    fs_handlers = *handlers;
+    
+    if(p & FileServerParams_HandlersPerFile) {
+        //Replace all handlers except for open with internal ones
+
+    }
+
     unkn_msg_handler = UnknownMessageHandler;
 
-    if(op_mask == 0) {
         if(handlers->open != NULL)
             op_mask |= FileSystemOpType_Open;
 
@@ -271,14 +279,19 @@ Server_Start(FileServerHandlers *handlers,
         if(handlers->get_file_properties != NULL)
             op_mask |= FileSystemOpType_GetFileProperties;
 
-    }
+            base_op_mask = op_mask;
 
+        return 0;
+}
 
+int
+Server_Start(void) {
     //Nothing to do
     if(op_mask == 0)
         return -1;
 
     //loop for requests
+    exit = 0;
     while(!exit) {
 
         CREATE_NEW_MESSAGE_PTR(msg);
@@ -316,7 +329,8 @@ Server_Start(FileServerHandlers *handlers,
 
 int
 Server_SetOpMask(FileSystemOpType mask) {
-    op_mask = mask;
+    op_mask = (mask & ~base_op_mask) ? op_mask : mask;
+    return (mask & ~base_op_mask);
 }
 
 FileSystemOpType
