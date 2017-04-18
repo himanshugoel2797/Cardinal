@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -19,7 +19,7 @@ uint8_t device_MAC[6];
 
 void
 ReadMAC(void) {
-    for(int i = 0; i < 6; i++){
+    for(int i = 0; i < 6; i++) {
         device_MAX[i] = Read8(i);
     }
 }

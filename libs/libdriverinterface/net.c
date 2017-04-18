@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -12,7 +12,7 @@
 
 #define NetDeviceDataString "Name: %s MAC: %.3x:%.3x:%.3x:%.3x:%.3x:%.3x DeviceType: %.8x DeviceFeatures: %.8x TransmitKey: %s ReceiveKey: %s"
 
-static void NetDeviceDataToString(const NetDeviceData *const data, char *buf){
+static void NetDeviceDataToString(const NetDeviceData *const data, char *buf) {
 
     char tx_key[KEY_LENGTH];
     char rx_key[KEY_LENGTH];
@@ -20,18 +20,18 @@ static void NetDeviceDataToString(const NetDeviceData *const data, char *buf){
     KeyToString(data->TransmitBuffer, tx_key);
     KeyToString(data->ReceiveBuffer, rx_key);
 
-    sprintf(buf, NetDeviceDataString, data->Name, 
-    data->MAC[0], 
-    data->MAC[1], 
-    data->MAC[2], 
-    data->MAC[3], 
-    data->MAC[4], 
-    data->MAC[5],
-    data->DeviceType,
-    data->DeviceFeatures,
-    tx_key,
-    rx_key
-    );
+    sprintf(buf, NetDeviceDataString, data->Name,
+            data->MAC[0],
+            data->MAC[1],
+            data->MAC[2],
+            data->MAC[3],
+            data->MAC[4],
+            data->MAC[5],
+            data->DeviceType,
+            data->DeviceFeatures,
+            tx_key,
+            rx_key
+           );
 
 }
 

@@ -247,7 +247,7 @@ Server_Initialize(FileServerParams p,
 
     //Build an op mask from the handlers
     fs_handlers = *handlers;
-    
+
     if(p & FileServerParams_HandlersPerFile) {
         //Replace all handlers except for open with internal ones
 
@@ -255,33 +255,33 @@ Server_Initialize(FileServerParams p,
 
     unkn_msg_handler = UnknownMessageHandler;
 
-        if(handlers->open != NULL)
-            op_mask |= FileSystemOpType_Open;
+    if(handlers->open != NULL)
+        op_mask |= FileSystemOpType_Open;
 
-        if(handlers->read != NULL)
-            op_mask |= FileSystemOpType_Read;
+    if(handlers->read != NULL)
+        op_mask |= FileSystemOpType_Read;
 
-        if(handlers->write != NULL)
-            op_mask |= FileSystemOpType_Write;
+    if(handlers->write != NULL)
+        op_mask |= FileSystemOpType_Write;
 
-        if(handlers->close != NULL)
-            op_mask |= FileSystemOpType_Close;
+    if(handlers->close != NULL)
+        op_mask |= FileSystemOpType_Close;
 
-        if(handlers->remove != NULL)
-            op_mask |= FileSystemOpType_Remove;
+    if(handlers->remove != NULL)
+        op_mask |= FileSystemOpType_Remove;
 
-        if(handlers->rename != NULL)
-            op_mask |= FileSystemOpType_Rename;
+    if(handlers->rename != NULL)
+        op_mask |= FileSystemOpType_Rename;
 
-        if(handlers->sync != NULL)
-            op_mask |= FileSystemOpType_Sync;
+    if(handlers->sync != NULL)
+        op_mask |= FileSystemOpType_Sync;
 
-        if(handlers->get_file_properties != NULL)
-            op_mask |= FileSystemOpType_GetFileProperties;
+    if(handlers->get_file_properties != NULL)
+        op_mask |= FileSystemOpType_GetFileProperties;
 
-            base_op_mask = op_mask;
+    base_op_mask = op_mask;
 
-        return 0;
+    return 0;
 }
 
 int

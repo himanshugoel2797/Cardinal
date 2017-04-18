@@ -481,7 +481,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         // picking up any new threads if available
         if (Heap_GetItemCount(all_states[*core_id].cur_heap) == 0) {
             PrintDebugMessage("Swap %x\r\n",
-                                Heap_GetItemCount(all_states[*core_id].back_heap));
+                              Heap_GetItemCount(all_states[*core_id].back_heap));
 
             // Pick up 10 threads from the pending queue if any are available
             if (TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0) {

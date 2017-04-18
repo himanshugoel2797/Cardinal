@@ -41,7 +41,7 @@ typedef struct {
 } FileServerHandlers;
 
 int
-Server_Start(FileServerParams p, 
+Server_Start(FileServerParams p,
              FileServerHandlers *handlers,
              void (*UnknownMessageHandler)(Message *));
 

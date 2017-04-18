@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -13,7 +13,7 @@
 #undef TEST_INCLUDE_HDRS_
 
 Test tests[] = {
-    #include "test_defs.h"
+#include "test_defs.h"
     {NULL, "", "", ""}
 };
 
@@ -30,7 +30,7 @@ RunAllTests(void) {
             PrintDebugMessage("FAILED: %d ", retVal);
             PrintDebugMessage("MSG: %s", iter->fail_str);
             PrintDebugMessage("FROM: %s\r\n", iter->filename);
-        }else{
+        } else {
             PrintDebugMessage("SUCCESS\r\n");
         }
     }

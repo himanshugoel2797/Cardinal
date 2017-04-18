@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -10,7 +10,7 @@ static uint64_t PCI_BAR;
 static bool isPCI_BAR_IO;
 
 void
-SetPCIBAR(uint64_t bar, bool isIO){
+SetPCIBAR(uint64_t bar, bool isIO) {
     PCI_BAR = bar;
     isPCI_BAR_IO = isIO;
 }
