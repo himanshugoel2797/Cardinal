@@ -28,7 +28,7 @@ R0_GetBootInfo_Syscall(void *copy_dst) {
         SyscallSetErrno(-EPERM);
         return 0;
     }
-
+    
     if(copy_dst == NULL) {
         SyscallSetErrno(-EINVAL);
         return 0;

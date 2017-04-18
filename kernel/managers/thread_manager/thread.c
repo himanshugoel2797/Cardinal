@@ -300,7 +300,7 @@ UID CreateThreadADV(UID parentProcess, ThreadPermissionLevel perm_level,
 
     List_AddEntry(pending_thds, thd);
 
-    debug_gfx_writeLine("Thread: %x\r\n", GET_PROPERTY_VAL(thd, ID));
+    PrintDebugMessage("Thread: %x\r\n", GET_PROPERTY_VAL(thd, ID));
 
     UnlockSpinlock(sync_lock);
     UnlockSpinlock(thd->lock);
@@ -421,7 +421,7 @@ void TryAddThreads(void) {
         List_Remove(pending_thds, 0);
 
         if (thd_ad != NULL) {
-            debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
+            PrintDebugMessage("Adding: Thread ID: %x\r\n", thd_ad->ID);
             Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
         }
     }
@@ -468,7 +468,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         List_Remove(pending_thds, 0);
 
         if (thd_ad != NULL) {
-            debug_gfx_writeLine("Adding: Thread ID: %x\r\n", thd_ad->ID);
+            PrintDebugMessage("Adding: Thread ID: %x\r\n", thd_ad->ID);
             Heap_Insert(all_states[*core_id].cur_heap, thd_ad->TimeSlice, thd_ad);
         }
     } while (desired_load >= cur_load && List_Length(pending_thds) > 0);
@@ -480,7 +480,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         // Exhausted all the items in the current set, switch to the back heap while
         // picking up any new threads if available
         if (Heap_GetItemCount(all_states[*core_id].cur_heap) == 0) {
-            debug_gfx_writeLine("Swap %x\r\n",
+            PrintDebugMessage("Swap %x\r\n",
                                 Heap_GetItemCount(all_states[*core_id].back_heap));
 
             // Pick up 10 threads from the pending queue if any are available
@@ -510,7 +510,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
 
         next_thread = Heap_Pop(all_states[*core_id].cur_heap, NULL);
 
-        // debug_gfx_writeLine(" Trying: %x, TimeSlice: %x \r\n",
+        // PrintDebugMessage(" Trying: %x, TimeSlice: %x \r\n",
         // next_thread->ParentProcess->ID, next_thread->TimeSlice);
 
         // If the process is terminating, terminate the thread
@@ -558,7 +558,7 @@ void SchedulerCycle(Registers *regs) {
     if (BTree_GetCount(thds) > 0)
         all_states[*core_id].cur_thread =
             GetNextThread(all_states[*core_id].cur_thread);
-    // debug_gfx_writeLine("Front: %x Back: %x Core %x Thread From: %x:%x To:
+    // PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To:
     // %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
     // Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
     // prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
@@ -606,7 +606,7 @@ void RegisterCore(int (*getCoreData)(void)) {
     all_states[*core_id].back_heap = Heap_Create();
     all_states[*core_id].coreID = *core_id;
 
-    debug_gfx_writeLine("Register Core: %x\r\n", *core_id);
+    PrintDebugMessage("Register Core: %x\r\n", *core_id);
 
     core_id_counter++;
     UnlockSpinlock(sync_lock);
@@ -658,7 +658,7 @@ void SleepThreadForMessage(UID id, MessageWaitType wait_type, uint64_t val) {
         SET_PROPERTY_VAL(thd, SleepStartTime, GetTimerValue());
         SET_PROPERTY_VAL(thd, TargetMsgSourcePID, val);
 
-        debug_gfx_writeLine("Sleeping thread %x\r\n", id);
+        PrintDebugMessage("Sleeping thread %x\r\n", id);
 
         // Remove the thread from the neutral list and put it into the sleeping list
         List_AddEntry(sleeping_thds, thd);

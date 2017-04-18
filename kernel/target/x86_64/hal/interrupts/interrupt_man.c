@@ -47,10 +47,10 @@ ShadowInterruptHandler(Registers *regs) {
     memcpy((void*)regs_saved, regs, sizeof(Registers));
 
     if(intHandlers[regs->int_no] != NULL) {
-        if(regs->int_no > 32)debug_gfx_writeLine("Interrupt %x, Handler %x\r\n", regs->int_no, (uint32_t)intHandlers[regs->int_no]);
+        if(regs->int_no > 32)PrintDebugMessage("Interrupt %x, Handler %x\r\n", regs->int_no, (uint32_t)intHandlers[regs->int_no]);
         intHandlers[regs->int_no](regs->int_no, regs->err_code);
     } else {
-        debug_gfx_writeLine("Warning: No handler for interrupt %x\r\n", regs->int_no);
+        PrintDebugMessage("Warning: No handler for interrupt %x\r\n", regs->int_no);
     }
 
     HandleInterruptNoReturn(regs->int_no);

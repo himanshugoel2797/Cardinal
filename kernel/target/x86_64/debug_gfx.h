@@ -13,12 +13,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define _X86_64_DEBUG_GFX_H_
 
 #include "types.h"
+#include "common.h"
 
 void
 debug_gfx_init(void);
 
 void
-debug_gfx_writeLine(const char *str, ...);
+debug_gfx_writeLine(const char *str, va_list vl);
 
 void
 debug_handle_trap(void);

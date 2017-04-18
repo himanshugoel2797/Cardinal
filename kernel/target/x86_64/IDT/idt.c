@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 #include "types.h"
 #include "idt.h"
+#include "memory.h"
 
 void
 IDT_DefaultHandler(void);
@@ -177,13 +178,11 @@ void IDT_DefaultHandler() {
     );
 }
 
-#include "debug_gfx.h"
-
 void IDT_MainHandler(Registers *regs) {
     //__asm__ volatile("hlt" :: "a"(regs->err_code));
 
     if(regs->int_no > 32) {
-        debug_gfx_writeLine("Interrupt #%x\r\n", regs->int_no);
+        PrintDebugMessage("Interrupt #%x\r\n", regs->int_no);
     }
 
     if(regs->cs & 3)

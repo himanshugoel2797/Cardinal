@@ -90,7 +90,7 @@ CreateProcess(UID parent, UID group_id, UID *pid) {
     RefInit(&dst->ref, (ReferenceFreeHandler)TerminateProcess, offsetof(ProcessInformation, ref));
     dst->lock = CreateSpinlock();
 
-    debug_gfx_writeLine("Create Process: %x\r\n", *pid);
+    PrintDebugMessage("Create Process: %x\r\n", *pid);
 
     BTree_Insert(processes, dst->ID, dst);
     return ProcessErrors_None;
@@ -108,7 +108,7 @@ StartProcess(UID pid) {
     pinfo->Status = ProcessStatus_Executing;
     UnlockSpinlock(pinfo->lock);
 
-    debug_gfx_writeLine("Start Process: %x\r\n", pid);
+    PrintDebugMessage("Start Process: %x\r\n", pid);
 
     return ProcessErrors_None;
 }

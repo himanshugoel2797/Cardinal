@@ -78,6 +78,14 @@ typedef struct ManagedPageTable {
 } ManagedPageTable;
 
 /**
+ * @brief       Prints a debug message.
+ *
+ * @param[in]   fmt             The format string
+ */
+void
+PrintDebugMessage(const char *fmt, ...);
+
+/**
  * @brief      Gets the virtual address.
  *
  * @param[in]  c                The caching mode to translate from

@@ -5,7 +5,7 @@ TARGET_ARCH=$(ARCH_x86_64)
 BUILD_DIR=$(shell pwd)
 export BUILD_DIR
 
-INCLUDES= . .. common managers drivers kmalloc target/hal ../libs/libc/include/$(TARGET_ARCH) ../libs/libCardinal/include target/$(TARGET_ARCH)
+INCLUDES= . .. common managers kmalloc target/hal ../libs/libc/include/$(TARGET_ARCH) ../libs/libCardinal/include target/$(TARGET_ARCH)
 
 DEFINES=MULTIBOOT2 $(TARGET_ARCH)
 export DEFINES

@@ -45,6 +45,7 @@ typedef uint64_t off_t;
 #define IS_NULL(x) if(!x)__builtin_trap()
 #define PACKED __attribute__((packed))
 #define NORETURN __attribute__((noreturn))
+#define NONNULL_RETURN __attribute__((returns_nonnull))
 
 #define S(x) #x
 #define S_(x) S(x)

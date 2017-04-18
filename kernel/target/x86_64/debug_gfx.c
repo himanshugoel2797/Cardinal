@@ -14,7 +14,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "boot_information/boot_information.h"
 #include "bootinfo.h"
 #include "font.h"
-#include "common.h"
 #include "synchronization.h"
 #include "utils/native.h"
 
@@ -46,17 +45,13 @@ debug_handle_trap(void) {
 }
 
 void
-debug_gfx_writeLine(const char *fmt, ...) {
+debug_gfx_writeLine(const char *fmt, va_list vl) {
     LockSpinlock(lock);
 
     char str[256];
     memset(str, 0, 256);
 
-
-    va_list vl;
-    va_start(vl, fmt);
     vsnprintf(str, fmt, vl);
-    va_end(vl);
 
     int i = 0;
 

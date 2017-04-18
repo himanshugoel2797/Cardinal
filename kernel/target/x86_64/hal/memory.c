@@ -20,6 +20,17 @@ static Spinlock vmem_lock = NULL;
 static ManagedPageTable volatile **curPageTable = NULL;
 static MemoryAllocationsMap *KernelMap = NULL;
 
+
+void
+PrintDebugMessage(const char *fmt, ...) {
+
+    va_list vl;
+    va_start(vl, fmt);
+    debug_gfx_writeLine(fmt, vl);
+    va_end(vl);
+
+}
+
 void HandleTLBShootdown(uint32_t UNUSED(int_no), uint32_t UNUSED(err_code));
 
 void MemoryHAL_Initialize(void) {
@@ -609,7 +620,7 @@ void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
     GetProcessReference(GetCurrentProcessUID(), &procInfo);
     if (procInfo == NULL) {
         __asm__("cli\n\thlt" ::"a"(instruction_pointer), "b"(1), "c"(0));
-        // while(1)debug_gfx_writeLine("Error: Page Fault");
+        // while(1)PrintDebugMessage("Error: Page Fault");
     }
 
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
@@ -710,7 +721,7 @@ static bool tlb_shootdown = FALSE;
 static volatile uint64_t tlb_core_count = 0;
 
 void HandleTLBShootdown(uint32_t UNUSED(int_no), uint32_t UNUSED(err_code)) {
-    debug_gfx_writeLine("TLB Shootdown Core: %x\r\n", GetCoreIndex());
+    PrintDebugMessage("TLB Shootdown Core: %x\r\n", GetCoreIndex());
     if (curPageTable != NULL && (*curPageTable) != NULL &&
             (*curPageTable)->PageTable != 0)
         VirtMemMan_SetCurrent((PML_Instance)((*curPageTable)->PageTable));
@@ -736,7 +747,7 @@ void PerformTLBShootdown(uint64_t addr, uint64_t sz) {
 
     if (!perform_shootdown) return;
 
-    debug_gfx_writeLine("TLB Shootdown Start %x\r\n\r\n", GetActiveCoreCount());
+    PrintDebugMessage("TLB Shootdown Start %x\r\n\r\n", GetActiveCoreCount());
 
     if (GetActiveCoreCount() > 1)
         APIC_SendIPI(0, APIC_DESTINATION_SHORT_ALLBUTSELF, 33,
