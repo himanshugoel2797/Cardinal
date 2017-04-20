@@ -16,13 +16,11 @@ void PropertyInitLocks(void);
 
 uint64_t SyscallSetErrno(uint64_t errno);
 
-uint64_t GetErrno_Syscall(void);
 
 uint64_t Nanosleep_Syscall(uint64_t time_ns);
 
-uint64_t Brk_Syscall(void* targ_brk_address);
+uint64_t R0_GetBootInfo_Syscall(void* copy_dst);
 
-uint64_t SleepOnLocation(void* addr, int op, uint64_t val, uint64_t timeout_ns);
 
 uint64_t SetProperty_Syscall(uint64_t property,
                              uint64_t sub_property,
@@ -30,43 +28,14 @@ uint64_t SetProperty_Syscall(uint64_t property,
 
 uint64_t GetProperty_Syscall(uint64_t property, uint64_t sub_property);
 
-uint64_t R0_Map_Syscall(struct MemoryMapParams* mmap_params);
 
-uint64_t R0_Unmap_Syscall(UID pid, uint64_t addr, uint64_t size);
+uint64_t GetErrno_Syscall(void);
 
-uint64_t R0_AllocatePages_Syscall(uint64_t page_cnt,
-                                  PhysicalMemoryAllocationFlags flags);
-
-uint64_t R0_FreePages_Syscall(uint64_t addr, uint64_t size);
-
-uint64_t R0_CreateProcess_Syscall(UID parent, uint64_t gid);
-
-uint64_t R0_CreateThread_Syscall(UID parent,
-                                 ThreadEntryPoint entry_point,
-                                 void* arg);
-
-uint64_t R0_StartProcess_Syscall(UID pid);
-
-uint64_t R0_GetBootInfo_Syscall(void* copy_dst);
-
-uint64_t R01_GetPhysicalAddress_Syscall(UID pid, void* addr);
-
-uint64_t Unmap_Syscall(uint64_t addr, uint64_t size);
 
 uint64_t AllocateSharedMemory_Syscall(uint64_t length,
                                       CachingMode cacheMode,
                                       void* UNUSED(unused),
                                       MemoryAllocationFlags flags);
-
-uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
-                                    uint64_t length,
-                                    CachingMode cacheMode,
-                                    MemoryAllocationFlags flags,
-                                    Key_t *key);
-
-uint64_t ApplySharedMemoryKey_Syscall(Key_t *key, void* shmem_data_p);
-
-uint64_t FreeSharedMemoryKey_Syscall(Key_t *key);
 
 uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
         CachingMode cacheMode,
@@ -74,27 +43,90 @@ uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length,
         MemoryAllocationFlags flags,
         uint64_t phys_addr);
 
-uint64_t GetSharedMemoryKeyUsageCount_Syscall(Key_t *key);
+uint64_t ApplySharedMemoryKey_Syscall(Key_t *key, void* shmem_data_p);
+
+uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
+                                    uint64_t length,
+                                    CachingMode cacheMode,
+                                    MemoryAllocationFlags flags,
+                                    Key_t *key);
+
+uint64_t FreeSharedMemoryKey_Syscall(Key_t *key);
+
+
+uint64_t R0_Map_Syscall(struct MemoryMapParams* mmap_params);
+
+uint64_t R0_Unmap_Syscall(UID pid, uint64_t addr, uint64_t size);
+
+uint64_t Unmap_Syscall(uint64_t addr, uint64_t size);
+
+uint64_t Brk_Syscall(void* targ_brk_address);
+
+
+uint64_t R0_AllocatePages_Syscall(uint64_t page_cnt,
+                                  PhysicalMemoryAllocationFlags flags);
+
+uint64_t R0_FreePages_Syscall(uint64_t addr, uint64_t size);
+
+uint64_t R01_GetPhysicalAddress_Syscall(UID pid, void* addr);
+
+
+uint64_t CreateProcess_Syscall(void *prog, uint32_t *keys, char *argv[], int argc);
+
+
+uint64_t R0_GetThreadInfo_Syscall(void);        //TODO
+
+uint64_t CreateThread_Syscall(UID parent,
+                                 ThreadEntryPoint entry_point,
+                                 void* arg);
+
+uint64_t KillThread_Syscall(void);              //TODO
+
+uint64_t ExitDeleteThread_Syscall(void);        //TODO
+
+uint64_t SetThreadIsPaused_Syscall(void);        //TODO
+
+
+uint64_t R01_AllocateInterrupts_Syscall(int cnt);
 
 uint64_t R01_RegisterForInterrupts_Syscall(uint64_t p0,
         uint64_t p1);
 
-uint64_t R01_AllocateInterrupts_Syscall(int cnt);
 
-uint64_t R0_KillProcess_Syscall(UID pid, uint32_t exit_code);
+uint64_t WaitForRequest_Syscall(void);
 
-uint64_t
-GetIPCMessageFrom_Syscall(Message *p0,
-                          UID p1,
-                          uint64_t p2);
+uint64_t HandleRequest_Syscall(void);
 
-uint64_t
-PostIPCMessage_Syscall(UID p0,
-                       Message *p1);
+uint64_t Signal_Syscall(void);
 
-uint64_t
-GetIPCMessageMsgType_Syscall(Message *p0,
-                             UID p1);
 
+uint64_t Open_Syscall(void);
+
+uint64_t Read_Syscall(void);
+
+uint64_t Write_Syscall(void);
+
+uint64_t Close_Syscall(void);
+
+uint64_t Remove_Syscall(void);
+
+uint64_t Bind_Syscall(void);
+
+uint64_t GetStat_Syscall(void);
+
+uint64_t ApplyStat_Syscall(void);
+
+
+uint64_t CreateKey_Syscall(void);
+
+uint64_t AddKey_Syscall(void);
+
+uint64_t RemoveKey_Syscall(void);
+
+uint64_t HasKey_Syscall(void);
+
+uint64_t UseKey_Syscall(void);
+
+uint64_t GetKeyUsageCount_Syscall(Key_t *key);
 
 #endif
