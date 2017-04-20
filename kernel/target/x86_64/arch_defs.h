@@ -4,7 +4,9 @@
 #include "types.h"
 
 #define IRQ(n) (n + 32)
-#define HALT(x) __asm__ volatile("cli\n\thlt" :: "a"(x))
+#define SetIF() __asm__ volatile("sti")
+#define ClearIF() __asm__ volatile("cli")
+#define HALT(x) __asm__ volatile("hlt" :: "a"(x))
 #define PAUSE __asm__ volatile("pause")
 
 typedef struct {

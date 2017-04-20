@@ -294,7 +294,6 @@ MemoryAllocationErrors MapPage(ManagedPageTable *pageTable,
     VirtMemMan_Map((PML_Instance)pageTable->PageTable, virtualAddress,
                    physicalAddress, size, (flags & MemoryAllocationFlags_Present),
                    cache, access, perms);
-    // PerformTLBShootdown();
 
     UnlockSpinlock(pageTable->lock);
 
@@ -714,7 +713,8 @@ void GetAddressPermissions(ManagedPageTable *pageTable, uint64_t addr,
 }
 
 void HaltProcessor(void) {
-    __asm__ volatile("cli\n\thlt");
+    ClearIF();
+    HALT(0);
 }
 
 static bool tlb_shootdown = FALSE;
@@ -1104,22 +1104,6 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
 
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
-    return MemoryAllocationErrors_None;
-}
-
-MemoryAllocationErrors
-GetSharedMemoryKeyUsageCount(Key_t *key,
-                             uint64_t *cnt) {
-    if (cnt == NULL) return MemoryAllocationErrors_InvalidParameters;
-
-    uint64_t identifiers[IDENTIFIER_COUNT];
-    if (KeyMan_ReadKey(key, identifiers) != KeyManagerErrors_None)
-        return MemoryAllocationErrors_InvalidParameters;
-
-    if (identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
-        return MemoryAllocationErrors_InvalidParameters;
-
-    *cnt = identifiers[3];
     return MemoryAllocationErrors_None;
 }
 

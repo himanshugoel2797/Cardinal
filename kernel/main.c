@@ -27,6 +27,9 @@ void
 load_exec(UID pid, const char *exec);
 
 void
+idle_main(void);
+
+void
 kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
     InitializeTimer();
@@ -45,13 +48,16 @@ kernel_main_init(void) {
 
     SyscallMan_Initialize();
     Syscall_Initialize();
-    //smp_unlock_cores();
+    smp_unlock_cores();
 
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
+    
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
 
-    load_exec(cpid, "userboot.bin");
+    //load_exec(cpid, "userboot.bin");
     SetupPreemption();
 
     while(1)
@@ -147,7 +153,6 @@ smp_core_main(int (*getCoreData)(void)) {
 
     RegisterCore(getCoreData);
     smp_core_count++;
-    /*
         UID cpid = 0;
         if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
             HaltProcessor();
@@ -160,7 +165,7 @@ smp_core_main(int (*getCoreData)(void)) {
 
         CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
         StartProcess(cpid);
-    */
+
     SetupPreemption();
     while(1);
 }

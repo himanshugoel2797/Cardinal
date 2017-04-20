@@ -23,41 +23,32 @@ RegisterAllSyscalls(void) {
     PropertyInitLocks();
 
     REGISTER(Nanosleep);
-    REGISTER(Brk);
+    REGISTER(R0_GetBootInfo);
 
     REGISTER(SetProperty);
     REGISTER(GetProperty);
 
     REGISTER(GetErrno);
 
+    REGISTER(AllocateSharedMemory);
+    REGISTER(R0_AllocateSharedMemory);
+    REGISTER(ApplySharedMemoryKey);
+    REGISTER(GetSharedMemoryKey);
+    REGISTER(FreeSharedMemoryKey);
+
     REGISTER(R0_Map);
     REGISTER(R0_Unmap);
-
     REGISTER(Unmap);
+    REGISTER(Brk);
 
     REGISTER(R0_AllocatePages);
     REGISTER(R0_FreePages);
-
-    REGISTER(R0_CreateProcess);
-    REGISTER(R0_StartProcess);
-    REGISTER(R0_CreateThread);
-    REGISTER(R0_KillProcess);
-    REGISTER(R0_GetBootInfo);
-
     REGISTER(R01_GetPhysicalAddress);
 
-    REGISTER(R0_AllocateSharedMemory);
-
-    REGISTER(AllocateSharedMemory);
-    REGISTER(GetSharedMemoryKey);
-    REGISTER(ApplySharedMemoryKey);
-    REGISTER(FreeSharedMemoryKey);
-    REGISTER(GetSharedMemoryKeyUsageCount);
+    //REGISTER(CreateProcess);
 
     REGISTER(R01_RegisterForInterrupts);
     REGISTER(R01_AllocateInterrupts);
 
-    REGISTER(PostIPCMessage);
-    REGISTER(GetIPCMessageMsgType);
-    REGISTER(GetIPCMessageFrom);
+    REGISTER(GetKeyUsageCount);
 }

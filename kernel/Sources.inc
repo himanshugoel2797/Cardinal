@@ -18,5 +18,6 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/boot_info.o \
 		managers/syscall_manager/syscalls/shared_memory.o \
 		managers/syscall_manager/syscalls/interrupts.o \
+		managers/syscall_manager/syscalls/key.o \
 		managers/key_manager/key_manager.o \
 		managers/interrupt_manager/interrupt_man.o

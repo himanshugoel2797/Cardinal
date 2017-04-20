@@ -299,3 +299,17 @@ KeyMan_DecrementRefCount(Key_t *key) {
     UnlockSpinlock(keyman_lock);
     return KeyManagerErrors_None;
 }
+
+KeyManagerErrors
+KeyMan_GetKeyUsageCount(Key_t *key,
+                 uint64_t *cnt) {
+    if (cnt == NULL) return KeyManagerErrors_InvalidParams;
+
+    uint64_t identifiers[IDENTIFIER_COUNT];
+    KeyManagerErrors err = KeyMan_ReadKey(key, identifiers);
+    if (err != KeyManagerErrors_None)
+        return err;
+        
+    *cnt = identifiers[KeyIdentifier_Count];
+    return KeyManagerErrors_None;
+}

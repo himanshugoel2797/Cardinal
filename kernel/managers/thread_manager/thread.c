@@ -493,7 +493,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
             while (Heap_GetItemCount(all_states[*core_id].back_heap) == 0) {
                 // TODO report that this core is waiting for threads, so other cores
                 // shouldn't bother pulling in more load.
-                __asm__ volatile("sti");
+                SetIF();
                 HALT(0);  // Halt for another core to wake us up for threads.
                 LockSpinlock(starving_lock);
                 while (List_Length(pending_thds) == 0) __asm__("pause");

@@ -27,6 +27,10 @@ typedef enum {
 } KeyFlags;
 
 typedef enum {
+    KeyIdentifier_Count = 3
+} KeyIdentifierIndices;
+
+typedef enum {
     KeyType_SharedMemoryKey = 1
 } KeyType;
 
@@ -110,5 +114,9 @@ KeyMan_IncrementRefCount(const Key_t *key);
  */
 KeyManagerErrors
 KeyMan_DecrementRefCount(Key_t *key);
+
+KeyManagerErrors
+KeyMan_GetKeyUsageCount(Key_t *key, 
+                        uint64_t *cnt);
 
 #endif

@@ -95,20 +95,6 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
     return SyscallSetErrno(0);
 }
 
-uint64_t GetSharedMemoryKeyUsageCount_Syscall(Key_t *key) {
-    uint64_t cnt = 0;
-
-    MemoryAllocationErrors err = GetSharedMemoryKeyUsageCount(key, &cnt);
-
-    if (err != MemoryAllocationErrors_None) {
-        SyscallSetErrno(-EINVAL);
-        return -1;
-    }
-
-    SyscallSetErrno(0);
-    return cnt;
-}
-
 uint64_t ApplySharedMemoryKey_Syscall(Key_t *key, void* shmem_data_p) {
     uint64_t vAddress = 0;
     uint64_t length = 0;
