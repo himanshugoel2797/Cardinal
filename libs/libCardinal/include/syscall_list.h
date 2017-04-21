@@ -1,7 +1,4 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2016-2017 Himanshu Goel
+Syscall_RegisterName,
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -31,7 +28,6 @@ typedef enum {
     Syscall_R0_AllocateSharedMemory,        //!< Allocate shared memory, controlling the physical address.
     Syscall_ApplySharedMemoryKey,           //!< Apply an existing shared memory key.
     Syscall_GetSharedMemoryKey,             //!< Get a shared memory key.
-    Syscall_FreeSharedMemoryKey,            //!< Free a shared memory key owned by the calling process.
     
     Syscall_R0_Map,                         //!< Kernel level memory map that allows direct access to the kernel arbitrary memory mapping functions.
     Syscall_R0_Unmap,                       //!< Unmap a mapping.
@@ -53,18 +49,12 @@ typedef enum {
     Syscall_R01_AllocateInterrupts,         //!< Allocate a block of interrupts
     Syscall_R01_RegisterForInterrupts,      //!< Register for a block of interrupts
 
-    Syscall_WaitForRequest,
-    Syscall_HandleRequest,
-    Syscall_Signal,                         //!< Send a signal to a process by its PID.
+    Syscall_WaitSignal,
+    Syscall_HandleSignal,
+    Syscall_Signal,                         //!< Send a signal to a process by its name.
 
-    Syscall_Open,
-    Syscall_Read,
-    Syscall_Write,
-    Syscall_Close,
-    Syscall_Remove,
-    Syscall_Bind,
-    Syscall_GetStat,
-    Syscall_ApplyStat,
+    Syscall_RegisterName,                   //!< Allow applications to register paths as identifiers, giving options to configure how to handle overlapping names and ownership.
+    Syscall_UnregisterName,
     
     Syscall_CreateKey,
     Syscall_AddKey,

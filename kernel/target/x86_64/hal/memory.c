@@ -1061,7 +1061,7 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
 
     SharedMemoryData *shmem_info = (SharedMemoryData *)identifiers[0];
 
-    identifiers[3]++;
+    KeyMan_UseKey(key);
 
     *flags = (MemoryAllocationFlags)identifiers[1];
     *cacheMode = (CachingMode)identifiers[2];
@@ -1119,6 +1119,8 @@ FreeSharedMemoryKey(UID parentPID,
 
     if (identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
         return MemoryAllocationErrors_InvalidParameters;
+
+    KeyMan_FreeKey(key);
 
     return MemoryAllocationErrors_None;
 }

@@ -45,3 +45,5 @@ initrd/initrd
 *.dSYM/
 
 *.sub*
+
+dump.bin

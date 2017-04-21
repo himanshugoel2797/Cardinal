@@ -119,4 +119,7 @@ KeyManagerErrors
 KeyMan_GetKeyUsageCount(Key_t *key, 
                         uint64_t *cnt);
 
+KeyManagerErrors
+KeyMan_UseKey(Key_t *key);
+
 #endif

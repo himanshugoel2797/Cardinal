@@ -303,6 +303,8 @@ KeyMan_DecrementRefCount(Key_t *key) {
 KeyManagerErrors
 KeyMan_GetKeyUsageCount(Key_t *key,
                  uint64_t *cnt) {
+
+    if (key == NULL) return KeyManagerErrors_InvalidParams;
     if (cnt == NULL) return KeyManagerErrors_InvalidParams;
 
     uint64_t identifiers[IDENTIFIER_COUNT];
@@ -311,5 +313,20 @@ KeyMan_GetKeyUsageCount(Key_t *key,
         return err;
         
     *cnt = identifiers[KeyIdentifier_Count];
+    return KeyManagerErrors_None;
+}
+
+KeyManagerErrors
+KeyMan_UseKey(Key_t *key) {
+    if (key == NULL) return KeyManagerErrors_InvalidParams;
+
+    uint64_t identifiers[IDENTIFIER_COUNT];
+    KeyManagerErrors err = KeyMan_ReadKey(key, identifiers);
+    if (err != KeyManagerErrors_None)
+        return err;
+        
+    identifiers[KeyIdentifier_Count]++;
+
+    KeyMan_WriteKey(key, identifiers);
     return KeyManagerErrors_None;
 }

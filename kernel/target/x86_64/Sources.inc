@@ -1,4 +1,4 @@
-TARGET_SOURCES=boot.o bootstrap.o GDT/gdt.o IDT/idt.o CPUID/cpuid.o fpu/fpu.o rtc/rtc.o debug_gfx.o \
+TARGET_SOURCES=boot.o bootstrap.o gdt/gdt.o idt/idt.o cpuid/cpuid.o fpu/fpu.o rtc/rtc.o debug_gfx.o \
 				hal/memory.o hal/synchronization.o hal/thread.o \
 				hal/interrupts/interrupt_man.o hal/timer.o \
 				hal/syscall.o \
