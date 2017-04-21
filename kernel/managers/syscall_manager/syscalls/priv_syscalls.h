@@ -51,9 +51,6 @@ uint64_t GetSharedMemoryKey_Syscall(uint64_t vAddress,
                                     MemoryAllocationFlags flags,
                                     Key_t *key);
 
-uint64_t FreeSharedMemoryKey_Syscall(Key_t *key);
-
-
 uint64_t R0_Map_Syscall(struct MemoryMapParams* mmap_params);
 
 uint64_t R0_Unmap_Syscall(UID pid, uint64_t addr, uint64_t size);
@@ -93,28 +90,16 @@ uint64_t R01_RegisterForInterrupts_Syscall(uint64_t p0,
         uint64_t p1);
 
 
-uint64_t WaitForRequest_Syscall(void);
+uint64_t WaitSignal_Syscall(void);
 
-uint64_t HandleRequest_Syscall(void);
+uint64_t HandleSignal_Syscall(void);
 
 uint64_t Signal_Syscall(void);
 
 
-uint64_t Open_Syscall(void);
+uint64_t RegisterName_Syscall(void);
 
-uint64_t Read_Syscall(void);
-
-uint64_t Write_Syscall(void);
-
-uint64_t Close_Syscall(void);
-
-uint64_t Remove_Syscall(void);
-
-uint64_t Bind_Syscall(void);
-
-uint64_t GetStat_Syscall(void);
-
-uint64_t ApplyStat_Syscall(void);
+uint64_t UnregisterName_Syscall(void);
 
 
 uint64_t CreateKey_Syscall(void);

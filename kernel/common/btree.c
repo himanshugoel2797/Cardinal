@@ -48,7 +48,9 @@ insert(Node *nodes,
         return -1;  //Invalid index
 
     if(level == 0) {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return -1;  //Fail, spinlock deleted.
+
         if(nodes->vals[pos] == 0)
             nodes->cnt++;
 
@@ -56,7 +58,9 @@ insert(Node *nodes,
         UnlockSpinlock(nodes->lock);
 
     } else {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return -1;
+
         if(nodes->children[pos] == NULL) {
             nodes->children[pos] = kmalloc(sizeof(Node));
             memset(nodes->children[pos], 0, sizeof(Node));

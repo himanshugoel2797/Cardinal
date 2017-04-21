@@ -169,7 +169,9 @@ TryLockSpinlock(Spinlock primitive) {
 
     IntLockSpinlock(primitive);
     volatile uint64_t *prim = (volatile uint64_t*)primitive;
-    if(prim[1] == (APIC_GetID() + 1)) {
+    if(prim[4] == 1) {
+        locked = FALSE;
+    } else if(prim[1] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[2]++;
     } else if(prim[1] == 0 && prim[2] == 0) {
@@ -190,10 +192,40 @@ TryLockSpinlock(Spinlock primitive) {
 
 Spinlock
 LockSpinlock(Spinlock primitive) {
-    //outb(0x3f8, 'L');
-    while(!TryLockSpinlock(primitive))
-        __asm__("pause");
 
+    uint64_t deleting = FALSE;
+    bool locked = FALSE;
+
+    while(!locked) {
+    uint64_t iflag = 0;
+    __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
+
+    IntLockSpinlock(primitive);
+    volatile uint64_t *prim = (volatile uint64_t*)primitive;
+    if(prim[4] == 1) {
+        locked = FALSE;
+        deleting = TRUE;
+    } else if(prim[1] == (APIC_GetID() + 1)) {
+        locked = TRUE;
+        prim[2]++;
+    } else if(prim[1] == 0 && prim[2] == 0) {
+        prim[2] = 1;
+        prim[1] = APIC_GetID() + 1;
+        locked = TRUE;
+        prim[3] = iflag;
+    }
+
+    __asm__ volatile("":::"memory");
+    IntUnlockSpinlock(primitive);
+
+    if(!locked){
+        __asm__ volatile("push %0\n\tpopfq" :: "r"(iflag) : "cc");
+        __asm__("pause");
+    }
+    
+    if(deleting)
+        return NULL;
+    }
     return primitive;
 }
 
@@ -225,6 +257,22 @@ UnlockSpinlock(Spinlock primitive) {
         __asm__ volatile("pushq %0\n\tpopfq" :: "r"(iflag) : "cc");
 
     return locked;
+}
+
+void
+FinalLockSpinlock(Spinlock primitive) {
+
+    bool locked = FALSE;
+    uint64_t iflag = 0;
+    __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
+
+    IntLockSpinlock(primitive);
+    volatile uint64_t *prim = (volatile uint64_t*)primitive;
+    prim[4] = 1;    //Prevent any further locks from succeeding, anything that uses this lock should now fail.
+    __asm__ volatile("":::"memory");
+    IntUnlockSpinlock(primitive);
+
+    __asm__ volatile("push %0\n\tpopfq" :: "r"(iflag) : "cc");
 }
 
 

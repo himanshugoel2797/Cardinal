@@ -64,9 +64,7 @@ typedef enum {
 typedef enum {
     ThreadWakeCondition_None,     //!< No wake condition, thread isn't sleeping.
     ThreadWakeCondition_SleepEnd, //!< Wake on sleep period expiry.
-    ThreadWakeCondition_MatchMsgType,
-    ThreadWakeCondition_MatchMsgSourcePID,
-    ThreadWakeCondition_MatchMsgAny,
+    ThreadWakeCondition_Signal,
 } ThreadWakeCondition;
 
 /**
@@ -87,49 +85,49 @@ typedef enum {
  */
 typedef void (*ThreadEntryPoint)(void*);
 
-/**
- * Thread Information/State.
- */
-typedef struct ThreadInfo {
-    Ref                 ref;                    //!< Reference count.
-    Spinlock            lock;                   //!< Read/Write lock.
+typedef struct ProcessInfo {
+    Ref                 ref;
+    Spinlock            lock;
 
-    UID                 ID; //!< Thread ID.
     UID                 PID;
+    UID                 ParentID;
     UID                 UserID;
     UID                 GroupID;
 
     //TODO: Use descriptor system for tracking interrupt registration
-    DescriptorTable     *Descriptors;
+    DescriptorTable     Descriptors;
 
     ManagedPageTable    *PageTable;
-    List                *Children;
+} ProcessInfo;
 
-    ProcessInformation  *ParentProcess; //!< Process the thread belongs to.
+/**
+ * Thread Information/State.
+ */
+typedef struct ThreadInfo {
+    Ref                     ref;                    //!< Reference count.
+    Spinlock                lock;                   //!< Read/Write lock.
 
-    ThreadState           State;          //!< Thread state.
-    ThreadWakeCondition   WakeCondition;  //!< Thread wake condition.
-    ThreadPermissionLevel PermissionLevel;
-    int32_t               CoreAffinity;           //!< Core affinity.
+    UID                     ID; //!< Thread ID.
 
-    uint64_t              KernelStackBase;        //!< Base of kernel stack.
-    uint64_t              KernelStackAligned;     //!< Aligned address of kernel stack.
-    uint64_t              UserStackBase;          //!< Base of user stack.
-    uint64_t              CurrentStack;           //!< Current stack address.
+    ProcessInfo             *Process;
+    
+    ThreadState             State;          //!< Thread state.
+    ThreadWakeCondition     WakeCondition;  //!< Thread wake condition.
+    ThreadPermissionLevel   PermissionLevel;
+    
+    uint64_t                KernelStackBase;        //!< Base of kernel stack.
+    uint64_t                KernelStackAligned;     //!< Aligned address of kernel stack.
+    uint64_t                UserStackBase;          //!< Base of user stack.
+    uint64_t                CurrentStack;           //!< Current stack address.
 
-    union {
-        uint64_t            SleepDurationNS;        //!< Sleep duration in nanoseconds.
-        uint64_t            TargetMsgSourcePID;
-        uint64_t            TargetMsgType;
-    };
+    uint64_t                SleepDurationNS;        //!< Sleep duration in nanoseconds.
+    uint64_t                SleepStartTime;         //!< Sleep start time.
+    uint64_t                Errno;                  //!< Errno of last syscall.
 
-    uint64_t            SleepStartTime;         //!< Sleep start time.
-    uint64_t            Errno;                  //!< Errno of last syscall.
+    int64_t                 TimeSlice;              //!< The time slice available to this thread.
 
-    int64_t             TimeSlice;              //!< The time slice available to this thread.
-
-    void                *FPUState;              //!< FPU state storage region.
-    void                *ArchSpecificData;      //!< Architecture specific data storage region.
+    void                    *FPUState;              //!< FPU state storage region.
+    void                    *ArchSpecificData;      //!< Architecture specific data storage region.
 
 } ThreadInfo;
 
@@ -171,6 +169,7 @@ AllocateStack(UID parentProcess,
  */
 UID
 CreateThread(UID parentProcess,
+             bool newProcess,
              ThreadPermissionLevel perm_level,
              ThreadEntryPoint entry_point,
              void *arg);
@@ -186,6 +185,7 @@ CreateThread(UID parentProcess,
  */
 UID
 CreateThreadADV(UID parentProcess,
+                bool newProcess,
                 ThreadPermissionLevel perm_level,
                 uint64_t user_stack_bottom,
                 Registers *regs,

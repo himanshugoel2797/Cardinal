@@ -88,20 +88,19 @@ static UID new_thd_uid(void) {
   PROPERTY_PROC_SET(type, name)
 
 #define SET_PROPERTY_PROC_VAL(t, name, val) \
-  set_proc_##name(GET_PROPERTY_VAL(t, ParentProcess), val)
+  set_proc_##name(GET_PROPERTY_VAL(t, Process), val)
 #define GET_PROPERTY_PROC_VAL(t, name) \
-  get_proc_##name(GET_PROPERTY_VAL(t, ParentProcess))
+  get_proc_##name(GET_PROPERTY_VAL(t, Process))
 
-PROPERTY_PROC_GET(UID, ID, 0)
+PROPERTY_PROC_GET(UID, PID, 0)
+PROPERTY_PROC_GET(UID, ParentID, 0)
+PROPERTY_PROC_GET(UID, UserID, 0)
+PROPERTY_PROC_GET(UID, GroupID, 0)
 PROPERTY_PROC_GET(ManagedPageTable *, PageTable, 0)
-PROPERTY_PROC_GET(ProcessInformation *, Parent, NULL)
-PROPERTY_PROC_GET(List *, PendingMessages, NULL)
-PROPERTY_PROC_GET(List *, Threads, NULL)
-PROPERTY_PROC_GET(ProcessStatus, Status, ProcessStatus_Stopped)
 
 PROPERTY_GET_SET(UID, ID, 0)
 
-PROPERTY_GET_SET(ProcessInformation *, ParentProcess, NULL)
+PROPERTY_GET_SET(ProcessInfo *, Process, NULL)
 
 PROPERTY_GET_SET(ThreadState, State, 0)
 PROPERTY_GET_SET(ThreadWakeCondition, WakeCondition, 0)
@@ -111,11 +110,8 @@ PROPERTY_GET_SET(uint64_t, KernelStackBase, 0)
 PROPERTY_GET_SET(uint64_t, KernelStackAligned, 0)
 PROPERTY_GET_SET(uint64_t, UserStackBase, 0)
 PROPERTY_GET_SET(uint64_t, SleepDurationNS, 0)
-PROPERTY_GET_SET(uint64_t, TargetMsgSourcePID, 0)
 PROPERTY_GET_SET(uint64_t, SleepStartTime, 0)
 PROPERTY_GET_SET(uint64_t, Errno, 0)
-
-PROPERTY_GET_SET(int32_t, CoreAffinity, 0)
 
 PROPERTY_GET_SET(void *, FPUState, NULL)
 PROPERTY_GET_SET(void *, ArchSpecificData, NULL)
@@ -129,15 +125,14 @@ UID GetCurrentThreadUID(void) {
 
 UID GetCurrentProcessUID(void) {
     if (all_states != NULL && all_states[*core_id].cur_thread != NULL)
-        return GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, ID);
+        return GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, PID);
     else
         return -1;
 }
 
 UID GetCurrentProcessParentUID(void) {
-    if (all_states != NULL && all_states[*core_id].cur_thread != NULL &&
-            GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, Parent) != NULL)
-        return GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, Parent)->ID;
+    if (all_states != NULL && all_states[*core_id].cur_thread != NULL)
+        return GET_PROPERTY_PROC_VAL(all_states[*core_id].cur_thread, ParentID);
     else
         return -1;
 }
@@ -210,7 +205,7 @@ uint64_t GetStackSize(ThreadPermissionLevel perm_level) {
            : KERNEL_STACK_SIZE;
 }
 
-UID CreateThread(UID parentProcess, ThreadPermissionLevel perm_level,
+UID CreateThread(UID parentProcess, ThreadPermissionLevel perm_level, bool newProcess,
                  ThreadEntryPoint entry_point, void *arg) {
     uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
     uint64_t user_stack_bottom = user_stack_base;
@@ -250,7 +245,7 @@ UID CreateThread(UID parentProcess, ThreadPermissionLevel perm_level,
                            NULL);
 }
 
-UID CreateThreadADV(UID parentProcess, ThreadPermissionLevel perm_level,
+UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_level,
                     uint64_t user_stack_bottom, Registers *regs, void *tls) {
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
     thd->lock = CreateSpinlock();
@@ -259,6 +254,7 @@ UID CreateThreadADV(UID parentProcess, ThreadPermissionLevel perm_level,
 
     RefInit(&thd->ref, (ReferenceFreeHandler)FreeThread,
             offsetof(ThreadInfo, ref));
+            
     thd->TimeSlice = THREAD_TOTAL_TIMESLICE;
 
     SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);

@@ -34,7 +34,6 @@ RegisterAllSyscalls(void) {
     REGISTER(R0_AllocateSharedMemory);
     REGISTER(ApplySharedMemoryKey);
     REGISTER(GetSharedMemoryKey);
-    REGISTER(FreeSharedMemoryKey);
 
     REGISTER(R0_Map);
     REGISTER(R0_Unmap);
@@ -47,8 +46,8 @@ RegisterAllSyscalls(void) {
 
     //REGISTER(CreateProcess);
 
-    REGISTER(R01_RegisterForInterrupts);
     REGISTER(R01_AllocateInterrupts);
+    REGISTER(R01_RegisterForInterrupts);
 
     REGISTER(GetKeyUsageCount);
 }
