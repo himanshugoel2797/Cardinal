@@ -74,8 +74,8 @@ uint64_t CreateProcess_Syscall(void *prog, uint32_t *keys, char *argv[], int arg
 uint64_t R0_GetThreadInfo_Syscall(void);        //TODO
 
 uint64_t CreateThread_Syscall(UID parent,
-                                 ThreadEntryPoint entry_point,
-                                 void* arg);
+                              ThreadEntryPoint entry_point,
+                              void* arg);
 
 uint64_t KillThread_Syscall(void);              //TODO
 

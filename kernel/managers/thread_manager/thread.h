@@ -110,11 +110,11 @@ typedef struct ThreadInfo {
     UID                     ID; //!< Thread ID.
 
     ProcessInfo             *Process;
-    
+
     ThreadState             State;          //!< Thread state.
     ThreadWakeCondition     WakeCondition;  //!< Thread wake condition.
     ThreadPermissionLevel   PermissionLevel;
-    
+
     uint64_t                KernelStackBase;        //!< Base of kernel stack.
     uint64_t                KernelStackAligned;     //!< Aligned address of kernel stack.
     uint64_t                UserStackBase;          //!< Base of user stack.

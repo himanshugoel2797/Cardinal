@@ -116,7 +116,7 @@ KeyManagerErrors
 KeyMan_DecrementRefCount(Key_t *key);
 
 KeyManagerErrors
-KeyMan_GetKeyUsageCount(Key_t *key, 
+KeyMan_GetKeyUsageCount(Key_t *key,
                         uint64_t *cnt);
 
 KeyManagerErrors

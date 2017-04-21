@@ -53,7 +53,7 @@ kernel_main_init(void) {
     UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
-    
+
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
 
@@ -153,18 +153,18 @@ smp_core_main(int (*getCoreData)(void)) {
 
     RegisterCore(getCoreData);
     smp_core_count++;
-        UID cpid = 0;
-        if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-            HaltProcessor();
+    UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
 
-        CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-        StartProcess(cpid);
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
 
-        if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-            HaltProcessor();
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
 
-        CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-        StartProcess(cpid);
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
 
     SetupPreemption();
     while(1);

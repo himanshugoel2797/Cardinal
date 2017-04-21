@@ -254,7 +254,7 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
 
     RefInit(&thd->ref, (ReferenceFreeHandler)FreeThread,
             offsetof(ThreadInfo, ref));
-            
+
     thd->TimeSlice = THREAD_TOTAL_TIMESLICE;
 
     SET_PROPERTY_VAL(thd, State, ThreadState_Initialize);
