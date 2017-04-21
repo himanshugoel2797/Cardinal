@@ -95,6 +95,15 @@ typedef struct ThreadInfo {
     Spinlock            lock;                   //!< Read/Write lock.
 
     UID                 ID; //!< Thread ID.
+    UID                 PID;
+    UID                 UserID;
+    UID                 GroupID;
+
+    //TODO: Use descriptor system for tracking interrupt registration
+    DescriptorTable     *Descriptors;
+
+    ManagedPageTable    *PageTable;
+    List                *Children;
 
     ProcessInformation  *ParentProcess; //!< Process the thread belongs to.
 
