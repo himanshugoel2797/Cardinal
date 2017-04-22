@@ -85,12 +85,15 @@ GetProcessGroupID(UID pid) {
     if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL)
+    if(LockSpinlock(pInfo->lock) == NULL){
+        ReturnProcessReference(pid);
         return -1;
+    }
 
     UID retVal = pInfo->GroupID;
 
     UnlockSpinlock(pInfo->lock);
+    ReturnProcessReference(pid);
     return retVal;
 }
 
@@ -100,12 +103,15 @@ SetProcessGroupID(UID pid, UID gid) {
     if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL)
+    if(LockSpinlock(pInfo->lock) == NULL){
+        ReturnProcessReference(pid);
         return -1;
+    }
 
     pInfo->GroupID = gid;
 
     UnlockSpinlock(pInfo->lock);
+    ReturnProcessReference(pid);
     return gid;
 }
 

@@ -92,8 +92,10 @@ load_exec(UID pid, const char *exec) {
     if(GetProcessReference(tid, &pinfo) != ThreadError_None)
         return;
 
-    if(LockSpinlock(pinfo->lock) == NULL)
+    if(LockSpinlock(pinfo->lock) == NULL){
+        ReturnProcessReference(tid);
         return;
+    }
 
     for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++) {
 
@@ -129,6 +131,7 @@ load_exec(UID pid, const char *exec) {
 void
 kernel_main(void) {
     while(1)
+        PrintDebugMessage("KERNEL_MAIN\r\n");
         ;   
         //WakeReadyThreads();
 }
@@ -155,7 +158,8 @@ idle_main(void) {
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
     StartProcess(cpid);
     */
-    while(1);
+    while(1)
+        ;   //PrintDebugMessage("IDLE_MAIN\r\n");;
 }
 
 void
