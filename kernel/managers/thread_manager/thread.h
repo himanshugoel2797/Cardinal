@@ -82,6 +82,7 @@ typedef enum {
     ThreadError_UIDNotFound = 1,
     ThreadError_InvalidParams,
     ThreadError_Deleting,
+    ThreadError_Unknown,
 } ThreadError;
 
 typedef enum {
@@ -172,7 +173,7 @@ Thread_IsInitialized(void);
  * @return     Pointer to the top of the stack.
  */
 uint64_t
-AllocateStack(UID parentProcess,
+AllocateStack(ProcessInfo *pInfo,
               ThreadPermissionLevel perm_level);
 
 /**
@@ -202,7 +203,7 @@ CreateThread(UID parentProcess,
  * @return     The UID of the new thread.
  */
 UID
-CreateThreadADV(UID parentProcess,
+CreateThreadADV(ProcessInfo *pInfo,
                 bool newProcess,
                 ThreadPermissionLevel perm_level,
                 uint64_t user_stack_bottom,

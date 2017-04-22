@@ -1,14 +1,10 @@
-/*
-The MIT License (MIT)
+/**
+ * Copyright (c) 2017 Himanshu Goel
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 
-Copyright (c) 2016-2017 Himanshu Goel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 #include "main.h"
 #include "common.h"
 #include "types.h"
@@ -50,18 +46,17 @@ kernel_main_init(void) {
     UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
     SetThreadState(tid, ThreadState_Initialize);
 
-
     seed(GetTimerValue());
     InterruptMan_Initialize();
 
     SyscallMan_Initialize();
     Syscall_Initialize();
-    smp_unlock_cores();
+    //smp_unlock_cores();
 
     //CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     //StartProcess(cpid);
 
-    //load_exec(cpid, "userboot.bin");
+    load_exec(ROOT_PID, "userboot.bin");
     SetupPreemption();
 
     while(1)
@@ -70,6 +65,9 @@ kernel_main_init(void) {
 
 void
 load_exec(UID pid, const char *exec) {
+    
+    UID tid = CreateThread(pid, TRUE, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
+    
     void *exec_loc = NULL;
     uint64_t exec_size = 0;
 
@@ -83,7 +81,7 @@ load_exec(UID pid, const char *exec) {
 
     //Map the executable into the process
     ProcessInfo *pinfo = NULL;
-    if(GetProcessReference(pid, &pinfo) != ThreadError_None)
+    if(GetProcessReference(tid, &pinfo) != ThreadError_None)
         return;
 
     if(LockSpinlock(pinfo->lock) == NULL)
@@ -116,9 +114,7 @@ load_exec(UID pid, const char *exec) {
     UnlockSpinlock(pinfo->lock);
     ReturnProcessReference(pid);
 
-    UID tid = CreateThread(pid, FALSE, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     SetThreadState(tid, ThreadState_Initialize);
-
     return;
 }
 
@@ -129,8 +125,7 @@ static volatile _Atomic int smp_core_count = 0;
 void
 kernel_main(void) {
     while(1)
-        ;
-    //WakeReadyThreads();
+        WakeReadyThreads();
 }
 
 void

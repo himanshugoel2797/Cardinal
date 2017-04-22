@@ -173,11 +173,7 @@ Thread_IsInitialized(void) {
     return isInited;
 }
 
-uint64_t AllocateStack(UID parentProcess, ThreadPermissionLevel perm_level) {
-
-    ProcessInfo *pInfo = NULL;
-    if (GetProcessReference(parentProcess, &pInfo) == ThreadError_UIDNotFound)
-        return -1;
+uint64_t AllocateStack(ProcessInfo *pInfo, ThreadPermissionLevel perm_level) {
 
     uint64_t stack_Size = (perm_level == ThreadPermissionLevel_User)
                           ? USER_STACK_SIZE
@@ -196,6 +192,7 @@ uint64_t AllocateStack(UID parentProcess, ThreadPermissionLevel perm_level) {
                                        ? MemoryAllocationFlags_User
                                        : 0));
 
+    //TODO: debug block.
     if (user_stack_base == 0)
         while (1)
             ;
@@ -219,9 +216,6 @@ uint64_t AllocateStack(UID parentProcess, ThreadPermissionLevel perm_level) {
              ? MemoryAllocationFlags_User
              : MemoryAllocationFlags_Kernel));
 
-    UnlockSpinlock(pInfo->lock);
-    ReturnProcessReference(parentProcess);
-
     return user_stack_base;
 }
 
@@ -230,9 +224,69 @@ uint64_t GetStackSize(ThreadPermissionLevel perm_level) {
            : KERNEL_STACK_SIZE;
 }
 
+ThreadError
+CreateProcess(UID parentProcess, ProcessInfo **pInf) {
+
+        ProcessInfo *pInfo = NULL;
+        if(GetProcessReference(parentProcess, &pInfo) != ThreadError_None)
+            return ThreadError_UIDNotFound;
+
+        ProcessInfo *nProc = kmalloc(sizeof(ProcessInfo));
+        if(nProc == NULL) {
+            ReturnProcessReference(parentProcess);
+            return ThreadError_Unknown;
+        }
+
+        nProc->lock = CreateSpinlock();
+        nProc->PID = new_thd_uid();
+        nProc->ParentID = parentProcess;
+        nProc->UserID = pInfo->UserID;
+        nProc->GroupID = pInfo->GroupID;
+        nProc->Status = ProcessStatus_Executing;
+        nProc->PageTable = kmalloc(sizeof(ManagedPageTable));
+        if(nProc->PageTable == NULL) {
+            FreeSpinlock(nProc->lock);
+            kfree(nProc);
+            ReturnProcessReference(parentProcess);
+            return ThreadError_Unknown;
+        }
+
+        if(CreateVirtualMemoryInstance(nProc->PageTable) != MemoryAllocationErrors_None) {
+            kfree(nProc->PageTable);
+            FreeSpinlock(nProc->lock);
+            kfree(nProc);
+            ReturnProcessReference(parentProcess);
+            return ThreadError_Unknown;
+        }
+
+        //TODO: Descriptor table
+
+        *pInf = nProc;
+
+        ReturnProcessReference(parentProcess);
+        return ThreadError_None;
+}
+
 UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_level,
                  ThreadEntryPoint entry_point, void *arg) {
-    uint64_t user_stack_base = AllocateStack(parentProcess, perm_level);
+
+    ProcessInfo *pInf = NULL;
+    if(newProcess) {
+        if(CreateProcess(parentProcess, &pInf) != ThreadError_None)
+            return -1;
+
+        LockSpinlock(pInf->lock);
+    }else{
+        if(GetProcessReference(parentProcess, &pInf) != ThreadError_None)
+            return -1;
+
+        if(LockSpinlock(pInf->lock) == NULL){
+            ReturnProcessReference(parentProcess);
+            return -1;
+        }
+    }
+
+    uint64_t user_stack_base = AllocateStack(pInf, perm_level);
     uint64_t user_stack_bottom = user_stack_base;
 
     user_stack_base += GetStackSize(perm_level) -
@@ -266,18 +320,20 @@ UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_
         regs.cs = 0x08 | 0;  // DPL: 0
     }
 
-    return CreateThreadADV(parentProcess, newProcess, perm_level, user_stack_bottom, &regs,
+    UID retVal = CreateThreadADV(pInf, newProcess, perm_level, user_stack_bottom, &regs,
                            NULL);
+    
+    UnlockSpinlock(pInf->lock);
+    if(!newProcess)
+        ReturnProcessReference(parentProcess);
+
+    return retVal;
 }
 
-UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_level,
+UID CreateThreadADV(ProcessInfo *pInfo, bool newProcess, ThreadPermissionLevel perm_level,
                     uint64_t user_stack_bottom, Registers *regs, void *tls) {
 
-    ProcessInfo *pInfo = NULL;
-    if(GetProcessReference(parentProcess, &pInfo) != ThreadError_None)
-        return -1;
-
-    if(LockSpinlock(pInfo->lock) == NULL)
+    if(pInfo == NULL)
         return -1;
 
     ThreadInfo *thd = kmalloc(sizeof(ThreadInfo));
@@ -289,7 +345,7 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
     thd->State = ThreadState_Created;
     thd->PermissionLevel = perm_level;
     thd->SleepDurationNS = 0;
-    thd->KernelStackBase = AllocateStack(parentProcess, ThreadPermissionLevel_Kernel);
+    thd->KernelStackBase = AllocateStack(pInfo, ThreadPermissionLevel_Kernel);
     if(thd->KernelStackBase == (uint64_t)-1)
         goto error_exit;
 
@@ -313,33 +369,13 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
 
     SetupArchSpecificData(thd, regs, tls);
 
-    thd->ID = new_thd_uid();
+    if(newProcess)
+        thd->ID = pInfo->PID;
+    else
+        thd->ID = new_thd_uid();
 
     // Setup process information pointer
-    if(newProcess) {
-        ProcessInfo *nProc = kmalloc(sizeof(ProcessInfo));
-        if(nProc == NULL)
-            //TODO: handle error
-            goto error_exit;
-
-        nProc->lock = CreateSpinlock();
-        nProc->PID = thd->ID;
-        nProc->ParentID = parentProcess;
-        nProc->UserID = pInfo->UserID;
-        nProc->GroupID = pInfo->GroupID;
-        nProc->Status = ProcessStatus_Executing;
-        nProc->PageTable = kmalloc(sizeof(ManagedPageTable));
-        if(CreateVirtualMemoryInstance(nProc->PageTable) != MemoryAllocationErrors_None)
-            //TODO: handle error properly
-            goto error_exit;
-
-        //TODO: Descriptor table
-
-        thd->Process = nProc;
-
-    } else {
-        thd->Process = pInfo;
-    }
+    thd->Process = pInfo;
 
     BTree_Insert(thds, thd->ID, thd);
 
@@ -354,9 +390,6 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
     UnlockSpinlock(sync_lock);
     UnlockSpinlock(thd->lock);
 
-    UnlockSpinlock(pInfo->lock);
-    ReturnProcessReference(parentProcess);
-
     return tid;
 
 error_exit:
@@ -364,9 +397,6 @@ error_exit:
     UnlockSpinlock(thd->lock);
     FreeSpinlock(thd->lock);
     kfree(thd);
-
-    UnlockSpinlock(pInfo->lock);
-    ReturnProcessReference(parentProcess);
 
     return -1;
 }
