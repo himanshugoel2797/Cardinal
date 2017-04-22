@@ -1,5 +1,5 @@
 // Copyright (c) 2017 Himanshu Goel
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -7,7 +7,7 @@
 #define _LIB_CARDINAL_SYSCALL_LIST
 
 #ifdef __cplusplus
-    extern "C" {
+extern "C" {
 #endif
 
 typedef enum {

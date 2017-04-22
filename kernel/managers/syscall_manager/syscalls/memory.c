@@ -39,7 +39,7 @@ Brk_Syscall(void *targ_brk_address) {
                                MemoryAllocationType_Heap,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-        if(LockSpinlock(p_info->lock) == NULL){
+        if(LockSpinlock(p_info->lock) == NULL) {
             SyscallSetErrno(-EINVAL);
 
             ReturnProcessReference(GetCurrentProcessUID());
@@ -64,7 +64,7 @@ Brk_Syscall(void *targ_brk_address) {
     if(area_base <= (uint64_t)targ_brk_address && area_top > (uint64_t)targ_brk_address) {
         //expand the heap by a few pages and return the new heap break
 
-        if(LockSpinlock(p_info->lock) == NULL){
+        if(LockSpinlock(p_info->lock) == NULL) {
             SyscallSetErrno(-EINVAL);
             ReturnProcessReference(GetCurrentProcessUID());
             UnlockSpinlock(brk_lock);
@@ -128,7 +128,7 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
         return 0;
     }
 
-    if(LockSpinlock(p_info->lock) == NULL){
+    if(LockSpinlock(p_info->lock) == NULL) {
         SyscallSetErrno(-EINVAL);
         ReturnProcessReference(mmap_params->TargetPID);
         return 0;
@@ -208,7 +208,7 @@ R0_Unmap_Syscall(UID pid,
         return -1;
     }
 
-    if(LockSpinlock(p_info->lock) == NULL){
+    if(LockSpinlock(p_info->lock) == NULL) {
         SyscallSetErrno(-EINVAL);
         ReturnProcessReference(pid);
         return -1;
@@ -236,7 +236,7 @@ Unmap_Syscall(uint64_t addr,
         return -1;
     }
 
-    if(LockSpinlock(p_info->lock) == NULL){
+    if(LockSpinlock(p_info->lock) == NULL) {
         SyscallSetErrno(-EINVAL);
         ReturnProcessReference(GetCurrentProcessUID());
         return -1;
@@ -302,7 +302,7 @@ R01_GetPhysicalAddress_Syscall(UID pid,
         return 0;
     }
 
-    if(LockSpinlock(p_info->lock) == NULL){
+    if(LockSpinlock(p_info->lock) == NULL) {
         SyscallSetErrno(-EINVAL);
         ReturnProcessReference(pid);
         return 0;

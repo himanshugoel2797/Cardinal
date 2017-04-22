@@ -110,7 +110,7 @@ load_exec(UID pid, const char *exec) {
 
     UID tid = CreateThread(pid, FALSE, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
     SetThreadState(tid, ThreadState_Initialize);
-    
+
     return;
 }
 
@@ -145,7 +145,7 @@ idle_main(void) {
 
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
     StartProcess(cpid);
-*/
+    */
     while(1);
 }
 
@@ -168,7 +168,7 @@ smp_core_main(int (*getCoreData)(void)) {
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
 
-*/
+    */
     SetupPreemption();
     while(1);
 }

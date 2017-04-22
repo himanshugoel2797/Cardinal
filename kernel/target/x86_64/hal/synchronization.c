@@ -169,7 +169,7 @@ TryLockSpinlock(Spinlock primitive) {
 
     IntLockSpinlock(primitive);
     volatile uint64_t *prim = (volatile uint64_t*)primitive;
-    
+
     if(prim[1] == (APIC_GetID() + 1)) {
         locked = TRUE;
         prim[2]++;
@@ -206,7 +206,7 @@ LockSpinlock(Spinlock primitive) {
         if(prim[1] == (APIC_GetID() + 1)) {
             locked = TRUE;
             prim[2]++;
-        } else if(prim[4] == 1) { 
+        } else if(prim[4] == 1) {
             locked = FALSE;
             deleting = TRUE;
         } else if(prim[1] == 0 && prim[2] == 0) {
@@ -273,7 +273,7 @@ FinalLockSpinlock(Spinlock primitive) {
         deleting = TRUE;    //Another thread has already started the deletion, abort.
     else
         prim[4] = 1;    //Prevent any further locks from succeeding, anything that uses this lock should now fail.
-    
+
     __asm__ volatile("":::"memory");
     IntUnlockSpinlock(primitive);
     __asm__ volatile("push %0\n\tpopfq" :: "r"(iflag) : "cc");

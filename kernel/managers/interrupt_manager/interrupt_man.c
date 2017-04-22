@@ -47,7 +47,7 @@ InterruptMan_RegisterProcess(UID pid,
     if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL){
+    if(LockSpinlock(pInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return -1;
     }

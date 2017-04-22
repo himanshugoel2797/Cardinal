@@ -69,7 +69,7 @@ void *GetPhysicalAddressPageTable(ManagedPageTable *src, void *virtualAddress) {
 MemoryAllocationErrors CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if (inst != NULL) {
         LockSpinlock(vmem_lock);
-        
+
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
 
         if (GetActiveCoreCount() < 64)
@@ -90,7 +90,7 @@ MemoryAllocationErrors CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 
 void FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if (inst != NULL) {
-        
+
         // The kernel expects the user mode to have freed up any and all memory as
         // needed
         if(FinalLockSpinlock(inst->lock) == NULL) {
@@ -210,8 +210,7 @@ MemoryAllocationErrors MapPage(ManagedPageTable *pageTable,
     allocMap->Flags = flags;
     allocMap->AllocationType = allocType;
 
-    if(LockSpinlock(pageTable->lock) == NULL)
-    {
+    if(LockSpinlock(pageTable->lock) == NULL) {
         kfree(allocMap);
         return MemoryAllocationErrors_Deleting;
     }
@@ -629,11 +628,11 @@ void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
 
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
 
-    if(LockSpinlock(procInfo->lock) == NULL){
+    if(LockSpinlock(procInfo->lock) == NULL) {
         //TODO: switch to another task, this one's being deleted anyway
     }
-    
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL) {
         //TODO: switch to another task
     }
 
@@ -942,12 +941,12 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
     if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    if(LockSpinlock(procInfo->lock) == NULL){
+    if(LockSpinlock(procInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }
 
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }
@@ -1015,12 +1014,12 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
     if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    if(LockSpinlock(procInfo->lock) == NULL){
+    if(LockSpinlock(procInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }
 
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }
@@ -1092,12 +1091,12 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
     if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    if(LockSpinlock(procInfo->lock) == NULL){
+    if(LockSpinlock(procInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }
 
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL) {
         ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
     }

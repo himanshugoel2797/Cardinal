@@ -47,27 +47,25 @@ static UID new_thd_uid(void) {
 }
 
 UID GetCurrentThreadUID(void) {
-    if (all_states != NULL && all_states[*core_id].cur_thread != NULL){
+    if (all_states != NULL && all_states[*core_id].cur_thread != NULL) {
 
         if(LockSpinlock(all_states[*core_id].cur_thread->lock) == NULL)
             return -1;
-            
+
         UID retVal = all_states[*core_id].cur_thread->ID;
         UnlockSpinlock(all_states[*core_id].cur_thread->lock);
         return retVal;
-    }
-    else
+    } else
         return -1;
 }
 
 UID GetCurrentProcessUID(void) {
-    if (all_states != NULL && all_states[*core_id].cur_thread != NULL){
+    if (all_states != NULL && all_states[*core_id].cur_thread != NULL) {
 
         if(LockSpinlock(all_states[*core_id].cur_thread->lock) == NULL)
             return -1;
-            
-        if(LockSpinlock(all_states[*core_id].cur_thread->Process->lock) == NULL)
-        {
+
+        if(LockSpinlock(all_states[*core_id].cur_thread->Process->lock) == NULL) {
             UnlockSpinlock(all_states[*core_id].cur_thread->lock);
             return -1;
         }
@@ -77,8 +75,7 @@ UID GetCurrentProcessUID(void) {
         UnlockSpinlock(all_states[*core_id].cur_thread->Process->lock);
         UnlockSpinlock(all_states[*core_id].cur_thread->lock);
         return retVal;
-    }
-    else
+    } else
         return -1;
 }
 
@@ -113,13 +110,12 @@ SetProcessGroupID(UID pid, UID gid) {
 }
 
 UID GetCurrentProcessParentUID(void) {
-    if (all_states != NULL && all_states[*core_id].cur_thread != NULL){
+    if (all_states != NULL && all_states[*core_id].cur_thread != NULL) {
 
         if(LockSpinlock(all_states[*core_id].cur_thread->lock) == NULL)
             return -1;
-            
-        if(LockSpinlock(all_states[*core_id].cur_thread->Process->lock) == NULL)
-        {
+
+        if(LockSpinlock(all_states[*core_id].cur_thread->Process->lock) == NULL) {
             UnlockSpinlock(all_states[*core_id].cur_thread->lock);
             return -1;
         }
@@ -129,8 +125,7 @@ UID GetCurrentProcessParentUID(void) {
         UnlockSpinlock(all_states[*core_id].cur_thread->Process->lock);
         UnlockSpinlock(all_states[*core_id].cur_thread->lock);
         return retVal;
-    }
-    else
+    } else
         return -1;
 }
 
@@ -160,7 +155,7 @@ Thread_IsInitialized(void) {
 }
 
 uint64_t AllocateStack(UID parentProcess, ThreadPermissionLevel perm_level) {
-    
+
     ProcessInfo *pInfo = NULL;
     if (GetProcessReference(parentProcess, &pInfo) == ThreadError_UIDNotFound)
         return -1;
@@ -258,11 +253,11 @@ UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_
 
 UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_level,
                     uint64_t user_stack_bottom, Registers *regs, void *tls) {
-    
+
     ProcessInfo *pInfo = NULL;
     if(GetProcessReference(parentProcess, &pInfo) != ThreadError_None)
         return -1;
-    
+
     if(LockSpinlock(pInfo->lock) == NULL)
         return -1;
 
@@ -278,7 +273,7 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
     thd->KernelStackBase = AllocateStack(parentProcess, ThreadPermissionLevel_Kernel);
     if(thd->KernelStackBase == (uint64_t)-1)
         goto error_exit;
-    
+
     thd->FPUState = kmalloc(GetFPUStateSize() + 64);
     thd->ArchSpecificData = kmalloc(ARCH_SPECIFIC_SPACE_SIZE);
     thd->Errno = 0;
@@ -342,7 +337,7 @@ UID CreateThreadADV(UID parentProcess, bool newProcess, ThreadPermissionLevel pe
 
     UnlockSpinlock(pInfo->lock);
     ReturnProcessReference(parentProcess);
-    
+
     return tid;
 
 error_exit:
@@ -367,7 +362,7 @@ ThreadError GetThreadReference(UID id, ThreadInfo **thd) {
 ThreadError GetProcessReference(UID pid, ProcessInfo **pInfo) {
     if(pInfo == NULL)
         return ThreadError_InvalidParams;
-    
+
     ThreadInfo *thd = NULL;
     if(GetThreadReference(pid, &thd) != ThreadError_None)
         return ThreadError_UIDNotFound;
@@ -381,7 +376,7 @@ ThreadError GetProcessReference(UID pid, ProcessInfo **pInfo) {
 
 ThreadError
 ReturnProcessReference(UID pid) {
-    
+
     ThreadInfo *thd = NULL;
     if(GetThreadReference(pid, &thd) != ThreadError_None)
         return ThreadError_UIDNotFound;
@@ -522,26 +517,25 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         prevThread->TimeSlice -= THREAD_PREEMPTION_COST;
 
         if(LockSpinlock(prevThread->lock) != NULL) {
-        switch (prevThread->State) {
-        case ThreadState_Exiting:
-            {
+            switch (prevThread->State) {
+            case ThreadState_Exiting: {
                 //TODO: Delete the thread
                 //TODO: Ensure that a thread's spinlock is deleted after every reference to the thread has been removed.
             }
             break;
-        case ThreadState_Sleep:
-            break;
-        default:
-            if (prevThread->TimeSlice <= 0) {
-                prevThread->TimeSlice = THREAD_TOTAL_TIMESLICE;
-                Heap_Insert(all_states[*core_id].back_heap, prevThread->TimeSlice,
-                            prevThread);
-            } else {
-                Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice,
-                            prevThread);
+            case ThreadState_Sleep:
+                break;
+            default:
+                if (prevThread->TimeSlice <= 0) {
+                    prevThread->TimeSlice = THREAD_TOTAL_TIMESLICE;
+                    Heap_Insert(all_states[*core_id].back_heap, prevThread->TimeSlice,
+                                prevThread);
+                } else {
+                    Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice,
+                                prevThread);
+                }
+                break;
             }
-            break;
-        }
         }
     }
 
@@ -614,8 +608,8 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         bool currentlyLocked = FALSE;
         if(LockSpinlock(next_thread->Process->lock) == NULL) {
             next_thread->State = ThreadState_Exiting;
-        }else if (next_thread->Process->Status == ProcessStatus_Terminating &&
-                GetCurrentProcessUID() != next_thread->Process->PID) {
+        } else if (next_thread->Process->Status == ProcessStatus_Terminating &&
+                   GetCurrentProcessUID() != next_thread->Process->PID) {
             next_thread->State = ThreadState_Exiting;
             currentlyLocked = TRUE;
         }
@@ -629,12 +623,12 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Sleep:
             break;
         default: {
-                exit_loop = TRUE;
-            }
-            break;
+            exit_loop = TRUE;
+        }
+        break;
         }
 
-        if(!exit_loop){
+        if(!exit_loop) {
             if(currentlyLocked) UnlockSpinlock(next_thread->Process->lock);
             UnlockSpinlock(next_thread->lock);
         }
@@ -645,8 +639,8 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
 
 void SchedulerCycle(Registers *regs) {
     if (all_states[*core_id].cur_thread != NULL) {
-        
-        if(LockSpinlock(all_states[*core_id].cur_thread->lock) != NULL){
+
+        if(LockSpinlock(all_states[*core_id].cur_thread->lock) != NULL) {
             SaveFPUState(all_states[*core_id].cur_thread->FPUState);
             SaveTask(all_states[*core_id].cur_thread, regs);
             UnlockSpinlock(all_states[*core_id].cur_thread->lock);
@@ -727,7 +721,7 @@ void SetThreadErrno(UID id, uint64_t errno) {
     if(GetThreadReference(id, &thd) != ThreadError_None)
         return;
 
-    if (thd != NULL){
+    if (thd != NULL) {
         if(LockSpinlock(thd->lock) == NULL)
             return;
 
@@ -741,7 +735,7 @@ uint64_t GetThreadErrno(UID id) {
     if(GetThreadReference(id, &thd) != ThreadError_None)
         return -1;
 
-    if (thd != NULL){
+    if (thd != NULL) {
 
         if(LockSpinlock(thd->lock) == NULL)
             return -1;
@@ -750,7 +744,7 @@ uint64_t GetThreadErrno(UID id) {
 
         UnlockSpinlock(thd->lock);
         return retVal;
-    } 
+    }
 
     return -1;
 }
@@ -807,7 +801,7 @@ void WakeReadyThreads(void) {
     ThreadInfo *thd = (ThreadInfo *)List_RotNext(sleeping_thds);
 
     if (thd != NULL) {
-        if(LockSpinlock(thd->lock) == NULL){
+        if(LockSpinlock(thd->lock) == NULL) {
             return;
         }
 
