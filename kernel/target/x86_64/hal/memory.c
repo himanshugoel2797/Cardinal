@@ -56,9 +56,12 @@ void *GetPhysicalAddress(void *virtualAddress) {
 }
 
 void *GetPhysicalAddressPageTable(ManagedPageTable *src, void *virtualAddress) {
-    LockSpinlock(src->lock);
+    if(LockSpinlock(src->lock) == NULL)
+        return NULL;
+
     void *ret = VirtMemMan_GetPhysicalAddress((PML_Instance)src->PageTable,
                 virtualAddress);
+
     UnlockSpinlock(src->lock);
     return ret;
 }
@@ -89,11 +92,12 @@ MemoryAllocationErrors CreateVirtualMemoryInstance(ManagedPageTable *inst) {
 
 void FreeVirtualMemoryInstance(ManagedPageTable *inst) {
     if (inst != NULL) {
-        LockSpinlock(vmem_lock);
-
+        
         // The kernel expects the user mode to have freed up any and all memory as
         // needed
-        LockSpinlock(inst->lock);
+        if(FinalLockSpinlock(inst->lock) == NULL) {
+            return; //Instance is being deleted by another thread
+        }
 
         for (int i = MAX_ALLOCATION_TYPE_BIT; i >= 0; i--) {
             WipeMemoryTypeFromTable(inst, 1 << i);
@@ -108,10 +112,6 @@ void FreeVirtualMemoryInstance(ManagedPageTable *inst) {
 
         UnlockSpinlock(inst->lock);
         FreeSpinlock(inst->lock);
-
-        memset(inst, 0, sizeof(ManagedPageTable));
-
-        UnlockSpinlock(vmem_lock);
     }
 }
 
@@ -122,8 +122,8 @@ ManagedPageTable *SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
     *curPageTable = inst;
     LockSpinlock(vmem_lock);
 
-    LockSpinlock(inst->lock);
-    RefInc(&inst->ref);
+    if(LockSpinlock(inst->lock) == NULL)
+        return NULL;
 
     VirtMemMan_SetCurrent((PML_Instance)inst->PageTable);
     // Mark this memory instance as inactive on this core
@@ -134,16 +134,14 @@ ManagedPageTable *SetActiveVirtualMemoryInstance(ManagedPageTable *inst) {
             (1 << (GetCoreIndex() % 64));
     UnlockSpinlock(inst->lock);
 
-    if (tmp != NULL) {
-        LockSpinlock(tmp->lock);
+    if (tmp != NULL && LockSpinlock(tmp->lock) != NULL) {
+
         if (GetActiveCoreCount() < 64)
             tmp->SmallActivityBitmap &= ~(1 << GetCoreIndex());
         else
             tmp->LargeActivityBitmap[GetCoreIndex() / 64] &=
                 ~(1 << (GetCoreIndex() % 64));
         UnlockSpinlock(tmp->lock);
-
-        RefDec(&tmp->ref);
     }
 
     UnlockSpinlock(vmem_lock);
@@ -214,7 +212,11 @@ MemoryAllocationErrors MapPage(ManagedPageTable *pageTable,
     allocMap->Flags = flags;
     allocMap->AllocationType = allocType;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+    {
+        kfree(allocMap);
+        return MemoryAllocationErrors_Deleting;
+    }
 
     if (pageTable->UserMap != NULL && KernelMap != NULL) {
         MemoryAllocationsMap *map = NULL;
@@ -327,7 +329,8 @@ MemoryAllocationErrors ChangePageFlags(ManagedPageTable *pageTable,
     if ((flags & MemoryAllocationFlags_User) == MemoryAllocationFlags_User)
         perms |= MEM_USER;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     MemoryAllocationsMap *map = NULL;
     if (flags & MemoryAllocationFlags_User)
@@ -359,7 +362,8 @@ MemoryAllocationErrors ChangePageFlags(ManagedPageTable *pageTable,
 
 MemoryAllocationErrors UnmapPage(ManagedPageTable *pageTable,
                                  uint64_t virtualAddress, size_t size) {
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     if (pageTable->UserMap != NULL && KernelMap != NULL) {
         MemoryAllocationFlags flags = 0;
@@ -483,7 +487,8 @@ MemoryAllocationErrors FindFreeVirtualAddress(ManagedPageTable *pageTable,
         MemoryAllocationFlags flags) {
     if (virtualAddress == NULL) return MemoryAllocationErrors_Unknown;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     MEM_SECURITY_PERMS perms = 0;
     if (flags & MemoryAllocationFlags_Kernel) perms |= MEM_KERNEL;
@@ -513,7 +518,8 @@ MemoryAllocationErrors GetPageSize(ManagedPageTable *pageTable,
     if (pageTable == NULL | pageSize == NULL)
         return MemoryAllocationErrors_Unknown;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     uint64_t result = VirtMemMan_GetPageSize((PML_Instance)pageTable->PageTable,
                       virtualAddress);
@@ -565,7 +571,8 @@ MemoryAllocationErrors MakeReservationReal(ManagedPageTable *pageTable,
         uint64_t virtualAddress) {
     if (pageTable == NULL) return MemoryAllocationErrors_Unknown;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
     MemoryAllocationFlags AllocationFlags = 0;
@@ -615,7 +622,7 @@ void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
         __asm__("cli\n\thlt" ::"a"(instruction_pointer));
     }
     // Check the current process's memory info table
-    ProcessInformation *procInfo = NULL;
+    ProcessInfo *procInfo = NULL;
     GetProcessReference(GetCurrentProcessUID(), &procInfo);
     if (procInfo == NULL) {
         __asm__("cli\n\thlt" ::"a"(instruction_pointer), "b"(1), "c"(0));
@@ -624,8 +631,13 @@ void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
 
     uint64_t aligned_vaddr = virtualAddress & PAGE_ALIGN_MASK;
 
-    LockSpinlock(procInfo->lock);
-    LockSpinlock(procInfo->PageTable->lock);
+    if(LockSpinlock(procInfo->lock) == NULL){
+        //TODO: switch to another task, this one's being deleted anyway
+    }
+    
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+        //TODO: switch to another task
+    }
 
     MemoryAllocationFlags alloc_perms = 0;
     GetAddressPermissions(procInfo->PageTable, virtualAddress, NULL, &alloc_perms,
@@ -683,7 +695,8 @@ void GetAddressPermissions(ManagedPageTable *pageTable, uint64_t addr,
     MemoryAllocationFlags a = 0;
     MemoryAllocationType t = 0;
 
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return;
 
     MemoryAllocationsMap *map = KernelMap;
 
@@ -866,7 +879,8 @@ void WipeMemoryTypeFromTable(ManagedPageTable *pageTable,
         return;
 
     // Walk the page table, unmapping anything that has the same allocation type
-    LockSpinlock(pageTable->lock);
+    if(LockSpinlock(pageTable->lock) == NULL)
+        return;
 
     MemoryAllocationsMap *map = pageTable->UserMap;
     while (map != NULL) {
@@ -929,8 +943,11 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
     if (GetProcessReference(pid, &procInfo) != ProcessErrors_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    LockSpinlock(procInfo->lock);
-    LockSpinlock(procInfo->PageTable->lock);
+    if(LockSpinlock(procInfo->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
+
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     FindFreeVirtualAddress(procInfo->PageTable, virtualAddress, length, allocType,
                            flags);
@@ -992,8 +1009,11 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
     if (GetProcessReference(pid, &procInfo) != ProcessErrors_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    LockSpinlock(procInfo->lock);
-    LockSpinlock(procInfo->PageTable->lock);
+    if(LockSpinlock(procInfo->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
+
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     MemoryAllocationsMap *map = NULL;
     if (flags & MemoryAllocationFlags_Kernel)
@@ -1067,8 +1087,11 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
     *cacheMode = (CachingMode)identifiers[2];
     *length = shmem_info->Length;
 
-    LockSpinlock(procInfo->lock);
-    LockSpinlock(procInfo->PageTable->lock);
+    if(LockSpinlock(procInfo->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
+
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
+        return MemoryAllocationErrors_Deleting;
 
     FindFreeVirtualAddress(procInfo->PageTable, virtualAddress, *length,
                            MemoryAllocationType_MMap, *flags);

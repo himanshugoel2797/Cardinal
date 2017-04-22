@@ -94,6 +94,8 @@ typedef struct ProcessInfo {
     UID                 UserID;
     UID                 GroupID;
 
+    ProcessStatus       Status;
+
     //TODO: Use descriptor system for tracking interrupt registration
     DescriptorTable     Descriptors;
 

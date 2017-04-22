@@ -35,7 +35,12 @@ Brk_Syscall(void *targ_brk_address) {
                                MemoryAllocationType_Heap,
                                MemoryAllocationFlags_Write | MemoryAllocationFlags_User);
 
-        LockSpinlock(p_info->lock);
+        if(LockSpinlock(p_info->lock) == NULL){
+            SyscallSetErrno(-EINVAL);
+            UnlockSpinlock(brk_lock);
+            return 0;
+        }
+
         if(p_info->HeapBreak == 0)p_info->HeapBreak = addr;
         else addr = p_info->HeapBreak;
         UnlockSpinlock(p_info->lock);
@@ -51,7 +56,11 @@ Brk_Syscall(void *targ_brk_address) {
     if(area_base <= (uint64_t)targ_brk_address && area_top > (uint64_t)targ_brk_address) {
         //expand the heap by a few pages and return the new heap break
 
-        LockSpinlock(p_info->lock);
+        if(LockSpinlock(p_info->lock) == NULL){
+            SyscallSetErrno(-EINVAL);
+            UnlockSpinlock(brk_lock);
+            return 0;
+        }
 
         if((uint64_t)targ_brk_address <= p_info->HeapBreak) {
 
@@ -107,10 +116,16 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
         return 0;
     }
 
+    if(LockSpinlock(p_info->lock) == NULL){
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
+
 #ifdef DEBUG
     ASSERT((mmap_params->PhysicalAddress % PAGE_SIZE == 0), "Physical address needs to be PAGE_SIZE aligned.");
 #else
     if(mmap_params->PhysicalAddress % PAGE_SIZE) {
+        UnlockSpinlock(p_info->lock);
         SyscallSetErrno(-EINVAL);
         return 0;
     }
@@ -134,6 +149,7 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
                                   mmap_params->AllocationFlags) != MemoryAllocationErrors_None) {
             SyscallSetErrno(-ENOMEM);
             UnlockSpinlock(map_lock);
+            UnlockSpinlock(p_info->lock);
             return 0;
         }
     }
@@ -148,11 +164,13 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
 
         SyscallSetErrno(-ENOMEM);
         UnlockSpinlock(map_lock);
+        UnlockSpinlock(p_info->lock);
         return 0;
     } else {
 
         SyscallSetErrno(0);
         UnlockSpinlock(map_lock);
+        UnlockSpinlock(p_info->lock);
         return virt_addr;
     }
 }
@@ -173,6 +191,11 @@ R0_Unmap_Syscall(UID pid,
         return -1;
     }
 
+    if(LockSpinlock(p_info->lock) == NULL){
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
     if(size % PAGE_SIZE)
         size += PAGE_SIZE - size % PAGE_SIZE;
 
@@ -180,6 +203,7 @@ R0_Unmap_Syscall(UID pid,
               addr,
               size);
 
+    UnlockSpinlock(p_info->lock);
     return SyscallSetErrno(0);
 }
 
@@ -193,6 +217,11 @@ Unmap_Syscall(uint64_t addr,
         return -1;
     }
 
+    if(LockSpinlock(p_info->lock) == NULL){
+        SyscallSetErrno(-EINVAL);
+        return -1;
+    }
+
     if(size % PAGE_SIZE)
         size += PAGE_SIZE - size % PAGE_SIZE;
 
@@ -200,6 +229,7 @@ Unmap_Syscall(uint64_t addr,
               addr,
               size);
 
+    UnlockSpinlock(p_info->lock);
     return SyscallSetErrno(0);
 }
 
@@ -251,8 +281,11 @@ R01_GetPhysicalAddress_Syscall(UID pid,
         return 0;
     }
 
-    LockSpinlock(p_info->lock);
-
+    if(LockSpinlock(p_info->lock) == NULL){
+        SyscallSetErrno(-EINVAL);
+        return 0;
+    }
+    
     SyscallSetErrno(0);
     uint64_t retVal = (uint64_t)GetPhysicalAddressPageTable(p_info->PageTable, addr);
 

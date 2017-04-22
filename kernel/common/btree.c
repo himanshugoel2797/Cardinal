@@ -89,12 +89,16 @@ get(Node *nodes,
         return NULL;  //Invalid index
 
     if(level == 0) {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return NULL;
+
         void* retVal = (void*)nodes->vals[pos];
         UnlockSpinlock(nodes->lock);
         return retVal;
     } else {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return NULL;
+
         if(nodes->children[pos] == NULL) {
             UnlockSpinlock(nodes->lock);
             return NULL;
@@ -117,7 +121,8 @@ remove(Node *nodes,
         return NULL;  //Invalid index
 
     if(level == 0) {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return NULL;
 
         if(nodes->vals[pos] != 0)
             nodes->cnt--;
@@ -129,7 +134,8 @@ remove(Node *nodes,
         return retVal;
 
     } else {
-        LockSpinlock(nodes->lock);
+        if(LockSpinlock(nodes->lock) == NULL)
+            return NULL;
 
         if(nodes->children[pos] == NULL) {
             UnlockSpinlock(nodes->lock);
@@ -159,9 +165,12 @@ delete(Node *nodes,
     for(int pos = 0; pos <= INDEX_MAX; pos++) {
         if(nodes->children[pos] != NULL) {
 
+            FinalLockSpinlock(nodes->children[pos]->lock);
+
             if(level > 0)
                 delete(nodes->children[pos], level - 1);
 
+            UnlockSpinlock(nodes->children[pos]->lock);
             FreeSpinlock(nodes->children[pos]->lock);
             kfree(nodes->children[pos]);
         }
@@ -238,7 +247,8 @@ BTree_Delete(BTree *h) {
 
 uint64_t
 BTree_GetKey(BTree *h) {
-    LockSpinlock(h->key_lock);
+    if(LockSpinlock(h->key_lock) == NULL)
+        return -1;
 
     uint64_t key = h->key++;
     for(int i = 0; i < h->max_levels; i++) {

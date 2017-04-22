@@ -30,7 +30,9 @@ typedef struct List {
 List*
 List_Create(Spinlock spin) {
     List* t = kmalloc(sizeof(List));
-    LockSpinlock(spin);
+    if(LockSpinlock(spin) == NULL)
+        return NULL;
+
     t->nodes = NULL;
     t->last = NULL;
     t->last_accessed_node = NULL;
@@ -47,8 +49,9 @@ List_AddEntry(List *a,
     ListNode *l = kmalloc(sizeof(ListNode));
     if(l == NULL)return ListError_AllocationFailed;
 
+    if(LockSpinlock(a->spin) == NULL)
+        return ListError_Deleting;
 
-    LockSpinlock(a->spin);
     l->prev = a->last;
     l->value = value;
     l->next = NULL;
@@ -66,7 +69,9 @@ List_AddEntry(List *a,
 
 uint64_t
 List_Length(List *a) {
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return 0;
+
     uint64_t val = a->entry_count;
     UnlockSpinlock(a->spin);
     return val;
@@ -75,7 +80,9 @@ List_Length(List *a) {
 void
 List_Remove(List *a,
             uint64_t index) {
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return;
+
     if(a->entry_count == 0 | index >= a->entry_count) {
         UnlockSpinlock(a->spin);
         return;
@@ -120,11 +127,14 @@ List_Remove(List *a,
 
 void
 List_Free(List *a) {
+    FinalLockSpinlock(a->spin);
     while(List_Length(a) > 0) {
         List_Remove(a, 0);
     }
     Spinlock p = a->spin;
     kfree(a);
+
+    UnlockSpinlock(p);
     FreeSpinlock(p);
 }
 
@@ -132,7 +142,9 @@ void*
 List_EntryAt(List *a,
              uint64_t index) {
 
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return NULL;
+
     if(a->last_accessed_index >= a->entry_count) {
         a->last_accessed_index = 0;
         a->last_accessed_node = a->nodes;
@@ -172,7 +184,9 @@ List_EntryAt(List *a,
 
 void*
 List_RotNext(List *a) {
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return NULL;
+
     void *val = NULL;
     if(a->entry_count != 0)
         val = List_EntryAt(a, (a->last_accessed_index + 1) % a->entry_count);
@@ -182,7 +196,9 @@ List_RotNext(List *a) {
 
 void*
 List_RotPrev(List *a) {
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return NULL;
+
     void *val = NULL;
     if(a->entry_count != 0)
         val = List_EntryAt(a, (a->last_accessed_index - 1) % a->entry_count);
@@ -192,7 +208,9 @@ List_RotPrev(List *a) {
 
 uint64_t
 List_GetLastIndex(List *a) {
-    LockSpinlock(a->spin);
+    if(LockSpinlock(a->spin) == NULL)
+        return NULL;
+    
     uint64_t i = a->last_accessed_index;
     UnlockSpinlock(a->spin);
     return i;

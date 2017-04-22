@@ -49,6 +49,9 @@ CreateBootstrapSpinlock(void);
 bool
 TryLockSpinlock(Spinlock primitive);
 
+Spinlock
+FinalLockSpinlock(Spinlock lock);
+
 /**
  * @brief      Locks the spinlock.
  *

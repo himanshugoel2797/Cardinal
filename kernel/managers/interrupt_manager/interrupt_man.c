@@ -55,11 +55,12 @@ InterruptMan_RegisterProcess(UID pid,
                              int irq,
                              int cnt) {
 
-    ProcessInformation *pInfo = NULL;
+    ProcessInfo *pInfo = NULL;
     if(GetProcessReference(pid, &pInfo) != ProcessErrors_None)
         return -1;
 
-    LockSpinlock(pInfo->lock);
+    if(LockSpinlock(pInfo->lock) == NULL)
+        return 0;
 
     //Mark that this process is using interrupts
     pInfo->InterruptsUsed = 1;
