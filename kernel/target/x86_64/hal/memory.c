@@ -69,9 +69,7 @@ void *GetPhysicalAddressPageTable(ManagedPageTable *src, void *virtualAddress) {
 MemoryAllocationErrors CreateVirtualMemoryInstance(ManagedPageTable *inst) {
     if (inst != NULL) {
         LockSpinlock(vmem_lock);
-        RefInit(&inst->ref, (ReferenceFreeHandler)FreeVirtualMemoryInstance,
-                offsetof(ManagedPageTable, ref));
-
+        
         inst->PageTable = (UID)VirtMemMan_CreateInstance();
 
         if (GetActiveCoreCount() < 64)
@@ -455,7 +453,7 @@ MemoryAllocationErrors UnmapPage(ManagedPageTable *pageTable,
 
     UnlockSpinlock(pageTable->lock);
 
-    if (ProcessSys_IsInitialized()) {
+    if (Thread_IsInitialized()) {
         PerformTLBShootdown(virtualAddress, size);
     }
 
@@ -618,7 +616,7 @@ int GetCoreCount(void) {
 
 void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
                      MemoryAllocationFlags error) {
-    if (!ProcessSys_IsInitialized()) {
+    if (!Thread_IsInitialized()) {
         __asm__("cli\n\thlt" ::"a"(instruction_pointer));
     }
     // Check the current process's memory info table
@@ -686,6 +684,7 @@ void HandlePageFault(uint64_t virtualAddress, uint64_t instruction_pointer,
 
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    ReturnProcessReference(procInfo->PID);
 }
 
 void GetAddressPermissions(ManagedPageTable *pageTable, uint64_t addr,
@@ -939,15 +938,19 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
                      MemoryAllocationType_ReservedBacking))
         return MemoryAllocationErrors_InvalidFlags;
 
-    ProcessInformation *procInfo = NULL;
-    if (GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+    ProcessInfo *procInfo = NULL;
+    if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    if(LockSpinlock(procInfo->lock) == NULL)
+    if(LockSpinlock(procInfo->lock) == NULL){
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
+    }
 
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
+    }
 
     FindFreeVirtualAddress(procInfo->PageTable, virtualAddress, length, allocType,
                            flags);
@@ -955,6 +958,7 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
     if (*virtualAddress == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_OutOfMemory;
     }
 
@@ -962,6 +966,7 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
     if (mem == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_OutOfMemory;
     }
 
@@ -992,6 +997,7 @@ MemoryAllocationErrors AllocateSharedMemoryPhys(UID pid, uint64_t length,
 
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    ReturnProcessReference(pid);
 
     if (map == NULL) return MemoryAllocationErrors_Unknown;
 
@@ -1005,15 +1011,19 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
         Key_t *key) {
     if (key == NULL) return MemoryAllocationErrors_InvalidParameters;
 
-    ProcessInformation *procInfo = NULL;
-    if (GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+    ProcessInfo *procInfo = NULL;
+    if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
 
-    if(LockSpinlock(procInfo->lock) == NULL)
+    if(LockSpinlock(procInfo->lock) == NULL){
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
+    }
 
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_Deleting;
+    }
 
     MemoryAllocationsMap *map = NULL;
     if (flags & MemoryAllocationFlags_Kernel)
@@ -1026,6 +1036,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
             if (!(map->AllocationType & MemoryAllocationType_Shared)) {
                 UnlockSpinlock(procInfo->PageTable->lock);
                 UnlockSpinlock(procInfo->lock);
+                ReturnProcessReference(pid);
                 return MemoryAllocationErrors_InvalidParameters;
             }
 
@@ -1040,6 +1051,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
             if (KeyMan_AllocateKey(identifiers, key) != KeyManagerErrors_None) {
                 UnlockSpinlock(procInfo->PageTable->lock);
                 UnlockSpinlock(procInfo->lock);
+                ReturnProcessReference(pid);
                 return MemoryAllocationErrors_Unknown;
             }
 
@@ -1049,6 +1061,7 @@ MemoryAllocationErrors GetSharedMemoryKey(UID pid, uint64_t virtualAddress,
     }
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    ReturnProcessReference(pid);
 
     if (map == NULL) return MemoryAllocationErrors_InvalidVirtualAddress;
 
@@ -1075,9 +1088,19 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
     if (identifiers[IDENTIFIER_COUNT - 1] != KeyType_SharedMemoryKey)
         return MemoryAllocationErrors_InvalidParameters;
 
-    ProcessInformation *procInfo = NULL;
-    if (GetProcessReference(pid, &procInfo) != ProcessErrors_None)
+    ProcessInfo *procInfo = NULL;
+    if (GetProcessReference(pid, &procInfo) != ThreadError_None)
         return MemoryAllocationErrors_InvalidParameters;
+
+    if(LockSpinlock(procInfo->lock) == NULL){
+        ReturnProcessReference(pid);
+        return MemoryAllocationErrors_Deleting;
+    }
+
+    if(LockSpinlock(procInfo->PageTable->lock) == NULL){
+        ReturnProcessReference(pid);
+        return MemoryAllocationErrors_Deleting;
+    }
 
     SharedMemoryData *shmem_info = (SharedMemoryData *)identifiers[0];
 
@@ -1087,18 +1110,13 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
     *cacheMode = (CachingMode)identifiers[2];
     *length = shmem_info->Length;
 
-    if(LockSpinlock(procInfo->lock) == NULL)
-        return MemoryAllocationErrors_Deleting;
-
-    if(LockSpinlock(procInfo->PageTable->lock) == NULL)
-        return MemoryAllocationErrors_Deleting;
-
     FindFreeVirtualAddress(procInfo->PageTable, virtualAddress, *length,
                            MemoryAllocationType_MMap, *flags);
 
     if (*virtualAddress == 0) {
         UnlockSpinlock(procInfo->PageTable->lock);
         UnlockSpinlock(procInfo->lock);
+        ReturnProcessReference(pid);
         return MemoryAllocationErrors_OutOfMemory;
     }
 
@@ -1127,6 +1145,7 @@ MemoryAllocationErrors ApplySharedMemoryKey(UID pid, Key_t *key,
 
     UnlockSpinlock(procInfo->PageTable->lock);
     UnlockSpinlock(procInfo->lock);
+    ReturnProcessReference(pid);
     return MemoryAllocationErrors_None;
 }
 

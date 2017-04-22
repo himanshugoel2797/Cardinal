@@ -160,6 +160,9 @@ typedef struct CoreInfo {
 void
 Thread_Initialize(void);
 
+bool
+Thread_IsInitialized(void);
+
 /**
  * @brief      Allocate a stack of STACK_SIZE in the specified process.
  *

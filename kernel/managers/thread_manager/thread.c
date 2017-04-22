@@ -33,7 +33,7 @@ Spinlock pending_lock;
 Spinlock sleeping_lock;
 static List *pending_thds, *sleeping_thds;
 static BTree *thds;
-
+static bool isInited = FALSE;
 static volatile CoreThreadState *all_states = NULL;
 
 static CoreInfo *cores;
@@ -151,6 +151,12 @@ void Thread_Initialize(void) {
     cores = kmalloc(GetCoreCount() * sizeof(CoreInfo));
 
     core_id = (uint64_t *)AllocateAPLSMemory(sizeof(uint64_t));
+    isInited = TRUE;
+}
+
+bool
+Thread_IsInitialized(void) {
+    return isInited;
 }
 
 uint64_t AllocateStack(UID parentProcess, ThreadPermissionLevel perm_level) {

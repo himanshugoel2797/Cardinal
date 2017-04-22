@@ -86,6 +86,7 @@ typedef enum {
     MemoryAllocationErrors_Unknown = (1 << 6),                //!< Unknown Error.
     MemoryAllocationErrors_InvalidParameters = (1 << 7),      //!< Invalid Parameters
     MemoryAllocationErrors_OutOfMemory = (1 << 8),            //!< Out of Memory.
+    MemoryAllocationErrors_Deleting = (1 << 9),               //!< Object is being deleted.
 } MemoryAllocationErrors;
 
 //!Memory Map operation parameters.

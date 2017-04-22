@@ -13,8 +13,6 @@
 #include "libs/libCardinal/include/keyman.h"
 
 
-#include "common/ref_count.h"
-
 /**
  * \defgroup memory_hal Memory Management
  * @{
@@ -65,7 +63,6 @@ typedef struct MemoryAllocationsMap {
  * Describes a hardware independent page table
  */
 typedef struct ManagedPageTable {
-    Ref                   ref;
     Spinlock              lock;
 
     UID                   PageTable;      //!< The hardware dependent page table
