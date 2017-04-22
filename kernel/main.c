@@ -60,8 +60,8 @@ kernel_main_init(void) {
     while(smp_core_count != GetCoreCount())
         ;
     
-    tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    SetThreadState(tid, ThreadState_Initialize);
+    //tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    //SetThreadState(tid, ThreadState_Initialize);
 
 
     //load_exec(ROOT_PID, "userboot.bin");

@@ -222,6 +222,8 @@ uint64_t AllocateStack(ProcessInfo *pInfo, ThreadPermissionLevel perm_level) {
              ? MemoryAllocationFlags_User
              : MemoryAllocationFlags_Kernel));
 
+    UnlockSpinlock(pInfo->lock);
+
     return user_stack_base;
 }
 
