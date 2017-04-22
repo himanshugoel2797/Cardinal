@@ -572,6 +572,10 @@ void TryAddThreads(void) {
         LockSpinlock(pending_lock);
         ThreadInfo *thd_ad = NULL;
         while(1) {
+            thd_ad = NULL;
+            if(List_Length(pending_thds) == 0)
+                break;
+
             thd_ad = (ThreadInfo *)List_EntryAt(pending_thds, 0);
             List_Remove(pending_thds, 0);
 
@@ -586,13 +590,13 @@ void TryAddThreads(void) {
                 }
             };
         }
-        UnlockSpinlock(pending_lock);
 
         if (thd_ad != NULL) {
             PrintDebugMessage("Adding: Thread ID: %x Affinity: %x Core: %x\r\n", (uint32_t)thd_ad->ID, (uint32_t)thd_ad->CoreAffinity, (uint32_t)*core_id);
             Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
             UnlockSpinlock(thd_ad->lock);
         }
+        UnlockSpinlock(pending_lock);
     }
 }
 
@@ -630,27 +634,6 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         }
     }
 
-    // Determine how much load this thread ought to have
-    /*int cur_load = 0, desired_load = 0, max_wait = 1000;
-
-    do {
-        cur_load = (Heap_GetItemCount(all_states[*core_id].cur_heap) * 100) /
-                   BTree_GetCount(thds);
-        desired_load = (100 / GetActiveCoreCount());
-
-        LockSpinlock(pending_lock);
-        ThreadInfo *thd_ad = (ThreadInfo *)List_EntryAt(pending_thds, 0);
-        List_Remove(pending_thds, 0);
-        UnlockSpinlock(pending_lock);
-
-        if (thd_ad != NULL) {
-            PrintDebugMessage("Adding: Thread ID: %x Core: %x\r\n", thd_ad->ID, *core_id);
-            Heap_Insert(all_states[*core_id].cur_heap, thd_ad->TimeSlice, thd_ad);
-        }
-
-        max_wait--;
-    } while (desired_load >= cur_load && List_Length(pending_thds) > 0 && max_wait > 0);
-*/
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
@@ -692,9 +675,6 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         if(LockSpinlock(next_thread->lock) == NULL) {
             continue;
         }
-
-        // PrintDebugMessage(" Trying: %x, TimeSlice: %x \r\n",
-        // next_thread->ParentProcess->ID, next_thread->TimeSlice);
 
         // If the process is terminating, terminate the thread
         // TODO: inspect this portion and determine if it is necessary to not be deleting the currently executing thread.
