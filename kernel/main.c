@@ -36,12 +36,12 @@ kernel_main_init(void) {
     SetTimerEnableMode(ENABLE);
 
     kmalloc_init ();
-    ProcessSys_Initialize();
     Thread_Initialize();
     KeyMan_Initialize();
     RegisterCore(NULL);
 
-    CreateThread(ROOT_PID, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
+    UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
 
     seed(GetTimerValue());
     InterruptMan_Initialize();
@@ -50,12 +50,8 @@ kernel_main_init(void) {
     Syscall_Initialize();
     smp_unlock_cores();
 
-    UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    StartProcess(cpid);
+    //CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    //StartProcess(cpid);
 
     //load_exec(cpid, "userboot.bin");
     SetupPreemption();
@@ -78,8 +74,11 @@ load_exec(UID pid, const char *exec) {
         exec_size += (PAGE_SIZE - exec_size % PAGE_SIZE);
 
     //Map the executable into the process
-    ProcessInformation *pinfo = NULL;
-    if(GetProcessReference(pid, &pinfo) != ProcessErrors_None)
+    ProcessInfo *pinfo = NULL;
+    if(GetProcessReference(pid, &pinfo) != ThreadError_None)
+        return;
+
+    if(LockSpinlock(pinfo->lock) == NULL)
         return;
 
     for(uint32_t i = 0; i < exec_size / PAGE_SIZE; i++) {
@@ -106,8 +105,12 @@ load_exec(UID pid, const char *exec) {
 
     UninstallTemporaryWriteMap((uint64_t)write_target, exec_size);
 
-    CreateThread(pid, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
-    StartProcess(pid);
+    UnlockSpinlock(pinfo->lock);
+    ReturnProcessReference(pid);
+
+    UID tid = CreateThread(pid, FALSE, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
+    
     return;
 }
 
@@ -129,7 +132,7 @@ idle_main2(void) {
 void
 idle_main(void) {
 
-    UID cpid = 0;
+    /*UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
 
@@ -142,7 +145,7 @@ idle_main(void) {
 
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
     StartProcess(cpid);
-
+*/
     while(1);
 }
 
@@ -153,19 +156,19 @@ smp_core_main(int (*getCoreData)(void)) {
 
     RegisterCore(getCoreData);
     smp_core_count++;
-    UID cpid = 0;
+    /*UID cpid = 0;
+    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
+        HaltProcessor();
+
+    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    StartProcess(cpid);
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
         HaltProcessor();
 
     CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     StartProcess(cpid);
 
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    StartProcess(cpid);
-
+*/
     SetupPreemption();
     while(1);
 }

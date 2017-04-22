@@ -13,10 +13,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define _CARDINAL_THREAD_H_
 
 #include "types.h"
-#include "managers/process_manager/process_info.h"
 #include "libs/libCardinal/include/thread.h"
 #include "synchronization.h"
-#include "common/ref_count.h"
+#include "memory.h"
 
 #include "arch_defs.h"
 
@@ -47,10 +46,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define MAX_THREADS_PER_SWAP 0x10
 
+#define ROOT_PID 1
+
 /**
  * Thread States.
  */
 typedef enum {
+    ThreadState_Created,    //!< Thread has been created but not set as ready.
     ThreadState_Initialize, //!< Thread needs to be initialized.
     ThreadState_Running,    //!< Thread is running.
     ThreadState_Paused,     //!< Thread is paused.
@@ -77,8 +79,19 @@ typedef enum {
 
 typedef enum {
     ThreadError_None = 0,
-    ThreadError_UIDNotFound = 1
+    ThreadError_UIDNotFound = 1,
+    ThreadError_InvalidParams,
+    ThreadError_Deleting,
 } ThreadError;
+
+typedef enum {
+    ProcessStatus_Executing,
+    ProcessStatus_Terminating,
+} ProcessStatus;
+
+typedef struct {
+    uint64_t desc;
+} DescriptorTable;
 
 /**
  * Thread Entry Point.
@@ -86,7 +99,6 @@ typedef enum {
 typedef void (*ThreadEntryPoint)(void*);
 
 typedef struct ProcessInfo {
-    Ref                 ref;
     Spinlock            lock;
 
     UID                 PID;
@@ -95,6 +107,8 @@ typedef struct ProcessInfo {
     UID                 GroupID;
 
     ProcessStatus       Status;
+
+    uint64_t            HeapBreak;
 
     //TODO: Use descriptor system for tracking interrupt registration
     DescriptorTable     Descriptors;
@@ -106,7 +120,6 @@ typedef struct ProcessInfo {
  * Thread Information/State.
  */
 typedef struct ThreadInfo {
-    Ref                     ref;                    //!< Reference count.
     Spinlock                lock;                   //!< Read/Write lock.
 
     UID                     ID; //!< Thread ID.
@@ -334,6 +347,27 @@ UID
 GetCurrentProcessUID(void);
 
 /**
+ * @brief       Gets the process group id.
+ *
+ * @param[in]   pid     The Process ID
+ *
+ * @return      The Group ID.
+ */
+UID
+GetProcessGroupID(UID pid);
+
+/**
+ * @brief       Sets the process group id.
+ *
+ * @param[in]   pid     The Process ID
+ * @param[in]   gid     The Group ID
+ *
+ * @return      -1 on error, Group ID otherwise.
+ */
+uint64_t
+SetProcessGroupID(UID pid, UID gid);
+
+/**
  * @brief      Gets the current process parent uid.
  *
  * @return     The current process parent uid.
@@ -348,6 +382,12 @@ GetCurrentProcessParentUID(void);
  */
 ThreadInfo*
 GetCurrentThreadInfo(void);
+
+ThreadError
+GetProcessReference(UID pid, ProcessInfo **pInfo);
+
+ThreadError
+ReturnProcessReference(UID pid);
 
 /**
  * @brief      Perform a task switch.

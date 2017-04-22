@@ -209,7 +209,7 @@ List_RotPrev(List *a) {
 uint64_t
 List_GetLastIndex(List *a) {
     if(LockSpinlock(a->spin) == NULL)
-        return NULL;
+        return -1;
     
     uint64_t i = a->last_accessed_index;
     UnlockSpinlock(a->spin);

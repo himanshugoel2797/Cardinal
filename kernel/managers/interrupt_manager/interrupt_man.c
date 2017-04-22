@@ -24,20 +24,8 @@ static void
 InterruptMan_InterruptHandler(uint32_t int_no,
                               uint32_t UNUSED(err_code)) {
 
-    CREATE_NEW_MESSAGE_PTR_TYPE(InterruptMessage, m);
-    m->m.MsgType = CardinalMsgType_Interrupt;
-    m->m.MsgID = int_no;
-    m->vector = int_no;
-
-
-    for(int i = 0; i < MAX_SUBSCRIBERS; i++) {
-
-
-        if(irq_subscriber_pids[int_no][i] != 0) {
-
-            PostMessage(irq_subscriber_pids[int_no][i], (Message*)m);
-        }
-    }
+    //TODO: send signals on interrupt
+    int_no = 0;
 }
 
 void
@@ -56,14 +44,16 @@ InterruptMan_RegisterProcess(UID pid,
                              int cnt) {
 
     ProcessInfo *pInfo = NULL;
-    if(GetProcessReference(pid, &pInfo) != ProcessErrors_None)
+    if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL)
-        return 0;
+    if(LockSpinlock(pInfo->lock) == NULL){
+        ReturnProcessReference(pid);
+        return -1;
+    }
 
     //Mark that this process is using interrupts
-    pInfo->InterruptsUsed = 1;
+    //pInfo->InterruptsUsed = 1;
 
     for(int i = irq; i < irq + cnt; i++) {
 
@@ -82,6 +72,7 @@ InterruptMan_RegisterProcess(UID pid,
     }
 
     UnlockSpinlock(pInfo->lock);
+    ReturnProcessReference(pid);
     return 0;
 }
 

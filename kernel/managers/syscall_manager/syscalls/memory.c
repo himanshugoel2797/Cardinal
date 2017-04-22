@@ -24,8 +24,12 @@ Brk_Syscall(void *targ_brk_address) {
 
     LockSpinlock(brk_lock);
 
-    ProcessInformation *p_info;
-    GetProcessReference(GetCurrentProcessUID(), &p_info);
+    ProcessInfo *p_info = NULL;
+    if(GetProcessReference(GetCurrentProcessUID(), &p_info) != ThreadError_None) {
+        SyscallSetErrno(-EINVAL);
+        UnlockSpinlock(brk_lock);
+        return 0;
+    }
 
     if(targ_brk_address == NULL) {
         uint64_t addr = 0;
@@ -37,6 +41,8 @@ Brk_Syscall(void *targ_brk_address) {
 
         if(LockSpinlock(p_info->lock) == NULL){
             SyscallSetErrno(-EINVAL);
+
+            ReturnProcessReference(GetCurrentProcessUID());
             UnlockSpinlock(brk_lock);
             return 0;
         }
@@ -46,6 +52,8 @@ Brk_Syscall(void *targ_brk_address) {
         UnlockSpinlock(p_info->lock);
 
         SyscallSetErrno(0);
+
+        ReturnProcessReference(GetCurrentProcessUID());
         UnlockSpinlock(brk_lock);
         return addr;
     }
@@ -58,6 +66,7 @@ Brk_Syscall(void *targ_brk_address) {
 
         if(LockSpinlock(p_info->lock) == NULL){
             SyscallSetErrno(-EINVAL);
+            ReturnProcessReference(GetCurrentProcessUID());
             UnlockSpinlock(brk_lock);
             return 0;
         }
@@ -66,6 +75,7 @@ Brk_Syscall(void *targ_brk_address) {
 
             UnlockSpinlock(p_info->lock);
             SyscallSetErrno(0);
+            ReturnProcessReference(GetCurrentProcessUID());
             UnlockSpinlock(brk_lock);
             return (uint64_t)targ_brk_address;
         }
@@ -87,11 +97,13 @@ Brk_Syscall(void *targ_brk_address) {
         UnlockSpinlock(p_info->lock);
 
         SyscallSetErrno(0);
+        ReturnProcessReference(GetCurrentProcessUID());
         UnlockSpinlock(brk_lock);
         return (uint64_t)targ_brk_address;
     }
 
     SyscallSetErrno(-ENOMEM);
+    ReturnProcessReference(GetCurrentProcessUID());
     UnlockSpinlock(brk_lock);
     return p_info->HeapBreak;
 }
@@ -110,14 +122,15 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
         return 0;
     }
 
-    ProcessInformation *p_info;
-    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ProcessErrors_None) {
+    ProcessInfo *p_info;
+    if(GetProcessReference(mmap_params->TargetPID, &p_info) != ThreadError_None) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
 
     if(LockSpinlock(p_info->lock) == NULL){
         SyscallSetErrno(-EINVAL);
+        ReturnProcessReference(mmap_params->TargetPID);
         return 0;
     }
 
@@ -127,6 +140,7 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
     if(mmap_params->PhysicalAddress % PAGE_SIZE) {
         UnlockSpinlock(p_info->lock);
         SyscallSetErrno(-EINVAL);
+        ReturnProcessReference(mmap_params->TargetPID);
         return 0;
     }
 #endif
@@ -150,6 +164,7 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
             SyscallSetErrno(-ENOMEM);
             UnlockSpinlock(map_lock);
             UnlockSpinlock(p_info->lock);
+            ReturnProcessReference(mmap_params->TargetPID);
             return 0;
         }
     }
@@ -165,12 +180,14 @@ R0_Map_Syscall(struct MemoryMapParams *mmap_params) {
         SyscallSetErrno(-ENOMEM);
         UnlockSpinlock(map_lock);
         UnlockSpinlock(p_info->lock);
+        ReturnProcessReference(mmap_params->TargetPID);
         return 0;
     } else {
 
         SyscallSetErrno(0);
         UnlockSpinlock(map_lock);
         UnlockSpinlock(p_info->lock);
+        ReturnProcessReference(mmap_params->TargetPID);
         return virt_addr;
     }
 }
@@ -185,14 +202,15 @@ R0_Unmap_Syscall(UID pid,
         return -1;
     }
 
-    ProcessInformation *p_info;
-    if(GetProcessReference(pid, &p_info) != ProcessErrors_None) {
+    ProcessInfo *p_info;
+    if(GetProcessReference(pid, &p_info) != ThreadError_None) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }
 
     if(LockSpinlock(p_info->lock) == NULL){
         SyscallSetErrno(-EINVAL);
+        ReturnProcessReference(pid);
         return -1;
     }
 
@@ -204,6 +222,7 @@ R0_Unmap_Syscall(UID pid,
               size);
 
     UnlockSpinlock(p_info->lock);
+    ReturnProcessReference(pid);
     return SyscallSetErrno(0);
 }
 
@@ -211,14 +230,15 @@ uint64_t
 Unmap_Syscall(uint64_t addr,
               uint64_t size) {
 
-    ProcessInformation *p_info;
-    if(GetProcessReference(GetCurrentProcessUID(), &p_info) != ProcessErrors_None) {
+    ProcessInfo *p_info;
+    if(GetProcessReference(GetCurrentProcessUID(), &p_info) != ThreadError_None) {
         SyscallSetErrno(-EINVAL);
         return -1;
     }
 
     if(LockSpinlock(p_info->lock) == NULL){
         SyscallSetErrno(-EINVAL);
+        ReturnProcessReference(GetCurrentProcessUID());
         return -1;
     }
 
@@ -230,6 +250,7 @@ Unmap_Syscall(uint64_t addr,
               size);
 
     UnlockSpinlock(p_info->lock);
+    ReturnProcessReference(GetCurrentProcessUID());
     return SyscallSetErrno(0);
 }
 
@@ -275,20 +296,22 @@ R01_GetPhysicalAddress_Syscall(UID pid,
     if(gid == 1)
         pid = GetCurrentProcessUID();
 
-    ProcessInformation *p_info = NULL;
-    if(GetProcessReference(pid, &p_info) != ProcessErrors_None) {
+    ProcessInfo *p_info = NULL;
+    if(GetProcessReference(pid, &p_info) != ThreadError_None) {
         SyscallSetErrno(-EINVAL);
         return 0;
     }
 
     if(LockSpinlock(p_info->lock) == NULL){
         SyscallSetErrno(-EINVAL);
+        ReturnProcessReference(pid);
         return 0;
     }
-    
+
     SyscallSetErrno(0);
     uint64_t retVal = (uint64_t)GetPhysicalAddressPageTable(p_info->PageTable, addr);
 
     UnlockSpinlock(p_info->lock);
+    ReturnProcessReference(pid);
     return retVal;
 }
