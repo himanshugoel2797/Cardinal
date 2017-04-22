@@ -19,6 +19,8 @@
 #include "file_server.h"
 #include "boot_information/boot_information.h"
 
+static volatile _Atomic int smp_core_count = 0;
+
 void
 load_exec(UID pid, const char *exec);
 
@@ -51,12 +53,18 @@ kernel_main_init(void) {
 
     SyscallMan_Initialize();
     Syscall_Initialize();
-    //smp_unlock_cores();
 
-    //CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    //StartProcess(cpid);
+    smp_core_count = 1;
+    smp_unlock_cores();
 
-    load_exec(ROOT_PID, "userboot.bin");
+    while(smp_core_count != GetCoreCount())
+        ;
+    
+    tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
+
+
+    //load_exec(ROOT_PID, "userboot.bin");
     SetupPreemption();
 
     while(1)
@@ -118,14 +126,11 @@ load_exec(UID pid, const char *exec) {
     return;
 }
 
-static volatile _Atomic int smp_core_count = 0;
-
-#include "debug_gfx.h"
-
 void
 kernel_main(void) {
     while(1)
-        WakeReadyThreads();
+        ;   
+        //WakeReadyThreads();
 }
 
 void

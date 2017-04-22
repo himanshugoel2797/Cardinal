@@ -583,13 +583,14 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
                     Heap_Insert(all_states[*core_id].cur_heap, prevThread->TimeSlice,
                                 prevThread);
                 }
+                UnlockSpinlock(prevThread->lock);
                 break;
             }
         }
     }
 
     // Determine how much load this thread ought to have
-    int cur_load = 0, desired_load = 0;
+    int cur_load = 0, desired_load = 0, max_wait = 1000;
 
     do {
         cur_load = (Heap_GetItemCount(all_states[*core_id].cur_heap) * 100) /
@@ -602,10 +603,12 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         UnlockSpinlock(pending_lock);
 
         if (thd_ad != NULL) {
-            PrintDebugMessage("Adding: Thread ID: %x\r\n", thd_ad->ID);
+            PrintDebugMessage("Adding: Thread ID: %x Core: %x\r\n", thd_ad->ID, *core_id);
             Heap_Insert(all_states[*core_id].cur_heap, thd_ad->TimeSlice, thd_ad);
         }
-    } while (desired_load >= cur_load && List_Length(pending_thds) > 0);
+
+        max_wait--;
+    } while (desired_load >= cur_load && List_Length(pending_thds) > 0 && max_wait > 0);
 
     ThreadInfo *next_thread = NULL;
 
@@ -614,10 +617,10 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         // Exhausted all the items in the current set, switch to the back heap while
         // picking up any new threads if available
         if (Heap_GetItemCount(all_states[*core_id].cur_heap) == 0) {
-            PrintDebugMessage("Swap %x\r\n",
-                              Heap_GetItemCount(all_states[*core_id].back_heap));
+            PrintDebugMessage("Swap %x Core %x\r\n",
+                              Heap_GetItemCount(all_states[*core_id].back_heap), *core_id);
 
-            // Pick up 10 threads from the pending queue if any are available
+            // Pick up threads from the pending queue if any are available
             if (TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0) {
                 TryAddThreads();
                 UnlockSpinlock(starving_lock);
@@ -627,10 +630,13 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
             while (Heap_GetItemCount(all_states[*core_id].back_heap) == 0) {
                 // TODO report that this core is waiting for threads, so other cores
                 // shouldn't bother pulling in more load.
+
+                //Release 
                 SetIF();
                 HALT(0);  // Halt for another core to wake us up for threads.
+                ClearIF();
                 LockSpinlock(starving_lock);
-                while (List_Length(pending_thds) == 0) __asm__("pause");
+                while (List_Length(pending_thds) == 0) PAUSE;
 
                 TryAddThreads();
                 UnlockSpinlock(starving_lock);
@@ -690,7 +696,6 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
 
 void SchedulerCycle(Registers *regs) {
     if (all_states[*core_id].cur_thread != NULL) {
-
         if(LockSpinlock(all_states[*core_id].cur_thread->lock) != NULL) {
             SaveFPUState(all_states[*core_id].cur_thread->FPUState);
             SaveTask(all_states[*core_id].cur_thread, regs);
@@ -704,10 +709,10 @@ void SchedulerCycle(Registers *regs) {
     if (BTree_GetCount(thds) > 0)
         all_states[*core_id].cur_thread =
             GetNextThread(all_states[*core_id].cur_thread);
-    // PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To:
-    // %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
-    // Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
-    // prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());
+
+     /*PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
+        Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
+        prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());*/
 
     RestoreFPUState(all_states[*core_id].cur_thread->FPUState);
     SetKernelStack((void *)all_states[*core_id].cur_thread->KernelStackAligned);
@@ -853,6 +858,7 @@ void WakeReadyThreads(void) {
 
     if (thd != NULL) {
         if(LockSpinlock(thd->lock) == NULL) {
+            UnlockSpinlock(sleeping_lock);
             return;
         }
 

@@ -38,6 +38,8 @@ LoadProgram(char *name, UID *p_pid) {
 
 __attribute__((section(".entry_point")))
 int _start() {
+    while(1)
+        ;
     if(ImportInitrd() != 0)
         __asm__("hlt");
 
