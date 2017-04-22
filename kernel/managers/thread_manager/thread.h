@@ -140,6 +140,7 @@ typedef struct ThreadInfo {
     uint64_t                SleepStartTime;         //!< Sleep start time.
     uint64_t                Errno;                  //!< Errno of last syscall.
 
+    uint64_t                CoreAffinity;
     int64_t                 TimeSlice;              //!< The time slice available to this thread.
 
     void                    *FPUState;              //!< FPU state storage region.
@@ -392,6 +393,9 @@ GetProcessReference(UID pid, ProcessInfo **pInfo);
 
 ThreadError
 ReturnProcessReference(UID pid);
+
+void
+SetCoreAffinity(UID tid, uint64_t affinity);
 
 /**
  * @brief      Perform a task switch.

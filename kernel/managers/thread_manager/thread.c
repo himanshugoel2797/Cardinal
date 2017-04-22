@@ -359,6 +359,7 @@ UID CreateThreadADV(ProcessInfo *pInfo, bool newProcess, ThreadPermissionLevel p
 
     thd->FPUState = kmalloc(GetFPUStateSize() + 64);
     thd->ArchSpecificData = kmalloc(ARCH_SPECIFIC_SPACE_SIZE);
+    thd->CoreAffinity = -1;
     thd->Errno = 0;
     thd->UserStackBase = user_stack_bottom;
 
@@ -386,10 +387,6 @@ UID CreateThreadADV(ProcessInfo *pInfo, bool newProcess, ThreadPermissionLevel p
     thd->Process = pInfo;
 
     BTree_Insert(thds, thd->ID, thd);
-
-    LockSpinlock(pending_lock);
-    List_AddEntry(pending_thds, thd);
-    UnlockSpinlock(pending_lock);
 
     PrintDebugMessage("Thread: %x\r\n", thd->ID);
 
@@ -449,8 +446,29 @@ void SetThreadState(UID id, ThreadState state) {
     if (thd != NULL) {
         if(LockSpinlock(thd->lock) == NULL)
             return;
-
+        ThreadState oldState = thd->State;
         thd->State = state;
+        
+        if(oldState == ThreadState_Created && state == ThreadState_Initialize){
+            LockSpinlock(pending_lock);
+            List_AddEntry(pending_thds, thd);
+            UnlockSpinlock(pending_lock);
+        }
+
+        UnlockSpinlock(thd->lock);
+    }
+}
+
+void
+SetCoreAffinity(UID tid, uint64_t affinity) {
+    ThreadInfo *thd = NULL;
+    GetThreadReference(tid, &thd);
+
+    if (thd != NULL) {
+        if(LockSpinlock(thd->lock) == NULL)
+            return;
+
+        thd->CoreAffinity = affinity;
         UnlockSpinlock(thd->lock);
     }
 }
@@ -552,13 +570,28 @@ void TryAddThreads(void) {
     for (int i = 0; i < MAX_THREADS_PER_SWAP; i++) {
 
         LockSpinlock(pending_lock);
-        ThreadInfo *thd_ad = (ThreadInfo *)List_EntryAt(pending_thds, 0);
-        List_Remove(pending_thds, 0);
+        ThreadInfo *thd_ad = NULL;
+        while(1) {
+            thd_ad = (ThreadInfo *)List_EntryAt(pending_thds, 0);
+            List_Remove(pending_thds, 0);
+
+            //Check core affinity.
+            if(thd_ad != NULL){
+                if(LockSpinlock(thd_ad->lock) != NULL){
+                    if((thd_ad->CoreAffinity & (1 << *core_id)) == 0){
+                        List_AddEntry(pending_thds, thd_ad);
+                        UnlockSpinlock(thd_ad->lock);
+                    } else 
+                        break;
+                }
+            };
+        }
         UnlockSpinlock(pending_lock);
 
         if (thd_ad != NULL) {
-            PrintDebugMessage("Adding: Thread ID: %x\r\n", thd_ad->ID);
+            PrintDebugMessage("Adding: Thread ID: %x Affinity: %x Core: %x\r\n", (uint32_t)thd_ad->ID, (uint32_t)thd_ad->CoreAffinity, (uint32_t)*core_id);
             Heap_Insert(all_states[*core_id].back_heap, thd_ad->TimeSlice, thd_ad);
+            UnlockSpinlock(thd_ad->lock);
         }
     }
 }
@@ -598,7 +631,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
     }
 
     // Determine how much load this thread ought to have
-    int cur_load = 0, desired_load = 0, max_wait = 1000;
+    /*int cur_load = 0, desired_load = 0, max_wait = 1000;
 
     do {
         cur_load = (Heap_GetItemCount(all_states[*core_id].cur_heap) * 100) /
@@ -617,7 +650,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
 
         max_wait--;
     } while (desired_load >= cur_load && List_Length(pending_thds) > 0 && max_wait > 0);
-
+*/
     ThreadInfo *next_thread = NULL;
 
     bool exit_loop = FALSE;
@@ -640,9 +673,6 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
                 // shouldn't bother pulling in more load.
 
                 //Release 
-                SetIF();
-                HALT(0);  // Halt for another core to wake us up for threads.
-                ClearIF();
                 LockSpinlock(starving_lock);
                 while (List_Length(pending_thds) == 0) PAUSE;
 
@@ -754,6 +784,11 @@ void SetPeriodicPreemptVector(uint32_t irq) {
     preempt_vector = irq;
 }
 
+void CoreIdleThread(void) {
+    while(1)
+        HALT(0);
+}
+
 void RegisterCore(int (*getCoreData)(void)) {
     LockSpinlock(sync_lock);
     *core_id = core_id_counter;
@@ -773,6 +808,11 @@ void RegisterCore(int (*getCoreData)(void)) {
 
     // Threads are placed into the associated heaps when they are scheduled.
     // Replace main thread structure with something with faster indexing
+
+    UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)CoreIdleThread, NULL);
+    SetCoreAffinity(tid, 1 << *core_id);
+    SetThreadState(tid, ThreadState_Initialize);
+
 }
 
 int GetCoreLoad(int coreNum) {

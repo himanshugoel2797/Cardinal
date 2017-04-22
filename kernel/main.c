@@ -54,17 +54,18 @@ kernel_main_init(void) {
     SyscallMan_Initialize();
     Syscall_Initialize();
 
+
     smp_core_count = 1;
     smp_unlock_cores();
 
     while(smp_core_count != GetCoreCount())
         ;
     
-    //tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
-    //SetThreadState(tid, ThreadState_Initialize);
+    tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
 
-
-    //load_exec(ROOT_PID, "userboot.bin");
+    load_exec(ROOT_PID, "userboot.bin");
+    
     SetupPreemption();
 
     while(1)
@@ -131,9 +132,7 @@ load_exec(UID pid, const char *exec) {
 void
 kernel_main(void) {
     while(1)
-        PrintDebugMessage("KERNEL_MAIN\r\n");
-        ;   
-        //WakeReadyThreads();
+        WakeReadyThreads();
 }
 
 void
@@ -144,20 +143,14 @@ idle_main2(void) {
 void
 idle_main(void) {
 
-    /*UID cpid = 0;
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
+    UID cpid = 0;
+    
+    UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
 
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
-    StartProcess(cpid);
+    tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
+    SetThreadState(tid, ThreadState_Initialize);
 
-
-    if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)
-        HaltProcessor();
-
-    CreateThread(cpid, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
-    StartProcess(cpid);
-    */
     while(1)
         ;   //PrintDebugMessage("IDLE_MAIN\r\n");;
 }
