@@ -34,14 +34,22 @@ kernel_main_init(void) {
     //__asm__(".cont:\n\tmov %rsp, %rax\n\tmov %rsp, %rbx\n\tint $34\n\tsub %rsp, %rax\n\tjz .cont\n\thlt");
     InitializeTimer();
     SetTimerEnableMode(ENABLE);
+    PrintDebugMessage("Timer initialized.\r\n");
 
     kmalloc_init ();
+    PrintDebugMessage("kmalloc initialized.\r\n");
+
     Thread_Initialize();
+    PrintDebugMessage("Threading initialized.\r\n");
+
     KeyMan_Initialize();
+    PrintDebugMessage("Key management initialized.\r\n");
+
     RegisterCore(NULL);
 
     UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)kernel_main, NULL);
     SetThreadState(tid, ThreadState_Initialize);
+
 
     seed(GetTimerValue());
     InterruptMan_Initialize();
@@ -121,7 +129,8 @@ static volatile _Atomic int smp_core_count = 0;
 void
 kernel_main(void) {
     while(1)
-        WakeReadyThreads();
+        ;
+    //WakeReadyThreads();
 }
 
 void

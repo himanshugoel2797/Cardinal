@@ -146,6 +146,25 @@ void Thread_Initialize(void) {
     cores = kmalloc(GetCoreCount() * sizeof(CoreInfo));
 
     core_id = (uint64_t *)AllocateAPLSMemory(sizeof(uint64_t));
+
+
+    ThreadInfo *root_thd = kmalloc(sizeof(ThreadInfo));
+    ProcessInfo *pInfo = kmalloc(sizeof(ProcessInfo));
+    root_thd->State = ThreadState_Created;
+    root_thd->Process = pInfo;
+    root_thd->ID = new_thd_uid();
+    root_thd->lock = CreateSpinlock();
+    pInfo->GroupID = 0;
+    pInfo->PID = root_thd->ID;
+    pInfo->ParentID = 0;
+    pInfo->UserID = 0;
+    pInfo->PageTable = GetActiveVirtualMemoryInstance();
+    pInfo->lock = CreateSpinlock();
+    pInfo->Status = ProcessStatus_Executing;
+
+    BTree_Insert(thds, root_thd->ID, root_thd);
+
+
     isInited = TRUE;
 }
 
@@ -621,6 +640,8 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         case ThreadState_Paused:
             break;
         case ThreadState_Sleep:
+            break;
+        case ThreadState_Created:
             break;
         default: {
             exit_loop = TRUE;

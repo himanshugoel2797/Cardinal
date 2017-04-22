@@ -83,7 +83,7 @@ build:$(SOURCES:.o=.bc) clean_output
 
 # clean
 clean:
-	#cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
+	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) clean
 	rm -f $(SOURCES)
 	rm -f $(SOURCES:.o=.d)
 	rm -f $(SOURCES:.o=.bc)

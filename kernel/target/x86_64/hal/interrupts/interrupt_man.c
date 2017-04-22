@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "types.h"
 #include "interrupts.h"
 #include "common.h"
-#include "IDT/idt.h"
+#include "idt/idt.h"
 #include "apic/io_apic/io_apic.h"
 #include "apic/apic.h"
 #include "memory.h"

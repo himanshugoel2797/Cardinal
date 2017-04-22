@@ -16,7 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "priv_apic.h"
 #include "acpi/madt.h"
 #include "memory.h"
-#include "CPUID/cpuid.h"
+#include "cpuid/cpuid.h"
 #include "smp/smp.h"
 #include "managers.h"
 #include "pit/pit.h"

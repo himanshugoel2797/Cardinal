@@ -13,8 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "priv_apic.h"
 #include "memory.h"
 #include "interrupts.h"
-#include "IDT/idt.h"
-#include "CPUID/cpuid.h"
+#include "idt/idt.h"
+#include "cpuid/cpuid.h"
 #include "pit/pit.h"
 
 #include "common.h"

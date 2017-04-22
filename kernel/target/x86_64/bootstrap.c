@@ -10,11 +10,10 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #include "common.h"
-#include "common/ref_count.h"
 #include "main.h"
 #include "types.h"
-#include "GDT/gdt.h"
-#include "IDT/idt.h"
+#include "gdt/gdt.h"
+#include "idt/idt.h"
 #include "fpu/fpu.h"
 #include "rtc/rtc.h"
 #include "smp/smp.h"
@@ -147,8 +146,7 @@ bootstrap_kernel(void *param,
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
-    RefInit(&pageTable->ref, (ReferenceFreeHandler)FreeVirtualMemoryInstance, offsetof(ManagedPageTable, ref));
-
+    
     if(GetCoreCount() < 64)
         pageTable->SmallActivityBitmap = 0;
     else
@@ -229,7 +227,6 @@ smp_bootstrap_stage2(void) {
     else
         pageTable->LargeActivityBitmap = bootstrap_malloc(GetCoreCount() / 8 + 1);
 
-    RefInit(&pageTable->ref, (ReferenceFreeHandler)FreeVirtualMemoryInstance, offsetof(ManagedPageTable, ref));
     pageTable->lock = CreateBootstrapSpinlock();
 
     SetActiveVirtualMemoryInstance(pageTable);

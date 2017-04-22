@@ -11,7 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 #include "fpu.h"
 #include "interrupts.h"
-#include "CPUID/cpuid.h"
+#include "cpuid/cpuid.h"
 #include "x86_64_common.h"
 
 static bool xsave_available = FALSE;

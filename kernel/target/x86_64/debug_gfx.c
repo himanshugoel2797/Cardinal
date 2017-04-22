@@ -13,7 +13,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "debug_gfx.h"
 #include "boot_information/boot_information.h"
 #include "bootinfo.h"
-#include "font.h"
 #include "synchronization.h"
 #include "utils/native.h"
 
