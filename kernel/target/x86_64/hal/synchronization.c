@@ -18,17 +18,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #include "utils/native.h"
 
+#define SPINLOCK_SZ (MAX(CPUID_GetCacheLineSize(), 40))
+
 Spinlock
 CreateSpinlock(void) {
-    Spinlock p = kmalloc(CPUID_GetCacheLineSize());
-    memset((void*)p, 0, CPUID_GetCacheLineSize());
+    Spinlock p = kmalloc(SPINLOCK_SZ);
+    memset((void*)p, 0, SPINLOCK_SZ);
     return p;
 }
 
 Spinlock
 CreateBootstrapSpinlock(void) {
-    Spinlock p = (Spinlock)bootstrap_malloc(CPUID_GetCacheLineSize());
-    memset((void*)p, 0, CPUID_GetCacheLineSize());
+    Spinlock p = (Spinlock)bootstrap_malloc(SPINLOCK_SZ);
+    memset((void*)p, 0, SPINLOCK_SZ);
     return p;
 }
 
@@ -176,6 +178,9 @@ TryLockSpinlock(Spinlock primitive) {
     } else if(prim[4] == 1) {
         locked = FALSE;
     } else if(prim[1] == 0 && prim[2] == 0) {
+        #if DEBUG
+        prim[5] = (uint64_t)__builtin_return_address(0);
+        #endif
         prim[2] = 1;
         prim[1] = APIC_GetID() + 1;
         locked = TRUE;
@@ -197,7 +202,21 @@ LockSpinlock(Spinlock primitive) {
     uint64_t deleting = FALSE;
     bool locked = FALSE;
 
+#if DEBUG
+    uint64_t cntr = 1000000;
+#endif
+
     while(!locked) {
+
+#if DEBUG
+        //TODO: Add instrumentation system that can be active in release builds, logging deadlock.
+        cntr--;
+        if(cntr == 0) {
+            volatile uint64_t *prim = (volatile uint64_t*)primitive;
+            __asm__ volatile("cli\n\thlt" :: "a"(__builtin_return_address(0)), "b"(primitive), "c"(prim[1] - 1), "d"(prim[5]));
+        }
+#endif
+
         uint64_t iflag = 0;
         __asm__ volatile("pushfq\n\tcli\n\tpopq %0" : "=r"(iflag) :: "cc");
 
@@ -210,6 +229,10 @@ LockSpinlock(Spinlock primitive) {
             locked = FALSE;
             deleting = TRUE;
         } else if(prim[1] == 0 && prim[2] == 0) {
+#if DEBUG
+            prim[5] = (uint64_t)__builtin_return_address(0);
+#endif
+
             prim[2] = 1;
             prim[1] = APIC_GetID() + 1;
             locked = TRUE;
@@ -249,6 +272,9 @@ UnlockSpinlock(Spinlock primitive) {
         if(prim[2] == 0) {
             prim[1] = 0;
             iflag = prim[3];
+#if DEBUG
+            prim[5] = (uint64_t)__builtin_return_address(0);
+#endif
         }
     }
     __asm__ volatile("":::"memory");

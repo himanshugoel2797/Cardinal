@@ -28,7 +28,6 @@ typedef struct CoreThreadState {
 } CoreThreadState;
 
 Spinlock sync_lock;
-Spinlock starving_lock;
 Spinlock pending_lock;
 Spinlock sleeping_lock;
 static List *pending_thds, *sleeping_thds;
@@ -139,7 +138,6 @@ void Thread_Initialize(void) {
     thds = BTree_Create(4);  // The thread tree is 4 levels deep
     BTree_GetKey(thds);      // Force keys to start from 1
 
-    starving_lock = CreateSpinlock();
     pending_lock = CreateSpinlock();
     pending_thds = List_Create(pending_lock);
 
@@ -153,7 +151,7 @@ void Thread_Initialize(void) {
 
     core_id = (uint64_t *)AllocateAPLSMemory(sizeof(uint64_t));
 
-
+    //Setup the bootstrap process.
     ThreadInfo *root_thd = kmalloc(sizeof(ThreadInfo));
     ProcessInfo *pInfo = kmalloc(sizeof(ProcessInfo));
     root_thd->State = ThreadState_Created;
@@ -425,6 +423,7 @@ ThreadError GetProcessReference(UID pid, ProcessInfo **pInfo) {
         return ThreadError_Deleting;
 
     *pInfo = thd->Process;
+
     return ThreadError_None;
 }
 
@@ -444,18 +443,22 @@ void SetThreadState(UID id, ThreadState state) {
     GetThreadReference(id, &thd);
 
     if (thd != NULL) {
-        if(LockSpinlock(thd->lock) == NULL)
+        LockSpinlock(pending_lock);
+
+        if(LockSpinlock(thd->lock) == NULL){
+            UnlockSpinlock(pending_lock);
             return;
+        }
+
         ThreadState oldState = thd->State;
         thd->State = state;
         
         if(oldState == ThreadState_Created && state == ThreadState_Initialize){
-            LockSpinlock(pending_lock);
             List_AddEntry(pending_thds, thd);
-            UnlockSpinlock(pending_lock);
         }
 
         UnlockSpinlock(thd->lock);
+        UnlockSpinlock(pending_lock);
     }
 }
 
@@ -571,7 +574,8 @@ void TryAddThreads(void) {
 
         LockSpinlock(pending_lock);
         ThreadInfo *thd_ad = NULL;
-        while(1) {
+        uint64_t pending_cnt = List_Length(pending_thds);
+        while(pending_cnt > 0) {
             thd_ad = NULL;
             if(List_Length(pending_thds) == 0)
                 break;
@@ -588,7 +592,8 @@ void TryAddThreads(void) {
                     } else 
                         break;
                 }
-            };
+            }
+            pending_cnt--;
         }
 
         if (thd_ad != NULL) {
@@ -645,10 +650,10 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
                               Heap_GetItemCount(all_states[*core_id].back_heap), *core_id);
 
             // Pick up threads from the pending queue if any are available
-            if (TryLockSpinlock(starving_lock) && List_Length(pending_thds) != 0) {
+            LockSpinlock(pending_lock);
+            if (List_Length(pending_thds) != 0)
                 TryAddThreads();
-                UnlockSpinlock(starving_lock);
-            }
+            UnlockSpinlock(pending_lock);
 
             // Wait for more threads to be made pending
             while (Heap_GetItemCount(all_states[*core_id].back_heap) == 0) {
@@ -656,11 +661,9 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
                 // shouldn't bother pulling in more load.
 
                 //Release 
-                LockSpinlock(starving_lock);
-                while (List_Length(pending_thds) == 0) PAUSE;
-
+                LockSpinlock(pending_lock);
                 TryAddThreads();
-                UnlockSpinlock(starving_lock);
+                UnlockSpinlock(pending_lock);
             }
 
             // Swap the front and back heaps
@@ -738,7 +741,6 @@ void SchedulerCycle(Registers *regs) {
     // Only switch virtual address space if necessary.
     if (prevId != GetCurrentProcessUID())
         SetActiveVirtualMemoryInstance(all_states[*core_id].cur_thread->Process->PageTable);
-
 
     if (all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
         all_states[*core_id].cur_thread->State = ThreadState_Running;
