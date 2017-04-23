@@ -682,12 +682,14 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
         // If the process is terminating, terminate the thread
         // TODO: inspect this portion and determine if it is necessary to not be deleting the currently executing thread.
         bool currentlyLocked = FALSE;
-        if(LockSpinlock(next_thread->Process->lock) == NULL) {
+        if(LockSpinlock(next_thread->Process->lock) == NULL)
             next_thread->State = ThreadState_Exiting;
-        } else if (next_thread->Process->Status == ProcessStatus_Terminating &&
+        else
+            currentlyLocked = TRUE;
+
+        if (currentlyLocked && next_thread->Process->Status == ProcessStatus_Terminating &&
                    GetCurrentProcessUID() != next_thread->Process->PID) {
             next_thread->State = ThreadState_Exiting;
-            currentlyLocked = TRUE;
         }
 
         switch (next_thread->State) {
