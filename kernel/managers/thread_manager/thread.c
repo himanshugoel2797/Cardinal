@@ -84,7 +84,7 @@ GetProcessGroupID(UID pid) {
     if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL){
+    if(LockSpinlock(pInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return -1;
     }
@@ -102,7 +102,7 @@ SetProcessGroupID(UID pid, UID gid) {
     if(GetProcessReference(pid, &pInfo) != ThreadError_None)
         return -1;
 
-    if(LockSpinlock(pInfo->lock) == NULL){
+    if(LockSpinlock(pInfo->lock) == NULL) {
         ReturnProcessReference(pid);
         return -1;
     }
@@ -233,44 +233,44 @@ uint64_t GetStackSize(ThreadPermissionLevel perm_level) {
 ThreadError
 CreateProcess(UID parentProcess, ProcessInfo **pInf) {
 
-        ProcessInfo *pInfo = NULL;
-        if(GetProcessReference(parentProcess, &pInfo) != ThreadError_None)
-            return ThreadError_UIDNotFound;
+    ProcessInfo *pInfo = NULL;
+    if(GetProcessReference(parentProcess, &pInfo) != ThreadError_None)
+        return ThreadError_UIDNotFound;
 
-        ProcessInfo *nProc = kmalloc(sizeof(ProcessInfo));
-        if(nProc == NULL) {
-            ReturnProcessReference(parentProcess);
-            return ThreadError_Unknown;
-        }
-
-        nProc->lock = CreateSpinlock();
-        nProc->PID = new_thd_uid();
-        nProc->ParentID = parentProcess;
-        nProc->UserID = pInfo->UserID;
-        nProc->GroupID = pInfo->GroupID;
-        nProc->Status = ProcessStatus_Executing;
-        nProc->PageTable = kmalloc(sizeof(ManagedPageTable));
-        if(nProc->PageTable == NULL) {
-            FreeSpinlock(nProc->lock);
-            kfree(nProc);
-            ReturnProcessReference(parentProcess);
-            return ThreadError_Unknown;
-        }
-
-        if(CreateVirtualMemoryInstance(nProc->PageTable) != MemoryAllocationErrors_None) {
-            kfree(nProc->PageTable);
-            FreeSpinlock(nProc->lock);
-            kfree(nProc);
-            ReturnProcessReference(parentProcess);
-            return ThreadError_Unknown;
-        }
-
-        //TODO: Descriptor table
-
-        *pInf = nProc;
-
+    ProcessInfo *nProc = kmalloc(sizeof(ProcessInfo));
+    if(nProc == NULL) {
         ReturnProcessReference(parentProcess);
-        return ThreadError_None;
+        return ThreadError_Unknown;
+    }
+
+    nProc->lock = CreateSpinlock();
+    nProc->PID = new_thd_uid();
+    nProc->ParentID = parentProcess;
+    nProc->UserID = pInfo->UserID;
+    nProc->GroupID = pInfo->GroupID;
+    nProc->Status = ProcessStatus_Executing;
+    nProc->PageTable = kmalloc(sizeof(ManagedPageTable));
+    if(nProc->PageTable == NULL) {
+        FreeSpinlock(nProc->lock);
+        kfree(nProc);
+        ReturnProcessReference(parentProcess);
+        return ThreadError_Unknown;
+    }
+
+    if(CreateVirtualMemoryInstance(nProc->PageTable) != MemoryAllocationErrors_None) {
+        kfree(nProc->PageTable);
+        FreeSpinlock(nProc->lock);
+        kfree(nProc);
+        ReturnProcessReference(parentProcess);
+        return ThreadError_Unknown;
+    }
+
+    //TODO: Descriptor table
+
+    *pInf = nProc;
+
+    ReturnProcessReference(parentProcess);
+    return ThreadError_None;
 }
 
 UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_level,
@@ -282,11 +282,11 @@ UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_
             return -1;
 
         LockSpinlock(pInf->lock);
-    }else{
+    } else {
         if(GetProcessReference(parentProcess, &pInf) != ThreadError_None)
             return -1;
 
-        if(LockSpinlock(pInf->lock) == NULL){
+        if(LockSpinlock(pInf->lock) == NULL) {
             ReturnProcessReference(parentProcess);
             return -1;
         }
@@ -327,8 +327,8 @@ UID CreateThread(UID parentProcess, bool newProcess, ThreadPermissionLevel perm_
     }
 
     UID retVal = CreateThreadADV(pInf, newProcess, perm_level, user_stack_bottom, &regs,
-                           NULL);
-    
+                                 NULL);
+
     UnlockSpinlock(pInf->lock);
     if(!newProcess)
         ReturnProcessReference(parentProcess);
@@ -445,15 +445,15 @@ void SetThreadState(UID id, ThreadState state) {
     if (thd != NULL) {
         LockSpinlock(pending_lock);
 
-        if(LockSpinlock(thd->lock) == NULL){
+        if(LockSpinlock(thd->lock) == NULL) {
             UnlockSpinlock(pending_lock);
             return;
         }
 
         ThreadState oldState = thd->State;
         thd->State = state;
-        
-        if(oldState == ThreadState_Created && state == ThreadState_Initialize){
+
+        if(oldState == ThreadState_Created && state == ThreadState_Initialize) {
             List_AddEntry(pending_thds, thd);
         }
 
@@ -584,12 +584,12 @@ void TryAddThreads(void) {
             List_Remove(pending_thds, 0);
 
             //Check core affinity.
-            if(thd_ad != NULL){
-                if(LockSpinlock(thd_ad->lock) != NULL){
-                    if((thd_ad->CoreAffinity & (1 << *core_id)) == 0){
+            if(thd_ad != NULL) {
+                if(LockSpinlock(thd_ad->lock) != NULL) {
+                    if((thd_ad->CoreAffinity & (1 << *core_id)) == 0) {
                         List_AddEntry(pending_thds, thd_ad);
                         UnlockSpinlock(thd_ad->lock);
-                    } else 
+                    } else
                         break;
                 }
             }
@@ -660,7 +660,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
                 // TODO report that this core is waiting for threads, so other cores
                 // shouldn't bother pulling in more load.
 
-                //Release 
+                //Release
                 LockSpinlock(pending_lock);
                 TryAddThreads();
                 UnlockSpinlock(pending_lock);
@@ -688,7 +688,7 @@ ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
             currentlyLocked = TRUE;
 
         if (currentlyLocked && next_thread->Process->Status == ProcessStatus_Terminating &&
-                   GetCurrentProcessUID() != next_thread->Process->PID) {
+                GetCurrentProcessUID() != next_thread->Process->PID) {
             next_thread->State = ThreadState_Exiting;
         }
 
@@ -733,9 +733,9 @@ void SchedulerCycle(Registers *regs) {
         all_states[*core_id].cur_thread =
             GetNextThread(all_states[*core_id].cur_thread);
 
-     /*PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
-        Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
-        prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());*/
+    /*PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
+       Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
+       prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());*/
 
     RestoreFPUState(all_states[*core_id].cur_thread->FPUState);
     SetKernelStack((void *)all_states[*core_id].cur_thread->KernelStackAligned);

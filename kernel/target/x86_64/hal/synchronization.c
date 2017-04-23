@@ -178,9 +178,9 @@ TryLockSpinlock(Spinlock primitive) {
     } else if(prim[4] == 1) {
         locked = FALSE;
     } else if(prim[1] == 0 && prim[2] == 0) {
-        #if DEBUG
+#if DEBUG
         prim[5] = (uint64_t)__builtin_return_address(0);
-        #endif
+#endif
         prim[2] = 1;
         prim[1] = APIC_GetID() + 1;
         locked = TRUE;

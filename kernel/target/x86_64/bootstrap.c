@@ -146,7 +146,7 @@ bootstrap_kernel(void *param,
 
     ManagedPageTable *pageTable = bootstrap_malloc(sizeof(ManagedPageTable));
     pageTable->PageTable = (UID)VirtMemMan_GetCurrent();
-    
+
     if(GetCoreCount() < 64)
         pageTable->SmallActivityBitmap = 0;
     else

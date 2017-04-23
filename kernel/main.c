@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2017 Himanshu Goel
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -60,12 +60,12 @@ kernel_main_init(void) {
 
     while(smp_core_count != GetCoreCount())
         ;
-    
+
     tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     SetThreadState(tid, ThreadState_Initialize);
 
     load_exec(ROOT_PID, "userboot.bin");
-    
+
     SetupPreemption();
 
     while(1)
@@ -74,9 +74,9 @@ kernel_main_init(void) {
 
 void
 load_exec(UID pid, const char *exec) {
-    
+
     UID tid = CreateThread(pid, TRUE, ThreadPermissionLevel_User, (ThreadEntryPoint)EXEC_ENTRY_POINT, NULL);
-    
+
     void *exec_loc = NULL;
     uint64_t exec_size = 0;
 
@@ -93,7 +93,7 @@ load_exec(UID pid, const char *exec) {
     if(GetProcessReference(tid, &pinfo) != ThreadError_None)
         return;
 
-    if(LockSpinlock(pinfo->lock) == NULL){
+    if(LockSpinlock(pinfo->lock) == NULL) {
         ReturnProcessReference(tid);
         return;
     }
@@ -144,7 +144,7 @@ void
 idle_main(void) {
 
     UID cpid = 0;
-    
+
     UID tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main2, NULL);
     SetThreadState(tid, ThreadState_Initialize);
 
