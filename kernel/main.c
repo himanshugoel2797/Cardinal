@@ -17,6 +17,7 @@
 #include "timer.h"
 #include "thread.h"
 #include "file_server.h"
+#include "apic/apic.h"
 #include "boot_information/boot_information.h"
 
 static volatile _Atomic int smp_core_count = 0;
@@ -64,7 +65,7 @@ kernel_main_init(void) {
     tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     SetThreadState(tid, ThreadState_Initialize);
 
-    load_exec(ROOT_PID, "userboot.bin");
+    //load_exec(ROOT_PID, "userboot.bin");
 
     SetupPreemption();
 
@@ -161,6 +162,9 @@ smp_core_main(int (*getCoreData)(void)) {
     Syscall_Initialize();
 
     RegisterCore(getCoreData);
+
+    PrintDebugMessage("Core ID:%x APIC:%x\r\n", (uint32_t)GetCoreIndex(), (uint32_t)APIC_GetID());
+
     smp_core_count++;
     /*UID cpid = 0;
     if(CreateProcess(ROOT_PID, 0, &cpid) != ProcessErrors_None)

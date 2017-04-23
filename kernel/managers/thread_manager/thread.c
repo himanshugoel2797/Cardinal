@@ -574,8 +574,8 @@ void TryAddThreads(void) {
 
         LockSpinlock(pending_lock);
         ThreadInfo *thd_ad = NULL;
-        uint64_t pending_cnt = List_Length(pending_thds);
-        while(pending_cnt > 0) {
+        uint32_t pending_cnt = List_Length(pending_thds);
+        while(1) {
             thd_ad = NULL;
             if(List_Length(pending_thds) == 0)
                 break;
@@ -593,7 +593,12 @@ void TryAddThreads(void) {
                         break;
                 }
             }
+
             pending_cnt--;
+            if(pending_cnt == 0) {
+                thd_ad = NULL;
+                break;
+            }
         }
 
         if (thd_ad != NULL) {
@@ -605,7 +610,7 @@ void TryAddThreads(void) {
     }
 }
 
-ThreadInfo *GetNextThread(ThreadInfo *prevThread) {
+ThreadInfo* NONNULL_RETURN GetNextThread(ThreadInfo *prevThread) {
     /*
     - Get a thread from the queue
     - Process the thread
