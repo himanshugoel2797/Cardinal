@@ -662,7 +662,7 @@ ThreadInfo* NONNULL_RETURN GetNextThread(ThreadInfo *prevThread) {
 
             // Wait for more threads to be made pending
             while (Heap_GetItemCount(all_states[*core_id].back_heap) == 0) {
-                // TODO report that this core is waiting for threads, so other cores
+                // TODO: report that this core is waiting for threads, so other cores
                 // shouldn't bother pulling in more load.
 
                 //Release
@@ -738,17 +738,23 @@ void SchedulerCycle(Registers *regs) {
         all_states[*core_id].cur_thread =
             GetNextThread(all_states[*core_id].cur_thread);
 
+    if(all_states[*core_id].cur_thread == NULL) {
+        PANIC("Next thread is NULL.");
+    }
+
     /*PrintDebugMessage("Front: %x Back: %x Core %x Thread From: %x:%x To: %x:%x \r\n", Heap_GetItemCount(all_states[*core_id].cur_heap) + 1,
        Heap_GetItemCount(all_states[*core_id].back_heap), *core_id, prevId,
        prevTID, GetCurrentProcessUID(), GetCurrentThreadUID());*/
 
     RestoreFPUState(all_states[*core_id].cur_thread->FPUState);
+    PrintDebugMessage("Addr: %x %x Core: %x\r\n", (uint32_t)((uint64_t)all_states[*core_id].cur_thread >> 32), (uint32_t)(all_states[*core_id].cur_thread), (uint32_t)*core_id);
     SetKernelStack((void *)all_states[*core_id].cur_thread->KernelStackAligned);
 
     // Only switch virtual address space if necessary.
     if (prevId != GetCurrentProcessUID())
         SetActiveVirtualMemoryInstance(all_states[*core_id].cur_thread->Process->PageTable);
 
+    //PrintDebugMessage("ThreadState: %x:%x State\r\n", all_states[*core_id].cur_thread->State, (uint32_t)*core_id);
     if (all_states[*core_id].cur_thread->State == ThreadState_Initialize) {
         all_states[*core_id].cur_thread->State = ThreadState_Running;
     }

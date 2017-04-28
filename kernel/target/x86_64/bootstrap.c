@@ -65,6 +65,8 @@ bootstrap_kernel(void *param,
     if(param == NULL)
         bootstrap_render(0xff00ff00);
 
+    SMP_SetupProcessor();
+
     //Initialize the bootstrap mappings
     VirtMemMan_InitializeBootstrap();
 
@@ -178,6 +180,8 @@ smp_unlock_cores(void) {
 void
 smp_bootstrap_stage2(void) {
     VirtMemMan_InitializeBootstrap();
+
+    SMP_SetupProcessor();
 
     IDT_Initialize();   //Setup the IDT
     FPU_Initialize();   //Setup the FPU
