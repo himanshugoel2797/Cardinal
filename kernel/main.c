@@ -57,15 +57,15 @@ kernel_main_init(void) {
 
 
     smp_core_count = 1;
-    smp_unlock_cores();
+    //smp_unlock_cores();
 
-    while(smp_core_count != GetCoreCount())
-        ;
+    //while(smp_core_count != GetCoreCount())
+    //    ;
 
     tid = CreateThread(ROOT_PID, FALSE, ThreadPermissionLevel_Kernel, (ThreadEntryPoint)idle_main, NULL);
     SetThreadState(tid, ThreadState_Initialize);
 
-    //load_exec(ROOT_PID, "userboot.bin");
+    load_exec(ROOT_PID, "userboot.bin");
 
     SetupPreemption();
 

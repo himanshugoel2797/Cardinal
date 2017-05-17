@@ -6,6 +6,8 @@
 #ifndef _LIB_CARDINAL_KEYMAN_H_
 #define _LIB_CARDINAL_KEYMAN_H_
 
+#include "cardinal_types.h"
+#include "syscall.h"
 #include "syscall_list.h"
 
 /**
@@ -16,19 +18,29 @@
 #define KEY_LENGTH 16
 
 typedef struct {
-    uint8_t key[KEY_LENGTH];
-    uint64_t key_index;
-    uint64_t machine_id;
-    uint64_t network_id;
+  uint8_t key[KEY_LENGTH];
+  uint64_t key_index;
+  uint64_t machine_id;
+  uint64_t network_id;
 } Key_t;
 
 #define KEY_STR_LEN (KEY_LENGTH * 2 + 3 * 16 + 1)
 
-void
-KeyToString(Key_t key, char *buf);
+void KeyToString(Key_t key, char *buf);
 
-void
-StringToKey(const char *buf, Key_t *key);
+void StringToKey(const char *buf, Key_t *key);
+
+static __inline uint64_t GetKeyUsageCount(Key_t *key, uint64_t *cnt) {
+  if (cnt == NULL) return -EINVAL;
+
+  *cnt = Syscall1(Syscall_GetKeyUsageCount, (uint64_t)key);
+  return GetErrno();
+}
+
+static __inline uint64_t RemoveKey(Key_t *key) {
+  Syscall1(Syscall_RemoveKey, (uint64_t)key);
+  return GetErrno();
+}
 
 /**}@*/
 
