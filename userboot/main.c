@@ -44,24 +44,6 @@ __attribute__((section(".entry_point"))) int _start() {
   UID pid = 0;
   CREATE_NEW_MESSAGE_PTR(msg);
 
-  // Bring up the process server
-  int err = LoadProgram("proc_server.elf", &pid);
-  if (err != 0) __asm__("hlt");
-  while (!GetIPCMessage(msg))
-    ;
-
-  // Bring up memory management services
-  err = LoadProgram("mem_server.elf", &pid);
-  if (err != 0) __asm__("hlt");
-  while (!GetIPCMessage(msg))
-    ;
-
-  // Bring up the service/namespace directory
-  err = LoadProgram("namespace_srv.elf", &pid);
-  if (err != 0) __asm__("hlt");
-  while (!GetIPCMessage(msg))
-    ;
-
   err = LoadProgram("sibyl.elf", &pid);
   if (err != 0) __asm__("hlt");
 
