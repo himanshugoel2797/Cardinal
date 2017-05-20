@@ -32,9 +32,9 @@ uint64_t AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
                                       MemoryAllocationFlags flags);
 
 uint64_t R0_AllocateSharedMemory_Syscall(uint64_t length, CachingMode cacheMode,
-                                         MemoryAllocationType allocType,
-                                         MemoryAllocationFlags flags,
-                                         uint64_t phys_addr);
+        MemoryAllocationType allocType,
+        MemoryAllocationFlags flags,
+        uint64_t phys_addr);
 
 uint64_t ApplySharedMemoryKey_Syscall(Key_t* key, void* shmem_data_p);
 

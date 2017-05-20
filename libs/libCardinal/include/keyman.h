@@ -18,10 +18,10 @@
 #define KEY_LENGTH 16
 
 typedef struct {
-  uint8_t key[KEY_LENGTH];
-  uint64_t key_index;
-  uint64_t machine_id;
-  uint64_t network_id;
+    uint8_t key[KEY_LENGTH];
+    uint64_t key_index;
+    uint64_t machine_id;
+    uint64_t network_id;
 } Key_t;
 
 #define KEY_STR_LEN (KEY_LENGTH * 2 + 3 * 16 + 1)
@@ -33,15 +33,15 @@ void StringToKey(const char *buf, Key_t *key);
 #ifndef _KERNEL_
 
 static __inline uint64_t GetKeyUsageCount(Key_t *key, uint64_t *cnt) {
-  if (cnt == NULL) return -EINVAL;
+    if (cnt == NULL) return -EINVAL;
 
-  *cnt = Syscall1(Syscall_GetKeyUsageCount, (uint64_t)key);
-  return GetErrno();
+    *cnt = Syscall1(Syscall_GetKeyUsageCount, (uint64_t)key);
+    return GetErrno();
 }
 
 static __inline uint64_t RemoveKey(Key_t *key) {
-  Syscall1(Syscall_RemoveKey, (uint64_t)key);
-  return GetErrno();
+    Syscall1(Syscall_RemoveKey, (uint64_t)key);
+    return GetErrno();
 }
 
 #endif

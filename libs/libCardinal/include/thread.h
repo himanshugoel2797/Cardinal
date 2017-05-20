@@ -38,9 +38,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 typedef enum { R0_ThreadInfoType_UserStackAddress } R0_ThreadInfoType;
 
 typedef enum {
-  MessageWaitType_Any,
-  MessageWaitType_MsgType,
-  MessageWaitType_SourcePID
+    MessageWaitType_Any,
+    MessageWaitType_MsgType,
+    MessageWaitType_SourcePID
 } MessageWaitType;
 
 #ifndef _KERNEL_
@@ -57,11 +57,11 @@ typedef enum {
  */
 static __inline uint64_t CreateThread(int (*entry_point)(void *arg), void *arg,
                                       UID *tid) {
-  if (tid != NULL) {
-    *tid = Syscall2(Syscall_CreateThread, (uint64_t)entry_point, (uint64_t)arg);
-    return GetErrno();
-  }
-  return -EINVAL;
+    if (tid != NULL) {
+        *tid = Syscall2(Syscall_CreateThread, (uint64_t)entry_point, (uint64_t)arg);
+        return GetErrno();
+    }
+    return -EINVAL;
 }
 
 /**
@@ -73,8 +73,8 @@ static __inline uint64_t CreateThread(int (*entry_point)(void *arg), void *arg,
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t SetThreadIsPaused(UID tid, bool pause) {
-  Syscall2(Syscall_SetThreadIsPaused, tid, pause);
-  return GetErrno();
+    Syscall2(Syscall_SetThreadIsPaused, tid, pause);
+    return GetErrno();
 }
 
 /**
@@ -85,8 +85,8 @@ static __inline uint64_t SetThreadIsPaused(UID tid, bool pause) {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t KillThread(UID tid) {
-  Syscall1(Syscall_KillThread, tid);
-  return GetErrno();
+    Syscall1(Syscall_KillThread, tid);
+    return GetErrno();
 }
 
 /**
@@ -95,8 +95,8 @@ static __inline uint64_t KillThread(UID tid) {
  * @return     Error code on failure, does not return on success.
  */
 static __inline uint64_t ExitDeleteThread(void) {
-  Syscall0(Syscall_ExitDeleteThread);
-  return GetErrno();
+    Syscall0(Syscall_ExitDeleteThread);
+    return GetErrno();
 }
 
 /**
@@ -109,12 +109,12 @@ static __inline uint64_t ExitDeleteThread(void) {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t R0_GetThreadInfo(UID tid, R0_ThreadInfoType type,
-                                          uint64_t *value) {
-  if (value != NULL) {
-    *value = Syscall2(Syscall_R0_GetThreadInfo, tid, type);
-    return GetErrno();
-  }
-  return -EINVAL;
+        uint64_t *value) {
+    if (value != NULL) {
+        *value = Syscall2(Syscall_R0_GetThreadInfo, tid, type);
+        return GetErrno();
+    }
+    return -EINVAL;
 }
 
 /**
@@ -123,19 +123,19 @@ static __inline uint64_t R0_GetThreadInfo(UID tid, R0_ThreadInfoType type,
  * @return     The current thread uid.
  */
 static __inline UID GetCurrentThreadUID(void) {
-  UID id = 0;
-  GetProperty(CardinalProperty_TID, 0, &id);
-  return id;
+    UID id = 0;
+    GetProperty(CardinalProperty_TID, 0, &id);
+    return id;
 }
 
 static __inline void *R0_GetThreadUserStack(UID tid) {
-  uint64_t addr = 0;
-  R0_GetThreadInfo(tid, R0_ThreadInfoType_UserStackAddress, &addr);
-  return (void *)addr;
+    uint64_t addr = 0;
+    R0_GetThreadInfo(tid, R0_ThreadInfoType_UserStackAddress, &addr);
+    return (void *)addr;
 }
 
 static __inline void SleepThread(uint64_t ns_time) {
-  Syscall1(Syscall_Nanosleep, ns_time);
+    Syscall1(Syscall_Nanosleep, ns_time);
 }
 
 #endif

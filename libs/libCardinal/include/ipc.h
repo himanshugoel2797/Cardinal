@@ -47,10 +47,10 @@ extern "C" {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t R01AllocateInterrupts(int cnt, int *irq) {
-  if (irq == NULL) return -EINVAL;
+    if (irq == NULL) return -EINVAL;
 
-  *irq = Syscall1(Syscall_R01_AllocateInterrupts, cnt);
-  return GetErrno();
+    *irq = Syscall1(Syscall_R01_AllocateInterrupts, cnt);
+    return GetErrno();
 }
 
 /**
@@ -62,8 +62,8 @@ static __inline uint64_t R01AllocateInterrupts(int cnt, int *irq) {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t R01RegisterInterrupts(int irq, int cnt) {
-  Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
-  return GetErrno();
+    Syscall2(Syscall_R01_RegisterForInterrupts, irq, cnt);
+    return GetErrno();
 }
 
 uint32_t RequestMessageID(void);

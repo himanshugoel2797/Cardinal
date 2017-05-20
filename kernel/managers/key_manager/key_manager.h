@@ -12,31 +12,31 @@
 #define IDENTIFIER_COUNT 5
 
 typedef enum {
-  KeyManagerErrors_None,
-  KeyManagerErrors_Unknown,
-  KeyManagerErrors_InvalidParams,
-  KeyManagerErrors_KeyDoesNotExist,
-  KeyManagerErrors_InvalidOperation,
-  KeyManagerErrors_NonZeroReferenceCount,
+    KeyManagerErrors_None,
+    KeyManagerErrors_Unknown,
+    KeyManagerErrors_InvalidParams,
+    KeyManagerErrors_KeyDoesNotExist,
+    KeyManagerErrors_InvalidOperation,
+    KeyManagerErrors_NonZeroReferenceCount,
 } KeyManagerErrors;
 
 typedef enum {
-  KeyFlags_None = 0,
-  KeyFlags_SingleTransfer = (1 << 0),
-  KeyFlags_UnlimitedTransfer = (1 << 1),
+    KeyFlags_None = 0,
+    KeyFlags_SingleTransfer = (1 << 0),
+    KeyFlags_UnlimitedTransfer = (1 << 1),
 } KeyFlags;
 
 typedef enum {
-  KeyIdentifier_V0 = 0,
-  KeyIdentifier_V1 = 1,
-  KeyIdentifier_V2 = 2,
-  KeyIdentifier_Count = 3,
-  KeyIdentifier_Type = IDENTIFIER_COUNT - 1
+    KeyIdentifier_V0 = 0,
+    KeyIdentifier_V1 = 1,
+    KeyIdentifier_V2 = 2,
+    KeyIdentifier_Count = 3,
+    KeyIdentifier_Type = IDENTIFIER_COUNT - 1
 } KeyIdentifierIndices;
 
 typedef enum {
-  KeyType_SharedMemoryKey = 1,
-  KeyType_GeneralPurpose = 2,
+    KeyType_SharedMemoryKey = 1,
+    KeyType_GeneralPurpose = 2,
 } KeyType;
 
 void KeyMan_Initialize(void);

@@ -42,9 +42,9 @@ extern "C" {
  * @return     The current process uid.
  */
 static __inline UID GetCurrentProcessUID(void) {
-  UID id = 0;
-  GetProperty(CardinalProperty_PID, 0, &id);
-  return id;
+    UID id = 0;
+    GetProperty(CardinalProperty_PID, 0, &id);
+    return id;
 }
 
 /**
@@ -57,11 +57,11 @@ static __inline UID GetCurrentProcessUID(void) {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t CreateProcess(UID parent, UID groupID, UID* uid) {
-  if (uid != NULL) {
-    *uid = Syscall2(Syscall_CreateProcess, parent, groupID);
-    return GetErrno();
-  }
-  return -EINVAL;
+    if (uid != NULL) {
+        *uid = Syscall2(Syscall_CreateProcess, parent, groupID);
+        return GetErrno();
+    }
+    return -EINVAL;
 }
 
 /**
@@ -73,7 +73,7 @@ static __inline uint64_t CreateProcess(UID parent, UID groupID, UID* uid) {
  * @return     Error code on failure, 0 on success.
  */
 static __inline uint64_t GetProcessGroupID(UID pid, uint64_t* val) {
-  return GetProperty(CardinalProperty_R0_GroupID, pid, val);
+    return GetProperty(CardinalProperty_R0_GroupID, pid, val);
 }
 
 /**@}*/
