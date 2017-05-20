@@ -445,6 +445,14 @@ void SchedulerCycle(Registers *regs);
  */
 ThreadError GetThreadReference(UID id, ThreadInfo **thd);
 
+ThreadError AddKey(UID pid, Key_t *key);
+
+ThreadError HasKey(UID pid, Key_t *key, bool *hasKey);
+
+ThreadError RemoveKey(UID pid, Key_t *key);
+
+ThreadError GetKey(UID pid, uint32_t idx, Key_t *key);
+
 /**@}*/
 
 #endif

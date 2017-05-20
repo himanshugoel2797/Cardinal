@@ -30,6 +30,8 @@ void KeyToString(Key_t key, char *buf);
 
 void StringToKey(const char *buf, Key_t *key);
 
+#ifndef _KERNEL_
+
 static __inline uint64_t GetKeyUsageCount(Key_t *key, uint64_t *cnt) {
   if (cnt == NULL) return -EINVAL;
 
@@ -41,6 +43,8 @@ static __inline uint64_t RemoveKey(Key_t *key) {
   Syscall1(Syscall_RemoveKey, (uint64_t)key);
   return GetErrno();
 }
+
+#endif
 
 /**}@*/
 

@@ -42,14 +42,9 @@ ElfLoaderError VerifyElf(void *loc, uint64_t size, bool *_64bit,
 }
 
 ElfLoaderError LoadElf64(void *loc, uint64_t size, ElfLimitations limits,
-                         UID pid, ElfInformation *elfData) {
+                         UID pid) {
   if (size < sizeof(Elf64_Ehdr)) return ElfLoaderError_NotElf;
   Elf64_Ehdr *hdr = (Elf64_Ehdr *)loc;
-
-  elfData->entry_point = (void *)hdr->e_entry;
-  elfData->phdr_data = (void *)(hdr->e_phoff + (uint64_t)loc);
-  elfData->phdr_num = hdr->e_phnum;
-  elfData->phdr_ent_size = hdr->e_phentsize;
 
   limits = 0;
 
@@ -130,14 +125,41 @@ ElfLoaderError LoadElf64(void *loc, uint64_t size, ElfLimitations limits,
   return ElfLoaderError_Success;
 }
 
-ElfLoaderError LoadElf(void *loc, uint64_t size, ElfLimitations limits, UID pid,
+ElfLoaderError LoadElf(void *loc, uint64_t size, ElfLimitations limits,
+                       UID pid) {
+  bool _64bit = FALSE;
+  ElfLoaderError err = VerifyElf(loc, size, &_64bit, limits);
+  if (err != ElfLoaderError_Success) return err;
+
+  if (_64bit)
+    return LoadElf64(loc, size, limits, pid);
+  else
+    return ElfLoaderError_IncompatibleBinary;
+}
+
+ElfLoaderError ReadElf64(void *loc, uint64_t size, ElfLimitations limits,
+                         ElfInformation *elfData) {
+  if (size < sizeof(Elf64_Ehdr)) return ElfLoaderError_NotElf;
+  Elf64_Ehdr *hdr = (Elf64_Ehdr *)loc;
+
+  limits = 0;
+
+  elfData->entry_point = (void *)hdr->e_entry;
+  elfData->phdr_data = (void *)(hdr->e_phoff + (uint64_t)loc);
+  elfData->phdr_num = hdr->e_phnum;
+  elfData->phdr_ent_size = hdr->e_phentsize;
+
+  return ElfLoaderError_Success;
+}
+
+ElfLoaderError ReadElf(void *loc, uint64_t size, ElfLimitations limits,
                        ElfInformation *elfData) {
   bool _64bit = FALSE;
   ElfLoaderError err = VerifyElf(loc, size, &_64bit, limits);
   if (err != ElfLoaderError_Success) return err;
 
   if (_64bit)
-    return LoadElf64(loc, size, limits, pid, elfData);
+    return ReadElf64(loc, size, limits, elfData);
   else
     return ElfLoaderError_IncompatibleBinary;
 }

@@ -412,7 +412,10 @@ typedef struct ElfInformation {
   uint64_t phdr_ent_size;
 } ElfInformation;
 
-ElfLoaderError LoadElf(void *loc, uint64_t size, ElfLimitations limits, UID pid,
+ElfLoaderError LoadElf(void *loc, uint64_t size, ElfLimitations limits,
+                       UID pid);
+
+ElfLoaderError ReadElf(void *loc, uint64_t size, ElfLimitations limits,
                        ElfInformation *elfData);
 
 #endif
