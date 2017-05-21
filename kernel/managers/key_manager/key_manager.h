@@ -35,9 +35,10 @@ typedef enum {
 } KeyIdentifierIndices;
 
 typedef enum {
-  KeyType_SharedMemoryKey = 1,
-  KeyType_GeneralPurpose = 2,
-  KeyType_Signal = 3,
+  KeyType_SharedMemoryKey,
+  KeyType_GeneralPurpose,
+  KeyType_Signal,
+  KeyType_Object,
 } KeyType;
 
 void KeyMan_Initialize(void);
