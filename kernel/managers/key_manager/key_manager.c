@@ -30,6 +30,20 @@ static void KeyMan_GenerateKey(uint64_t idx, Key_t *key) {
   key->key_index = idx + 1;
 }
 
+bool KeyMan_AreKeysEqual(const Key_t *a, const Key_t *b) {
+  for (int i = 0; i < KEY_LENGTH; i++) {
+    if (a->key[i] != b->key[i]) return FALSE;
+  }
+
+  if (a->key_index != b->key_index) return FALSE;
+
+  if (a->machine_id != b->machine_id) return FALSE;
+
+  if (a->network_id != b->network_id) return FALSE;
+
+  return TRUE;
+}
+
 bool KeyMan_VerifyKey(const Key_t *key) {
   if (key->key_index == 0) return false;
 
@@ -50,7 +64,7 @@ void KeyMan_Initialize(void) {
           MemoryAllocationType_Heap,
           MemoryAllocationFlags_Write | MemoryAllocationFlags_NoExec |
               MemoryAllocationFlags_Kernel) != MemoryAllocationErrors_None) {
-    // TODO go back and make the kernel panic on any initialization failures.
+    // TODO: go back and make the kernel panic on any initialization failures.
     PANIC("Key Table Initialization Failed.");
   }
 

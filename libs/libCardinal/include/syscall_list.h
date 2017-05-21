@@ -88,6 +88,8 @@ typedef enum {
                    // different number of keys are returned
   Syscall_Remove,  // TODO: object removal
 
+  // TODO: provide a syscall to read the state of a key.
+
   Syscall_CreateKey,         //!< Create general purpose key.
   Syscall_AddKey,            //!< Add a key to a process, applying it.
   Syscall_RemoveKey,         //!< Remove a key from the process, unapplying it.

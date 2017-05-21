@@ -115,4 +115,6 @@ KeyManagerErrors KeyMan_UseKey(Key_t *key);
 
 bool KeyMan_VerifyKey(const Key_t *key);
 
+bool KeyMan_AreKeysEqual(const Key_t *a, const Key_t *b);
+
 #endif
