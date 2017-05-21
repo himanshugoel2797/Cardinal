@@ -410,6 +410,13 @@ ThreadError ReturnProcessReference(UID pid) {
   return ThreadError_None;
 }
 
+bool ProcessExists(UID pid) {
+  ProcessInfo *pInfo = NULL;
+  if (GetProcessReference(pid, &pInfo) != ThreadError_None) return FALSE;
+  ReturnProcessReference(pid);
+  return TRUE;
+}
+
 void SetThreadState(UID id, ThreadState state) {
   ThreadInfo *thd = NULL;
   GetThreadReference(id, &thd);
@@ -896,7 +903,7 @@ ThreadError AddKey(UID pid, Key_t *key, int32_t *idx) {
   err = GetProcessReference(pid, &pInfo);
   if (err != ThreadError_None) return err;
 
-  for (int i = 0; i < KEY_TABLE_SIZE; i++) {
+  for (int i = 0; i < PROC_KEY_TABLE_SIZE; i++) {
     if (pInfo->keys[i].key_index == 0) {
       KeyMan_IncrementRefCount(key);
       pInfo->keys[i] = *key;
@@ -930,7 +937,7 @@ ThreadError GetKeyIndex(UID pid, Key_t *key, int32_t *idx) {
 
   *idx = -1;
 
-  for (int i = 0; i < KEY_TABLE_SIZE; i++) {
+  for (int i = 0; i < PROC_KEY_TABLE_SIZE; i++) {
     if (pInfo->keys[i].key_index == key->key_index) {
       // TODO: implement key matching
       *idx = i;
@@ -944,7 +951,8 @@ ThreadError GetKeyIndex(UID pid, Key_t *key, int32_t *idx) {
 }
 
 ThreadError RemoveKey(UID pid, int32_t idx) {
-  if ((idx < 0) | (idx >= KEY_TABLE_SIZE)) return ThreadError_InvalidParams;
+  if ((idx < 0) | (idx >= PROC_KEY_TABLE_SIZE))
+    return ThreadError_InvalidParams;
 
   ThreadError err = 0;
   ProcessInfo *pInfo = NULL;
@@ -971,7 +979,8 @@ ThreadError RemoveKey(UID pid, int32_t idx) {
 
 ThreadError GetKey(UID pid, int32_t idx, Key_t *key) {
   if (key == NULL) return ThreadError_InvalidParams;
-  if ((idx < 0) | (idx >= KEY_TABLE_SIZE)) return ThreadError_InvalidParams;
+  if ((idx < 0) | (idx >= PROC_KEY_TABLE_SIZE))
+    return ThreadError_InvalidParams;
 
   ThreadError err = 0;
   ProcessInfo *pInfo = NULL;

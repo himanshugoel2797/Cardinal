@@ -40,7 +40,7 @@
 
 #define ROOT_PID 1
 
-#define KEY_TABLE_SIZE 256
+#define PROC_KEY_TABLE_SIZE 256
 
 /**
  * Thread States.
@@ -105,7 +105,7 @@ typedef struct ProcessInfo {
 
   uint64_t HeapBreak;
 
-  Key_t keys[KEY_TABLE_SIZE];
+  Key_t keys[PROC_KEY_TABLE_SIZE];
 
   ManagedPageTable *PageTable;
 } ProcessInfo;
@@ -350,6 +350,8 @@ ThreadInfo *GetCurrentThreadInfo(void);
 ThreadError GetProcessReference(UID pid, ProcessInfo **pInfo);
 
 ThreadError ReturnProcessReference(UID pid);
+
+bool ProcessExists(UID pid);
 
 void SetCoreAffinity(UID tid, uint64_t affinity);
 

@@ -7,6 +7,7 @@
 
 #include "key_manager.h"
 #include "common/common.h"
+#include "managers.h"
 #include "memory.h"
 #include "synchronization.h"
 
@@ -15,6 +16,7 @@
 typedef struct {
   Key_t key;
   uint32_t ref_count;
+  UID lock;
   _Atomic uint64_t identifier[IDENTIFIER_COUNT];
 } KeyEntry;
 
@@ -97,6 +99,7 @@ KeyManagerErrors KeyMan_AllocateKey(uint64_t *identifier, Key_t *key) {
   for (int i = 0; i < IDENTIFIER_COUNT; i++)
     keyTable[lastFreeKeyIndex].identifier[i] = identifier[i];
 
+  keyTable[lastFreeKeyIndex].lock = 0;
   keyTable[lastFreeKeyIndex].ref_count = 1;
 
   while (keyTable[lastFreeKeyIndex].ref_count != 0 &&
@@ -289,4 +292,61 @@ KeyManagerErrors KeyMan_UseKey(Key_t *key) {
 
   KeyMan_WriteKey(key, identifiers);
   return KeyManagerErrors_None;
+}
+
+KeyManagerErrors KeyMan_TryLockKey(Key_t *key) {
+  if (key == NULL) return KeyManagerErrors_InvalidParams;
+
+  uint64_t index = key->key_index - 1;
+  if (index >= KEY_TABLE_SIZE / sizeof(KeyEntry))
+    return KeyManagerErrors_InvalidParams;
+
+  LockSpinlock(keyman_lock);
+  if (!KeyMan_VerifyKey(key)) {
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_KeyDoesNotExist;
+  }
+
+  if (keyTable[index].lock == 0) {
+    keyTable[index].lock = GetCurrentProcessUID();
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+  }
+
+  UnlockSpinlock(keyman_lock);
+  return KeyManagerErrors_Unknown;
+}
+
+KeyManagerErrors KeyMan_UnlockKey(Key_t *key) {
+  if (key == NULL) return KeyManagerErrors_InvalidParams;
+
+  uint64_t index = key->key_index - 1;
+  if (index >= KEY_TABLE_SIZE / sizeof(KeyEntry))
+    return KeyManagerErrors_InvalidParams;
+
+  LockSpinlock(keyman_lock);
+  if (!KeyMan_VerifyKey(key)) {
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_KeyDoesNotExist;
+  }
+
+  if (keyTable[index].lock == 0) {
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+  }
+
+  if (!ProcessExists(keyTable[index].lock)) {
+    keyTable[index].lock = 0;
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+  }
+
+  if (keyTable[index].lock == GetCurrentProcessUID()) {
+    keyTable[index].lock = 0;
+    UnlockSpinlock(keyman_lock);
+    return KeyManagerErrors_None;
+  }
+
+  UnlockSpinlock(keyman_lock);
+  return KeyManagerErrors_Unknown;
 }

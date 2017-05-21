@@ -37,6 +37,7 @@ typedef enum {
 typedef enum {
   KeyType_SharedMemoryKey = 1,
   KeyType_GeneralPurpose = 2,
+  KeyType_Signal = 3,
 } KeyType;
 
 void KeyMan_Initialize(void);
