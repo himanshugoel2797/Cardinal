@@ -46,47 +46,49 @@
  * Thread States.
  */
 typedef enum {
-  ThreadState_Created,     //!< Thread has been created but not set as ready.
-  ThreadState_Initialize,  //!< Thread needs to be initialized.
-  ThreadState_Running,     //!< Thread is running.
-  ThreadState_Paused,      //!< Thread is paused.
-  ThreadState_Sleep,       //!< Thread is asleep.
-  ThreadState_Exiting      //!< Thread is exiting.
+    ThreadState_Created,     //!< Thread has been created but not set as ready.
+    ThreadState_Initialize,  //!< Thread needs to be initialized.
+    ThreadState_Running,     //!< Thread is running.
+    ThreadState_Paused,      //!< Thread is paused.
+    ThreadState_Sleep,       //!< Thread is asleep.
+    ThreadState_Exiting      //!< Thread is exiting.
 } ThreadState;
 
 /**
  * Thread Wake Condition.
  */
 typedef enum {
-  ThreadWakeCondition_None,      //!< No wake condition, thread isn't sleeping.
-  ThreadWakeCondition_SleepEnd,  //!< Wake on sleep period expiry.
-  ThreadWakeCondition_Signal,
+    ThreadWakeCondition_None,      //!< No wake condition, thread isn't sleeping.
+    ThreadWakeCondition_SleepEnd,  //!< Wake on sleep period expiry.
+    ThreadWakeCondition_Signal,
 } ThreadWakeCondition;
 
 /**
  * Thread permission levels.
  */
 typedef enum {
-  ThreadPermissionLevel_User,   //!< User level thread.
-  ThreadPermissionLevel_Kernel  //!< Kernel level thread.
+    ThreadPermissionLevel_User,   //!< User level thread.
+    ThreadPermissionLevel_Kernel  //!< Kernel level thread.
 } ThreadPermissionLevel;
 
 typedef enum {
-  ThreadError_None = 0,
-  ThreadError_UIDNotFound = 1,
-  ThreadError_InvalidParams,
-  ThreadError_Deleting,
-  ThreadError_Unknown,
-  ThreadError_OutOfMemory,
-  ThreadError_KeyNotFound,
+    ThreadError_None = 0,
+    ThreadError_UIDNotFound = 1,
+    ThreadError_InvalidParams,
+    ThreadError_Deleting,
+    ThreadError_Unknown,
+    ThreadError_OutOfMemory,
+    ThreadError_KeyNotFound,
 } ThreadError;
 
 typedef enum {
-  ProcessStatus_Executing,
-  ProcessStatus_Terminating,
+    ProcessStatus_Executing,
+    ProcessStatus_Terminating,
 } ProcessStatus;
 
-typedef struct { uint64_t desc; } DescriptorTable;
+typedef struct {
+    uint64_t desc;
+} DescriptorTable;
 
 /**
  * Thread Entry Point.
@@ -94,50 +96,50 @@ typedef struct { uint64_t desc; } DescriptorTable;
 typedef void (*ThreadEntryPoint)(void *);
 
 typedef struct ProcessInfo {
-  Spinlock lock;
+    Spinlock lock;
 
-  UID PID;
-  UID ParentID;
-  UID UserID;
-  UID GroupID;
+    UID PID;
+    UID ParentID;
+    UID UserID;
+    UID GroupID;
 
-  ProcessStatus Status;
+    ProcessStatus Status;
 
-  uint64_t HeapBreak;
+    uint64_t HeapBreak;
 
-  Key_t keys[PROC_KEY_TABLE_SIZE];
+    Key_t keys[PROC_KEY_TABLE_SIZE];
 
-  ManagedPageTable *PageTable;
+    ManagedPageTable *PageTable;
 } ProcessInfo;
 
 /**
  * Thread Information/State.
  */
 typedef struct ThreadInfo {
-  Spinlock lock;  //!< Read/Write lock.
+    Spinlock lock;  //!< Read/Write lock.
 
-  UID ID;  //!< Thread ID.
+    UID ID;  //!< Thread ID.
 
-  ProcessInfo *Process;
+    ProcessInfo *Process;
 
-  ThreadState State;                  //!< Thread state.
-  ThreadWakeCondition WakeCondition;  //!< Thread wake condition.
-  ThreadPermissionLevel PermissionLevel;
+    ThreadState State;                  //!< Thread state.
+    ThreadWakeCondition WakeCondition;  //!< Thread wake condition.
+    ThreadPermissionLevel PermissionLevel;
 
-  uint64_t KernelStackBase;     //!< Base of kernel stack.
-  uint64_t KernelStackAligned;  //!< Aligned address of kernel stack.
-  uint64_t UserStackBase;       //!< Base of user stack.
-  uint64_t CurrentStack;        //!< Current stack address.
+    uint64_t KernelStackBase;     //!< Base of kernel stack.
+    uint64_t KernelStackAligned;  //!< Aligned address of kernel stack.
+    uint64_t UserStackBase;       //!< Base of user stack.
+    uint64_t CurrentStack;        //!< Current stack address.
 
-  uint64_t SleepDurationNS;  //!< Sleep duration in nanoseconds.
-  uint64_t SleepStartTime;   //!< Sleep start time.
-  uint64_t Errno;            //!< Errno of last syscall.
+    uint64_t SleepDurationNS;  //!< Sleep duration in nanoseconds.
+    uint64_t SleepStartTime;   //!< Sleep start time.
+    uint64_t Errno;            //!< Errno of last syscall.
 
-  uint64_t CoreAffinity;
-  int64_t TimeSlice;  //!< The time slice available to this thread.
+    uint64_t CoreAffinity;
+    int64_t TimeSlice;  //!< The time slice available to this thread.
 
-  void *FPUState;          //!< FPU state storage region.
-  void *ArchSpecificData;  //!< Architecture specific data storage region.
+    void *FPUState;          //!< FPU state storage region.
+    void *ArchSpecificData;  //!< Architecture specific data storage region.
 
 } ThreadInfo;
 
@@ -145,8 +147,8 @@ typedef struct ThreadInfo {
  * Application Processor information.
  */
 typedef struct CoreInfo {
-  UID ID;                    //!< Core ID.
-  int (*getCoreData)(void);  //!< Get core load data.
+    UID ID;                    //!< Core ID.
+    int (*getCoreData)(void);  //!< Get core load data.
 } CoreInfo;
 
 /**

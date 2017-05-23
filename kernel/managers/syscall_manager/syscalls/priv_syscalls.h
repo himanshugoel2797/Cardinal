@@ -46,7 +46,7 @@ uint64_t WaitSignal_Syscall(Key_t* signalVal);
 uint64_t HandleSignal_Syscall(Key_t* signalVal);
 
 uint64_t Signal_Syscall(Key_t* signalVal, void* param);  // param is sizeof
-                                                         // Key_t
+// Key_t
 
 uint64_t TryLockKey_Syscall(Key_t* key);
 
@@ -56,7 +56,7 @@ uint64_t RegisterTagProvider_Syscall(char* name, Key_t* signals);
 
 uint64_t GetWithTag_Syscall(const char* cond, char* tags,
                             uint32_t flags);  // TODO: redesign this to know the
-                                              // length of the tags, flags to
+// length of the tags, flags to
 // control TAG list mode or FILE list
 // mode.
 

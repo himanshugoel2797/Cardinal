@@ -13,28 +13,28 @@
 #define REGISTER(x) RegisterSyscall(Syscall_##x, (SyscallHandler)x##_Syscall)
 
 void RegisterAllSyscalls(void) {
-  MemoryInitLocks();
-  PropertyInitLocks();
+    MemoryInitLocks();
+    PropertyInitLocks();
 
-  REGISTER(Nanosleep);
-  REGISTER(R0_GetBootInfo);
+    REGISTER(Nanosleep);
+    REGISTER(R0_GetBootInfo);
 
-  REGISTER(SetProperty);
-  REGISTER(GetProperty);
+    REGISTER(SetProperty);
+    REGISTER(GetProperty);
 
-  REGISTER(GetErrno);
+    REGISTER(GetErrno);
 
-  REGISTER(Brk);
+    REGISTER(Brk);
 
-  REGISTER(R01_GetPhysicalAddress);
+    REGISTER(R01_GetPhysicalAddress);
 
-  REGISTER(CreateProcess);
+    REGISTER(CreateProcess);
 
-  REGISTER(CreateKey);
-  REGISTER(AddKey);
-  // REGISTER(Dup);
-  REGISTER(RemoveKey);
-  REGISTER(GetKeyIndex);
-  REGISTER(UseKey);
-  REGISTER(GetKeyUsageCount);
+    REGISTER(CreateKey);
+    REGISTER(AddKey);
+    // REGISTER(Dup);
+    REGISTER(RemoveKey);
+    REGISTER(GetKeyIndex);
+    REGISTER(UseKey);
+    REGISTER(GetKeyUsageCount);
 }
