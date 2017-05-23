@@ -903,6 +903,18 @@ ThreadError AddKey(UID pid, Key_t *key, int32_t *idx) {
   err = GetProcessReference(pid, &pInfo);
   if (err != ThreadError_None) return err;
 
+  if (*idx >= 0 && *idx < PROC_KEY_TABLE_SIZE) {
+    if (pInfo->keys[*idx].key_index != 0) {
+      ReturnProcessReference(pid);
+      return ThreadError_InvalidParams;
+    } else {
+      KeyMan_IncrementRefCount(key);
+      pInfo->keys[*idx] = *key;
+      ReturnProcessReference(pid);
+      return ThreadError_None;
+    }
+  }
+
   for (int i = 0; i < PROC_KEY_TABLE_SIZE; i++) {
     if (pInfo->keys[i].key_index == 0) {
       KeyMan_IncrementRefCount(key);

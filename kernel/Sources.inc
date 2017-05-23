@@ -19,4 +19,7 @@ SOURCES=main.o \
 		managers/syscall_manager/syscalls/key.o \
 		managers/elf_loader/elf.o \
 		managers/key_manager/key_manager.o \
+		managers/key_systems/key_systems.o \
+		managers/key_systems/shared_memory/shared_memory.o \
+		managers/key_systems/signal/signal.o \
 		managers/interrupt_manager/interrupt_man.o

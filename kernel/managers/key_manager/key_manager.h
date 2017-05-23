@@ -34,13 +34,6 @@ typedef enum {
   KeyIdentifier_Type = IDENTIFIER_COUNT - 1
 } KeyIdentifierIndices;
 
-typedef enum {
-  KeyType_SharedMemoryKey,
-  KeyType_GeneralPurpose,
-  KeyType_Signal,
-  KeyType_Object,
-} KeyType;
-
 void KeyMan_Initialize(void);
 
 /**
@@ -119,4 +112,7 @@ bool KeyMan_VerifyKey(const Key_t *key);
 
 bool KeyMan_AreKeysEqual(const Key_t *a, const Key_t *b);
 
+KeyManagerErrors KeyMan_TryLockKey(Key_t *key);
+
+KeyManagerErrors KeyMan_UnlockKey(Key_t *key);
 #endif

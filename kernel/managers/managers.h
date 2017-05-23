@@ -10,6 +10,7 @@
 #include "elf_loader/elf.h"
 #include "interrupt_manager/interrupt_man.h"
 #include "key_manager/key_manager.h"  //Key Manager
+#include "key_systems/key_systems.h"  //Key Systems
 #include "syscall_manager/syscall.h"  //Syscall Manager
 #include "thread_manager/thread.h"    //Thread Manager
 
