@@ -64,9 +64,8 @@ uint64_t Read_Syscall(Key_t* key, void* buff, uint32_t flags);
 
 uint64_t Write_Syscall(Key_t* key, void* buff, uint64_t len, uint32_t flags);
 
-uint64_t Create_Syscall(uint32_t flags, Key_t* key, uint32_t* key_cnt);
-
-uint64_t CreateKey_Syscall(uint64_t v0, uint64_t v1, uint64_t v2, Key_t* key);
+uint64_t CreateKey_Syscall(KeyType_t type, uint32_t flags, void* params,
+                           Key_t* key, uint32_t* key_cnt);
 
 uint64_t AddKey_Syscall(Key_t* key);
 
