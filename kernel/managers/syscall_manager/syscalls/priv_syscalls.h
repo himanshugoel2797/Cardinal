@@ -31,7 +31,7 @@ uint64_t Brk_Syscall(void* targ_brk_address);
 
 uint64_t R01_GetPhysicalAddress_Syscall(UID pid, void* addr);
 
-uint64_t CreateProcess_Syscall(Key_t* prog, uint64_t sz, uint32_t* keys,
+uint64_t CreateProcess_Syscall(void* prog, uint64_t sz, uint32_t* keys,
                                char* argv[], int argc);
 
 uint64_t CreateThread_Syscall(UID parent, ThreadEntryPoint entry_point,
