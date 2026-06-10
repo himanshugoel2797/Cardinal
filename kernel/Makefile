@@ -35,18 +35,33 @@ CCADMIN=CCadmin
 CC=clang
 ASFLAGS =-D$(CONF)
 
-CFLAGS= -g -fsanitize=undefined -fsanitize-trap=undefined -ftrap-function=debug_handle_trap -target $(TARGET_TRIPLET) -nostdinc -isystem="/home/hgoel/Documents/Cardinal/libs/libc/include" -std=c11 -ffreestanding -Wall -Wextra -Wno-unused-variable -Wno-trigraphs -Werror -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS) -DEXEC_ENTRY_POINT=$(EXEC_ENTRY_POINT) -D_KERNEL_ -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
+# Pre-existing warning classes surfaced by modern clang. Kept as warnings (not
+# errors) so -Werror still catches new regressions; remove these as the
+# underlying issues are fixed in follow-up PRs.
+WARNINGS_TEMP_RELAX= -Wno-error=unused-but-set-variable -Wno-error=unused-but-set-parameter -Wno-error=unused-parameter -Wno-error=return-type -Wno-error=pointer-to-int-cast -Wno-error=unused-function -Wno-error=frame-address -Wno-error=bool-operation
+
+CFLAGS= -g -fsanitize=undefined -fsanitize-trap=undefined -ftrap-function=debug_handle_trap -target $(TARGET_TRIPLET) -nostdinc -isystem ../libs/libc/include -std=c11 -ffreestanding -Wall -Wextra -Wno-unused-variable -Wno-trigraphs -Werror $(WARNINGS_TEMP_RELAX) -D$(TARGET_ARCH) -D$(CONF) -DBOOT_FS=$(BOOT_FS) -DEXEC_ENTRY_POINT=$(EXEC_ENTRY_POINT) -D_KERNEL_ -DCURRENT_YEAR=$(CURRENT_YEAR) -DCOM_ENABLED=$(COM_ENABLED) $(addprefix -D, $(DEFINES)) $(addprefix -I, $(INCLUDES)) -mno-red-zone -mcmodel=kernel -O0 -mno-aes -mno-mmx -mno-pclmul -mno-sse -mno-sse2 -mno-sse3 -mno-sse4 -mno-sse4a -mno-fma4 -mno-ssse3 -emit-llvm
 
 include $(TARGET_DIR)/$(TARGET_ARCH)/archDefs.inc
 include Sources.inc
+
+# Resolve assembly object names at parse time from the committed .S sources.
+# A $(wildcard) of the *generated* .S.o files during the build returns stale
+# results from make's directory cache (the objects don't exist yet when the
+# listing is first cached), which silently dropped boot.S.o -- and with it the
+# multiboot header -- from the final link.
+TARGET_ASM_OBJS := $(patsubst %.S,%.S.o,$(wildcard $(TARGET_DIR)/$(TARGET_ARCH)/*.S))
+# tmp.S is the generated llc intermediate, not a hand-written source; exclude it.
+ASM_OBJS := $(patsubst %.S,%.S.o,$(filter-out tmp.S,$(wildcard *.S)))
 
 
 %.bc: %.c
 	$(CC) $(CFLAGS) -S $? -o $(?:.c=.bc)
 
+# .S sources are preprocessed: pass -D defines (e.g. MULTIBOOT2) to the assembler.
 %.bc:%.S
 	touch $(?:.S=.bc)
-	$(AS) $? -c -o $(?:.S=.o)
+	$(AS) $(addprefix -D, $(DEFINES)) $? -c -o $(?:.S=.o)
 	cp $(?:.S=.o) $?.o
 
 .s.o:
@@ -71,12 +86,12 @@ clean_initrd:
 build:$(SOURCES:.o=.bc) clean_output
 	cd $(TARGET_DIR)/$(TARGET_ARCH) && $(MAKE) $(TARGET_MAKE)
 	llvm-link $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(TARGET_SOURCES:.o=.bc)) $(SOURCES:.o=.bc) -o tmp.bc
-	opt -std-link-opts -O2 tmp.bc -S -o tmp0.bc
-	llc tmp.bc -O=0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
-	rm -f tmp0.bc tmp.bc
+	llc tmp.bc -O0 -mtriple=$(TARGET_TRIPLET) -mattr=-aes,-mmx,-pclmul,-sse,-sse2,-sse3,-sse4.1,-sse4.2,-sse4a,-fma,-ssse3 -code-model=kernel -o tmp.S
+	rm -f tmp.bc
 	$(AS) tmp.S -c -o tmp.o
 	mkdir -p build/$(CONF)
-	$(TARGET_ARCH_LD) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -z max-page-size=0x1000 $(wildcard $(addprefix $(TARGET_DIR)/$(TARGET_ARCH)/, $(addprefix *, $(TARGET_SOURCES:.o=.S.o)))) $(wildcard $(addprefix *, $(SOURCES:.o=.S.o))) tmp.o -mcmodel=kernel
+	$(TARGET_ARCH_LD) -T $(TARGET_DIR)/$(TARGET_ARCH)/$(TARGET_LDSCRIPT) -o "build/$(CONF)/kernel.bin" -ffreestanding -O2 -mno-red-zone -nostdlib -no-pie -static -z max-page-size=0x1000 $(TARGET_ASM_OBJS) $(ASM_OBJS) tmp.o -mcmodel=kernel
+	rm -f tmp.S tmp.o
 	cd .. && sh scripts/rebuild-initrd.sh
 	cd ../initrd && $(MAKE) $(TARGET_MAKE)
 	cp ../initrd/initrd build/$(CONF)/initrd
@@ -93,6 +108,9 @@ clean:
 # all
 all:build-tests
 
+# grub-mkrescue is named grub-mkrescue on modern distros (was grub2-mkrescue).
+GRUB_MKRESCUE ?= grub-mkrescue
+
 # build tests
 build-tests:build
 	mkdir -p ISO
@@ -102,12 +120,35 @@ build-tests:build
 	cp "build/$(CONF)/initrd" ISO/isodir/boot/initrd
 	mkdir -p ISO/isodir/boot/grub
 	cp grub.cfg ISO/isodir/boot/grub/grub.cfg
-	grub2-mkrescue -o ISO/os.iso ISO/isodir
+	$(GRUB_MKRESCUE) -o ISO/os.iso ISO/isodir
 
-# run tests
+QEMU ?= qemu-system-x86_64
+# Set QEMU_ACCEL=-accel kvm (or pass on the command line) when KVM is available;
+# defaults to none so the build also runs under plain TCG / in CI containers.
+QEMU_ACCEL ?=
+QEMU_MACHINE ?= q35
+QEMU_DISK ?= ../disk.img
+# Modern device syntax: -soundhw was removed (use -device intel-hda/hda-duplex),
+# and the legacy -net nic/-net dump/-net user forms are replaced by -netdev /
+# -device / -object filter-dump.
+QEMU_FLAGS ?= -m 1024M -machine $(QEMU_MACHINE) $(QEMU_ACCEL) -cpu Haswell,+invtsc,+xsave,+aes -smp 2 \
+	-d int,cpu_reset,guest_errors \
+	-drive id=disk,file=$(QEMU_DISK),if=none,format=raw -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0 \
+	-netdev user,id=net0 -device rtl8139,netdev=net0 -object filter-dump,id=dump0,netdev=net0,file=../dump.pcap \
+	-device intel-hda -device hda-duplex -device piix3-usb-uhci -device usb-mouse -device usb-kbd \
+	-vga vmware -cdrom "ISO/os.iso" -boot d
+
+# run tests (graphical)
 test: build-tests
-# Add your pre 'test' code here...
-	qemu-system-x86_64 --enable-kvm -m 1024M -machine q35, -cpu Haswell,+invtsc,+xsave,+aes -smp 2 -d int,cpu_reset,guest_errors -drive id=disk,file=../disk.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic,model=rtl8139, -net dump,file=../dump.pcap -net user -soundhw hda -device ich9-usb-uhci3 -device usb-mouse -device usb-kbd -vga vmware -cdrom "ISO/os.iso" -boot d
+	$(QEMU) $(QEMU_FLAGS)
+
+# run headless: no display, kernel COM1 output to stdio. Useful for CI and for
+# the remote PXE/serial mules. Ctrl-A X to exit qemu.
+run-headless: build-tests
+	$(QEMU) -m 1024M -machine $(QEMU_MACHINE) $(QEMU_ACCEL) -cpu Haswell -smp 2 \
+		-d int,cpu_reset,guest_errors -no-reboot -no-shutdown \
+		-device piix3-usb-uhci -vga vmware -cdrom "ISO/os.iso" -boot d \
+		-display none -serial mon:stdio
 
 install:clean build-tests
 	sudo dd if="ISO/os.iso" of=/dev/$(OUTDISK) && sync

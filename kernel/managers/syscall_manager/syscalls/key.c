@@ -34,6 +34,22 @@ uint64_t GetKeyUsageCount_Syscall(Key_t* key) {
   return cnt;
 }
 
+// TODO(key-system): CreateKey_Syscall is registered (syscall 21) and declared
+// in priv_syscalls.h with the 5-arg signature below, but its implementation was
+// left commented out mid-refactor. This stub resolves the link and reports
+// failure until the key-allocation path is reimplemented in the key-system PR.
+// The original (incomplete) 4-arg body is preserved at the end of this comment.
+uint64_t CreateKey_Syscall(KeyType_t type, uint32_t flags, void* params,
+                           Key_t* key, uint32_t* key_cnt) {
+  (void)type;
+  (void)flags;
+  (void)params;
+  (void)key;
+  (void)key_cnt;
+  SyscallSetErrno(-EINVAL);
+  return -1;
+}
+
 /*
 uint64_t CreateKey_Syscall(uint64_t v0, uint64_t v1, uint64_t v2, Key_t* key) {
     if (key == NULL) {
